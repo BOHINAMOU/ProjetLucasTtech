@@ -1,0 +1,285 @@
+{% extends 'core/base.html' %}
+{% block title %}Mes commandes — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --rose:    #c93060;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.oh-wrap {
+  max-width: 860px; margin: 56px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,2rem);
+}
+
+/* ── Header ── */
+.oh-header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between; gap: 16px;
+  margin-bottom: 36px; flex-wrap: wrap;
+  animation: fadeUp .4s ease both;
+  padding-bottom: 24px; border-bottom: 1px solid var(--border);
+}
+.oh-header h1 {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 900; letter-spacing: -.03em; color: var(--ink);
+}
+.oh-header p { color: var(--muted); font-size: .88rem; margin-top: 6px; }
+.oh-back {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; background: var(--surf);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: .82rem; font-weight: 600; color: var(--ink);
+  text-decoration: none; transition: border-color .2s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.oh-back:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Commandes ── */
+.oh-list { display: flex; flex-direction: column; gap: 16px; }
+
+.oh-order {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 2px 12px var(--shadow);
+  animation: fadeUp .4s ease both;
+  transition: border-color .2s, box-shadow .2s;
+}
+.oh-order:hover {
+  border-color: rgba(201,68,10,.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,.09);
+}
+
+/* Header commande */
+.oh-order-head {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 14px;
+  padding: 18px 24px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.oh-order-head-left { display: flex; flex-direction: column; gap: 3px; }
+.oh-order-num {
+  font-family: var(--serif); font-size: 1.05rem; font-weight: 800;
+  color: var(--ink); letter-spacing: -.01em;
+}
+.oh-order-date { font-size: .75rem; color: var(--muted); font-weight: 500; }
+
+.oh-order-head-right {
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+
+/* Statut */
+.oh-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 99px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .04em;
+  white-space: nowrap;
+}
+.oh-status.pending   { background: rgba(232,200,74,.15); color: #8a6f00; border: 1px solid rgba(232,200,74,.4); }
+.oh-status.paid      { background: rgba(45,122,95,.12); color: var(--green); border: 1px solid rgba(45,122,95,.3); }
+.oh-status.shipped   { background: rgba(37,99,235,.1); color: #1d4ed8; border: 1px solid rgba(37,99,235,.25); }
+.oh-status.delivered { background: rgba(45,122,95,.12); color: var(--green); border: 1px solid rgba(45,122,95,.3); }
+.oh-status.cancelled { background: rgba(201,48,96,.08); color: var(--rose); border: 1px solid rgba(201,48,96,.2); }
+
+.oh-order-total {
+  font-family: var(--serif); font-size: 1.15rem; font-weight: 900;
+  color: var(--ink); letter-spacing: -.02em;
+}
+.oh-order-total small {
+  font-family: var(--font); font-size: .68rem;
+  font-weight: 500; color: var(--muted);
+}
+
+/* Articles de la commande */
+.oh-order-items { padding: 16px 24px; }
+
+.oh-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.oh-item:last-child { border-bottom: none; }
+
+.oh-item-img {
+  width: 48px; height: 36px; border-radius: 7px;
+  overflow: hidden; background: var(--surf2); flex-shrink: 0;
+}
+.oh-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.oh-item-img .no-img {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; opacity: .25;
+}
+
+.oh-item-info { flex: 1; min-width: 0; }
+.oh-item-name {
+  font-size: .85rem; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.oh-item-qty { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+.oh-item-price {
+  font-family: var(--serif); font-size: .92rem; font-weight: 900;
+  color: var(--ink); white-space: nowrap; flex-shrink: 0;
+}
+.oh-item-price small {
+  font-family: var(--font); font-size: .62rem;
+  font-weight: 500; color: var(--muted);
+}
+
+/* Footer commande */
+.oh-order-foot {
+  padding: 14px 24px;
+  background: var(--surf2); border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.oh-payment {
+  font-size: .75rem; color: var(--muted); font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+}
+.oh-payment i { color: var(--green); }
+
+.btn-receipt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; background: var(--accent); color: #fff;
+  border-radius: 9px; text-decoration: none;
+  font-size: .78rem; font-weight: 700;
+  transition: background .2s, transform .15s;
+  box-shadow: 0 3px 10px rgba(201,68,10,.25);
+}
+.btn-receipt:hover { background: #b53c09; transform: translateY(-1px); }
+
+/* ── Empty ── */
+.oh-empty {
+  text-align: center; padding: 100px 0;
+  color: var(--muted); animation: fadeUp .4s ease both;
+}
+.oh-empty-icon { font-size: 4rem; display: block; margin-bottom: 20px; opacity: .3; }
+.oh-empty p { font-size: 1rem; margin-bottom: 6px; }
+.oh-empty-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 24px; padding: 13px 28px;
+  background: var(--accent); color: #fff; border-radius: 12px;
+  text-decoration: none; font-weight: 700; font-size: .9rem;
+  box-shadow: 0 4px 16px rgba(201,68,10,.25);
+  transition: background .2s;
+}
+.oh-empty-btn:hover { background: #b53c09; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 560px) {
+  .oh-order-head { flex-direction: column; align-items: flex-start; }
+  .oh-order-head-right { width: 100%; justify-content: space-between; }
+  .oh-order-foot { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
+<div class="oh-wrap">
+
+  <!-- Header -->
+  <div class="oh-header">
+    <div>
+      <h1>Mes commandes</h1>
+      <p>{{ orders|length }} commande{% if orders|length > 1 %}s{% endif %} passée{% if orders|length > 1 %}s{% endif %}</p>
+    </div>
+    <a href="{% url 'shop:shop' %}" class="oh-back">
+      <i class="fa fa-th-large"></i> Retour à la boutique
+    </a>
+  </div>
+
+  {% if orders %}
+  <div class="oh-list">
+    {% for order in orders %}
+    <div class="oh-order" style="animation-delay: {{ forloop.counter0 }}00ms">
+
+      <!-- En-tête -->
+      <div class="oh-order-head">
+        <div class="oh-order-head-left">
+          <span class="oh-order-num">#{{ order.receipt_number }}</span>
+          <span class="oh-order-date">{{ order.created_at|date:"d F Y à H:i" }}</span>
+        </div>
+        <div class="oh-order-head-right">
+          <span class="oh-status {{ order.status }}">
+            {% if order.status == 'pending' %}⏳ En attente
+            {% elif order.status == 'paid' %}✓ Payé
+            {% elif order.status == 'shipped' %}📦 Expédié
+            {% elif order.status == 'delivered' %}✓ Livré
+            {% elif order.status == 'cancelled' %}✗ Annulé
+            {% endif %}
+          </span>
+          <span class="oh-order-total">{{ order.total_price }}<small> FCFA</small></span>
+        </div>
+      </div>
+
+      <!-- Articles -->
+      <div class="oh-order-items">
+        {% for item in order.items.all %}
+        <div class="oh-item">
+          <div class="oh-item-img">
+            {% if item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            {% else %}
+              <div class="no-img">🛍️</div>
+            {% endif %}
+          </div>
+          <div class="oh-item-info">
+            <div class="oh-item-name">{{ item.product.name }}</div>
+            <div class="oh-item-qty">{{ item.quantity }} × {{ item.price }} FCFA</div>
+          </div>
+          <div class="oh-item-price">{{ item.total_price }}<small> FCFA</small></div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pied -->
+      <div class="oh-order-foot">
+        <span class="oh-payment">
+          <i class="fa fa-credit-card"></i>
+          {{ order.get_payment_method_display }}
+        </span>
+        <a href="{% url 'shop:order_receipt' order.pk %}" class="btn-receipt">
+          <i class="fa fa-file-text-o"></i> Voir le reçu
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="oh-empty">
+    <span class="oh-empty-icon">📦</span>
+    <p>Vous n'avez pas encore passé de commande.</p>
+    <p style="font-size:.85rem;">Explorez la boutique et faites votre premier achat !</p>
+    <a href="{% url 'shop:shop' %}" class="oh-empty-btn">
+      <i class="fa fa-th-large"></i> Découvrir la boutique
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,421 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ service.title }} — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ── Breadcrumb ── */
+.sd-breadcrumb {
+  max-width: 1200px; margin: 0 auto;
+  padding: 28px clamp(1.5rem,6vw,5rem) 0;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; color: var(--muted);
+}
+.sd-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.sd-breadcrumb a:hover { text-decoration: underline; }
+.sd-breadcrumb span { opacity: .4; }
+
+/* ── Layout ── */
+.sd-wrapper {
+  max-width: 1200px; margin: 32px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 56px; align-items: start;
+}
+
+/* ── Média ── */
+.sd-media {
+  position: relative; border-radius: 20px; overflow: hidden;
+  aspect-ratio: 16/10; background: var(--surf2);
+  box-shadow: 0 24px 80px rgba(0,0,0,.13);
+  animation: fadeUp .5s ease both;
+}
+.sd-media img, .sd-media video {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .7s cubic-bezier(.22,.68,0,1.2);
+}
+.sd-media:hover img, .sd-media:hover video { transform: scale(1.04); }
+.sd-media-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem; opacity: .2;
+}
+.sd-media::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+}
+
+/* Badge featured */
+.sd-badge {
+  position: absolute; top: 16px; left: 16px; z-index: 2;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
+  background: var(--accent); color: #fff;
+  box-shadow: 0 4px 14px rgba(201,68,10,.35);
+}
+
+/* Date badge */
+.sd-date-badge {
+  position: absolute; top: 16px; right: 16px; z-index: 2;
+  font-size: .72rem; font-weight: 600;
+  background: rgba(250,249,247,.92); color: var(--muted);
+  padding: 5px 12px; border-radius: 99px;
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* ── Info ── */
+.sd-info { animation: fadeUp .5s .1s ease both; }
+
+.sd-cat {
+  font-size: .7rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.sd-title {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -.03em; color: var(--ink); margin-bottom: 20px;
+}
+.sd-desc {
+  font-size: .97rem; color: var(--muted);
+  line-height: 1.85; margin-bottom: 28px;
+}
+
+/* Admin */
+.sd-admin {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 28px; padding: 14px 18px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.sd-admin-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .85rem; font-weight: 800; flex-shrink: 0;
+}
+.sd-admin-info { display: flex; flex-direction: column; gap: 2px; }
+.sd-admin-label { font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sd-admin-name { font-size: .88rem; font-weight: 700; color: var(--ink); }
+
+/* Prix */
+.sd-price {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  margin-bottom: 28px;
+}
+.sd-price strong {
+  font-family: var(--serif); font-size: 2.2rem; font-weight: 900;
+  color: var(--ink); letter-spacing: -.04em;
+}
+.sd-price small { font-size: .8rem; color: var(--muted); font-weight: 500; }
+.sd-price-devis { font-size: .9rem; color: var(--muted); font-style: italic; margin-bottom: 28px; }
+
+/* ── Sidebar ── */
+.sd-sidebar { position: sticky; top: 28px; animation: fadeUp .5s .08s ease both; }
+
+/* Boutons contact */
+.sd-contact-btns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+.btn-whatsapp {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 15px;
+  background: #25D366; color: #fff;
+  border: none; border-radius: 12px; text-decoration: none;
+  font-family: var(--font); font-size: .95rem; font-weight: 700;
+  transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 16px rgba(37,211,102,.3);
+  cursor: pointer;
+}
+.btn-whatsapp:hover {
+  background: #1eb85a; transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,211,102,.4);
+}
+.btn-whatsapp svg { flex-shrink: 0; }
+
+.btn-form-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 15px;
+  background: var(--ink); color: #faf9f7;
+  border: none; border-radius: 12px;
+  font-family: var(--font); font-size: .95rem; font-weight: 700;
+  cursor: pointer; transition: background .2s, transform .2s;
+}
+.btn-form-toggle:hover { background: var(--ink2); transform: translateY(-2px); }
+
+/* ── Formulaire contact ── */
+.sd-form-wrap {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px 24px;
+  box-shadow: 0 8px 32px var(--shadow);
+  margin-top: 0;
+}
+.sd-form-title {
+  font-family: var(--serif); font-size: 1.2rem; font-weight: 700;
+  color: var(--ink); margin-bottom: 20px; letter-spacing: -.02em;
+}
+.sd-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.sd-form-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.sd-form-input,
+.sd-form-textarea {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surf2); font-family: var(--font);
+  font-size: .9rem; color: var(--ink); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.sd-form-input:focus, .sd-form-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201,68,10,.1);
+}
+.sd-form-textarea { resize: vertical; min-height: 110px; }
+.sd-form-input::placeholder, .sd-form-textarea::placeholder { color: var(--muted); }
+
+.btn-submit {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 12px; font-family: var(--font);
+  font-size: .95rem; font-weight: 800;
+  cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 14px rgba(201,68,10,.3); margin-top: 6px;
+}
+.btn-submit:hover {
+  background: #b53c09; transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(201,68,10,.4);
+}
+
+/* Infos contact */
+.sd-contact-info {
+  margin-top: 20px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.sd-contact-row {
+  display: flex; align-items: center; gap: 9px;
+  font-size: .78rem; color: var(--muted);
+}
+.sd-contact-row i { color: var(--accent); width: 14px; text-align: center; }
+
+/* Messages */
+.sd-msgs { margin-bottom: 16px; }
+.sd-msg {
+  padding: 12px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px;
+}
+.sd-msg.success { background: rgba(45,122,95,.1); border: 1px solid rgba(45,122,95,.3); color: var(--green); }
+.sd-msg.error   { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.2); color: #c93060; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 860px) {
+  .sd-wrapper { grid-template-columns: 1fr; gap: 32px; }
+  .sd-sidebar { position: static; }
+}
+@media (max-width: 600px) {
+  .sd-wrapper { padding: 0 18px; margin-bottom: 60px; }
+}
+</style>
+
+<!-- Breadcrumb -->
+<nav class="sd-breadcrumb">
+  <a href="{% url 'services:services' %}">Services</a>
+  <span>›</span>
+  {% if service.category %}
+    <a href="{% url 'services:services' %}?category={{ service.category.slug }}">{{ service.category.name }}</a>
+    <span>›</span>
+  {% endif %}
+  <span>{{ service.title }}</span>
+</nav>
+
+<div class="sd-wrapper">
+
+  <!-- ══ GAUCHE : Média + Info ══ -->
+  <div>
+    <!-- Média -->
+    <div class="sd-media">
+      {% if service.is_featured %}
+        <span class="sd-badge"><i class="fa fa-star"></i> Vedette</span>
+      {% endif %}
+      <span class="sd-date-badge">
+        <i class="fa fa-calendar-o"></i>
+        {{ service.created_at|date:"d F Y" }}
+      </span>
+
+      {% if service.video %}
+        <video src="{{ service.video.url }}" autoplay muted loop playsinline></video>
+      {% elif service.image %}
+        <img src="{{ service.image.url }}" alt="{{ service.title }}">
+      {% else %}
+        <div class="sd-media-placeholder">🛠️</div>
+      {% endif %}
+    </div>
+
+    <!-- Infos -->
+    <div class="sd-info" style="margin-top:28px;">
+      {% if service.category %}
+        <p class="sd-cat">{{ service.category.name }}</p>
+      {% endif %}
+
+      <h1 class="sd-title">{{ service.title }}</h1>
+
+      <!-- Admin -->
+      <div class="sd-admin">
+        <div class="sd-admin-avatar">{{ service.admin.email|slice:":1"|upper }}</div>
+        <div class="sd-admin-info">
+          <span class="sd-admin-label">Service proposé par</span>
+          <span class="sd-admin-name">{{ service.admin.email }}</span>
+        </div>
+      </div>
+
+      <p class="sd-desc">{{ service.description }}</p>
+
+      {% if service.price_from %}
+      <div class="sd-price">
+        <strong>{{ service.price_from }}</strong>
+        <small>FCFA / à partir de</small>
+      </div>
+      {% else %}
+      <p class="sd-price-devis">Prix sur devis — contactez-nous pour un tarif personnalisé.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ DROITE : Contact ══ -->
+  <div class="sd-sidebar">
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="sd-msgs">
+      {% for msg in messages %}
+        <div class="sd-msg {{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Boutons principaux -->
+    <div class="sd-contact-btns">
+      {% if service.whatsapp %}
+      <a class="btn-whatsapp"
+         href="https://wa.me/{{ service.whatsapp }}?text=Bonjour%2C%20je%20suis%20intéressé%20par%20votre%20service%20:{{ service.title|urlencode }}"
+         target="_blank" rel="noopener noreferrer">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+          <path fill="#fff" d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.02 7.8L.5 31.5l7.9-2.01A15.45 15.45 0 0016 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.27 20.36c-.4-.2-2.36-1.16-2.73-1.3-.37-.13-.63-.2-.9.2-.26.4-1.02 1.3-1.26 1.57-.23.26-.46.3-.86.1-.4-.2-1.69-.62-3.21-1.98-1.19-1.06-1.99-2.37-2.22-2.77-.23-.4-.02-.61.17-.81.18-.18.4-.46.6-.7.2-.23.27-.4.4-.66.14-.27.07-.5-.03-.7-.1-.2-.9-2.16-1.23-2.96-.32-.78-.65-.67-.9-.68h-.77c-.27 0-.7.1-1.06.5-.37.4-1.4 1.37-1.4 3.33s1.43 3.86 1.63 4.13c.2.26 2.82 4.3 6.83 6.03.96.41 1.7.66 2.28.84.96.3 1.83.26 2.52.16.77-.12 2.36-.97 2.7-1.9.33-.93.33-1.73.23-1.9-.1-.17-.36-.27-.76-.47z"/>
+        </svg>
+        Contacter via WhatsApp
+      </a>
+      {% endif %}
+
+      <button class="btn-form-toggle" onclick="toggleForm()">
+        <i class="fa fa-envelope-o"></i> Envoyer un message
+      </button>
+    </div>
+
+    <!-- Formulaire contact (caché par défaut, s'ouvre au clic) -->
+    <div class="sd-form-wrap" id="contactForm" style="display:none;">
+      <p class="sd-form-title">Laisser un message</p>
+
+      <form method="post" action="{% url 'services:service_detail' service.pk %}">
+        {% csrf_token %}
+
+        <div class="sd-form-group">
+          <label class="sd-form-label">Votre nom *</label>
+          <input class="sd-form-input" type="text" name="name" placeholder="Jean Dupont"
+                 value="{% if request.user.is_authenticated %}{{ request.user.get_full_name }}{% endif %}"
+                 required>
+        </div>
+
+        <div class="sd-form-group">
+          <label class="sd-form-label">Votre téléphone *</label>
+          <input class="sd-form-input" type="tel" name="phone" placeholder="+228 90 00 00 00" required>
+        </div>
+
+        <div class="sd-form-group">
+          <label class="sd-form-label">Votre message *</label>
+          <textarea class="sd-form-textarea" name="message"
+                    placeholder="Décrivez votre besoin, votre projet..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="fa fa-paper-plane"></i> Envoyer le message
+        </button>
+      </form>
+    </div>
+
+    <!-- Infos de contact -->
+    {% if service.phone or service.whatsapp %}
+    <div class="sd-contact-info">
+      {% if service.phone %}
+      <div class="sd-contact-row">
+        <i class="fa fa-phone"></i>
+        <span>{{ service.phone }}</span>
+      </div>
+      {% endif %}
+      {% if service.whatsapp %}
+      <div class="sd-contact-row">
+        <i class="fa fa-whatsapp"></i>
+        <span>+{{ service.whatsapp }}</span>
+      </div>
+      {% endif %}
+      <div class="sd-contact-row">
+        <i class="fa fa-clock-o"></i>
+        <span>Réponse sous 24h</span>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+function toggleForm() {
+  const form = document.getElementById('contactForm');
+  const btn  = document.querySelector('.btn-form-toggle');
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+    form.style.animation = 'fadeUp .4s ease both';
+    btn.innerHTML = '<i class="fa fa-times"></i> Fermer le formulaire';
+  } else {
+    form.style.display = 'none';
+    btn.innerHTML = '<i class="fa fa-envelope-o"></i> Envoyer un message';
+  }
+}
+
+// Ouvre le formulaire automatiquement si erreur
+{% if messages %}
+{% for msg in messages %}
+{% if 'error' in msg.tags %}
+document.getElementById('contactForm').style.display = 'block';
+document.querySelector('.btn-form-toggle').innerHTML = '<i class="fa fa-times"></i> Fermer le formulaire';
+{% endif %}
+{% endfor %}
+{% endif %}
+</script>
+
+{% endblock %}

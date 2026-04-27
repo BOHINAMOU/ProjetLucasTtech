@@ -1,0 +1,459 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ publication.title }} — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ── Breadcrumb ── */
+.pd-breadcrumb {
+  max-width: 820px; margin: 0 auto;
+  padding: 28px clamp(1.5rem,6vw,2rem) 0;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; color: var(--muted);
+}
+.pd-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pd-breadcrumb a:hover { text-decoration: underline; }
+.pd-breadcrumb span { opacity: .4; }
+
+/* ── Article wrapper ── */
+.pd-article {
+  max-width: 820px; margin: 32px auto 0;
+  padding: 0 clamp(1.5rem,6vw,2rem);
+}
+
+/* ── Cover ── */
+.pd-cover {
+  position: relative; border-radius: 20px; overflow: hidden;
+  aspect-ratio: 16/9; background: var(--surf2);
+  box-shadow: 0 24px 80px rgba(0,0,0,.15);
+  margin-bottom: 36px;
+  animation: fadeUp .5s ease both;
+}
+.pd-cover img, .pd-cover video {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.pd-cover::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 6px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+}
+.pd-cover-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 6rem; opacity: .15;
+}
+
+/* ── Header article ── */
+.pd-header { animation: fadeUp .5s .08s ease both; margin-bottom: 32px; }
+
+.pd-cat-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(201,68,10,.1); color: var(--accent);
+  border: 1px solid rgba(201,68,10,.2);
+  font-size: .7rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
+  margin-bottom: 16px; text-decoration: none;
+}
+.pd-cat-badge:hover { background: var(--accent); color: #fff; }
+
+.pd-title {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 900; line-height: 1.15;
+  letter-spacing: -.03em; color: var(--ink);
+  margin-bottom: 20px;
+}
+
+/* Meta bar */
+.pd-meta {
+  display: flex; align-items: center; gap: 0;
+  padding: 16px 0; border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 16px;
+}
+.pd-meta-author {
+  display: flex; align-items: center; gap: 10px; flex: 1;
+}
+.pd-author-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .85rem; font-weight: 800;
+}
+.pd-author-info { display: flex; flex-direction: column; gap: 1px; }
+.pd-author-name { font-size: .85rem; font-weight: 700; color: var(--ink); }
+.pd-author-label { font-size: .7rem; color: var(--muted); }
+
+.pd-meta-stats {
+  display: flex; align-items: center; gap: 14px;
+  font-size: .75rem; color: var(--muted);
+}
+.pd-meta-stats span { display: flex; align-items: center; gap: 5px; }
+
+/* ── Contenu article ── */
+.pd-content {
+  animation: fadeUp .5s .14s ease both;
+  margin: 36px 0;
+}
+
+/* Style du contenu riche (CKEditor output) */
+.pd-content-body {
+  font-size: 1.05rem; line-height: 1.9;
+  color: var(--ink2);
+}
+.pd-content-body p { margin-bottom: 1.4em; }
+.pd-content-body h2 {
+  font-family: var(--serif); font-size: 1.7rem; font-weight: 800;
+  letter-spacing: -.02em; color: var(--ink);
+  margin: 2em 0 .8em; padding-bottom: .4em;
+  border-bottom: 2px solid var(--border);
+}
+.pd-content-body h3 {
+  font-family: var(--serif); font-size: 1.3rem; font-weight: 700;
+  color: var(--ink); margin: 1.6em 0 .6em;
+}
+.pd-content-body h4 {
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--ink); margin: 1.4em 0 .5em;
+}
+.pd-content-body strong { font-weight: 700; color: var(--ink); }
+.pd-content-body em { font-style: italic; }
+.pd-content-body a { color: var(--accent); font-weight: 600; }
+.pd-content-body a:hover { text-decoration: underline; }
+.pd-content-body ul, .pd-content-body ol {
+  padding-left: 1.6em; margin-bottom: 1.4em;
+}
+.pd-content-body li { margin-bottom: .5em; }
+.pd-content-body blockquote {
+  margin: 2em 0; padding: 20px 24px;
+  border-left: 4px solid var(--accent);
+  background: var(--surf2); border-radius: 0 12px 12px 0;
+  font-family: var(--serif); font-size: 1.1rem; font-style: italic;
+  color: var(--ink2);
+}
+.pd-content-body img {
+  width: 100%; border-radius: 12px; margin: 1.5em 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+}
+.pd-content-body video {
+  width: 100%; border-radius: 12px; margin: 1.5em 0;
+}
+.pd-content-body table {
+  width: 100%; border-collapse: collapse; margin: 1.5em 0;
+  font-size: .9rem;
+}
+.pd-content-body table th {
+  background: var(--surf2); padding: 10px 14px;
+  text-align: left; font-weight: 700;
+  border: 1px solid var(--border);
+}
+.pd-content-body table td {
+  padding: 10px 14px; border: 1px solid var(--border);
+}
+.pd-content-body pre {
+  background: var(--ink); color: #e8ecf8;
+  padding: 20px 24px; border-radius: 12px;
+  overflow-x: auto; font-size: .88rem;
+  margin: 1.5em 0; line-height: 1.6;
+}
+
+/* ── Galerie d'images supplémentaires ── */
+.pd-gallery {
+  margin: 40px 0;
+}
+.pd-gallery-title {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 700;
+  color: var(--ink); margin-bottom: 16px; letter-spacing: -.01em;
+}
+.pd-gallery-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.pd-gallery-item {
+  border-radius: 12px; overflow: hidden;
+  aspect-ratio: 4/3; background: var(--surf2);
+  cursor: pointer; transition: transform .3s;
+}
+.pd-gallery-item:hover { transform: scale(1.03); }
+.pd-gallery-item img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.pd-gallery-caption {
+  font-size: .72rem; color: var(--muted); text-align: center; margin-top: 6px;
+}
+
+/* ── Pied article ── */
+.pd-footer {
+  padding: 24px 0; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 14px; margin-bottom: 60px;
+}
+.pd-footer-date { font-size: .78rem; color: var(--muted); }
+.pd-back {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; background: var(--surf);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: .82rem; font-weight: 600; color: var(--ink);
+  text-decoration: none; transition: border-color .2s;
+}
+.pd-back:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ══ ARTICLES SIMILAIRES ══ */
+.pd-related {
+  background: var(--surf2);
+  border-top: 1px solid var(--border);
+  padding: 56px clamp(1.5rem,6vw,5rem) 80px;
+}
+.pd-related-inner { max-width: 1300px; margin: 0 auto; }
+.pd-related-title {
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800; letter-spacing: -.02em; color: var(--ink);
+  margin-bottom: 8px;
+}
+.pd-related-sub {
+  font-size: .85rem; color: var(--muted); margin-bottom: 32px;
+}
+.pd-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* Card related */
+.pd-rel-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  text-decoration: none; color: inherit; display: flex; flex-direction: column;
+  transition: transform .3s, box-shadow .3s, border-color .25s;
+}
+.pd-rel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 48px rgba(0,0,0,.1);
+  border-color: var(--accent);
+}
+.pd-rel-card-media {
+  height: 160px; overflow: hidden; background: var(--surf2); flex-shrink: 0;
+}
+.pd-rel-card-media img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .5s;
+}
+.pd-rel-card:hover .pd-rel-card-media img { transform: scale(1.06); }
+.pd-rel-card-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; opacity: .2;
+}
+.pd-rel-card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.pd-rel-card-cat {
+  font-size: .66rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+}
+.pd-rel-card-title {
+  font-family: var(--serif); font-size: .95rem; font-weight: 700;
+  line-height: 1.3; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+.pd-rel-card-meta {
+  font-size: .72rem; color: var(--muted); margin-top: auto; padding-top: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Lightbox simple */
+.lb-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(26,23,19,.95);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.lb-overlay img {
+  max-width: 90vw; max-height: 90vh;
+  border-radius: 12px; object-fit: contain;
+}
+.lb-close {
+  position: fixed; top: 20px; right: 24px;
+  font-size: 2rem; color: #fff; cursor: pointer;
+  background: none; border: none; line-height: 1;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 600px) {
+  .pd-article { padding: 0 18px; }
+  .pd-related { padding: 40px 18px 60px; }
+  .pd-gallery-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<!-- Breadcrumb -->
+<nav class="pd-breadcrumb">
+  <a href="{% url 'publications:publications' %}">Publications</a>
+  <span>›</span>
+  {% if publication.category %}
+    <a href="{% url 'publications:publications' %}?category={{ publication.category.slug }}">{{ publication.category.name }}</a>
+    <span>›</span>
+  {% endif %}
+  <span>{{ publication.title|truncatechars:40 }}</span>
+</nav>
+
+<article class="pd-article">
+
+  <!-- Couverture -->
+  <div class="pd-cover">
+    {% if publication.cover_video %}
+      <video src="{{ publication.cover_video.url }}" controls poster="{% if publication.cover_image %}{{ publication.cover_image.url }}{% endif %}"></video>
+    {% elif publication.cover_image %}
+      <img src="{{ publication.cover_image.url }}" alt="{{ publication.title }}">
+    {% else %}
+      <div class="pd-cover-placeholder">📰</div>
+    {% endif %}
+  </div>
+
+  <!-- En-tête -->
+  <div class="pd-header">
+    {% if publication.category %}
+    <a href="{% url 'publications:publications' %}?category={{ publication.category.slug }}" class="pd-cat-badge">
+      {% if publication.category.icon %}<i class="fa {{ publication.category.icon }}"></i>{% endif %}
+      {{ publication.category.name }}
+    </a>
+    {% endif %}
+
+    <h1 class="pd-title">{{ publication.title }}</h1>
+
+    <div class="pd-meta">
+      <div class="pd-meta-author">
+        <div class="pd-author-avatar">{{ publication.author.email|slice:":1"|upper }}</div>
+        <div class="pd-author-info">
+          <span class="pd-author-name">{{ publication.author.email }}</span>
+          <span class="pd-author-label">Auteur · LucasTech</span>
+        </div>
+      </div>
+      <div class="pd-meta-stats">
+        <span><i class="fa fa-clock-o"></i> {{ publication.get_reading_time }} min de lecture</span>
+        <span><i class="fa fa-eye"></i> {{ publication.views_count }} vues</span>
+        <span><i class="fa fa-calendar-o"></i> {{ publication.created_at|date:"d F Y" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONTENU RICHE ══ -->
+  <div class="pd-content">
+    <div class="pd-content-body">
+      {{ publication.content|safe }}
+    </div>
+  </div>
+
+  <!-- ══ GALERIE D'IMAGES SUPPLÉMENTAIRES ══ -->
+  {% with images=publication.images.all %}
+  {% if images %}
+  <div class="pd-gallery">
+    <p class="pd-gallery-title">Galerie photos</p>
+    <div class="pd-gallery-grid">
+      {% for img in images %}
+      <div>
+        <div class="pd-gallery-item" onclick="openLightbox('{{ img.image.url }}')">
+          <img src="{{ img.image.url }}" alt="{{ img.caption|default:publication.title }}" loading="lazy">
+        </div>
+        {% if img.caption %}
+        <p class="pd-gallery-caption">{{ img.caption }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Pied article -->
+  <div class="pd-footer">
+    <span class="pd-footer-date">
+      <i class="fa fa-calendar-o"></i>
+      Publié le {{ publication.created_at|date:"d F Y" }}
+      {% if publication.updated_at != publication.created_at %}
+        · Mis à jour le {{ publication.updated_at|date:"d F Y" }}
+      {% endif %}
+    </span>
+    <a href="{% url 'publications:publications' %}" class="pd-back">
+      <i class="fa fa-arrow-left"></i> Retour aux publications
+    </a>
+  </div>
+
+</article>
+
+<!-- ══ ARTICLES SIMILAIRES ══ -->
+{% if related %}
+<div class="pd-related">
+  <div class="pd-related-inner">
+    <h2 class="pd-related-title">Continuer à lire</h2>
+    <p class="pd-related-sub">D'autres articles qui pourraient vous intéresser</p>
+
+    <div class="pd-related-grid">
+      {% for pub in related %}
+      <a href="{% url 'publications:publication_detail' pub.slug %}" class="pd-rel-card">
+        <div class="pd-rel-card-media">
+          {% if pub.cover_image %}
+            <img src="{{ pub.cover_image.url }}" alt="{{ pub.title }}" loading="lazy">
+          {% else %}
+            <div class="pd-rel-card-placeholder">📰</div>
+          {% endif %}
+        </div>
+        <div class="pd-rel-card-body">
+          {% if pub.category %}
+            <span class="pd-rel-card-cat">{{ pub.category.name }}</span>
+          {% endif %}
+          <h3 class="pd-rel-card-title">{{ pub.title }}</h3>
+          <div class="pd-rel-card-meta">
+            <span><i class="fa fa-clock-o"></i> {{ pub.get_reading_time }} min</span>
+            <span><i class="fa fa-calendar-o"></i> {{ pub.created_at|date:"d M Y" }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lightbox" style="display:none;" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">×</button>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lightbox').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+
+{% endblock %}

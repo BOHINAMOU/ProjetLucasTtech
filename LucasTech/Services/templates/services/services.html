@@ -1,0 +1,438 @@
+{% extends 'core/base.html' %}
+{% block title %}Nos Services — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ══ HERO ══ */
+.sv-hero {
+  position: relative; overflow: hidden;
+  padding: 72px clamp(1.5rem,6vw,5rem) 64px;
+  background: var(--ink);
+}
+.sv-hero::after {
+  content: '';
+  position: absolute; right: -100px; top: -60px;
+  width: 480px; height: 480px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,68,10,.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sv-hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1300px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.sv-hero-eyebrow {
+  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--accent);
+  animation: fadeUp .45s ease both;
+}
+.sv-hero-title {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900; line-height: 1.05;
+  letter-spacing: -.03em; color: #f5f2ee;
+  animation: fadeUp .5s .08s ease both;
+}
+.sv-hero-title em { font-style: italic; font-weight: 300; color: var(--accent); }
+.sv-hero-sub {
+  font-size: .97rem; color: rgba(245,242,238,.5);
+  max-width: 500px; line-height: 1.7;
+  animation: fadeUp .5s .14s ease both;
+}
+
+/* Search */
+.sv-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 560px; }
+.sv-search {
+  display: flex; align-items: center;
+  background: rgba(245,242,238,.07);
+  border: 1.5px solid rgba(245,242,238,.15);
+  border-radius: 14px; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.sv-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(201,68,10,.2);
+}
+.sv-search i { padding: 0 18px; color: rgba(245,242,238,.4); font-size: .95rem; flex-shrink: 0; }
+.sv-search input {
+  flex: 1; background: none; border: none; outline: none;
+  padding: 16px 0; color: #f5f2ee;
+  font-family: var(--font); font-size: .95rem;
+}
+.sv-search input::placeholder { color: rgba(245,242,238,.35); }
+.sv-search-btn {
+  padding: 11px 24px; margin: 5px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-weight: 700; font-size: .85rem;
+  cursor: pointer; transition: background .2s;
+  white-space: nowrap;
+}
+.sv-search-btn:hover { background: #b53c09; }
+.sv-search-result {
+  margin-top: 12px; font-size: .83rem; color: rgba(245,242,238,.45);
+}
+.sv-search-result strong { color: var(--accent); }
+
+/* ══ CATÉGORIES (sticky) ══ */
+.sv-cats-outer {
+  background: var(--surf); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.sv-cats-wrap {
+  max-width: 1300px; margin: 0 auto;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+  display: flex; align-items: center;
+}
+.sv-cats-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+  white-space: nowrap; padding-right: 20px;
+  border-right: 1px solid var(--border); margin-right: 16px;
+  flex-shrink: 0;
+}
+.sv-cats-scroll {
+  display: flex; gap: 4px; overflow-x: auto;
+  padding: 14px 0; scrollbar-width: none;
+}
+.sv-cats-scroll::-webkit-scrollbar { display: none; }
+.sv-cat-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 99px; white-space: nowrap;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid transparent; background: transparent;
+  color: var(--muted); text-decoration: none;
+  transition: all .2s; flex-shrink: 0;
+}
+.sv-cat-btn:hover { color: var(--accent); background: rgba(201,68,10,.07); }
+.sv-cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ══ SECTION / GRID ══ */
+.sv-section {
+  max-width: 1300px; margin: 48px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+}
+.sv-section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; gap: 16px;
+}
+.sv-section-title {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700; letter-spacing: -.02em;
+}
+.sv-section-title span {
+  display: block; font-size: .78rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-family: var(--font); margin-bottom: 6px;
+}
+.sv-count {
+  font-size: .8rem; font-weight: 600; color: var(--muted);
+  background: var(--surf); border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 99px; white-space: nowrap;
+}
+
+/* ══ GRID ══ */
+.sv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+/* ── Card ── */
+.sv-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2),
+              box-shadow .35s, border-color .25s;
+  animation: fadeUp .5s ease both;
+}
+.sv-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  border-color: var(--accent);
+}
+
+/* Media */
+.sv-card-media {
+  position: relative; height: 220px; overflow: hidden;
+  background: var(--surf2); flex-shrink: 0;
+}
+.sv-card-media img, .sv-card-media video {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .6s cubic-bezier(.22,.68,0,1.2);
+}
+.sv-card:hover .sv-card-media img,
+.sv-card:hover .sv-card-media video { transform: scale(1.07); }
+.sv-card-media-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem; opacity: .2;
+}
+.sv-card-media::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+  background: linear-gradient(transparent, var(--surf));
+}
+
+/* Badge */
+.sv-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 99px;
+  background: var(--accent); color: #fff;
+  box-shadow: 0 4px 14px rgba(201,68,10,.35);
+}
+
+/* Date */
+.sv-card-date {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+  font-size: .68rem; font-weight: 600;
+  background: rgba(250,249,247,.9); color: var(--muted);
+  padding: 4px 10px; border-radius: 99px;
+  backdrop-filter: blur(4px);
+}
+
+/* Body */
+.sv-card-body {
+  padding: 20px 22px 12px; flex: 1;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.sv-card-cat {
+  font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+}
+.sv-card-title {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 700;
+  line-height: 1.3; letter-spacing: -.01em; color: var(--ink);
+}
+.sv-card-desc {
+  font-size: .82rem; color: var(--muted); line-height: 1.65; flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Admin */
+.sv-card-admin {
+  display: flex; align-items: center; gap: 8px; margin-top: 4px;
+}
+.sv-card-admin-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .65rem; font-weight: 800; flex-shrink: 0;
+}
+.sv-card-admin-name { font-size: .72rem; color: var(--muted); font-weight: 500; }
+
+.sv-card-divider { height: 1px; background: var(--border); margin: 0 22px; }
+
+/* Footer */
+.sv-card-footer {
+  padding: 14px 22px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.sv-card-price {
+  display: flex; flex-direction: column;
+}
+.sv-card-price strong {
+  font-family: var(--serif); font-size: 1.2rem; font-weight: 900;
+  color: var(--ink); letter-spacing: -.03em; line-height: 1;
+}
+.sv-card-price small { font-size: .68rem; color: var(--muted); margin-top: 2px; }
+.sv-card-no-price { font-size: .78rem; color: var(--muted); font-style: italic; }
+
+/* Bouton Voir */
+.sv-btn-voir {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 20px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-family: var(--font); font-size: .85rem; font-weight: 800;
+  cursor: pointer; text-decoration: none;
+  transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 14px rgba(201,68,10,.3);
+  white-space: nowrap;
+}
+.sv-btn-voir:hover {
+  background: #b53c09; transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(201,68,10,.4);
+}
+.sv-btn-voir i { font-size: .8rem; transition: transform .2s; }
+.sv-card:hover .sv-btn-voir i { transform: translateX(3px); }
+
+/* Empty */
+.sv-empty {
+  grid-column: 1 / -1; text-align: center;
+  padding: 100px 0; color: var(--muted);
+}
+.sv-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 20px; opacity: .3; }
+.sv-empty a {
+  display: inline-block; margin-top: 24px; padding: 13px 32px;
+  background: var(--accent); color: #fff; border-radius: 12px;
+  text-decoration: none; font-weight: 700; font-size: .9rem;
+}
+.sv-empty a:hover { background: #b53c09; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .sv-grid { grid-template-columns: 1fr; gap: 16px; }
+  .sv-hero { padding: 48px 18px 40px; }
+  .sv-section { padding: 0 18px 60px; }
+  .sv-cats-label { display: none; }
+}
+</style>
+
+<!-- ══ HERO ══ -->
+<div class="sv-hero">
+  <div class="sv-hero-inner">
+    <p class="sv-hero-eyebrow">LucasTech — Expertise</p>
+    <h1 class="sv-hero-title">
+      Bienvenue,<br>voici nos <em>services.</em>
+    </h1>
+    <p class="sv-hero-sub">
+      Des solutions professionnelles adaptées à vos besoins. Contactez-nous directement pour tout projet.
+    </p>
+
+    <!-- Recherche -->
+    <div class="sv-search-wrap">
+      <form method="get" action="{% url 'services:services' %}">
+        <div class="sv-search">
+          <i class="fa fa-search"></i>
+          <input type="text" name="q" value="{{ search_query }}"
+                 placeholder="Rechercher un service..." autocomplete="off">
+          <button type="submit" class="sv-search-btn">Rechercher</button>
+        </div>
+      </form>
+      {% if search_query %}
+      <p class="sv-search-result">
+        Résultats pour <strong>"{{ search_query }}"</strong> —
+        {{ services|length }} service{% if services|length != 1 %}s{% endif %} trouvé{% if services|length != 1 %}s{% endif %}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ══ CATÉGORIES ══ -->
+<div class="sv-cats-outer">
+  <div class="sv-cats-wrap">
+    <span class="sv-cats-label">Catégories</span>
+    <div class="sv-cats-scroll">
+      <a href="{% url 'services:services' %}"
+         class="sv-cat-btn {% if not active_category %}active{% endif %}">
+        <i class="fa fa-th-large"></i> Tout voir
+      </a>
+      {% for cat in categories %}
+      <a href="{% url 'services:services' %}?category={{ cat.slug }}"
+         class="sv-cat-btn {% if active_category.slug == cat.slug %}active{% endif %}">
+        {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
+        {{ cat.name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ══ GRILLE ══ -->
+<section class="sv-section">
+  <div class="sv-section-header">
+    <h2 class="sv-section-title">
+      <span>
+        {% if active_category %}Catégorie
+        {% elif search_query %}Recherche
+        {% else %}Collection{% endif %}
+      </span>
+      {% if active_category %}{{ active_category.name }}
+      {% elif search_query %}"{{ search_query }}"
+      {% else %}Tous nos services{% endif %}
+    </h2>
+    <span class="sv-count">{{ services|length }} service{% if services|length != 1 %}s{% endif %}</span>
+  </div>
+
+  <div class="sv-grid">
+    {% for service in services %}
+    <article class="sv-card" style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
+
+      <div class="sv-card-media">
+        {% if service.is_featured %}
+          <span class="sv-badge"><i class="fa fa-star"></i> Vedette</span>
+        {% endif %}
+        <span class="sv-card-date">{{ service.created_at|date:"d M Y" }}</span>
+
+        {% if service.video %}
+          <video src="{{ service.video.url }}" autoplay muted loop playsinline></video>
+        {% elif service.image %}
+          <img src="{{ service.image.url }}" alt="{{ service.title }}" loading="lazy">
+        {% else %}
+          <div class="sv-card-media-placeholder">🛠️</div>
+        {% endif %}
+      </div>
+
+      <div class="sv-card-body">
+        {% if service.category %}
+          <span class="sv-card-cat">{{ service.category.name }}</span>
+        {% endif %}
+        <h3 class="sv-card-title">{{ service.title }}</h3>
+        <p class="sv-card-desc">{{ service.description }}</p>
+
+        <div class="sv-card-admin">
+          <div class="sv-card-admin-avatar">{{ service.admin.email|slice:":1"|upper }}</div>
+          <span class="sv-card-admin-name">par {{ service.admin.email }}</span>
+        </div>
+      </div>
+
+      <div class="sv-card-divider"></div>
+
+      <div class="sv-card-footer">
+        {% if service.price_from %}
+        <div class="sv-card-price">
+          <strong>{{ service.price_from }}</strong>
+          <small>FCFA / à partir de</small>
+        </div>
+        {% else %}
+        <span class="sv-card-no-price">Sur devis</span>
+        {% endif %}
+
+        <a href="{% url 'services:service_detail' service.pk %}" class="sv-btn-voir">
+          Voir <i class="fa fa-arrow-right"></i>
+        </a>
+      </div>
+
+    </article>
+
+    {% empty %}
+    <div class="sv-empty">
+      <span class="sv-empty-icon">🔍</span>
+      <p>Aucun service trouvé.</p>
+      <a href="{% url 'services:services' %}">Voir tous les services</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

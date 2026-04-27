@@ -1,0 +1,198 @@
+{% extends 'core/base.html' %}
+{% block title %}Connexion — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --navy:  #05070f; --navy2: #0d1121; --navy3: #1e2640;
+  --accent: #00d4ff; --accent2: #7b5cf5;
+  --green: #00d278;
+  --white: #eef0f8; --muted: #8892b0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); }
+
+.auth-page {
+  min-height: calc(100vh - 76px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 24px; position: relative; overflow: hidden;
+}
+.auth-page::before {
+  content: '';
+  position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(37,99,235,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.auth-card {
+  width: 100%; max-width: 460px;
+  background: var(--navy2);
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: 20px; padding: 48px 44px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.4);
+  position: relative; z-index: 1;
+  animation: fadeUp .5s ease both;
+}
+
+.auth-logo {
+  display: flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 24px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  font-size: 1.4rem; color: #03050c;
+}
+
+.auth-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.8rem; font-weight: 800;
+  text-align: center; margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  text-align: center; font-size: .88rem;
+  color: var(--muted); margin-bottom: 28px;
+}
+
+.auth-msgs { margin-bottom: 18px; }
+.auth-msg {
+  padding: 11px 14px; border-radius: 8px;
+  font-size: .85rem; margin-bottom: 8px;
+}
+.auth-msg.error {
+  background: rgba(239,68,68,.1);
+  border: 1px solid rgba(239,68,68,.3);
+  color: #F87171;
+}
+.auth-msg.success {
+  background: rgba(16,185,129,.1);
+  border: 1px solid rgba(16,185,129,.3);
+  color: #34D399;
+}
+
+.form-errors {
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  font-size: .85rem;
+  color: #F87171;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-field { display: flex; flex-direction: column; gap: 7px; }
+
+.auth-label {
+  font-size: .78rem; font-weight: 500;
+  color: var(--muted); text-transform: uppercase;
+}
+
+.auth-input {
+  padding: 13px 16px;
+  background: var(--navy3);
+  border: 1.5px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  color: var(--white);
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,212,255,.1);
+}
+
+.input-wrap { position: relative; }
+.input-wrap .auth-input { padding-right: 44px; }
+
+.toggle-pwd {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+}
+
+.btn-auth {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 10px;
+  font-weight: 700; cursor: pointer;
+}
+
+/* 🔥 AJOUT IMPORTANT */
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: .85rem;
+}
+
+.auth-links a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+.auth-footer {
+  text-align: center; font-size: .88rem;
+  color: var(--muted); margin-top: 20px;
+}
+.auth-footer a { color: var(--accent); text-decoration: none; }
+</style>
+
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">⚡</div>
+    <h1 class="auth-title">Connexion</h1>
+    <p class="auth-subtitle">Bon retour sur LucasTech</p>
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" type="text" name="username"
+               placeholder="vous@exemple.com" required>
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label">Mot de passe</label>
+        <div class="input-wrap">
+          <input class="auth-input" type="password"
+                 id="password" name="password" required>
+          <button type="button" class="toggle-pwd" onclick="togglePwd()">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-auth">Se connecter</button>
+
+      <!-- 🔥 LIENS IMPORTANTS AJOUTÉS -->
+      <div class="auth-links">
+        <a href="{% url 'users:password_reset' %}">
+          Mot de passe oublié ?
+        </a>
+      </div>
+
+    </form>
+
+    <p class="auth-footer">
+      Pas encore de compte ?
+      <a href="{% url 'users:register' %}">S'inscrire</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+function togglePwd() {
+  const input = document.getElementById("password");
+  input.type = input.type === "password" ? "text" : "password";
+}
+</script>
+
+{% endblock %}

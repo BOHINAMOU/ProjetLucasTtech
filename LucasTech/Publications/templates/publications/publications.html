@@ -1,0 +1,448 @@
+{% extends 'core/base.html' %}
+{% block title %}Actualités — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ══ HERO ══ */
+.pb-hero {
+  position: relative; overflow: hidden;
+  padding: 72px clamp(1.5rem,6vw,5rem) 64px;
+  background: var(--ink);
+}
+.pb-hero::after {
+  content: '';
+  position: absolute; right: -80px; bottom: -80px;
+  width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,68,10,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.pb-hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1300px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.pb-hero-eyebrow {
+  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--accent);
+  animation: fadeUp .45s ease both;
+}
+.pb-hero-title {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900; line-height: 1.05;
+  letter-spacing: -.03em; color: #f5f2ee;
+  animation: fadeUp .5s .08s ease both;
+}
+.pb-hero-title em { font-style: italic; font-weight: 300; color: var(--accent); }
+.pb-hero-sub {
+  font-size: .95rem; color: rgba(245,242,238,.5);
+  max-width: 480px; line-height: 1.7;
+  animation: fadeUp .5s .14s ease both;
+}
+
+/* Search */
+.pb-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 560px; }
+.pb-search {
+  display: flex; align-items: center;
+  background: rgba(245,242,238,.07);
+  border: 1.5px solid rgba(245,242,238,.15);
+  border-radius: 14px; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.pb-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(201,68,10,.2);
+}
+.pb-search i { padding: 0 18px; color: rgba(245,242,238,.4); font-size: .95rem; flex-shrink: 0; }
+.pb-search input {
+  flex: 1; background: none; border: none; outline: none;
+  padding: 16px 0; color: #f5f2ee;
+  font-family: var(--font); font-size: .95rem;
+}
+.pb-search input::placeholder { color: rgba(245,242,238,.35); }
+.pb-search-btn {
+  padding: 11px 24px; margin: 5px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-weight: 700; font-size: .85rem;
+  cursor: pointer; transition: background .2s; white-space: nowrap;
+}
+.pb-search-btn:hover { background: #b53c09; }
+.pb-search-result { margin-top: 12px; font-size: .83rem; color: rgba(245,242,238,.45); }
+.pb-search-result strong { color: var(--accent); }
+
+/* ══ À LA UNE ══ */
+.pb-featured-wrap {
+  max-width: 1300px; margin: 40px auto 0;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+}
+.pb-featured {
+  position: relative; border-radius: 20px; overflow: hidden;
+  height: 420px; background: var(--surf2);
+  box-shadow: 0 16px 60px rgba(0,0,0,.15);
+  animation: fadeUp .5s ease both;
+  text-decoration: none; display: block;
+}
+.pb-featured img, .pb-featured video {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .7s cubic-bezier(.22,.68,0,1.2);
+}
+.pb-featured:hover img, .pb-featured:hover video { transform: scale(1.04); }
+.pb-featured-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(26,23,19,.92) 0%, rgba(26,23,19,.2) 60%, transparent 100%);
+}
+.pb-featured-content {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 32px 36px;
+}
+.pb-featured-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent); color: #fff;
+  font-size: .7rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 99px;
+  margin-bottom: 12px;
+}
+.pb-featured-title {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 900; color: #faf9f7;
+  letter-spacing: -.03em; line-height: 1.2;
+  margin-bottom: 10px;
+}
+.pb-featured-meta {
+  display: flex; align-items: center; gap: 14px;
+  font-size: .78rem; color: rgba(250,249,247,.6);
+}
+.pb-featured-meta span { display: flex; align-items: center; gap: 5px; }
+
+/* ══ CATÉGORIES (sticky) ══ */
+.pb-cats-outer {
+  background: var(--surf); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.pb-cats-wrap {
+  max-width: 1300px; margin: 0 auto;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+  display: flex; align-items: center;
+}
+.pb-cats-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+  white-space: nowrap; padding-right: 20px;
+  border-right: 1px solid var(--border); margin-right: 16px;
+  flex-shrink: 0;
+}
+.pb-cats-scroll {
+  display: flex; gap: 4px; overflow-x: auto;
+  padding: 14px 0; scrollbar-width: none;
+}
+.pb-cats-scroll::-webkit-scrollbar { display: none; }
+.pb-cat-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 99px; white-space: nowrap;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid transparent; background: transparent;
+  color: var(--muted); text-decoration: none;
+  transition: all .2s; flex-shrink: 0;
+}
+.pb-cat-btn:hover { color: var(--accent); background: rgba(201,68,10,.07); }
+.pb-cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ══ SECTION ══ */
+.pb-section {
+  max-width: 1300px; margin: 48px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+}
+.pb-section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; gap: 16px;
+}
+.pb-section-title {
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700; letter-spacing: -.02em;
+}
+.pb-section-title span {
+  display: block; font-size: .78rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-family: var(--font); margin-bottom: 6px;
+}
+.pb-count {
+  font-size: .8rem; font-weight: 600; color: var(--muted);
+  background: var(--surf); border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 99px; white-space: nowrap;
+}
+
+/* ══ GRID MAGAZINE ══ */
+.pb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+/* ── Card ── */
+.pb-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2),
+              box-shadow .35s, border-color .25s;
+  animation: fadeUp .5s ease both;
+}
+.pb-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  border-color: var(--accent);
+}
+
+/* Media */
+.pb-card-media {
+  position: relative; height: 200px; overflow: hidden;
+  background: var(--surf2); flex-shrink: 0;
+}
+.pb-card-media img, .pb-card-media video {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .6s cubic-bezier(.22,.68,0,1.2);
+}
+.pb-card:hover .pb-card-media img,
+.pb-card:hover .pb-card-media video { transform: scale(1.07); }
+.pb-card-media-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; opacity: .2;
+}
+.pb-card-media::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+  background: linear-gradient(transparent, var(--surf));
+}
+
+/* Badge catégorie sur l'image */
+.pb-card-cat-badge {
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  font-size: .66rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 99px;
+  background: var(--accent); color: #fff;
+}
+
+/* Body */
+.pb-card-body {
+  padding: 18px 20px 14px; flex: 1;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.pb-card-title {
+  font-family: var(--serif); font-size: 1.05rem; font-weight: 700;
+  line-height: 1.35; letter-spacing: -.01em; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+.pb-card-excerpt {
+  font-size: .8rem; color: var(--muted); line-height: 1.65; flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Footer card */
+.pb-card-footer {
+  padding: 12px 20px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-top: 1px solid var(--border);
+}
+.pb-card-meta {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .72rem; color: var(--muted);
+}
+.pb-card-meta span { display: flex; align-items: center; gap: 4px; }
+.pb-card-read {
+  font-size: .75rem; font-weight: 700; color: var(--accent);
+  display: flex; align-items: center; gap: 5px;
+  transition: gap .2s;
+}
+.pb-card:hover .pb-card-read { gap: 8px; }
+
+/* Empty */
+.pb-empty {
+  grid-column: 1 / -1; text-align: center;
+  padding: 100px 0; color: var(--muted);
+}
+.pb-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 20px; opacity: .3; }
+.pb-empty a {
+  display: inline-block; margin-top: 20px; padding: 13px 28px;
+  background: var(--accent); color: #fff; border-radius: 12px;
+  text-decoration: none; font-weight: 700;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 640px) {
+  .pb-grid { grid-template-columns: 1fr; gap: 16px; }
+  .pb-hero { padding: 48px 18px 40px; }
+  .pb-section { padding: 0 18px 60px; }
+  .pb-featured { height: 280px; }
+  .pb-featured-content { padding: 20px; }
+  .pb-cats-label { display: none; }
+}
+</style>
+
+<!-- ══ HERO ══ -->
+<div class="pb-hero">
+  <div class="pb-hero-inner">
+    <p class="pb-hero-eyebrow">LucasTech — Actualités</p>
+    <h1 class="pb-hero-title">
+      Restez informé,<br>lisez nos <em>publications.</em>
+    </h1>
+    <p class="pb-hero-sub">
+      Articles, actualités, conseils — tout ce qu'il faut savoir, organisé par thème.
+    </p>
+
+    <div class="pb-search-wrap">
+      <form method="get" action="{% url 'publications:publications' %}">
+        <div class="pb-search">
+          <i class="fa fa-search"></i>
+          <input type="text" name="q" value="{{ search_query }}"
+                 placeholder="Rechercher un article..." autocomplete="off">
+          <button type="submit" class="pb-search-btn">Rechercher</button>
+        </div>
+      </form>
+      {% if search_query %}
+      <p class="pb-search-result">
+        Résultats pour <strong>"{{ search_query }}"</strong> —
+        {{ publications|length }} article{% if publications|length != 1 %}s{% endif %} trouvé{% if publications|length != 1 %}s{% endif %}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ══ À LA UNE ══ -->
+{% if featured and not search_query and not active_category %}
+<div class="pb-featured-wrap">
+  <a href="{% url 'publications:publication_detail' featured.slug %}" class="pb-featured">
+    {% if featured.cover_video %}
+      <video src="{{ featured.cover_video.url }}" autoplay muted loop playsinline></video>
+    {% elif featured.cover_image %}
+      <img src="{{ featured.cover_image.url }}" alt="{{ featured.title }}">
+    {% else %}
+      <div style="width:100%;height:100%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.2;">📰</div>
+    {% endif %}
+    <div class="pb-featured-overlay"></div>
+    <div class="pb-featured-content">
+      <div class="pb-featured-badge"><i class="fa fa-star"></i> À la une</div>
+      <h2 class="pb-featured-title">{{ featured.title }}</h2>
+      <div class="pb-featured-meta">
+        {% if featured.category %}<span><i class="fa fa-tag"></i> {{ featured.category.name }}</span>{% endif %}
+        <span><i class="fa fa-clock-o"></i> {{ featured.get_reading_time }} min de lecture</span>
+        <span><i class="fa fa-calendar-o"></i> {{ featured.created_at|date:"d M Y" }}</span>
+        <span><i class="fa fa-eye"></i> {{ featured.views_count }}</span>
+      </div>
+    </div>
+  </a>
+</div>
+{% endif %}
+
+<!-- ══ CATÉGORIES ══ -->
+<div class="pb-cats-outer">
+  <div class="pb-cats-wrap">
+    <span class="pb-cats-label">Thèmes</span>
+    <div class="pb-cats-scroll">
+      <a href="{% url 'publications:publications' %}"
+         class="pb-cat-btn {% if not active_category %}active{% endif %}">
+        <i class="fa fa-th-large"></i> Tout voir
+      </a>
+      {% for cat in categories %}
+      <a href="{% url 'publications:publications' %}?category={{ cat.slug }}"
+         class="pb-cat-btn {% if active_category.slug == cat.slug %}active{% endif %}">
+        {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
+        {{ cat.name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ══ GRILLE ══ -->
+<section class="pb-section">
+  <div class="pb-section-header">
+    <h2 class="pb-section-title">
+      <span>
+        {% if active_category %}Thème
+        {% elif search_query %}Recherche
+        {% else %}Toutes les publications{% endif %}
+      </span>
+      {% if active_category %}{{ active_category.name }}
+      {% elif search_query %}"{{ search_query }}"
+      {% else %}Articles récents{% endif %}
+    </h2>
+    <span class="pb-count">{{ publications|length }} article{% if publications|length != 1 %}s{% endif %}</span>
+  </div>
+
+  <div class="pb-grid">
+    {% for pub in publications %}
+    <a href="{% url 'publications:publication_detail' pub.slug %}" class="pb-card"
+       style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
+
+      <div class="pb-card-media">
+        {% if pub.category %}
+          <span class="pb-card-cat-badge">{{ pub.category.name }}</span>
+        {% endif %}
+        {% if pub.cover_video %}
+          <video src="{{ pub.cover_video.url }}" autoplay muted loop playsinline></video>
+        {% elif pub.cover_image %}
+          <img src="{{ pub.cover_image.url }}" alt="{{ pub.title }}" loading="lazy">
+        {% else %}
+          <div class="pb-card-media-placeholder">📰</div>
+        {% endif %}
+      </div>
+
+      <div class="pb-card-body">
+        <h3 class="pb-card-title">{{ pub.title }}</h3>
+        <p class="pb-card-excerpt">{{ pub.content|striptags|truncatewords:25 }}</p>
+      </div>
+
+      <div class="pb-card-footer">
+        <div class="pb-card-meta">
+          <span><i class="fa fa-clock-o"></i> {{ pub.get_reading_time }} min</span>
+          <span><i class="fa fa-eye"></i> {{ pub.views_count }}</span>
+          <span><i class="fa fa-calendar-o"></i> {{ pub.created_at|date:"d M Y" }}</span>
+        </div>
+        <span class="pb-card-read">Lire <i class="fa fa-arrow-right"></i></span>
+      </div>
+
+    </a>
+
+    {% empty %}
+    <div class="pb-empty">
+      <span class="pb-empty-icon">📭</span>
+      <p>Aucune publication trouvée.</p>
+      <a href="{% url 'publications:publications' %}">Voir toutes les publications</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

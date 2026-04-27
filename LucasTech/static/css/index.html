@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1 style="color:white;">📊 Dashboard Lucas</h1>
+
+<div style="display:flex; gap:20px;">
+    <div style="background:#1e293b;padding:20px;border-radius:10px;">
+        Utilisateurs : {{ app_list|length }}
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}

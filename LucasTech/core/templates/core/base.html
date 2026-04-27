@@ -1,0 +1,482 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LucasTech – Plateforme technologique : formations, services, boutique et publications.">
+    <title>{% block title %}LucasTech{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'core/css/footer.css' %}">
+<style>
+    /* ... (tout votre CSS existant) ... */
+    :root {
+        --bg:        #05070f;
+        --surface:   #0d1121;
+        --border:    #1e2640;
+        --accent:    #00d4ff;
+        --accent2:   #7b5cf5;
+        --green:     #00d278;
+        --text:      #eef0f8;
+        --muted:     #8892b0;
+        --nav-h:     76px;
+        --radius:    18px;
+        --font-head: 'Syne', sans-serif;
+        --font-body: 'DM Sans', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --fs-xs:   clamp(.85rem,  1.3vw,  1rem);
+        --fs-sm:   clamp(1rem,    1.6vw,  1.15rem);
+        --fs-base: clamp(1.1rem,  1.9vw,  1.28rem);
+        --fs-lg:   clamp(1.28rem, 2.4vw,  1.6rem);
+        --fs-xl:   clamp(1.6rem,  3.2vw,  2rem);
+        --fs-2xl:  clamp(2rem,    4.5vw,  3rem);
+        --fs-hero: clamp(3rem,    7.5vw,  6rem);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+        background: var(--bg); color: var(--text);
+        font-family: var(--font-body); font-size: var(--fs-base);
+        line-height: 1.75; min-height: 100vh;
+        display: flex; flex-direction: column; overflow-x: hidden;
+    }
+    /* ══ NAVBAR ══ */
+    .navbar {
+        position: sticky; top: 0; z-index: 300;
+        height: var(--nav-h);
+        background: rgba(5,7,15,.88);
+        backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        display: flex; align-items: center;
+        padding: 0 clamp(1.2rem, 5vw, 4rem); gap: 2rem;
+    }
+    .navbar__brand { display:flex; align-items:center; gap:.85rem; flex-shrink:0; text-decoration:none; }
+    .navbar__brand img  { height:60px; width:auto; max-width:none; }
+    .navbar__brand span {
+        font-family:var(--font-head); font-weight:800; font-size:var(--fs-xl);
+        background:linear-gradient(90deg,var(--accent),var(--accent2));
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        background-clip:text; letter-spacing:-.02em;
+    }
+    .navbar__links { display:flex; align-items:center; gap:.25rem; list-style:none; margin-left:auto; }
+    .navbar__links a {
+        padding:.55rem 1.1rem; border-radius:10px; font-size:var(--fs-sm); font-weight:500;
+        color:var(--muted); transition:color .2s,background .2s; white-space:nowrap; text-decoration:none;
+    }
+    .navbar__links a:hover, .navbar__links a.active { color:var(--text); background:var(--border); }
+    /* ── AUTH ZONE ── */
+    .nav-auth { display:flex; align-items:center; gap:.6rem; flex-shrink:0; margin-left:1rem; }
+    /* Badge "Connecté" vert */
+    .nav-auth__status {
+        display:inline-flex; align-items:center; gap:.5rem;
+        font-size:var(--fs-xs); font-weight:600; color:var(--green);
+        border:1px solid rgba(0,210,120,.3); background:rgba(0,210,120,.07);
+        padding:.45rem 1.1rem; border-radius:99px;
+        text-decoration:none; transition:background .2s,border-color .2s; white-space:nowrap;
+    }
+    .nav-auth__status:hover { background:rgba(0,210,120,.14); border-color:rgba(0,210,120,.55); }
+    .nav-auth__status .dot {
+        width:7px; height:7px; border-radius:50%; background:var(--green);
+        box-shadow:0 0 6px var(--green); animation:dotPulse 2s ease-in-out infinite; flex-shrink:0;
+    }
+    @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(.75);} }
+    /* Bouton "Déconnexion" rouge */
+    .nav-auth__logout {
+        display:inline-flex; align-items:center; gap:.45rem;
+        font-size:var(--fs-xs); font-weight:600; color:#F87171;
+        border:1px solid rgba(239,68,68,.25); background:rgba(239,68,68,.06);
+        padding:.45rem 1.1rem; border-radius:99px;
+        text-decoration:none; transition:background .2s,border-color .2s; white-space:nowrap;
+        cursor:pointer;
+    }
+    .nav-auth__logout:hover { background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.5); }
+    /* Bouton "Se connecter" */
+    .nav-auth__login {
+        display:inline-flex; align-items:center; gap:.45rem;
+        font-size:var(--fs-xs); font-weight:600; color:var(--muted);
+        border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);
+        padding:.45rem 1.1rem; border-radius:99px;
+        text-decoration:none; transition:color .2s,border-color .2s,background .2s; white-space:nowrap;
+    }
+    .nav-auth__login:hover { color:var(--text); border-color:rgba(255,255,255,.3); background:rgba(255,255,255,.09); }
+    /* Bouton "S'inscrire" */
+    .nav-auth__register {
+        display:inline-flex; align-items:center; gap:.45rem;
+        font-size:var(--fs-xs); font-weight:600; color:#03050c;
+        background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+        padding:.45rem 1.2rem; border-radius:99px;
+        text-decoration:none; transition:box-shadow .2s,transform .2s; white-space:nowrap;
+        box-shadow:0 3px 18px rgba(0,212,255,.25);
+    }
+    .nav-auth__register:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,.45); }
+    /* ── BURGER ── */
+    .navbar__burger {
+        display:none; flex-direction:column; gap:6px; cursor:pointer;
+        margin-left:.8rem; padding:.5rem; background:none; border:none; flex-shrink:0;
+    }
+    .navbar__burger span {
+        display:block; width:26px; height:2.5px; background:var(--text);
+        border-radius:2px; transition:transform .3s,opacity .3s;
+    }
+    .navbar__burger.open span:nth-child(1) { transform:translateY(8.5px) rotate(45deg); }
+    .navbar__burger.open span:nth-child(2) { opacity:0; }
+    .navbar__burger.open span:nth-child(3) { transform:translateY(-8.5px) rotate(-45deg); }
+    /* ── DRAWER MOBILE ── */
+    .navbar__drawer {
+        position:fixed; top:var(--nav-h); left:0; right:0;
+        background:rgba(5,7,15,.97); backdrop-filter:blur(22px);
+        border-bottom:1px solid var(--border);
+        padding:1.8rem clamp(1.2rem,5vw,4rem) 2.5rem;
+        z-index:290; transform:translateY(-12px); opacity:0;
+        pointer-events:none; transition:transform .3s,opacity .3s;
+    }
+    .navbar__drawer.open { transform:translateY(0); opacity:1; pointer-events:all; }
+    .navbar__drawer ul { list-style:none; display:flex; flex-direction:column; gap:.5rem; }
+    .navbar__drawer a {
+        display:block; padding:.9rem 1.1rem; border-radius:12px;
+        font-size:var(--fs-base); font-weight:500; color:var(--muted);
+        transition:color .2s,background .2s; text-decoration:none;
+    }
+    .navbar__drawer a:hover { color:var(--text); background:var(--border); }
+    /* Auth mobile */
+    .drawer-auth {
+        display:flex; flex-direction:column; gap:.5rem;
+        margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);
+    }
+    .drawer-auth a {
+        display:flex !important; align-items:center; gap:.6rem;
+        padding:.9rem 1.1rem !important; border-radius:12px !important;
+        font-size:var(--fs-base) !important; font-weight:500 !important; text-decoration:none;
+    }
+    .drawer-auth__status  { color:var(--green) !important; background:rgba(0,210,120,.08) !important; border:1px solid rgba(0,210,120,.25) !important; }
+    .drawer-auth__logout  { color:#F87171 !important; background:rgba(239,68,68,.06) !important; border:1px solid rgba(239,68,68,.2) !important; }
+    .drawer-auth__login   { color:var(--muted) !important; }
+    .drawer-auth__register { color:#03050c !important; background:linear-gradient(135deg,var(--accent),var(--accent2)) !important; }
+    @media (max-width:860px) { .navbar__links{display:none;} .navbar__burger{display:flex;} .nav-auth{display:none;} }
+    @media (max-width:768px) { .navbar__brand img{height:45px;} .navbar__brand span{font-size:18px;} }
+    /* ══ MAIN ══ */
+    main { flex:1; width:100%; }
+    /* ══ HERO ══ */
+    .hero {
+        position:relative; min-height:calc(100vh - var(--nav-h));
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        text-align:center; padding:clamp(4rem,9vw,8rem) clamp(1.2rem,6vw,5rem);
+        overflow:hidden; background:var(--bg);
+    }
+    .hero-bg { position:absolute; inset:0; overflow:hidden; z-index:0; }
+    .blob { position:absolute; border-radius:50%; filter:blur(100px); opacity:.6; will-change:transform; }
+    .blob-1 { width:clamp(480px,58vw,860px); height:clamp(480px,58vw,860px); background:radial-gradient(circle,#7b5cf5 0%,#3d1fa8 45%,transparent 70%); top:-22%; left:-14%; animation:blobFloat1 20s ease-in-out infinite; }
+    .blob-2 { width:clamp(420px,52vw,780px); height:clamp(420px,52vw,780px); background:radial-gradient(circle,#00d4ff 0%,#005c99 45%,transparent 70%); top:-12%; right:-12%; animation:blobFloat2 24s ease-in-out infinite; }
+    .blob-3 { width:clamp(280px,40vw,600px); height:clamp(280px,40vw,600px); background:radial-gradient(circle,#00d278 0%,#004d2e 50%,transparent 70%); bottom:-14%; left:30%; animation:blobFloat3 28s ease-in-out infinite; }
+    .blob-4 { width:clamp(220px,30vw,460px); height:clamp(220px,30vw,460px); background:radial-gradient(circle,#c084fc 0%,#6d28d9 50%,transparent 70%); bottom:4%; right:-8%; animation:blobFloat4 22s ease-in-out infinite; opacity:.4; }
+    @keyframes blobFloat1 { 0%,100%{transform:translate(0,0) scale(1);} 25%{transform:translate(7%,5%) scale(1.07);} 50%{transform:translate(-5%,9%) scale(.95);} 75%{transform:translate(4%,-6%) scale(1.04);} }
+    @keyframes blobFloat2 { 0%,100%{transform:translate(0,0) scale(1);} 30%{transform:translate(-6%,7%) scale(1.06);} 60%{transform:translate(5%,-5%) scale(.96);} 80%{transform:translate(-4%,4%) scale(1.05);} }
+    @keyframes blobFloat3 { 0%,100%{transform:translate(0,0) scale(1);} 20%{transform:translate(-7%,-6%) scale(1.09);} 55%{transform:translate(6%,5%) scale(.93);} 75%{transform:translate(-3%,7%) scale(1.06);} }
+    @keyframes blobFloat4 { 0%,100%{transform:translate(0,0) scale(1);} 35%{transform:translate(-5%,-5%) scale(1.12);} 70%{transform:translate(7%,4%) scale(.91);} }
+    .hero-grid { position:absolute; inset:0; z-index:1; background-image:radial-gradient(circle,rgba(255,255,255,.13) 1px,transparent 1px); background-size:38px 38px; mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black 10%,transparent 100%); -webkit-mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black 10%,transparent 100%); }
+    .hero-vignette { position:absolute; inset:0; z-index:2; background:radial-gradient(ellipse 90% 85% at 50% 50%,transparent 35%,rgba(5,7,15,.85) 100%); }
+    .hero-rings { position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+    .ring { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,.05); animation:ringPulse 7s ease-in-out infinite; }
+    .ring-1{width:36vw;height:36vw;animation-delay:0s;} .ring-2{width:56vw;height:56vw;animation-delay:1.8s;} .ring-3{width:76vw;height:76vw;animation-delay:3.5s;} .ring-4{width:96vw;height:96vw;animation-delay:5.2s;}
+    @keyframes ringPulse { 0%,100%{opacity:.05;transform:scale(1);} 50%{opacity:.14;transform:scale(1.025);} }
+    #heroParticles { position:absolute; inset:0; z-index:4; width:100%; height:100%; }
+    .hero__content { position:relative; z-index:10; max-width:960px; display:flex; flex-direction:column; align-items:center; gap:2rem; }
+    .hero__tag { display:inline-flex; align-items:center; gap:.55rem; font-size:var(--fs-xs); font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); border:1px solid rgba(0,212,255,.38); background:rgba(0,212,255,.07); backdrop-filter:blur(10px); padding:.55rem 1.4rem; border-radius:99px; animation:fadeUp .8s ease both; }
+    .hero h1 { font-family:var(--font-head); font-size:var(--fs-hero); font-weight:800; line-height:1.06; letter-spacing:-.035em; animation:fadeUp .85s .12s ease both; }
+    .hero h1 span { background:linear-gradient(110deg,var(--accent) 0%,var(--accent2) 65%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .hero__sub { font-family:var(--font-mono); font-size:var(--fs-lg); color:var(--accent); min-height:2em; animation:fadeUp .85s .25s ease both; }
+    .hero__cursor { display:inline-block; width:2.5px; height:1.1em; background:var(--accent); margin-left:3px; vertical-align:middle; animation:blink .7s steps(1) infinite; }
+    @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+    .hero__desc { font-size:var(--fs-base); color:var(--muted); max-width:620px; line-height:1.8; animation:fadeUp .85s .38s ease both; }
+    .hero__stats { display:flex; gap:clamp(2rem,5vw,4rem); flex-wrap:wrap; justify-content:center; padding:1.6rem 2.5rem; border:1px solid rgba(255,255,255,.08); border-radius:20px; background:rgba(255,255,255,.03); backdrop-filter:blur(12px); animation:fadeUp .85s .48s ease both; }
+    .hero__stat { display:flex; flex-direction:column; align-items:center; gap:.25rem; }
+    .hero__stat-num { font-family:var(--font-head); font-size:var(--fs-xl); font-weight:800; background:linear-gradient(140deg,#fff,rgba(255,255,255,.55)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .hero__stat-label { font-size:var(--fs-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
+    .hero__cta { display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; animation:fadeUp .85s .58s ease both; }
+    .hero__scroll { position:absolute; bottom:2.2rem; left:50%; transform:translateX(-50%); z-index:10; display:flex; flex-direction:column; align-items:center; gap:.6rem; color:var(--muted); font-size:var(--fs-xs); letter-spacing:.12em; text-transform:uppercase; opacity:.6; animation:scrollBounce 2.4s ease-in-out infinite; }
+    .hero__scroll-mouse { width:24px; height:38px; border:2px solid rgba(255,255,255,.22); border-radius:12px; position:relative; }
+    .hero__scroll-mouse::after { content:''; position:absolute; top:6px; left:50%; transform:translateX(-50%); width:3.5px; height:8px; background:var(--accent); border-radius:2px; animation:scrollWheel 1.7s ease-in-out infinite; }
+    @keyframes scrollWheel { 0%,100%{top:6px;opacity:1} 65%{top:18px;opacity:0} }
+    @keyframes scrollBounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-8px);} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
+    /* ══ BUTTONS ══ */
+    .btn { display:inline-flex; align-items:center; gap:.6rem; padding:1rem 2.4rem; border-radius:13px; font-size:var(--fs-sm); font-weight:600; font-family:var(--font-body); transition:transform .22s,box-shadow .22s; cursor:pointer; border:none; white-space:nowrap; text-decoration:none; letter-spacing:.01em; }
+    .btn:hover { transform:translateY(-4px); }
+    .btn--primary { background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); color:#03050c; box-shadow:0 5px 32px rgba(0,212,255,.3); }
+    .btn--primary:hover { box-shadow:0 10px 44px rgba(0,212,255,.5); }
+    .btn--outline { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); color:var(--text); backdrop-filter:blur(10px); }
+    .btn--outline:hover { border-color:var(--accent); color:var(--accent); }
+    /* ══ DIVIDER / SECTION / CARDS / FOOTER ══ */
+    .divider { border:none; border-top:1px solid var(--border); margin:0; }
+    .section { padding:clamp(4rem,9vw,8rem) clamp(1.2rem,5vw,4rem); max-width:1280px; margin:0 auto; width:100%; }
+    .section__header { margin-bottom:4rem; text-align:center; }
+    .section__header h2 { font-family:var(--font-head); font-size:var(--fs-2xl); font-weight:700; margin-bottom:1rem; letter-spacing:-.02em; line-height:1.15; }
+    .section__header p { color:var(--muted); font-size:var(--fs-base); max-width:580px; margin:0 auto; line-height:1.8; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:1.8rem; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:2.5rem; display:flex; flex-direction:column; gap:1.3rem; transition:border-color .3s,transform .3s,box-shadow .3s; }
+    .card:hover { border-color:var(--accent); transform:translateY(-6px); box-shadow:0 16px 50px rgba(0,212,255,.12); }
+    .card__icon { width:56px; height:56px; border-radius:15px; background:rgba(0,212,255,.1); display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:var(--accent); transition:transform .25s; }
+    .card:hover .card__icon { transform:scale(1.12) rotate(-6deg); }
+    .card__icon--purple { background:rgba(123,92,245,.1); color:var(--accent2); }
+    .card__icon--green  { background:rgba(0,210,120,.1);  color:var(--green); }
+    .card h3 { font-family:var(--font-head); font-size:var(--fs-lg); font-weight:700; line-height:1.3; }
+    .card p  { font-size:var(--fs-sm); color:var(--muted); flex:1; line-height:1.8; }
+    .card a  { font-size:var(--fs-sm); font-weight:600; color:var(--accent); display:inline-flex; align-items:center; gap:.5rem; transition:gap .22s; text-decoration:none; }
+    .card a:hover { gap:.9rem; }
+    .footer-fallback { background:var(--surface); border-top:1px solid var(--border); padding:1.8rem clamp(1.2rem,5vw,4rem); text-align:center; color:var(--muted); font-size:var(--fs-xs); }
+    .footer-fallback strong { color:var(--accent); }
+    @media (max-width:560px) { .hero__cta{flex-direction:column;align-items:stretch;} .btn{justify-content:center;padding:.9rem 1.8rem;} .hero__scroll,.hero-rings{display:none;} .hero__stats{gap:1.2rem;padding:1.2rem 1.5rem;} .hero__stat-num{font-size:var(--fs-lg);} }
+</style>
+
+{% block extra_head %}{% endblock %}
+
+</head>
+<body>
+<!-- ═══════════ NAVBAR ═══════════ -->
+<header>
+    <nav class="navbar" aria-label="Navigation principale">
+        <a href="{% url 'core:home' %}" class="navbar__brand">
+            <img src="{% static 'images/logo.png' %}" alt="Logo LucasTech">
+            <span>LucasTech</span>
+        </a>
+        <ul class="navbar__links">
+            <li><a href="{% url 'core:home' %}">Accueil</a></li>
+            <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
+            <li><a href="{% url 'formations:formations' %}">Formations</a></li>
+            <li><a href="{% url 'services:services' %}">Services</a></li>
+            <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+        </ul>
+<!-- ── Auth DESKTOP ── -->
+<div class="nav-auth">
+    {% if user.is_authenticated %}
+        <!-- CORRIGÉ : 'Users:profile' devient 'users:profile' (minuscule) -->
+        <a href="{% url 'users:profile' %}" class="nav-auth__status">
+            <span class="dot"></span>
+                Mon profil
+        </a>
+        <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <!-- CORRIGÉ : 'Users:logout' devient 'users:logout' (minuscule) -->
+            <button type="submit" class="nav-auth__logout">
+                <i class="fa fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </form>
+    {% else %}
+        <!-- CORRIGÉ : 'Users:login' devient 'users:login' (minuscule) -->
+        <a href="{% url 'users:login' %}" class="nav-auth__login">
+            <i class="fa fa-sign-in-alt"></i> Se connecter
+        </a>
+        <!-- CORRIGÉ : 'Users:register' devient 'users:register' (minuscule) -->
+        <a href="{% url 'users:register' %}" class="nav-auth__register">
+            <i class="fa fa-user-plus"></i> S'inscrire
+        </a>
+    {% endif %}
+</div>
+
+
+        <button class="navbar__burger" aria-label="Ouvrir le menu" aria-expanded="false" id="burgerBtn">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- ── DRAWER MOBILE ── -->
+    <div class="navbar__drawer" id="navDrawer" aria-hidden="true">
+        <ul>
+            <li><a href="{% url 'core:home' %}">Accueil</a></li>
+            <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
+            <li><a href="{% url 'formations:formations' %}">Formations</a></li>
+            <li><a href="{% url 'services:services' %}">Services</a></li>
+            <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+        </ul>
+        <!-- ── Auth MOBILE ── -->
+<div class="drawer-auth">
+    {% if user.is_authenticated %}
+        <!-- CORRIGÉ : 'Users:profile' devient 'users:profile' (minuscule) -->
+        <a href="{% url 'users:profile' %}" class="drawer-auth__status">
+            <i class="fa fa-circle" style="font-size:.6rem;"></i>
+            Mon profil
+        </a>
+        <form method="post" action="{% url 'users:logout' %}" style="display:inline;width:100%;">
+            {% csrf_token %}
+            <!-- CORRIGÉ : 'Users:logout' devient 'users:logout' (minuscule) -->
+            <button type="submit" class="drawer-auth__logout" style="width:100%;text-align:left;cursor:pointer;background:none;border:none;font-family:inherit;">
+                <i class="fa fa-sign-out-alt"></i> Se déconnecter
+            </button>
+        </form>
+    {% else %}
+        <!-- CORRIGÉ : 'Users:login' devient 'users:login' (minuscule) -->
+        <a href="{% url 'users:login' %}" class="drawer-auth__login">
+            <i class="fa fa-sign-in-alt"></i> Se connecter
+        </a>
+        <!-- CORRIGÉ : 'Users:register' devient 'users:register' (minuscule) -->
+        <a href="{% url 'users:register' %}" class="drawer-auth__register">
+            <i class="fa fa-user-plus"></i> S'inscrire
+        </a>
+    {% endif %}
+</div>
+
+    </div>
+</header>
+
+<!-- ═══════════ CONTENU PRINCIPAL ═══════════ -->
+<main id="main-content">
+{% block content %}
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-bg" aria-hidden="true">
+            <div class="blob blob-1"></div><div class="blob blob-2"></div>
+            <div class="blob blob-3"></div><div class="blob blob-4"></div>
+        </div>
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-vignette" aria-hidden="true"></div>
+        <div class="hero-rings" aria-hidden="true">
+            <div class="ring ring-1"></div><div class="ring ring-2"></div>
+            <div class="ring ring-3"></div><div class="ring ring-4"></div>
+        </div>
+        <canvas id="heroParticles" aria-hidden="true"></canvas>
+        <div class="hero__content">
+            <p class="hero__tag"><i class="fa fa-bolt"></i> Technologie &middot; Formation &middot; Innovation</p>
+            <h1 id="hero-title">Bienvenue chez<br><span>LucasTech</span></h1>
+            <p class="hero__sub" id="heroTypewriter" aria-live="polite"></p>
+            <p class="hero__desc">Découvrez nos formations, services, publications et notre boutique en ligne. Nous vous aidons à atteindre vos objectifs technologiques.</p>
+            <div class="hero__stats" id="stats-container">
+                <div class="hero__stat"><span class="hero__stat-num" id="clients-count">0+</span><span class="hero__stat-label">Clients satisfaits</span></div>
+                <div class="hero__stat"><span class="hero__stat-num" id="projects-count">0+</span><span class="hero__stat-label">Projets Réalisés</span></div>
+                <div class="hero__stat"><span class="hero__stat-num">2 ans</span><span class="hero__stat-label">D'expérience</span></div>
+                <div class="hero__stat"><span class="hero__stat-num">24 / 7</span><span class="hero__stat-label">Support</span></div>
+            </div>
+            <div class="hero__cta">
+                <a href="{% url 'formations:formations' %}" class="btn btn--primary"><i class="fa fa-graduation-cap"></i> Voir les formations</a>
+                <a href="{% url 'services:services' %}" class="btn btn--outline">Nos services <i class="fa fa-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="hero__scroll" aria-hidden="true">
+            <div class="hero__scroll-mouse"></div><span>Défiler</span>
+        </div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" aria-labelledby="about-title">
+        <div class="section__header">
+            <h2 id="about-title">Une plateforme complète au service de la tech</h2>
+            <p>LucasTech est spécialisée dans la création de sites web, d'applications web &amp; mobiles, desktop et de logos professionnels.</p>
+        </div>
+        <div class="cards">
+            <article class="card">
+                <div class="card__icon"><i class="fa fa-code"></i></div>
+                <h3>Services numériques</h3>
+                <p>Création de sites web, applications web &amp; mobiles, applications desktop, logos professionnels, installation de systèmes d'exploitation.</p>
+                <a href="{% url 'services:services' %}">Voir nos services <i class="fa fa-arrow-right"></i></a>
+            </article>
+            <article class="card">
+                <div class="card__icon card__icon--purple"><i class="fa fa-graduation-cap"></i></div>
+                <h3>Formations</h3>
+                <p>Formations sur l'installation des systèmes d'exploitation, la création de comptes monétisables YouTube &amp; Facebook, et bien plus encore.</p>
+                <a href="{% url 'formations:formations' %}">Voir les formations <i class="fa fa-arrow-right"></i></a>
+            </article>
+            <article class="card">
+                <div class="card__icon card__icon--green"><i class="fa fa-store"></i></div>
+                <h3>Boutique en ligne</h3>
+                <p>Découvrez notre boutique avec une large sélection de produits technologiques et accessoires sélectionnés pour vous.</p>
+                <a href="{% url 'shop:shop' %}">Visiter la boutique <i class="fa fa-arrow-right"></i></a>
+            </article>
+        </div>
+    </section>
+{% endblock %}
+</main>
+
+<hr class="divider">
+
+{% block footer %}
+    {% include 'core/footer.html' %}
+    <div class="footer-fallback">
+        <p>&copy; 2026 <strong>LucasTech</strong> — Tous droits réservés.</p>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}{% endblock %}
+
+<script>
+/* ── Burger ── */
+(function(){
+const btn=document.getElementById('burgerBtn'),drawer=document.getElementById('navDrawer');
+if(!btn||!drawer)return;
+btn.addEventListener('click',function(){
+const open=drawer.classList.toggle('open');
+btn.classList.toggle('open',open);
+btn.setAttribute('aria-expanded',String(open));
+drawer.setAttribute('aria-hidden',String(!open));
+    });
+drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+drawer.classList.remove('open'); btn.classList.remove('open');
+btn.setAttribute('aria-expanded','false');
+    }));
+}());
+
+/* ── Lien actif ── */
+(function(){
+const path=window.location.pathname;
+document.querySelectorAll('.navbar__links a,.navbar__drawer a').forEach(a=>{
+if(a.getAttribute('href')===path) a.classList.add('active');
+    });
+}());
+
+/* ── Typewriter ── */
+(function(){
+const el=document.getElementById('heroTypewriter');
+if(!el)return;
+const phrases=['Développeur web et mobile','Montage et creation de vidéos avec IA',"Créateur d'applications",'Formateur en E-commerce','Formateur en technologie','Expert systèmes et réseaux','Expert creation de logos et affiches',"Formateur en installation de systèmes d'exploitation",'Créateur de comptes monétisables YouTube, Facebook et autres plateformes'];
+const cursor=document.createElement('span'); cursor.className='hero__cursor';
+el.insertAdjacentElement('afterend',cursor);
+let pIdx=0,cIdx=0,deleting=false;
+function type(){
+const p=phrases[pIdx];
+if(!deleting){ el.textContent=p.slice(0,++cIdx); if(cIdx===p.length){deleting=true;setTimeout(type,2600);return;} }
+else{ el.textContent=p.slice(0,--cIdx); if(cIdx===0){deleting=false;pIdx=(pIdx+1)%phrases.length;} }
+setTimeout(type,deleting?40:78);
+    }
+setTimeout(type,1000);
+}());
+
+/* ── Particules ── */
+(function(){
+const canvas=document.getElementById('heroParticles'); if(!canvas)return;
+const ctx=canvas.getContext('2d');
+const COLORS=['rgba(0,212,255,','rgba(123,92,245,','rgba(0,210,120,','rgba(192,132,252,'];
+let W,H,particles;
+function rand(a,b){return a+Math.random()*(b-a);}
+function makeParticle(){return{x:rand(0,W),y:rand(0,H),r:rand(1.2,3.5),vx:rand(-.22,.22),vy:rand(-.4,-.08),alpha:rand(.25,.9),fade:rand(.003,.009),color:COLORS[Math.floor(Math.random()*COLORS.length)]};}
+function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;particles=Array.from({length:Math.floor((W*H)/7000)},makeParticle);}
+function draw(){
+ctx.clearRect(0,0,W,H);
+particles.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color+p.alpha+')';ctx.fill();p.x+=p.vx;p.y+=p.vy;p.alpha-=p.fade;if(p.alpha<=0||p.y<-6){particles[i]=makeParticle();particles[i].y=H+6;}});
+requestAnimationFrame(draw);
+    }
+resize(); window.addEventListener('resize',resize); draw();
+}());
+
+/* ── Compteurs animés ── */
+(function(){
+const container=document.getElementById('stats-container'); if(!container)return;
+function animateValue(el,end,duration){
+let start=null;
+function step(ts){if(!start)start=ts;const p=Math.min((ts-start)/duration,1);el.textContent=Math.floor(p*end)+'+';if(p<1)requestAnimationFrame(step);}
+requestAnimationFrame(step);
+    }
+new IntersectionObserver((entries)=>{
+entries.forEach(e=>{
+if(e.isIntersecting){
+const c=document.getElementById('clients-count'),p=document.getElementById('projects-count');
+if(c&&!c.dataset.done){animateValue(c,70,2000);c.dataset.done='1';}
+if(p&&!p.dataset.done){animateValue(p,50,2000);p.dataset.done='1';}
+            }
+        });
+    },{threshold:.5}).observe(container);
+}());
+</script>
+</body>
+</html>

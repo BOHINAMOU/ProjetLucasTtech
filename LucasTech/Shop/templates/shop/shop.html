@@ -1,0 +1,595 @@
+{% extends 'core/base.html' %}
+{% block title %}Boutique — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:       #f0ede8;
+  --bg2:      #e8e4de;
+  --surf:     #faf9f7;
+  --surf2:    #f3f0eb;
+  --border:   rgba(0,0,0,.09);
+  --shadow:   rgba(0,0,0,.07);
+
+  --ink:      #1a1713;
+  --ink2:     #3d3830;
+  --muted:    #8c8479;
+
+  --accent:   #c9440a;     /* terracotta chaud */
+  --accent2:  #e8c84a;     /* or soleil */
+  --green:    #2d7a5f;
+  --rose:     #c93060;
+
+  --r:        16px;
+  --font:     'Plus Jakarta Sans', sans-serif;
+  --serif:    'Fraunces', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ═══════════════════════════════════
+   HERO
+═══════════════════════════════════ */
+.sh-hero {
+  position: relative; overflow: hidden;
+  padding: 72px clamp(1.5rem,6vw,5rem) 64px;
+  background: var(--ink);
+}
+
+/* Grain texture overlay */
+.sh-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4; pointer-events: none;
+}
+
+/* Decorative circle blob */
+.sh-hero::after {
+  content: '';
+  position: absolute; right: -120px; top: -80px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,68,10,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sh-hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1300px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 28px;
+}
+
+.sh-announcement {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(232,200,74,.15); border: 1px solid rgba(232,200,74,.35);
+  border-radius: 99px; padding: 7px 18px;
+  font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--accent2);
+  width: fit-content;
+  animation: fadeUp .5s ease both;
+}
+
+.sh-hero-eyebrow {
+  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--accent);
+  animation: fadeUp .45s .05s ease both;
+}
+
+.sh-hero-title {
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  font-weight: 900; line-height: 1.05;
+  letter-spacing: -.03em; color: #f5f2ee;
+  animation: fadeUp .5s .1s ease both;
+}
+.sh-hero-title em {
+  font-style: italic; font-weight: 300;
+  color: var(--accent);
+}
+
+.sh-hero-sub {
+  font-size: 1rem; color: rgba(245,242,238,.5);
+  max-width: 480px; line-height: 1.7;
+  animation: fadeUp .5s .15s ease both;
+}
+
+/* ── Search ── */
+.sh-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 580px; }
+
+.sh-search {
+  display: flex; align-items: center;
+  background: rgba(245,242,238,.07);
+  border: 1.5px solid rgba(245,242,238,.15);
+  border-radius: 14px; overflow: hidden;
+  backdrop-filter: blur(8px);
+  transition: border-color .2s, box-shadow .2s;
+}
+.sh-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(201,68,10,.2);
+}
+.sh-search i { padding: 0 18px; color: rgba(245,242,238,.4); font-size: .95rem; flex-shrink: 0; }
+.sh-search input {
+  flex: 1; background: none; border: none; outline: none;
+  padding: 16px 0; color: #f5f2ee;
+  font-family: var(--font); font-size: .95rem;
+}
+.sh-search input::placeholder { color: rgba(245,242,238,.35); }
+.sh-search-btn {
+  padding: 11px 24px; margin: 5px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-weight: 700; font-size: .85rem;
+  cursor: pointer; transition: background .2s, transform .15s;
+  white-space: nowrap; letter-spacing: .03em;
+}
+.sh-search-btn:hover { background: #b53c09; transform: translateY(-1px); }
+
+.sh-search-result {
+  margin-top: 12px; font-size: .83rem; color: rgba(245,242,238,.45);
+}
+.sh-search-result strong { color: var(--accent); }
+
+/* ═══════════════════════════════════
+   CATEGORY PILLS
+═══════════════════════════════════ */
+.sh-cats-outer {
+  background: var(--surf);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.sh-cats-wrap {
+  max-width: 1300px; margin: 0 auto;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+  display: flex; align-items: center; gap: 0;
+}
+.sh-cats-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+  white-space: nowrap; padding-right: 20px;
+  border-right: 1px solid var(--border); margin-right: 20px;
+  flex-shrink: 0;
+}
+.sh-cats-scroll {
+  display: flex; gap: 4px; overflow-x: auto;
+  padding: 14px 0; scrollbar-width: none;
+}
+.sh-cats-scroll::-webkit-scrollbar { display: none; }
+
+.sh-cat-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 99px; white-space: nowrap;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid transparent; background: transparent;
+  color: var(--muted); text-decoration: none;
+  transition: all .2s; flex-shrink: 0;
+}
+.sh-cat-btn:hover {
+  color: var(--accent); background: rgba(201,68,10,.07);
+}
+.sh-cat-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.sh-cat-btn i { font-size: .85rem; }
+
+/* ═══════════════════════════════════
+   SECTION / GRID
+═══════════════════════════════════ */
+.sh-section {
+  max-width: 1300px; margin: 48px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+}
+
+.sh-section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; gap: 16px;
+}
+.sh-section-title {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700; letter-spacing: -.02em; color: var(--ink);
+  line-height: 1.15;
+}
+.sh-section-title span {
+  display: block; font-size: .78rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-family: var(--font); margin-bottom: 6px;
+}
+.sh-count {
+  font-size: .8rem; font-weight: 600; color: var(--muted);
+  background: var(--surf2); border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 99px; white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════
+   PRODUCT GRID
+═══════════════════════════════════ */
+.sh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 24px;
+}
+
+/* ─── Card ─── */
+.sh-card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2),
+              box-shadow .35s ease,
+              border-color .25s;
+  animation: fadeUp .5s ease both;
+  position: relative;
+}
+.sh-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.07);
+  border-color: var(--accent);
+}
+
+/* Media */
+.sh-card-media {
+  position: relative; height: 230px; overflow: hidden; flex-shrink: 0;
+  background: var(--surf2);
+}
+.sh-card-media img, .sh-card-media video {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .6s cubic-bezier(.22,.68,0,1.2);
+}
+.sh-card:hover .sh-card-media img,
+.sh-card:hover .sh-card-media video { transform: scale(1.07); }
+
+.sh-card-media-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem; opacity: .25;
+}
+
+/* Gradient overlay */
+.sh-card-media::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+  background: linear-gradient(transparent, var(--surf));
+}
+
+/* Badges */
+.sh-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 99px;
+}
+.sh-badge.available   { background: rgba(45,122,95,.12); color: var(--green); border: 1.5px solid rgba(45,122,95,.3); }
+.sh-badge.unavailable { background: rgba(201,48,96,.1);  color: var(--rose);  border: 1.5px solid rgba(201,48,96,.25); }
+.sh-badge.featured    {
+  background: var(--accent); color: #fff;
+  border: none; box-shadow: 0 4px 14px rgba(201,68,10,.35);
+}
+
+/* Body */
+.sh-card-body {
+  padding: 20px 22px 12px; flex: 1;
+  display: flex; flex-direction: column; gap: 7px;
+}
+
+.sh-card-cat {
+  font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+}
+.sh-card-name {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 700;
+  line-height: 1.3; letter-spacing: -.01em; color: var(--ink);
+}
+.sh-card-desc {
+  font-size: .82rem; color: var(--muted); line-height: 1.65;
+  flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.sh-stars { color: var(--accent); font-size: .78rem; margin-top: 4px; }
+.sh-stars span { color: var(--muted); font-size: .72rem; margin-left: 4px; }
+
+/* Stock pill */
+.sh-stock {
+  margin: 0 22px 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .73rem; font-weight: 600; color: var(--muted);
+  width: fit-content;
+}
+.sh-stock i { font-size: .7rem; }
+.sh-stock.low { color: var(--rose); }
+.sh-stock.ok  { color: var(--green); }
+
+/* Divider */
+.sh-card-divider {
+  height: 1px; background: var(--border); margin: 0 22px;
+}
+
+/* Footer */
+.sh-card-footer {
+  padding: 16px 22px;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+}
+
+.sh-card-price {
+  display: flex; flex-direction: column;
+}
+.sh-card-price strong {
+  font-family: var(--serif);
+  font-size: 1.4rem; font-weight: 900;
+  color: var(--ink); letter-spacing: -.03em; line-height: 1;
+}
+.sh-card-price small {
+  font-size: .7rem; color: var(--muted);
+  font-weight: 500; margin-top: 2px;
+}
+
+/* ★★★ BOUTON VOIR — Très lisible, très visible ★★★ */
+.sh-btn-voir {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px;
+  background: var(--accent);
+  color: #fff;
+  border: none; border-radius: 10px;
+  font-family: var(--font);
+  font-size: .88rem; font-weight: 800;
+  letter-spacing: .02em;
+  cursor: pointer; text-decoration: none;
+  transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 16px rgba(201,68,10,.35);
+  white-space: nowrap;
+}
+.sh-btn-voir:hover {
+  background: #b53c09;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201,68,10,.45);
+}
+.sh-btn-voir i { font-size: .82rem; transition: transform .2s; }
+.sh-card:hover .sh-btn-voir i { transform: translateX(3px); }
+
+/* Bouton panier (discret, secondaire) */
+.sh-btn-cart {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: var(--surf2); border: 1.5px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); cursor: pointer;
+  transition: all .2s; text-decoration: none;
+}
+.sh-btn-cart:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(201,68,10,.06);
+}
+
+/* ─── Empty State ─── */
+.sh-empty {
+  grid-column: 1 / -1; text-align: center;
+  padding: 100px 0; color: var(--muted);
+}
+.sh-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 20px; opacity: .3; }
+.sh-empty p { font-size: 1rem; margin-bottom: 6px; }
+.sh-empty a {
+  display: inline-block; margin-top: 24px; padding: 13px 32px;
+  background: var(--accent); color: #fff;
+  border-radius: 10px; text-decoration: none;
+  font-weight: 700; font-size: .9rem;
+  transition: background .2s;
+}
+.sh-empty a:hover { background: #b53c09; }
+
+/* ─── Animations ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .sh-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sh-hero { padding: 48px 18px 40px; }
+  .sh-section { padding: 0 18px 60px; }
+  .sh-cats-label { display: none; }
+  .sh-btn-voir { padding: 10px 16px; font-size: .8rem; }
+}
+@media (max-width: 420px) {
+  .sh-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+
+<!-- ══ HERO ══ -->
+<div class="sh-hero">
+  <div class="sh-hero-inner">
+
+    {% if announcement %}
+    <div class="sh-announcement">
+      <i class="fa fa-bell"></i>
+      {{ announcement.message }}
+    </div>
+    {% endif %}
+
+    <p class="sh-hero-eyebrow">LucasTech shop</p>
+
+    <h1 class="sh-hero-title">
+      La boutique qui<br><em>fait la différence.</em>
+    </h1>
+
+    <p class="sh-hero-sub">
+      Des produits sélectionnés avec soin, livrés avec excellence.
+      Bienvenue dans votre espace shopping premium.
+    </p>
+
+    <!-- Search -->
+    <div class="sh-search-wrap">
+      <form method="get" action="{% url 'shop:shop' %}">
+        <div class="sh-search">
+          <i class="fa fa-search"></i>
+          <input
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Que recherchez-vous ?"
+            autocomplete="off"
+          >
+          <button type="submit" class="sh-search-btn">
+            Rechercher
+          </button>
+        </div>
+      </form>
+      {% if search_query %}
+      <p class="sh-search-result">
+        Résultats pour <strong>"{{ search_query }}"</strong> —
+        {{ products|length }} produit{% if products|length != 1 %}s{% endif %} trouvé{% if products|length != 1 %}s{% endif %}
+      </p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ CATÉGORIES (sticky) ══ -->
+<div class="sh-cats-outer">
+  <div class="sh-cats-wrap">
+    <span class="sh-cats-label">Catégories</span>
+    <div class="sh-cats-scroll">
+
+      <a href="{% url 'shop:shop' %}"
+         class="sh-cat-btn {% if not active_category %}active{% endif %}">
+        <i class="fa fa-th-large"></i> Tout voir
+      </a>
+
+      {% for cat in categories %}
+      <a href="{% url 'shop:shop' %}?category={{ cat.slug }}"
+         class="sh-cat-btn {% if active_category.slug == cat.slug %}active{% endif %}">
+        {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
+        {{ cat.name }}
+      </a>
+      {% endfor %}
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ GRILLE PRODUITS ══ -->
+<section class="sh-section">
+  <div class="sh-section-header">
+    <h2 class="sh-section-title">
+      <span>
+        {% if active_category %}Catégorie
+        {% elif search_query %}Recherche
+        {% else %}Collection{% endif %}
+      </span>
+      {% if active_category %}
+        {{ active_category.name }}
+      {% elif search_query %}
+        "{{ search_query }}"
+      {% else %}
+        Tous les produits
+      {% endif %}
+    </h2>
+    <span class="sh-count">{{ products|length }} article{% if products|length != 1 %}s{% endif %}</span>
+  </div>
+
+  <div class="sh-grid">
+    {% for product in products %}
+
+    <article class="sh-card" style="animation-delay: {{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
+
+      <!-- Media -->
+      <div class="sh-card-media">
+        {% if product.is_featured %}
+          <span class="sh-badge featured"><i class="fa fa-star"></i> Vedette</span>
+        {% elif product.is_in_stock %}
+          <span class="sh-badge available">Disponible</span>
+        {% else %}
+          <span class="sh-badge unavailable">Rupture</span>
+        {% endif %}
+
+        {% if product.video %}
+          <video src="{{ product.video.url }}" autoplay muted loop playsinline></video>
+        {% elif product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+        {% else %}
+          <div class="sh-card-media-placeholder">🛍️</div>
+        {% endif %}
+      </div>
+
+      <!-- Body -->
+      <div class="sh-card-body">
+        {% if product.category %}
+          <span class="sh-card-cat">{{ product.category.name }}</span>
+        {% endif %}
+        <h3 class="sh-card-name">{{ product.name }}</h3>
+        <p class="sh-card-desc">{{ product.description }}</p>
+
+        {% with reviews=product.reviews.all %}
+        {% if reviews %}
+        <div class="sh-stars">
+          {% for i in "12345" %}
+            <i class="fa fa-star{% if forloop.counter > 3 %}-o{% endif %}"></i>
+          {% endfor %}
+          <span>({{ reviews|length }} avis)</span>
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- Stock -->
+      <div class="sh-stock {% if product.stock == 0 %}low{% elif product.stock >= 5 %}ok{% else %}low{% endif %}">
+        {% if product.stock == 0 %}
+          <i class="fa fa-times-circle"></i> Rupture de stock
+        {% elif product.stock < 5 %}
+          <i class="fa fa-exclamation-triangle"></i> Plus que {{ product.stock }} en stock
+        {% else %}
+          <i class="fa fa-check-circle"></i> En stock ({{ product.stock }})
+        {% endif %}
+      </div>
+
+      <div class="sh-card-divider"></div>
+
+      <!-- Footer -->
+      <div class="sh-card-footer">
+        <div class="sh-card-price">
+          <strong>{{ product.price }}</strong>
+          <small>FCFA</small>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          {% if request.user.is_authenticated %}
+          <form method="post" action="{% url 'shop:add_to_cart' product.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="sh-btn-cart" title="Ajouter au panier">
+              <i class="fa fa-shopping-cart"></i>
+            </button>
+          </form>
+          {% endif %}
+
+          <a href="{% url 'shop:product_detail' product.pk %}" class="sh-btn-voir">
+            Voir <i class="fa fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+    </article>
+
+    {% empty %}
+    <div class="sh-empty">
+      <span class="sh-empty-icon">🔍</span>
+      <p>Aucun produit trouvé.</p>
+      <p style="font-size:.85rem;">Essayez une autre recherche ou une autre catégorie.</p>
+      <a href="{% url 'shop:shop' %}">Voir tous les produits</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

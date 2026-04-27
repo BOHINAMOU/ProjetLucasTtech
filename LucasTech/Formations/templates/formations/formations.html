@@ -1,0 +1,291 @@
+{% extends 'core/base.html' %}
+{% block title %}Formations{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ══ HERO ══ */
+.fl-hero {
+  position: relative; overflow: hidden;
+  padding: 72px clamp(1.5rem,6vw,5rem) 64px;
+  background: var(--ink);
+}
+.fl-hero::after {
+  content: '';
+  position: absolute; left: -80px; top: -60px;
+  width: 440px; height: 440px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,68,10,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.fl-hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1300px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.fl-hero-eyebrow {
+  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--accent);
+  animation: fadeUp .45s ease both;
+}
+.fl-hero-title {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900; line-height: 1.05;
+  letter-spacing: -.03em; color: #f5f2ee;
+  animation: fadeUp .5s .08s ease both;
+}
+.fl-hero-title em { font-style: italic; font-weight: 300; color: var(--accent); }
+.fl-hero-sub {
+  font-size: .95rem; color: rgba(245,242,238,.5);
+  max-width: 480px; line-height: 1.7;
+  animation: fadeUp .5s .14s ease both;
+}
+
+/* ══ SECTION ══ */
+.fl-section {
+  max-width: 1300px; margin: 48px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+}
+.fl-section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; gap: 16px;
+}
+.fl-section-title {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700; letter-spacing: -.02em;
+}
+.fl-section-title span {
+  display: block; font-size: .78rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-family: var(--font); margin-bottom: 6px;
+}
+.fl-count {
+  font-size: .8rem; font-weight: 600; color: var(--muted);
+  background: var(--surf); border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 99px; white-space: nowrap;
+}
+
+/* ══ GRID ══ */
+.fl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+/* ── Card ── */
+.fl-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2),
+              box-shadow .35s, border-color .25s;
+  animation: fadeUp .5s ease both;
+}
+.fl-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  border-color: var(--accent);
+}
+
+/* Image */
+.fl-img {
+  position: relative; height: 210px; overflow: hidden;
+  background: var(--surf2); flex-shrink: 0;
+}
+.fl-img img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .6s cubic-bezier(.22,.68,0,1.2);
+}
+.fl-card:hover .fl-img img { transform: scale(1.07); }
+.fl-img-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem; opacity: .2;
+}
+.fl-img::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+  background: linear-gradient(transparent, var(--surf));
+}
+
+/* Badge */
+.fl-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 99px;
+  background: rgba(45,122,95,.12); color: var(--green);
+  border: 1.5px solid rgba(45,122,95,.3);
+}
+
+/* Body */
+.fl-body {
+  padding: 20px 22px 14px; flex: 1;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.fl-author {
+  display: flex; align-items: center; gap: 8px;
+}
+.fl-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .65rem; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.fl-author-name {
+  font-size: .75rem; color: var(--muted); font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+}
+.fl-author-date {
+  font-size: .7rem; color: var(--muted); flex-shrink: 0;
+}
+
+.fl-title {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 700;
+  line-height: 1.3; letter-spacing: -.01em; color: var(--ink);
+}
+.fl-desc {
+  font-size: .82rem; color: var(--muted); line-height: 1.65; flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Footer carte */
+.fl-card-divider { height: 1px; background: var(--border); margin: 0 22px; }
+.fl-footer {
+  padding: 14px 22px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.fl-price {
+  font-family: var(--serif); font-size: 1.35rem; font-weight: 900;
+  color: var(--ink); letter-spacing: -.03em; line-height: 1;
+}
+.fl-price small {
+  font-family: var(--font); font-size: .7rem; font-weight: 500;
+  color: var(--muted); margin-left: 3px;
+}
+
+/* Bouton Voir */
+.fl-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; background: var(--accent); color: #fff;
+  text-decoration: none; border-radius: 10px;
+  font-size: .85rem; font-weight: 800;
+  transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 14px rgba(201,68,10,.3); white-space: nowrap;
+}
+.fl-btn:hover {
+  background: #b53c09; transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(201,68,10,.4);
+}
+.fl-btn i { font-size: .8rem; transition: transform .2s; }
+.fl-card:hover .fl-btn i { transform: translateX(3px); }
+
+/* Empty */
+.fl-empty {
+  grid-column: 1 / -1; text-align: center;
+  padding: 100px 0; color: var(--muted);
+}
+.fl-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 20px; opacity: .3; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .fl-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .fl-section { padding: 0 18px 60px; }
+  .fl-hero { padding: 48px 18px 40px; }
+}
+@media (max-width: 420px) {
+  .fl-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ══ HERO ══ -->
+<div class="fl-hero">
+  <div class="fl-hero-inner">
+    <p class="fl-hero-eyebrow">LucasTech Formations</p>
+    <h1 class="fl-hero-title">
+      BIENVENUE<br> <em>SUR NOS</em><br>Formations
+    </h1>
+    <p class="fl-hero-sub">
+      Des formations créées par nos experts pour vous accompagner dans votre montée en compétence.
+    </p>
+  </div>
+</div>
+
+<!-- ══ SECTION ══ -->
+<section class="fl-section">
+  <div class="fl-section-header">
+    <h2 class="fl-section-title">
+      <span>Catalogue</span>
+      Toutes les formations
+    </h2>
+    <span class="fl-count">{{ formations|length }} formation{% if formations|length != 1 %}s{% endif %}</span>
+  </div>
+
+  <div class="fl-grid">
+    {% for f in formations %}
+    <article class="fl-card" style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
+
+      <div class="fl-img">
+        {% if f.image %}
+          <img src="{{ f.image.url }}" alt="{{ f.title }}">
+        {% else %}
+          <div class="fl-img-placeholder">🎓</div>
+        {% endif %}
+        <span class="fl-badge"><i class="fa fa-check-circle"></i> Disponible</span>
+      </div>
+
+      <div class="fl-body">
+        <div class="fl-author">
+          <div class="fl-avatar">{{ f.author.email|slice:":1"|upper }}</div>
+          <span class="fl-author-name">{{ f.author.email }}</span>
+          <span class="fl-author-date">{{ f.created_at|date:"d M Y" }}</span>
+        </div>
+        <h2 class="fl-title">{{ f.title }}</h2>
+        <p class="fl-desc">{{ f.description }}</p>
+      </div>
+
+      <div class="fl-card-divider"></div>
+
+      <div class="fl-footer">
+        <div class="fl-price">{{ f.price }}<small>FCFA</small></div>
+        <a href="{% url 'formations:formation_detail' f.pk %}" class="fl-btn">
+          Voir <i class="fa fa-arrow-right"></i>
+        </a>
+      </div>
+
+    </article>
+    {% empty %}
+    <div class="fl-empty">
+      <span class="fl-empty-icon">📭</span>
+      <p>Aucune formation disponible pour le moment.</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

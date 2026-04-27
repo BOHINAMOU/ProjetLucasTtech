@@ -1,0 +1,281 @@
+{% extends 'core/base.html' %}
+{% block title %}Confirmer la commande{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --navy:  #0B1120; --navy2: #111827; --navy3: #1E2A3D;
+  --blue:  #2563EB; --blue2: #3B82F6; --cyan: #06B6D4;
+  --white: #F0F4FF; --muted: #94A3B8;
+  --green: #10B981; --r: 14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); }
+
+.co-wrap {
+  max-width: 860px; margin: 48px auto 80px; padding: 0 24px;
+  display: grid; grid-template-columns: 1fr 340px; gap: 36px; align-items: start;
+}
+
+/* ── HEADER ── */
+.co-header {
+  grid-column: 1 / -1; margin-bottom: 8px;
+  animation: fadeUp .4s ease both;
+}
+.co-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -.02em;
+}
+.co-header p { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+
+/* ── STEPS ── */
+.co-steps {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 8px; animation: fadeUp .4s .05s ease both;
+}
+.co-step {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; font-weight: 500;
+}
+.co-step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700;
+}
+.co-step.done   .co-step-num { background: var(--green); color: #fff; }
+.co-step.active .co-step-num { background: var(--blue);  color: #fff; }
+.co-step.idle   .co-step-num { background: var(--navy3); color: var(--muted); }
+.co-step.done   span { color: var(--green); }
+.co-step.active span { color: var(--white); }
+.co-step.idle   span { color: var(--muted); }
+.co-step-line { flex: 1; height: 1px; background: rgba(255,255,255,.08); margin: 0 12px; }
+
+/* ── LEFT: récap items ── */
+.co-items { animation: fadeUp .4s .1s ease both; }
+.co-items-title {
+  font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.co-item {
+  display: flex; gap: 14px; align-items: center;
+  padding: 14px 16px;
+  background: var(--navy2); border: 1px solid rgba(37,99,235,.12);
+  border-radius: var(--r); margin-bottom: 10px;
+  transition: border-color .2s;
+}
+.co-item:hover { border-color: rgba(37,99,235,.3); }
+
+.co-item-img { width: 60px; height: 44px; border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+.co-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.co-item-img .no-img {
+  width: 100%; height: 100%; background: var(--navy3);
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: .3;
+}
+
+.co-item-info { flex: 1; min-width: 0; }
+.co-item-title {
+  font-size: .92rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.co-item-sub { font-size: .76rem; color: var(--muted); margin-top: 2px; }
+
+.co-item-price {
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+  white-space: nowrap; flex-shrink: 0;
+}
+.co-item-price sub { font-family:'Inter',sans-serif; font-size:.68rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
+
+/* ── RIGHT: summary & confirm ── */
+.co-summary { animation: fadeUp .4s .15s ease both; position: sticky; top: 32px; }
+
+.co-card {
+  background: var(--navy2); border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--r); padding: 28px 24px;
+}
+
+.co-card-title {
+  font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.co-row {
+  display: flex; justify-content: space-between;
+  font-size: .88rem; color: var(--muted); margin-bottom: 10px;
+}
+.co-row.total {
+  padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07);
+  margin-top: 8px; font-size: 1rem; font-weight: 600; color: var(--white);
+}
+.co-total-amount {
+  font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
+}
+.co-total-amount sub { font-family:'Inter',sans-serif; font-size:.75rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
+
+/* Guarantee badges */
+.co-badges {
+  display: flex; flex-direction: column; gap: 9px; margin: 20px 0;
+}
+.co-badge-row {
+  display: flex; align-items: center; gap: 9px;
+  font-size: .8rem; color: var(--muted);
+}
+.co-badge-row svg { color: var(--green); flex-shrink: 0; }
+
+/* Confirm button */
+.btn-confirm {
+  display: block; width: 100%;
+  padding: 15px; background: var(--green); color: #fff; border: none;
+  border-radius: 10px; font-family: 'Inter', sans-serif;
+  font-size: 1rem; font-weight: 600; text-align: center;
+  cursor: pointer; transition: background .2s, transform .15s;
+  letter-spacing: .02em;
+}
+.btn-confirm:hover { background: #059669; transform: translateY(-1px); }
+.btn-confirm:active { transform: translateY(0); }
+
+.co-back {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 14px; font-size: .82rem; color: var(--muted);
+  text-decoration: none; justify-content: center;
+}
+.co-back:hover { color: var(--white); }
+
+/* WhatsApp option */
+.co-whatsapp-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.07); }
+.co-whatsapp-label { font-size: .78rem; color: var(--muted); text-align: center; margin-bottom: 10px; }
+.btn-whatsapp {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 12px;
+  background: rgba(37,211,102,.12); border: 1px solid rgba(37,211,102,.3);
+  color: #4ADE80; border-radius: 10px; text-decoration: none;
+  font-size: .88rem; font-weight: 500; transition: background .2s;
+}
+.btn-whatsapp:hover { background: rgba(37,211,102,.2); }
+.btn-whatsapp svg { flex-shrink: 0; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width: 760px) {
+  .co-wrap { grid-template-columns: 1fr; }
+  .co-summary { position: static; }
+}
+</style>
+
+<div class="co-wrap">
+
+  <!-- Header -->
+  <div class="co-header">
+    <h1>Confirmer la commande</h1>
+    <p>Vérifiez votre sélection avant de valider.</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="co-steps">
+    <div class="co-step done">
+      <div class="co-step-num">✓</div>
+      <span>Panier</span>
+    </div>
+    <div class="co-step-line"></div>
+    <div class="co-step active">
+      <div class="co-step-num">2</div>
+      <span>Confirmation</span>
+    </div>
+    <div class="co-step-line"></div>
+    <div class="co-step idle">
+      <div class="co-step-num">3</div>
+      <span>Terminé</span>
+    </div>
+  </div>
+
+  <!-- ── GAUCHE : liste des formations ── -->
+  <div class="co-items">
+    <div class="co-items-title">Votre sélection ({{ items|length }} formation{% if items|length > 1 %}s{% endif %})</div>
+
+    {% for item in items %}
+    <div class="co-item">
+      <div class="co-item-img">
+        {% if item.formation.image %}
+          <img src="{{ item.formation.image.url }}" alt="{{ item.formation.title }}">
+        {% else %}
+          <div class="no-img">🎓</div>
+        {% endif %}
+      </div>
+      <div class="co-item-info">
+        <div class="co-item-title">{{ item.formation.title }}</div>
+        <div class="co-item-sub">par {{ item.formation.author.email }} &nbsp;·&nbsp; qté : {{ item.quantity }}</div>
+      </div>
+      <div class="co-item-price">{{ item.total_price }}<sub>FCFA</sub></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── DROITE : résumé + bouton ── -->
+  <div class="co-summary">
+    <div class="co-card">
+      <div class="co-card-title">Résumé</div>
+
+      <div class="co-row">
+        <span>Sous-total</span>
+        <span>{{ total }} FCFA</span>
+      </div>
+      <div class="co-row">
+        <span>Frais de service</span>
+        <span>Gratuit</span>
+      </div>
+      <div class="co-row total">
+        <span>Total à payer</span>
+        <div class="co-total-amount">{{ total }}<sub>FCFA</sub></div>
+      </div>
+
+      <!-- Garanties -->
+      <div class="co-badges">
+        <div class="co-badge-row">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Paiement 100% sécurisé
+        </div>
+        <div class="co-badge-row">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Accès immédiat après confirmation
+        </div>
+        <div class="co-badge-row">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+          Formations vérifiées par nos équipes
+        </div>
+      </div>
+
+      <!-- Bouton confirmer -->
+      <form method="post" action="{% url 'formations:checkout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirm">
+          ✓ &nbsp;Valider la commande
+        </button>
+      </form>
+
+      <a href="{% url 'formations:cart' %}" class="co-back">
+        ← Modifier le panier
+      </a>
+
+      <!-- WhatsApp alternatif -->
+      <div class="co-whatsapp-section">
+        <p class="co-whatsapp-label">Ou commander via WhatsApp</p>
+        <a class="btn-whatsapp"
+           href="https://wa.me/22890000000?text=Bonjour%2C%20je%20souhaite%20commander%20{% for item in items %}{{ item.formation.title|urlencode }}{% if not forloop.last %}%2C%20{% endif %}{% endfor %}%20pour%20un%20total%20de%20{{ total }}%20FCFA"
+           target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+            <path fill="currentColor" d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.02 7.8L.5 31.5l7.9-2.01A15.45 15.45 0 0016 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm0 28.3a13.22 13.22 0 01-6.72-1.83l-.48-.29-4.69 1.2 1.22-4.57-.32-.5A13.27 13.27 0 1116 28.8zm7.27-9.94c-.4-.2-2.36-1.16-2.73-1.3-.37-.13-.63-.2-.9.2-.26.4-1.02 1.3-1.26 1.57-.23.26-.46.3-.86.1-.4-.2-1.69-.62-3.21-1.98-1.19-1.06-1.99-2.37-2.22-2.77-.23-.4-.02-.61.17-.81.18-.18.4-.46.6-.7.2-.23.27-.4.4-.66.14-.27.07-.5-.03-.7-.1-.2-.9-2.16-1.23-2.96-.32-.78-.65-.67-.9-.68h-.77c-.27 0-.7.1-1.06.5-.37.4-1.4 1.37-1.4 3.33s1.43 3.86 1.63 4.13c.2.26 2.82 4.3 6.83 6.03.96.41 1.7.66 2.28.84.96.3 1.83.26 2.52.16.77-.12 2.36-.97 2.7-1.9.33-.93.33-1.73.23-1.9-.1-.17-.36-.27-.76-.47z"/>
+          </svg>
+          Commander sur WhatsApp
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

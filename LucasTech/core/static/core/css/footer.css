@@ -1,0 +1,82 @@
+
+
+
+.footer {
+    background: #3759a7;
+    color: white;
+    padding: 40px 20px;
+    font-family: Arial;
+
+    width: 100%;
+    margin: 0;
+    border-radius: 0; /* 🔴 important */
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.footer-box {
+    flex: 1;
+    min-width: 250px;
+}
+
+.footer-box a {
+    color: white;
+    text-decoration: none;
+}
+
+.socials a {
+    font-size: 20px;
+    margin-right: 10px;
+    color: white;
+}
+
+/* 🔥 PARTENAIRES */
+.partners-section {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.partners-section h4 {
+    margin-bottom: 15px;
+    color: #38bdf8;
+}
+
+.partners-track {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.partner-item img {
+    height: 50px;
+    filter: grayscale(100%);
+    transition: 0.3s;
+}
+
+.partner-item img:hover {
+    filter: grayscale(0%);
+    transform: scale(1.1);
+}
+
+/* 🔻 BOTTOM */
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    border-top: 1px solid #334155;
+    padding-top: 15px;
+    font-size: 14px;
+}
+.round-img {
+    width: 90px;
+    height: 190px;
+    border-radius: 15px; /* 👈 au lieu de 50% */
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}

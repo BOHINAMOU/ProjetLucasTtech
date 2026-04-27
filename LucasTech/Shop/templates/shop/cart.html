@@ -1,0 +1,251 @@
+{% extends 'core/base.html' %}
+{% block title %}Mon Panier — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg:    #04060e; --surf:  #090d1a; --surf2: #0f1628;
+  --border:rgba(255,255,255,.07); --shadow:rgba(0,0,0,.4);
+  --accent:#c9440a; --gold:#e8c84a; --green:#00d48a; --rose:#ff4d8d;
+  --text:  #e8ecf8; --muted:#6b7799;
+  --font:  'DM Sans',sans-serif; --head: 'Syne',sans-serif; --r:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);}
+
+.ct-wrap {
+  max-width:1040px;margin:52px auto 96px;
+  padding:0 clamp(1.2rem,5vw,4rem);
+  display:grid;grid-template-columns:1fr 340px;
+  gap:40px;align-items:start;
+}
+
+/* Header */
+.ct-header{
+  grid-column:1/-1;padding-bottom:24px;
+  border-bottom:1px solid var(--border);
+  animation:fadeUp .4s ease both;
+}
+.ct-header-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.ct-header h1{
+  font-family:var(--head);font-size:clamp(1.8rem,4vw,2.6rem);
+  font-weight:800;letter-spacing:-.03em;
+}
+.ct-header p{color:var(--muted);font-size:.88rem;margin-top:6px;}
+.ct-back{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:.82rem;color:var(--accent);font-weight:600;text-decoration:none;
+}
+.ct-back:hover{text-decoration:underline;}
+
+/* Messages */
+.ct-msgs{grid-column:1/-1;}
+.ct-msg{padding:11px 16px;border-radius:10px;font-size:.85rem;margin-bottom:8px;}
+.ct-msg.success{background:rgba(0,212,138,.1);border:1px solid rgba(0,212,138,.3);color:var(--green);}
+.ct-msg.error  {background:rgba(255,77,141,.08);border:1px solid rgba(255,77,141,.25);color:var(--rose);}
+
+/* Items list */
+.ct-items{display:flex;flex-direction:column;gap:14px;}
+
+.ct-item{
+  display:grid;grid-template-columns:86px 1fr auto;
+  gap:18px;align-items:center;
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px;
+  animation:fadeUp .4s ease both;
+  transition:border-color .2s,box-shadow .2s;
+}
+.ct-item:hover{border-color:rgba(201,68,10,.3);box-shadow:0 4px 20px var(--shadow);}
+
+.ct-item-img{
+  width:86px;height:64px;border-radius:10px;overflow:hidden;
+  background:var(--surf2);flex-shrink:0;
+}
+.ct-item-img img{width:100%;height:100%;object-fit:cover;}
+.ct-item-img .no-img{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;opacity:.25;
+}
+
+.ct-item-info{min-width:0;display:flex;flex-direction:column;gap:4px;}
+.ct-item-cat{
+  font-size:.68rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);
+}
+.ct-item-name{
+  font-family:var(--head);font-size:.98rem;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ct-item-qty{font-size:.78rem;color:var(--muted);}
+
+.ct-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0;}
+.ct-item-price{
+  font-family:var(--head);font-size:1.15rem;font-weight:800;
+  letter-spacing:-.02em;
+}
+.ct-item-price small{font-family:var(--font);font-size:.68rem;font-weight:400;color:var(--muted);}
+
+.btn-remove{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:8px;
+  background:rgba(255,77,141,.07);border:1px solid rgba(255,77,141,.2);
+  color:var(--rose);font-size:.75rem;font-weight:600;
+  text-decoration:none;transition:background .2s;white-space:nowrap;
+}
+.btn-remove:hover{background:rgba(255,77,141,.15);}
+
+/* Summary */
+.ct-summary{
+  position:sticky;top:28px;
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:20px;padding:28px 26px;
+  box-shadow:0 8px 40px var(--shadow);
+  animation:fadeUp .4s .15s ease both;
+}
+.ct-summary-title{
+  font-family:var(--head);font-size:1.2rem;font-weight:800;
+  letter-spacing:-.02em;margin-bottom:20px;
+}
+.ct-row{
+  display:flex;justify-content:space-between;
+  font-size:.88rem;color:var(--muted);margin-bottom:11px;
+}
+.ct-row span:last-child{font-weight:600;color:var(--text);}
+.ct-divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.ct-total{display:flex;justify-content:space-between;align-items:flex-end;}
+.ct-total span:first-child{font-size:.88rem;font-weight:600;}
+.ct-total-price{
+  font-family:var(--head);font-size:2rem;font-weight:800;
+  letter-spacing:-.03em;line-height:1;
+}
+.ct-total-price small{font-family:var(--font);font-size:.72rem;font-weight:400;color:var(--muted);}
+
+.btn-checkout{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;margin-top:20px;padding:16px;
+  background:var(--accent);color:#fff;border:none;
+  border-radius:12px;font-family:var(--font);
+  font-size:.97rem;font-weight:700;cursor:pointer;
+  text-decoration:none;letter-spacing:.02em;
+  transition:background .2s,transform .2s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(201,68,10,.35);
+}
+.btn-checkout:hover{background:#b53c09;transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,68,10,.45);}
+
+.ct-trust{margin-top:18px;display:flex;flex-direction:column;gap:9px;}
+.ct-trust-row{display:flex;align-items:center;gap:9px;font-size:.76rem;color:var(--muted);}
+.ct-trust-row i{color:var(--green);width:14px;text-align:center;}
+
+/* Empty */
+.ct-empty{
+  grid-column:1/-1;text-align:center;padding:100px 0;
+  color:var(--muted);animation:fadeUp .4s ease both;
+}
+.ct-empty-icon{font-size:3.5rem;display:block;margin-bottom:20px;opacity:.3;}
+.ct-empty-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:24px;padding:13px 28px;
+  background:var(--accent);color:#fff;border-radius:12px;
+  text-decoration:none;font-weight:700;font-size:.9rem;
+  box-shadow:0 4px 16px rgba(201,68,10,.25);transition:background .2s;
+}
+.ct-empty-btn:hover{background:#b53c09;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:740px){.ct-wrap{grid-template-columns:1fr;}.ct-summary{position:static;}}
+@media(max-width:500px){
+  .ct-item{grid-template-columns:68px 1fr;}
+  .ct-item-right{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;}
+}
+</style>
+
+<div class="ct-wrap">
+
+  <div class="ct-header">
+    <div class="ct-header-row">
+      <div>
+        <h1>🛒 Mon Panier</h1>
+        <p>{{ cart_items|length }} article{% if cart_items|length > 1 %}s{% endif %} dans votre panier</p>
+      </div>
+      <a href="{% url 'shop:shop' %}" class="ct-back">
+        <i class="fa fa-arrow-left"></i> Continuer mes achats
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+  <div class="ct-msgs">
+    {% for msg in messages %}
+      <div class="ct-msg {{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if cart_items %}
+
+  <div class="ct-items">
+    {% for item in cart_items %}
+    <div class="ct-item" style="animation-delay:{{ forloop.counter0 }}0ms">
+      <div class="ct-item-img">
+        {% if item.product.image %}
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+        {% else %}
+          <div class="no-img">🛍️</div>
+        {% endif %}
+      </div>
+      <div class="ct-item-info">
+        {% if item.product.category %}
+          <span class="ct-item-cat">{{ item.product.category.name }}</span>
+        {% endif %}
+        <div class="ct-item-name">{{ item.product.name }}</div>
+        <div class="ct-item-qty">Quantité : {{ item.quantity }}</div>
+      </div>
+      <div class="ct-item-right">
+        <div class="ct-item-price">{{ item.total_price }}<small> FCFA</small></div>
+        <a href="{% url 'shop:cart_remove' item.id %}" class="btn-remove">
+          <i class="fa fa-times"></i> Retirer
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="ct-summary">
+    <p class="ct-summary-title">Résumé</p>
+    <div class="ct-row"><span>Sous-total</span><span>{{ total_price }} FCFA</span></div>
+    <div class="ct-row"><span>Livraison (Lomé)</span><span>1 000 FCFA</span></div>
+    <div class="ct-row"><span>Frais de service</span><span>Gratuit</span></div>
+    <hr class="ct-divider">
+    <div class="ct-total">
+      <span>Total estimé</span>
+      <div class="ct-total-price">{{ total_price }}<small> FCFA</small></div>
+    </div>
+    <a href="{% url 'shop:checkout' %}" class="btn-checkout">
+      <i class="fa fa-lock"></i> Passer la commande
+    </a>
+    <div class="ct-trust">
+      <div class="ct-trust-row"><i class="fa fa-shield"></i> Paiement 100% sécurisé</div>
+      <div class="ct-trust-row"><i class="fa fa-check-circle"></i> Produits vérifiés</div>
+      <div class="ct-trust-row"><i class="fa fa-headphones"></i> Support disponible</div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <div class="ct-empty">
+    <span class="ct-empty-icon">🛒</span>
+    <p>Votre panier est vide.</p>
+    <p style="font-size:.85rem;margin-top:6px;">Explorez notre boutique !</p>
+    <a href="{% url 'shop:shop' %}" class="ct-empty-btn">
+      <i class="fa fa-th-large"></i> Voir la boutique
+    </a>
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}

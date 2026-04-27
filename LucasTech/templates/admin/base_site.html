@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Mon Dashboard{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">🚀 Mon Admin Stylé</h1>
+{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+<script src="{% static 'js/admin.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends 'core/base.html' %}
+{% block title %}Mon Panier{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --navy:  #0B1120; --navy2: #111827; --navy3: #1E2A3D;
+  --blue:  #2563EB; --blue2: #3B82F6; --cyan: #06B6D4;
+  --white: #F0F4FF; --muted: #94A3B8;
+  --red:   #EF4444; --r: 14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); }
+
+.ct-wrap { max-width: 900px; margin: 48px auto 80px; padding: 0 24px; }
+
+.ct-header { margin-bottom: 32px; animation: fadeUp .4s ease both; }
+.ct-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800; letter-spacing: -.02em;
+}
+.ct-header p { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+
+/* Messages */
+.ct-msgs { margin-bottom: 20px; }
+.ct-msg { padding: 11px 16px; border-radius: 8px; font-size: .88rem; margin-bottom: 8px; }
+.ct-msg.success { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.3); color: #34D399; }
+.ct-msg.error   { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #F87171; }
+
+/* Items */
+.ct-items { display: flex; flex-direction: column; gap: 16px; }
+
+.ct-item {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 20px; align-items: center;
+  background: var(--navy2);
+  border: 1px solid rgba(37,99,235,.15);
+  border-radius: var(--r); padding: 18px;
+  animation: fadeUp .4s ease both;
+  transition: border-color .2s;
+}
+.ct-item:hover { border-color: rgba(37,99,235,.35); }
+
+.ct-item-img { width: 90px; height: 64px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.ct-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.ct-item-img .no-img {
+  width: 100%; height: 100%; background: var(--navy3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; opacity: .3;
+}
+
+.ct-item-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ct-item-title {
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ct-item-author { font-size: .78rem; color: var(--muted); }
+.ct-item-qty    { font-size: .82rem; color: #64748B; margin-top: 4px; }
+
+.ct-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.ct-item-price { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
+.ct-item-price sub { font-family: 'Inter', sans-serif; font-size: .7rem; font-weight: 400; color: var(--muted); vertical-align: baseline; }
+
+.btn-remove {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 7px;
+  background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
+  color: #F87171; font-size: .78rem; text-decoration: none;
+  transition: background .2s;
+}
+.btn-remove:hover { background: rgba(239,68,68,.22); }
+
+/* Summary */
+.ct-summary {
+  margin-top: 32px;
+  background: var(--navy2); border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--r); padding: 28px 32px;
+  animation: fadeUp .4s .15s ease both;
+}
+.ct-summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .92rem; color: var(--muted); margin-bottom: 12px;
+}
+.ct-summary-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07);
+  margin-top: 4px;
+}
+.ct-summary-total span:first-child { font-size: 1rem; font-weight: 500; color: var(--white); }
+.ct-total-price {
+  font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800;
+}
+.ct-total-price sub { font-family: 'Inter', sans-serif; font-size: .8rem; font-weight: 400; color: var(--muted); vertical-align: baseline; }
+
+.btn-checkout {
+  display: block; width: 100%; margin-top: 20px;
+  padding: 16px; background: var(--blue); color: #fff; border: none;
+  border-radius: 10px; font-family: 'Inter', sans-serif;
+  font-size: 1rem; font-weight: 500; text-align: center;
+  text-decoration: none; cursor: pointer;
+  transition: background .2s, transform .15s; letter-spacing: .02em;
+}
+.btn-checkout:hover { background: var(--blue2); transform: translateY(-1px); }
+
+.ct-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 14px; font-size: .85rem; color: var(--muted); text-decoration: none;
+}
+.ct-back:hover { color: var(--white); }
+
+/* Empty */
+.ct-empty { text-align: center; padding: 80px 0; color: var(--muted); animation: fadeUp .4s ease both; }
+.ct-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 16px; opacity: .3; }
+.ct-empty p { margin-bottom: 24px; }
+.ct-empty a {
+  display: inline-block; padding: 12px 28px;
+  background: var(--blue); color: #fff; border-radius: 10px;
+  text-decoration: none; font-weight: 500;
+  transition: background .2s;
+}
+.ct-empty a:hover { background: var(--blue2); }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@media (max-width: 600px) {
+  .ct-item { grid-template-columns: 70px 1fr; }
+  .ct-item-right { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; }
+}
+</style>
+
+<div class="ct-wrap">
+  <div class="ct-header">
+    <h1>🧺 Mon Panier</h1>
+    <p>{{ items|length }} formation{% if items|length > 1 %}s{% endif %} dans votre panier</p>
+  </div>
+
+  {% if messages %}
+  <div class="ct-msgs">
+    {% for msg in messages %}
+      <div class="ct-msg {{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if items %}
+    <div class="ct-items">
+      {% for item in items %}
+      <div class="ct-item">
+        <div class="ct-item-img">
+          {% if item.formation.image %}
+            <img src="{{ item.formation.image.url }}" alt="{{ item.formation.title }}">
+          {% else %}
+            <div class="no-img">🎓</div>
+          {% endif %}
+        </div>
+
+        <div class="ct-item-info">
+          <div class="ct-item-title">{{ item.formation.title }}</div>
+          <div class="ct-item-author">par {{ item.formation.author.email }}</div>
+          <div class="ct-item-qty">Quantité : {{ item.quantity }}</div>
+        </div>
+
+        <div class="ct-item-right">
+          <div class="ct-item-price">{{ item.total_price }}<sub>FCFA</sub></div>
+          <a href="{% url 'formations:cart_remove' item.id %}" class="btn-remove">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            Retirer
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="ct-summary">
+      <div class="ct-summary-row">
+        <span>Sous-total ({{ items|length }} article{% if items|length > 1 %}s{% endif %})</span>
+        <span>{{ total }} FCFA</span>
+      </div>
+      <div class="ct-summary-row">
+        <span>Frais de service</span>
+        <span>Gratuit</span>
+      </div>
+      <div class="ct-summary-total">
+        <span>Total</span>
+        <div class="ct-total-price">{{ total }}<sub>FCFA</sub></div>
+      </div>
+      <a href="{% url 'formations:checkout' %}" class="btn-checkout">
+        ✓ &nbsp;Passer la commande
+      </a>
+    </div>
+
+    <a href="{% url 'formations:formations' %}" class="ct-back">
+      ← Continuer mes achats
+    </a>
+
+  {% else %}
+    <div class="ct-empty">
+      <span class="ct-empty-icon">🛒</span>
+      <p>Votre panier est vide.</p>
+      <a href="{% url 'formations:formations' %}">Découvrir les formations</a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

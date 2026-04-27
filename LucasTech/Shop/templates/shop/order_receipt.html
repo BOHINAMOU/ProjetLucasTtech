@@ -1,0 +1,332 @@
+{% extends 'core/base.html' %}
+{% block title %}Reçu #{{ order.receipt_number }} — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --rose:    #c93060;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.rc-wrap {
+  max-width: 680px; margin: 56px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,2rem);
+}
+
+/* ── Succès banner ── */
+.rc-success {
+  text-align: center; margin-bottom: 40px;
+  animation: fadeUp .5s ease both;
+}
+.rc-check {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(45,122,95,.12); border: 2px solid rgba(45,122,95,.3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px; font-size: 2rem;
+}
+.rc-success h1 {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 900; letter-spacing: -.03em; color: var(--ink);
+  margin-bottom: 8px;
+}
+.rc-success p { font-size: .92rem; color: var(--muted); line-height: 1.6; }
+
+/* ── Card reçu ── */
+.rc-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 8px 40px var(--shadow);
+  animation: fadeUp .5s .1s ease both;
+}
+
+/* Header de la carte */
+.rc-card-header {
+  background: var(--ink); padding: 28px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.rc-card-header-left { display: flex; flex-direction: column; gap: 4px; }
+.rc-logo {
+  font-family: var(--serif); font-size: 1.3rem; font-weight: 900;
+  color: #faf9f7; letter-spacing: -.02em;
+}
+.rc-logo span { color: var(--accent); }
+.rc-receipt-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: rgba(250,249,247,.4);
+}
+.rc-receipt-num {
+  font-family: var(--serif); font-size: 1.5rem; font-weight: 900;
+  color: var(--accent2); letter-spacing: -.02em;
+}
+
+/* Body */
+.rc-card-body { padding: 32px; }
+
+/* Infos commande */
+.rc-meta {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 28px;
+  padding-bottom: 24px; border-bottom: 1px solid var(--border);
+}
+.rc-meta-item { display: flex; flex-direction: column; gap: 3px; }
+.rc-meta-label {
+  font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.rc-meta-value { font-size: .9rem; font-weight: 600; color: var(--ink); }
+
+/* Statut badge */
+.rc-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700;
+}
+.rc-status.pending  { background: rgba(232,200,74,.15); color: #8a6f00; border: 1px solid rgba(232,200,74,.4); }
+.rc-status.paid     { background: rgba(45,122,95,.12); color: var(--green); border: 1px solid rgba(45,122,95,.3); }
+.rc-status.shipped  { background: rgba(37,99,235,.1); color: #1d4ed8; border: 1px solid rgba(37,99,235,.25); }
+.rc-status.delivered{ background: rgba(45,122,95,.12); color: var(--green); border: 1px solid rgba(45,122,95,.3); }
+.rc-status.cancelled{ background: rgba(201,48,96,.08); color: var(--rose); border: 1px solid rgba(201,48,96,.2); }
+
+/* Articles */
+.rc-items-title {
+  font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.rc-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.rc-item:last-child { border-bottom: none; }
+
+.rc-item-img {
+  width: 52px; height: 40px; border-radius: 8px;
+  overflow: hidden; background: var(--surf2); flex-shrink: 0;
+}
+.rc-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.rc-item-img .no-img {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; opacity: .25;
+}
+
+.rc-item-info { flex: 1; min-width: 0; }
+.rc-item-name {
+  font-size: .9rem; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rc-item-qty { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+.rc-item-price {
+  font-family: var(--serif); font-size: 1rem; font-weight: 900;
+  color: var(--ink); white-space: nowrap; flex-shrink: 0;
+}
+.rc-item-price small {
+  font-family: var(--font); font-size: .65rem;
+  font-weight: 500; color: var(--muted);
+}
+
+/* Totaux */
+.rc-totals {
+  margin-top: 20px; padding-top: 20px;
+  border-top: 2px solid var(--border);
+}
+.rc-total-row {
+  display: flex; justify-content: space-between;
+  font-size: .88rem; color: var(--muted); margin-bottom: 8px;
+}
+.rc-total-row span:last-child { font-weight: 600; color: var(--ink2); }
+.rc-total-final {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+}
+.rc-total-final span:first-child { font-size: .9rem; font-weight: 700; color: var(--ink); }
+.rc-grand-total {
+  font-family: var(--serif); font-size: 2rem; font-weight: 900;
+  color: var(--accent); letter-spacing: -.03em; line-height: 1;
+}
+.rc-grand-total small {
+  font-family: var(--font); font-size: .72rem;
+  font-weight: 500; color: var(--muted);
+}
+
+/* Footer carte */
+.rc-card-footer {
+  background: var(--surf2); border-top: 1px solid var(--border);
+  padding: 20px 32px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.rc-footer-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .75rem; color: var(--muted); font-weight: 500;
+}
+.rc-footer-badge i { color: var(--green); }
+.rc-footer-sep { color: var(--border); }
+
+/* Actions */
+.rc-actions {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-top: 28px; animation: fadeUp .5s .2s ease both;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; background: var(--accent); color: #fff;
+  border-radius: 12px; text-decoration: none;
+  font-weight: 700; font-size: .88rem;
+  transition: background .2s, transform .2s;
+  box-shadow: 0 4px 14px rgba(201,68,10,.25);
+}
+.btn-primary:hover { background: #b53c09; transform: translateY(-1px); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; background: var(--surf); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 12px;
+  text-decoration: none; font-weight: 600; font-size: .88rem;
+  transition: border-color .2s, transform .2s;
+}
+.btn-secondary:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+  .rc-meta { grid-template-columns: 1fr; }
+  .rc-card-header { flex-direction: column; }
+  .rc-card-body { padding: 20px; }
+  .rc-actions { flex-direction: column; }
+  .btn-primary, .btn-secondary { justify-content: center; }
+}
+</style>
+
+<div class="rc-wrap">
+
+  <!-- Succès -->
+  <div class="rc-success">
+    <div class="rc-check">✓</div>
+    <h1>Commande confirmée !</h1>
+    <p>Merci pour votre achat. Votre reçu est disponible ci-dessous.<br>Conservez le numéro de commande pour tout suivi.</p>
+  </div>
+
+  <!-- Reçu -->
+  <div class="rc-card">
+
+    <!-- En-tête -->
+    <div class="rc-card-header">
+      <div class="rc-card-header-left">
+        <span class="rc-logo">Lucas<span>Tech</span></span>
+        <span class="rc-receipt-label">Reçu de commande</span>
+      </div>
+      <div class="rc-receipt-num">#{{ order.receipt_number }}</div>
+    </div>
+
+    <!-- Corps -->
+    <div class="rc-card-body">
+
+      <!-- Méta infos -->
+      <div class="rc-meta">
+        <div class="rc-meta-item">
+          <span class="rc-meta-label">Date</span>
+          <span class="rc-meta-value">{{ order.created_at|date:"d F Y" }}</span>
+        </div>
+        <div class="rc-meta-item">
+          <span class="rc-meta-label">Statut</span>
+          <span class="rc-status {{ order.status }}">
+            {% if order.status == 'pending' %}⏳ En attente
+            {% elif order.status == 'paid' %}✓ Payé
+            {% elif order.status == 'shipped' %}📦 Expédié
+            {% elif order.status == 'delivered' %}✓ Livré
+            {% elif order.status == 'cancelled' %}✗ Annulé
+            {% endif %}
+          </span>
+        </div>
+        <div class="rc-meta-item">
+          <span class="rc-meta-label">Client</span>
+          <span class="rc-meta-value">{{ order.user.email }}</span>
+        </div>
+        <div class="rc-meta-item">
+          <span class="rc-meta-label">Paiement</span>
+          <span class="rc-meta-value">{{ order.get_payment_method_display }}</span>
+        </div>
+      </div>
+
+      <!-- Articles -->
+      <p class="rc-items-title">Articles commandés</p>
+
+      {% for item in order.items.all %}
+      <div class="rc-item">
+        <div class="rc-item-img">
+          {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% else %}
+            <div class="no-img">🛍️</div>
+          {% endif %}
+        </div>
+        <div class="rc-item-info">
+          <div class="rc-item-name">{{ item.product.name }}</div>
+          <div class="rc-item-qty">{{ item.quantity }} × {{ item.price }} FCFA</div>
+        </div>
+        <div class="rc-item-price">{{ item.total_price }}<small> FCFA</small></div>
+      </div>
+      {% endfor %}
+
+      <!-- Totaux -->
+      <div class="rc-totals">
+        <div class="rc-total-row">
+          <span>Sous-total</span>
+          <span>{{ order.total_price }} FCFA</span>
+        </div>
+        <div class="rc-total-row">
+          <span>Frais de service</span>
+          <span>Gratuit</span>
+        </div>
+        <div class="rc-total-final">
+          <span>Total payé</span>
+          <div class="rc-grand-total">{{ order.total_price }}<small> FCFA</small></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pied de carte -->
+    <div class="rc-card-footer">
+      <span class="rc-footer-badge"><i class="fa fa-shield"></i> Paiement sécurisé</span>
+      <span class="rc-footer-sep">·</span>
+      <span class="rc-footer-badge"><i class="fa fa-check-circle"></i> Commande enregistrée</span>
+      <span class="rc-footer-sep">·</span>
+      <span class="rc-footer-badge"><i class="fa fa-clock-o"></i> {{ order.created_at|date:"H:i" }}</span>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="rc-actions">
+    <a href="{% url 'shop:shop' %}" class="btn-primary">
+      <i class="fa fa-th-large"></i> Continuer mes achats
+    </a>
+    <a href="{% url 'shop:order_history' %}" class="btn-secondary">
+      <i class="fa fa-list"></i> Mes commandes
+    </a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Paiement Réussi — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+    .success-container {
+        max-width: 700px;
+        margin: 6rem auto;
+        padding: 3rem;
+        background: var(--surface);
+        border: 1px solid var(--green);
+        border-radius: var(--radius);
+        text-align: center;
+        box-shadow: 0 0 30px rgba(0, 212, 138, 0.2);
+    }
+    .success-icon {
+        font-size: 4rem;
+        color: var(--green);
+        margin-bottom: 1.5rem;
+        animation: icon-pop 0.5s ease-out;
+    }
+    .success-container h1 {
+        font-family: var(--font-head);
+        font-size: var(--fs-2xl);
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+    .success-container p {
+        color: var(--muted);
+        font-size: var(--fs-base);
+        line-height: 1.7;
+        margin-bottom: 2rem;
+    }
+    .success-actions .btn {
+        margin: 0 0.5rem;
+    }
+
+    @keyframes icon-pop {
+        0% { transform: scale(0.5); opacity: 0; }
+        80% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+
+<div class="section">
+    <div class="success-container">
+        <div class="success-icon">
+            <i class="fa fa-check-circle"></i>
+        </div>
+        <h1>Paiement Réussi !</h1>
+        <p>
+            Merci pour votre commande, {{ user.email }} !<br>
+            Votre commande <strong>#{{ order.id }}</strong> a été confirmée. Vous recevrez bientôt un email avec les détails de votre achat.
+        </p>
+        <div class="success-actions">
+            <a href="{% url 'shop:shop' %}" class="btn btn--outline">
+                Continuer mes achats
+            </a>
+            <a href="{% url 'users:profile' %}" class="btn btn--primary">
+                Voir mes commandes
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,552 @@
+{% load static %}
+
+<footer class="lt-footer">
+
+    <!-- Fond décoratif animé -->
+    <div class="lt-footer__bg" aria-hidden="true">
+        <div class="lt-footer__glow lt-footer__glow--left"></div>
+        <div class="lt-footer__glow lt-footer__glow--right"></div>
+        <canvas class="lt-footer__particles" id="footerCanvas"></canvas>
+    </div>
+
+    <!-- ── CONTENU PRINCIPAL ── -->
+    <div class="lt-footer__top">
+
+        <!-- Colonne 1 : Marque -->
+        <div class="lt-footer__col lt-footer__brand" data-animate="fade-up" data-delay="0">
+            <div class="lt-footer__logo">
+                <img src="{% static 'images/logo.png' %}" alt="Logo LucasTech">
+                <span class="lt-footer__logo-name">LucasTech</span>
+            </div>
+            <p class="lt-footer__tagline">
+                Plateforme de formations et services technologiques modernes, applications &amp; boutique en ligne.
+            </p>
+            <div class="lt-footer__badge">
+                <span class="lt-footer__pulse"></span>
+                Services disponibles 24h/24
+            </div>
+        </div>
+
+        <!-- Colonne 2 : Liens rapides -->
+        <div class="lt-footer__col" data-animate="fade-up" data-delay="100">
+            <h3 class="lt-footer__col-title">Navigation</h3>
+            <ul class="lt-footer__links">
+                <li><a href="/">Accueil</a></li>
+                <li><a href="{% url 'formations:formations' %}">Formations</a></li>
+                <li><a href="{% url 'services:services' %}">Services</a></li>
+                <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
+                <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+            </ul>
+        </div>
+
+        <!-- Colonne 3 : Contact -->
+        <div class="lt-footer__col" data-animate="fade-up" data-delay="200">
+            <h3 class="lt-footer__col-title">Contact</h3>
+            <ul class="lt-footer__contact">
+                <li>
+                    <span class="lt-footer__contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <a href="mailto:lucastech@gmail.com">lucastech@gmail.com</a>
+                </li>
+                <li>
+                    <span class="lt-footer__contact-icon lt-footer__contact-icon--wa">
+                        <i class="fab fa-whatsapp"></i>
+                    </span>
+                    <a href="https://wa.me/22890000000" target="_blank" rel="noopener">+228 90 00 00 00</a>
+                </li>
+                <li>
+                    <span class="lt-footer__contact-icon lt-footer__contact-icon--wa">
+                        <i class="fab fa-whatsapp"></i>
+                    </span>
+                    <a href="https://wa.me/22891000000" target="_blank" rel="noopener">+228 91 00 00 00</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Colonne 4 : Réseaux sociaux -->
+        <div class="lt-footer__col" data-animate="fade-up" data-delay="300">
+            <h3 class="lt-footer__col-title">Suivez-nous</h3>
+            <div class="lt-footer__socials">
+                <a href="https://facebook.com"  target="_blank" rel="noopener" aria-label="Facebook"  class="lt-social lt-social--fb"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram" class="lt-social lt-social--ig"><i class="fab fa-instagram"></i></a>
+                <a href="https://tiktok.com"    target="_blank" rel="noopener" aria-label="TikTok"    class="lt-social lt-social--tt"><i class="fab fa-tiktok"></i></a>
+                <a href="https://youtube.com"   target="_blank" rel="noopener" aria-label="YouTube"   class="lt-social lt-social--yt"><i class="fab fa-youtube"></i></a>
+                <a href="https://t.me"          target="_blank" rel="noopener" aria-label="Telegram"  class="lt-social lt-social--tg"><i class="fab fa-telegram"></i></a>
+                <a href="https://twitter.com"   target="_blank" rel="noopener" aria-label="X/Twitter" class="lt-social lt-social--tw"><i class="fab fa-x-twitter"></i></a>
+            </div>
+            <p class="lt-footer__social-text">Rejoignez notre communauté et restez informés de nos dernières actualités.</p>
+        </div>
+
+    </div>
+
+    <!-- ── PARTENAIRES ── -->
+    {% if partners %}
+    <div class="lt-footer__partners" data-animate="fade-up" data-delay="400">
+        <h4 class="lt-footer__partners-title">Nos partenaires</h4>
+        <div class="lt-footer__ticker-wrap" aria-label="Défilement des partenaires">
+            <div class="lt-footer__ticker" id="partnerTicker">
+                {% for partner in partners %}
+                <div class="lt-footer__partner-item">
+                    <a href="{{ partner.website.url }}" target="_blank" rel="noopener" aria-label="{{ partner.name }}">
+                        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
+                    </a>
+                </div>
+                {% endfor %}
+                <!-- Duplication pour boucle infinie -->
+                {% for partner in partners %}
+                <div class="lt-footer__partner-item" aria-hidden="true">
+                    <a href="{{ partner.website.url }}" target="_blank" rel="noopener" aria-label="{{ partner.name }}">
+                        <img src="{{ partner.logo.url }}" alt="">
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── SÉPARATEUR ── -->
+    <div class="lt-footer__divider" aria-hidden="true"></div>
+
+    <!-- ── BAS DE PAGE ── -->
+    <div class="lt-footer__bottom">
+        <p class="lt-footer__copy">
+            &copy; <span id="footerYear"></span> <strong>LucasTech</strong> — Tous droits réservés.
+        </p>
+        <div class="lt-footer__bottom-links">
+            <a href="#">Confidentialité</a>
+            <span aria-hidden="true">·</span>
+            <a href="#">Conditions d'utilisation</a>
+        </div>
+        <p class="lt-footer__made">
+            LucasTech <span class="lt-footer__heart">♥</span> au Togo 
+        </p>
+    </div>
+
+</footer>
+
+
+<style>
+/* ═══════════════════════════════════════════
+   LucasTech Footer — CSS
+═══════════════════════════════════════════ */
+
+.lt-footer {
+    --ft-bg:      #080a10;
+    --ft-surface: #0f1219;
+    --ft-border:  #1c2030;
+    --ft-accent:  #00d4ff;
+    --ft-accent2: #7b5cf5;
+    --ft-green:   #00d278;
+    --ft-text:    #dde1ef;
+    --ft-muted:   #636a85;
+    --ft-font-h:  'Syne', sans-serif;
+    --ft-font-b:  'DM Sans', sans-serif;
+
+    position: relative;
+    overflow: hidden;
+    background: var(--ft-bg);
+    color: var(--ft-text);
+    font-family: var(--ft-font-b);
+    padding-top: 1px;
+}
+
+/* ── Fond décoratif ── */
+.lt-footer__bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+
+.lt-footer__glow {
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: .35;
+}
+.lt-footer__glow--left  { top: -80px; left: -100px;  background: var(--ft-accent2); }
+.lt-footer__glow--right { bottom: -60px; right: -80px; background: var(--ft-accent);  }
+
+.lt-footer__particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .4;
+}
+
+/* ── Contenu au-dessus du fond ── */
+.lt-footer__top,
+.lt-footer__partners,
+.lt-footer__divider,
+.lt-footer__bottom { position: relative; z-index: 1; }
+
+/* ── Top grid ── */
+.lt-footer__top {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem clamp(1rem, 5vw, 3rem) 3rem;
+}
+
+@media (max-width: 960px) {
+    .lt-footer__top { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+    .lt-footer__top { grid-template-columns: 1fr; gap: 2.5rem; }
+}
+
+/* ── Titres colonnes ── */
+.lt-footer__col-title {
+    font-family: var(--ft-font-h);
+    font-size: 1rem; /* était .75rem */
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ft-muted);
+    margin-bottom: 1.4rem;
+    position: relative;
+    padding-left: 1rem;
+}
+.lt-footer__col-title::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 14px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--ft-accent), var(--ft-accent2));
+}
+
+/* ── Marque ── */
+.lt-footer__logo {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.1rem;
+}
+.lt-footer__logo img {
+    height: 42px;
+    width: auto;
+}
+.lt-footer__logo-name {
+    font-family: var(--ft-font-h);
+    font-size: 1.9rem; /* était 1.4rem */
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--ft-accent), var(--ft-accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.lt-footer__tagline {
+    font-size: 1.05rem; /* était .9rem */
+    color: var(--ft-muted);
+    line-height: 1.7;
+    margin-bottom: 1.4rem;
+}
+.lt-footer__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: 1rem; /* était .8rem */
+    color: var(--ft-green);
+    border: 1px solid rgba(0, 210, 120, .25);
+    background: rgba(0, 210, 120, .06);
+    padding: .4rem .9rem;
+    border-radius: 99px;
+}
+.lt-footer__pulse {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ft-green);
+    animation: pulse-ring 1.8s ease-out infinite;
+}
+@keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(0,210,120,.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(0,210,120,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,210,120,0); }
+}
+
+/* ── Liens nav ── */
+.lt-footer__links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+}
+.lt-footer__links a {
+    font-size: 1.05rem; /* était .9rem */
+    color: var(--ft-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    transition: color .2s, gap .2s;
+}
+.lt-footer__links a::before {
+    content: '›';
+    color: var(--ft-accent);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity .2s, transform .2s;
+}
+.lt-footer__links a:hover { color: var(--ft-text); gap: .8rem; }
+.lt-footer__links a:hover::before { opacity: 1; transform: translateX(0); }
+
+/* ── Contact ── */
+.lt-footer__contact {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.lt-footer__contact li {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+}
+.lt-footer__contact-icon {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(0,212,255,.1);
+    color: var(--ft-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem; /* était .95rem */
+    transition: transform .2s, background .2s;
+}
+.lt-footer__contact-icon--wa { background: rgba(37,211,102,.12); color: #25d366; }
+.lt-footer__contact li:hover .lt-footer__contact-icon { transform: scale(1.12); background: rgba(0,212,255,.2); }
+.lt-footer__contact a {
+    font-size: 1.05rem; /* était .88rem */
+    color: var(--ft-muted);
+    transition: color .2s;
+}
+.lt-footer__contact a:hover { color: var(--ft-text); }
+
+/* ── Réseaux sociaux ── */
+.lt-footer__socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    margin-bottom: 1rem;
+}
+.lt-social {
+    width: 44px; height: 44px; /* était 40px */
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem; /* était 1rem */
+    border: 1px solid var(--ft-border);
+    color: var(--ft-muted);
+    background: var(--ft-surface);
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1), color .2s, border-color .2s, box-shadow .2s;
+}
+.lt-social:hover { transform: translateY(-5px) scale(1.08); }
+.lt-social--fb:hover { color: #1877f2; border-color: #1877f2; box-shadow: 0 4px 20px rgba(24,119,242,.25); }
+.lt-social--ig:hover { color: #e1306c; border-color: #e1306c; box-shadow: 0 4px 20px rgba(225,48,108,.25); }
+.lt-social--tt:hover { color: #69c9d0; border-color: #69c9d0; box-shadow: 0 4px 20px rgba(105,201,208,.25); }
+.lt-social--yt:hover { color: #ff0000; border-color: #ff0000; box-shadow: 0 4px 20px rgba(255,0,0,.25); }
+.lt-social--tg:hover { color: #0088cc; border-color: #0088cc; box-shadow: 0 4px 20px rgba(0,136,204,.25); }
+.lt-social--tw:hover { color: #e7e7e7; border-color: #e7e7e7; box-shadow: 0 4px 20px rgba(231,231,231,.15); }
+
+.lt-footer__social-text {
+    font-size: 1rem; /* était .8rem */
+    color: var(--ft-muted);
+    line-height: 1.6;
+}
+
+/* ── Partenaires ticker ── */
+.lt-footer__partners {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 clamp(1rem, 5vw, 3rem) 2.5rem;
+}
+.lt-footer__partners-title {
+    font-family: var(--ft-font-h);
+    font-size: 1rem; /* était .7rem */
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ft-muted);
+    text-align: center;
+    margin-bottom: 1.2rem;
+}
+.lt-footer__ticker-wrap {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.lt-footer__ticker {
+    display: flex;
+    gap: 2.5rem;
+    width: max-content;
+    animation: ticker-scroll 28s linear infinite;
+}
+.lt-footer__ticker:hover { animation-play-state: paused; }
+@keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.lt-footer__partner-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    /* ✅ SUPPRIMÉ : filter: grayscale(1) brightness(.7); — les logos gardent leurs vraies couleurs */
+    transition: transform .3s;
+}
+.lt-footer__partner-item:hover {
+    /* ✅ SUPPRIMÉ : filter: grayscale(0) brightness(1); — plus nécessaire */
+    transform: scale(1.06);
+}
+.lt-footer__partner-item img {
+    height: 100%;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+}
+
+/* ── Séparateur ── */
+.lt-footer__divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ft-border) 20%, var(--ft-border) 80%, transparent);
+    margin: 0 clamp(1rem, 5vw, 3rem);
+}
+
+/* ── Bottom ── */
+.lt-footer__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem clamp(1rem, 5vw, 3rem) 2rem;
+    font-size: 1rem; /* était .82rem */
+    color: var(--ft-muted);
+}
+.lt-footer__copy strong { color: var(--ft-accent); }
+.lt-footer__bottom-links {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+}
+.lt-footer__bottom-links a {
+    color: var(--ft-muted);
+    transition: color .2s;
+}
+.lt-footer__bottom-links a:hover { color: var(--ft-text); }
+.lt-footer__made { display: flex; align-items: center; gap: .4rem; }
+.lt-footer__heart {
+    color: #ff4e6a;
+    display: inline-block;
+    animation: heartbeat 1.4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15%       { transform: scale(1.3); }
+    30%       { transform: scale(1); }
+    45%       { transform: scale(1.15); }
+    60%       { transform: scale(1); }
+}
+
+/* ── Animation d'entrée ── */
+[data-animate] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .65s ease, transform .65s ease;
+}
+[data-animate].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+</style>
+
+
+<script>
+(function () {
+    /* ── 1. Année automatique ── */
+    const yrEl = document.getElementById('footerYear');
+    if (yrEl) yrEl.textContent = new Date().getFullYear();
+
+    /* ── 2. Intersection Observer pour les animations d'entrée ── */
+    const animEls = document.querySelectorAll('[data-animate]');
+    if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const delay = parseInt(entry.target.dataset.delay || 0);
+                    setTimeout(() => entry.target.classList.add('is-visible'), delay);
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+        animEls.forEach(el => obs.observe(el));
+    } else {
+        animEls.forEach(el => el.classList.add('is-visible'));
+    }
+
+    /* ── 3. Particules canvas ── */
+    const canvas = document.getElementById('footerCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let W, H, particles = [];
+
+    function resize() {
+        W = canvas.width  = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+    }
+
+    function randomBetween(a, b) { return a + Math.random() * (b - a); }
+
+    function createParticle() {
+        return {
+            x: randomBetween(0, W),
+            y: randomBetween(0, H),
+            r: randomBetween(1, 2.5),
+            dx: randomBetween(-.25, .25),
+            dy: randomBetween(-.4, -.1),
+            alpha: randomBetween(.3, .9),
+            fade: randomBetween(.003, .008),
+            color: Math.random() > .5 ? '0,212,255' : '123,92,245',
+        };
+    }
+
+    function initParticles() {
+        const count = Math.floor((W * H) / 9000);
+        particles = Array.from({ length: count }, createParticle);
+    }
+
+    function drawParticles() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach((p, i) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+            ctx.fill();
+
+            p.x  += p.dx;
+            p.y  += p.dy;
+            p.alpha -= p.fade;
+
+            if (p.alpha <= 0 || p.y < -5) {
+                particles[i] = createParticle();
+                particles[i].y = H + 5;
+            }
+        });
+        requestAnimationFrame(drawParticles);
+    }
+
+    resize();
+    initParticles();
+    drawParticles();
+    window.addEventListener('resize', () => { resize(); initParticles(); });
+})();
+</script>

@@ -1,0 +1,399 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ product.name }} — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap');
+
+:root {
+  --bg:      #f0ede8;
+  --bg2:     #e8e4de;
+  --surf:    #faf9f7;
+  --surf2:   #f3f0eb;
+  --border:  rgba(0,0,0,.09);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1a1713;
+  --ink2:    #3d3830;
+  --muted:   #8c8479;
+  --accent:  #c9440a;
+  --accent2: #e8c84a;
+  --green:   #2d7a5f;
+  --rose:    #c93060;
+  --r:       16px;
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --serif:   'Fraunces', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ── Breadcrumb ── */
+.pd-breadcrumb {
+  max-width: 1200px; margin: 0 auto;
+  padding: 28px clamp(1.5rem,6vw,5rem) 0;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; color: var(--muted);
+}
+.pd-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pd-breadcrumb a:hover { text-decoration: underline; }
+.pd-breadcrumb span { opacity: .4; }
+
+/* ── Layout ── */
+.pd-wrapper {
+  max-width: 1200px; margin: 32px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 56px; align-items: start;
+}
+
+/* ── Media ── */
+.pd-media {
+  position: relative;
+  border-radius: 20px; overflow: hidden;
+  aspect-ratio: 4/3;
+  background: var(--surf2);
+  box-shadow: 0 24px 80px rgba(0,0,0,.13);
+  animation: fadeUp .5s ease both;
+}
+.pd-media img, .pd-media video {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .7s cubic-bezier(.22,.68,0,1.2);
+}
+.pd-media:hover img, .pd-media:hover video { transform: scale(1.04); }
+.pd-media-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem; opacity: .2;
+}
+
+/* Accent bar bottom */
+.pd-media::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+}
+
+/* Badge */
+.pd-badge {
+  position: absolute; top: 16px; left: 16px; z-index: 2;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
+}
+.pd-badge.featured    { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(201,68,10,.35); }
+.pd-badge.available   { background: rgba(45,122,95,.12); color: var(--green); border: 1.5px solid rgba(45,122,95,.3); }
+.pd-badge.unavailable { background: rgba(201,48,96,.1); color: var(--rose); border: 1.5px solid rgba(201,48,96,.25); }
+
+/* ── Info column ── */
+.pd-info { animation: fadeUp .5s .1s ease both; }
+
+.pd-cat {
+  font-size: .7rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.pd-title {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -.03em; color: var(--ink);
+  margin-bottom: 16px;
+}
+
+/* Stars */
+.pd-stars { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+.pd-stars-icons { color: var(--accent); font-size: .9rem; }
+.pd-stars-count { font-size: .8rem; color: var(--muted); }
+
+.pd-desc {
+  font-size: .97rem; color: var(--muted);
+  line-height: 1.8; margin-bottom: 28px;
+}
+
+/* Stock indicator */
+.pd-stock {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .78rem; font-weight: 600;
+  padding: 6px 14px; border-radius: 99px;
+  margin-bottom: 28px;
+}
+.pd-stock.ok  { background: rgba(45,122,95,.1); color: var(--green); border: 1px solid rgba(45,122,95,.25); }
+.pd-stock.low { background: rgba(201,48,96,.08); color: var(--rose); border: 1px solid rgba(201,48,96,.2); }
+.pd-stock.out { background: rgba(140,132,121,.1); color: var(--muted); border: 1px solid var(--border); }
+
+/* ── Buy card ── */
+.pd-buy-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 20px; padding: 32px;
+  box-shadow: 0 8px 32px var(--shadow);
+  position: sticky; top: 28px;
+  animation: fadeUp .5s .08s ease both;
+}
+
+.pd-price-block { margin-bottom: 24px; }
+.pd-price {
+  font-family: var(--serif);
+  font-size: 3rem; font-weight: 900;
+  letter-spacing: -.04em; color: var(--ink); line-height: 1;
+}
+.pd-price small {
+  font-family: var(--font);
+  font-size: .85rem; font-weight: 500;
+  color: var(--muted); margin-left: 4px;
+}
+.pd-price-note {
+  font-size: .75rem; color: var(--muted); margin-top: 6px;
+}
+
+.pd-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+/* Qty row */
+.pd-qty-row {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+}
+.pd-qty-label {
+  font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); flex: 1;
+}
+.pd-qty-input {
+  width: 72px; padding: 10px 12px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surf2); font-family: var(--font);
+  font-size: 1rem; font-weight: 600; color: var(--ink);
+  text-align: center; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.pd-qty-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201,68,10,.1);
+}
+
+/* Primary CTA */
+.btn-add-cart {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 16px;
+  background: var(--ink); color: #faf9f7;
+  border: none; border-radius: 12px;
+  font-family: var(--font); font-size: .97rem; font-weight: 700;
+  cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s;
+  letter-spacing: .01em; margin-bottom: 10px;
+}
+.btn-add-cart:hover {
+  background: var(--ink2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(26,23,19,.2);
+}
+
+/* WhatsApp */
+.btn-whatsapp {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 13px;
+  background: rgba(37,211,102,.1); border: 1.5px solid rgba(37,211,102,.3);
+  color: #1a8040; border-radius: 12px; text-decoration: none;
+  font-family: var(--font); font-size: .88rem; font-weight: 600;
+  transition: background .2s, transform .15s;
+}
+.btn-whatsapp:hover {
+  background: rgba(37,211,102,.2); transform: translateY(-1px);
+}
+
+.pd-cart-link {
+  display: block; text-align: center; margin-top: 14px;
+  font-size: .82rem; color: var(--accent); text-decoration: none; font-weight: 600;
+}
+.pd-cart-link:hover { text-decoration: underline; }
+
+/* Trust badges */
+.pd-trust { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+.pd-trust-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .78rem; color: var(--muted);
+}
+.pd-trust-row i { color: var(--green); font-size: .85rem; width: 16px; text-align: center; }
+
+/* Messages */
+.pd-msgs { margin-bottom: 20px; }
+.pd-msg {
+  padding: 11px 16px; border-radius: 10px;
+  font-size: .85rem; margin-bottom: 8px;
+}
+.pd-msg.success { background: rgba(45,122,95,.1); border: 1px solid rgba(45,122,95,.3); color: var(--green); }
+.pd-msg.error   { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: var(--rose); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 860px) {
+  .pd-wrapper { grid-template-columns: 1fr; gap: 32px; }
+  .pd-buy-card { position: static; }
+}
+@media (max-width: 600px) {
+  .pd-wrapper { padding: 0 18px; margin-bottom: 60px; }
+}
+</style>
+
+<!-- Breadcrumb -->
+<nav class="pd-breadcrumb">
+  <a href="{% url 'shop:shop' %}">Boutique</a>
+  <span>›</span>
+  {% if product.category %}
+    <a href="{% url 'shop:shop' %}?category={{ product.category.slug }}">{{ product.category.name }}</a>
+    <span>›</span>
+  {% endif %}
+  <span>{{ product.name }}</span>
+</nav>
+
+<div class="pd-wrapper">
+
+  <!-- ══ MÉDIA ══ -->
+  <div>
+    <div class="pd-media">
+      {% if product.is_featured %}
+        <span class="pd-badge featured"><i class="fa fa-star"></i> Vedette</span>
+      {% elif product.is_in_stock %}
+        <span class="pd-badge available">Disponible</span>
+      {% else %}
+        <span class="pd-badge unavailable">Rupture</span>
+      {% endif %}
+
+      {% if product.video %}
+        <video src="{{ product.video.url }}" autoplay muted loop playsinline></video>
+      {% elif product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+      {% else %}
+        <div class="pd-media-placeholder">🛍️</div>
+      {% endif %}
+    </div>
+
+    <!-- Avis -->
+    {% with reviews=product.reviews.all %}
+    {% if reviews %}
+    <div style="margin-top:20px;padding:20px 24px;background:var(--surf);border:1px solid var(--border);border-radius:16px;">
+      <p style="font-family:var(--serif);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--ink);">
+        Avis clients <span style="font-family:var(--font);font-size:.8rem;font-weight:500;color:var(--muted);">({{ reviews|length }})</span>
+      </p>
+      {% for review in reviews %}
+      <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:700;">
+            {{ review.user.email|slice:":1"|upper }}
+          </div>
+          <span style="font-size:.82rem;font-weight:600;color:var(--ink);">{{ review.user.email }}</span>
+          <span style="color:var(--accent);font-size:.78rem;margin-left:auto;">★★★★★</span>
+        </div>
+        {% if review.comment %}
+        <p style="font-size:.82rem;color:var(--muted);line-height:1.6;padding-left:38px;">{{ review.comment }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- ══ INFOS + CARTE ACHAT ══ -->
+  <div>
+    {% if messages %}
+    <div class="pd-msgs">
+      {% for msg in messages %}
+        <div class="pd-msg {{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="pd-info">
+      {% if product.category %}
+        <p class="pd-cat">{{ product.category.name }}</p>
+      {% endif %}
+
+      <h1 class="pd-title">{{ product.name }}</h1>
+
+      {% with reviews=product.reviews.all %}
+      {% if reviews %}
+      <div class="pd-stars">
+        <span class="pd-stars-icons">★★★★★</span>
+        <span class="pd-stars-count">{{ reviews|length }} avis</span>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <p class="pd-desc">{{ product.description }}</p>
+
+      <div class="pd-stock {% if product.stock == 0 %}out{% elif product.stock < 5 %}low{% else %}ok{% endif %}">
+        {% if product.stock == 0 %}
+          <i class="fa fa-times-circle"></i> Rupture de stock
+        {% elif product.stock < 5 %}
+          <i class="fa fa-exclamation-triangle"></i> Plus que {{ product.stock }} en stock
+        {% else %}
+          <i class="fa fa-check-circle"></i> En stock ({{ product.stock }} disponibles)
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Carte achat -->
+    <div class="pd-buy-card">
+      <div class="pd-price-block">
+        <div class="pd-price">{{ product.price }}<small>FCFA</small></div>
+        <p class="pd-price-note">Prix TTC · Livraison calculée à la commande</p>
+      </div>
+
+      <hr class="pd-divider">
+
+      {% if request.user.is_authenticated and product.stock > 0 %}
+      <form method="post" action="{% url 'shop:add_to_cart' product.pk %}">
+        {% csrf_token %}
+        <div class="pd-qty-row">
+          <span class="pd-qty-label">Quantité</span>
+          <input class="pd-qty-input" type="number" name="quantity" min="1" max="{{ product.stock }}" value="1">
+        </div>
+        <button type="submit" class="btn-add-cart">
+          <i class="fa fa-shopping-cart"></i> Ajouter au panier
+        </button>
+      </form>
+
+      <a href="{% url 'shop:cart' %}" class="pd-cart-link">🧺 Voir mon panier</a>
+
+      <hr class="pd-divider">
+
+      <a class="btn-whatsapp"
+         href="https://wa.me/22890000000?text=Bonjour%2C%20je%20suis%20intéressé%20par%20:{{ product.name|urlencode }}"
+         target="_blank" rel="noopener noreferrer">
+        <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+          <path fill="currentColor" d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.02 7.8L.5 31.5l7.9-2.01A15.45 15.45 0 0016 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.27 20.36c-.4-.2-2.36-1.16-2.73-1.3-.37-.13-.63-.2-.9.2-.26.4-1.02 1.3-1.26 1.57-.23.26-.46.3-.86.1-.4-.2-1.69-.62-3.21-1.98-1.19-1.06-1.99-2.37-2.22-2.77-.23-.4-.02-.61.17-.81.18-.18.4-.46.6-.7.2-.23.27-.4.4-.66.14-.27.07-.5-.03-.7-.1-.2-.9-2.16-1.23-2.96-.32-.78-.65-.67-.9-.68h-.77c-.27 0-.7.1-1.06.5-.37.4-1.4 1.37-1.4 3.33s1.43 3.86 1.63 4.13c.2.26 2.82 4.3 6.83 6.03.96.41 1.7.66 2.28.84.96.3 1.83.26 2.52.16.77-.12 2.36-.97 2.7-1.9.33-.93.33-1.73.23-1.9-.1-.17-.36-.27-.76-.47z"/>
+        </svg>
+        Commande via WhatsApp
+      </a>
+
+      {% elif not request.user.is_authenticated %}
+      <a href="/users/connexion/?next={{ request.path }}" class="btn-add-cart" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;">
+        <i class="fa fa-lock"></i> Se connecter pour acheter
+      </a>
+      {% else %}
+      <div style="text-align:center;padding:20px;background:var(--surf2);border-radius:12px;color:var(--muted);font-size:.88rem;">
+        <i class="fa fa-times-circle" style="color:var(--rose);font-size:1.5rem;display:block;margin-bottom:8px;"></i>
+        Ce produit est actuellement en rupture de stock.
+      </div>
+      {% endif %}
+
+      <div class="pd-trust">
+        <div class="pd-trust-row">
+          <i class="fa fa-shield"></i> Paiement 100% sécurisé
+        </div>
+        <div class="pd-trust-row">
+          <i class="fa fa-check-circle"></i> Produit vérifié et authentique
+        </div>
+        <div class="pd-trust-row">
+          <i class="fa fa-headphones"></i> Support client disponible
+        </div>
+      </div>
+    </div>
+
+    <a href="{% url 'shop:shop' %}" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:.82rem;color:var(--muted);text-decoration:none;font-weight:500;">
+      <i class="fa fa-arrow-left"></i> Retour à la boutique
+    </a>
+  </div>
+
+</div>
+{% endblock %}
