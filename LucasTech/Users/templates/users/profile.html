@@ -164,13 +164,13 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);}
       <div class="profile-card-label"><i class="fa fa-shield-alt"></i> Statut</div>
       <div class="profile-card-value">
         {% if user.is_verified %}
-          <span style="color:var(--green);">✓ Vérifié</span>
+          <span style="color:var(--green);">✓Vérifié</span>
         {% else %}
           <span style="color:var(--muted);">Non vérifié</span>
         {% endif %}
         &nbsp;·&nbsp;
         {% if user.is_premium %}
-          <span style="color:var(--accent);">⭐ Premium</span>
+          <span style="color:var(--accent);"></span>
         {% else %}
           <span style="color:var(--muted);">Gratuit</span>
         {% endif %}

@@ -12,7 +12,7 @@ User = get_user_model()
 
 
 # ─────────────────────────────
-# 📝 REGISTER
+#  REGISTER
 # ─────────────────────────────
 def register(request):
     if request.user.is_authenticated:
@@ -23,14 +23,14 @@ def register(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        messages.success(request, f'Bienvenue {user.email} ! Compte créé avec succès.')
+        messages.success(request, f'Bienvenue {user.email} !')
         return redirect('core:home')
 
     return render(request, 'users/register.html', {'form': form})
 
 
 # ─────────────────────────────
-# 🔐 LOGIN
+#  LOGIN
 # ─────────────────────────────
 def user_login(request):
     if request.user.is_authenticated:
@@ -48,7 +48,7 @@ def user_login(request):
 
 
 # ─────────────────────────────
-# 🚪 LOGOUT
+#  LOGOUT
 # ─────────────────────────────
 def user_logout(request):
     logout(request)
@@ -56,77 +56,77 @@ def user_logout(request):
 
 
 # ─────────────────────────────
-# 📩 STEP 1 — SEND OTP
+#  STEP 1 — SEND OTP (CORRIGÉ)
 # ─────────────────────────────
 def password_reset_request(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        email = request.POST.get("email", "").strip().lower()
 
-        user = User.objects.filter(email=email).first()
+        print("📩 EMAIL SAISI :", email)
 
-        # 🔐 Toujours répondre pareil (sécurité)
+        user = User.objects.filter(email__iexact=email).first()
+
         if user:
+            print("✅ USER TROUVÉ :", user.email)
+
             otp = PasswordResetCode.objects.create(
                 user=user,
                 code=PasswordResetCode.generate_code()
             )
 
-            # ✉️ MESSAGE EMAIL PRO
             message = f"""
 Bonjour {user.email},
 
-Vous avez demandé à réinitialiser votre mot de passe sur LucasTech.
+Vous avez demandé une réinitialisation de mot de passe.
 
 CODE DE VÉRIFICATION : {otp.code}
 
- Ce code est valable pendant 5 minutes.
+Ce code est valable 5 minutes.
 
-⚠️ IMPORTANT :
-- Ne partagez jamais ce code avec qui que ce soit.
-- LucasTech ne vous demandera jamais ce code.
-
-Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
-
-Cordialement,
-— L'équipe LucasTech 
+⚠️ Ne partagez jamais ce code.
 """
 
             send_mail(
                 subject="Réinitialisation de mot de passe - LucasTech",
                 message=message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
+                recipient_list=[user.email],
                 fail_silently=False,
             )
 
+            # IMPORTANT : stocker session
             request.session["reset_user_id"] = user.id
 
-        messages.success(request, "Un email contenant un code de vérification vous a été envoyé.")
+        else:
+            print("❌ AUCUN UTILISATEUR TROUVÉ POUR :", email)
+
+        messages.success(request, "Un email contenant un code vous a été envoyé.")
         return redirect("users:password_reset_email_sent")
 
     return render(request, "users/password_reset.html")
 
 
 # ─────────────────────────────
-# 📩 EMAIL SENT PAGE
+#  EMAIL SENT PAGE
 # ─────────────────────────────
 def password_reset_email_sent(request):
     return render(request, "users/password_reset_email_sent.html")
 
 
 # ─────────────────────────────
-# 🔐 STEP 2 — VERIFY CODE
+#  STEP 2 — VERIFY OTP
 # ─────────────────────────────
 def password_reset_verify(request):
     user_id = request.session.get("reset_user_id")
 
     if not user_id:
+        messages.error(request, "Session expirée. Recommencez.")
         return redirect("users:password_reset")
 
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
-        code = request.POST.get("code")
+        code = request.POST.get("code", "").strip()
 
         otp = PasswordResetCode.objects.filter(
             user=user,
@@ -149,12 +149,13 @@ def password_reset_verify(request):
 
 
 # ─────────────────────────────
-# 🔐 STEP 3 — NEW PASSWORD
+#  STEP 3 — NEW PASSWORD
 # ─────────────────────────────
 def password_reset_new_password(request):
     user_id = request.session.get("reset_user_id")
 
     if not user_id or not request.session.get("otp_verified"):
+        messages.error(request, "Accès non autorisé.")
         return redirect("users:password_reset")
 
     user = get_object_or_404(User, id=user_id)
@@ -174,7 +175,7 @@ def password_reset_new_password(request):
 
 
 # ─────────────────────────────
-# 👤 PROFILE
+#  PROFILE
 # ─────────────────────────────
 @login_required
 def profile(request):
