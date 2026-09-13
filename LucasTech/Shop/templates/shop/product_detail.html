@@ -366,7 +366,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-explore-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
 .pd-explore-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(10,8,6,.85) 0%, rgba(10,8,6,.1) 75%);
+  background: linear-gradient(to top, rgba(10,8,6,.75) 0%, rgba(10,8,6,0) 45%);
 }
 .pd-explore-label {
   position: relative; z-index: 1;
@@ -597,7 +597,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <div class="pd-explore-row">
     {% if product.category %}
     <a href="{% url 'shop:shop' %}?category={{ product.category.slug }}" class="pd-explore-tile"
-       style="background-image:url('{% static 'core/images/image3.png' %}')">
+       style="background-image:url('{% if category_tile_image %}{{ category_tile_image }}{% else %}{% static 'core/images/image4.png' %}{% endif %}')">
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-th-large"></i> {{ product.category.name }}</span>
     </a>

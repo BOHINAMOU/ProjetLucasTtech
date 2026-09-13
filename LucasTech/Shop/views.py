@@ -52,10 +52,19 @@ def product_detail(request, pk):
     related_products = Product.objects.filter(
         category=product.category, is_available=True
     ).exclude(pk=product.pk)[:4] if product.category else Product.objects.none()
+    # Image de la vignette catégorie dans "Explorer" : la photo du produit
+    # lui-même si elle existe, sinon celle d'un produit de la même catégorie
+    # — jamais la même image que la vignette "Toute la boutique".
+    if product.image:
+        category_tile_image = product.image.url
+    else:
+        sample = related_products.exclude(image='').first()
+        category_tile_image = sample.image.url if sample else None
     return render(request, 'shop/product_detail.html', {
         'product': product,
         'reviews': reviews,
         'related_products': related_products,
+        'category_tile_image': category_tile_image,
     })
 
 
