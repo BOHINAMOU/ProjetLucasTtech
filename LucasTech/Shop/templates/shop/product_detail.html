@@ -104,6 +104,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── Info column ── */
 .pd-info { animation: fadeUp .5s .1s ease both; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
 
 .pd-cat {
   font-size: .7rem; font-weight: 700; letter-spacing: .14em;
@@ -494,11 +498,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% endif %}
 
     <div class="pd-info">
-      {% if product.category %}
-        <p class="pd-cat">{{ product.category.name }}</p>
-      {% endif %}
-
-      <h1 class="pd-title">{{ product.name }}</h1>
+      <h1 class="sr-only">{{ product.name }}</h1>
 
       {% with reviews=product.reviews.all %}
       {% if reviews %}
@@ -508,8 +508,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </div>
       {% endif %}
       {% endwith %}
-
-      <p class="pd-desc">{{ product.description }}</p>
 
       <div class="pd-stock {% if product.stock == 0 %}out{% elif product.stock < 5 %}low{% else %}ok{% endif %}">
         {% if product.stock == 0 %}
