@@ -32,10 +32,17 @@ def formation_detail(request, pk):
         item.save()
 
         messages.success(request, f'✓ "{formation.title}" ajouté au panier.')
+        if request.POST.get('buy_now'):
+            return redirect('formations:checkout')
         return redirect('formations:formation_detail', pk=pk)
+
+    related_formations = Formation.objects.filter(
+        is_published=True, level=formation.level
+    ).exclude(pk=formation.pk)[:4]
 
     return render(request, 'formations/formation_detail.html', {
         'formation': formation,
+        'related_formations': related_formations,
     })
 
 

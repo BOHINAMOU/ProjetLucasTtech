@@ -3,6 +3,12 @@ from django.conf import settings
 
 
 class Formation(models.Model):
+    LEVEL_CHOICES = [
+        ('debutant',     'Débutant'),
+        ('intermediaire','Intermédiaire'),
+        ('avance',       'Avancé'),
+    ]
+
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -10,9 +16,21 @@ class Formation(models.Model):
     )
     title        = models.CharField(max_length=255)
     description  = models.TextField()
+    what_you_learn = models.TextField(
+        blank=True, verbose_name="Ce que vous allez apprendre",
+        help_text="Un point par ligne."
+    )
     price        = models.DecimalField(max_digits=10, decimal_places=2)
+    old_price    = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Ancien prix (avant réduction). Laisser vide si pas de promotion."
+    )
+    level        = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='debutant')
+    duration     = models.CharField(max_length=60, blank=True, help_text="Ex : 4 semaines, 12h de vidéo")
+    students_count = models.PositiveIntegerField(default=0, verbose_name="Nombre d'inscrits")
     image        = models.ImageField(upload_to='formations/')
     is_published = models.BooleanField(default=True)
+    is_featured  = models.BooleanField(default=False)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
 
@@ -21,6 +39,19 @@ class Formation(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def is_on_sale(self):
+        return bool(self.old_price and self.old_price > self.price)
+
+    @property
+    def discount_percent(self):
+        if not self.is_on_sale:
+            return 0
+        return round((self.old_price - self.price) / self.old_price * 100)
+
+    def learn_points(self):
+        return [l.strip() for l in self.what_you_learn.splitlines() if l.strip()]
 
 
 class Cart(models.Model):

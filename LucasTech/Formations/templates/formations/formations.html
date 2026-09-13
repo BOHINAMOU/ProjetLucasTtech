@@ -91,96 +91,82 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 5px 14px; border-radius: 99px; white-space: nowrap;
 }
 
-/* ══ GRID ══ */
+/* ══ LISTE — cartes horizontales (différent de la grille Boutique) ══ */
 .fl-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  display: flex; flex-direction: column; gap: 20px;
 }
 
 /* ── Card ── */
 .fl-card {
   background: var(--surf); border: 1px solid var(--border);
   border-radius: var(--r); overflow: hidden;
-  display: flex; flex-direction: column;
-  transition: transform .35s cubic-bezier(.22,.68,0,1.2),
-              box-shadow .35s, border-color .25s;
+  display: grid; grid-template-columns: 300px 1fr;
+  transition: transform .3s cubic-bezier(.22,.68,0,1.2),
+              box-shadow .3s, border-color .25s;
   animation: fadeUp .5s ease both;
+  text-decoration: none; color: inherit;
 }
 .fl-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 60px rgba(0,0,0,.12);
-  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.1);
+  border-color: var(--accent2);
 }
 
 /* Image */
 .fl-img {
-  position: relative; height: 210px; overflow: hidden;
-  background: var(--surf2); flex-shrink: 0;
+  position: relative; overflow: hidden;
+  background: var(--surf2);
 }
 .fl-img img {
   width: 100%; height: 100%; object-fit: cover;
   transition: transform .6s cubic-bezier(.22,.68,0,1.2);
 }
-.fl-card:hover .fl-img img { transform: scale(1.07); }
+.fl-card:hover .fl-img img { transform: scale(1.06); }
 .fl-img-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
   font-size: 3.5rem; opacity: .2;
 }
-.fl-img::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
-  background: linear-gradient(transparent, var(--surf));
-}
 
-/* Badge */
+/* Badges */
+.fl-badges { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; gap: 8px; }
 .fl-badge {
-  position: absolute; top: 14px; left: 14px; z-index: 2;
-  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
-  text-transform: uppercase; padding: 5px 12px; border-radius: 99px;
-  background: rgba(45,122,95,.12); color: var(--green);
-  border: 1.5px solid rgba(45,122,95,.3);
+  font-size: .66rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; padding: 5px 11px; border-radius: 99px;
 }
+.fl-badge.level { background: rgba(20,20,20,.55); color: #fff; backdrop-filter: blur(4px); }
+.fl-badge.sale { background: var(--rose, #c93060); color: #fff; }
 
 /* Body */
 .fl-body {
-  padding: 20px 22px 14px; flex: 1;
-  display: flex; flex-direction: column; gap: 8px;
+  padding: 22px 26px; flex: 1;
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
 }
 
-.fl-author {
-  display: flex; align-items: center; gap: 8px;
+.fl-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.fl-meta-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: var(--muted); font-weight: 600;
 }
-.fl-avatar {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .65rem; font-weight: 800; color: #fff; flex-shrink: 0;
-}
-.fl-author-name {
-  font-size: .75rem; color: var(--muted); font-weight: 500;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
-}
-.fl-author-date {
-  font-size: .7rem; color: var(--muted); flex-shrink: 0;
-}
+.fl-meta-item i { color: var(--accent2); }
 
 .fl-title {
-  font-family: var(--serif); font-size: 1.1rem; font-weight: 700;
-  line-height: 1.3; letter-spacing: -.01em; color: var(--ink);
+  font-family: var(--serif); font-size: 1.35rem; font-weight: 800;
+  line-height: 1.25; letter-spacing: -.01em; color: var(--ink);
 }
 .fl-desc {
-  font-size: .82rem; color: var(--muted); line-height: 1.65; flex: 1;
-  display: -webkit-box; -webkit-line-clamp: 3;
+  font-size: .87rem; color: var(--muted); line-height: 1.65;
+  display: -webkit-box; -webkit-line-clamp: 2;
   -webkit-box-orient: vertical; overflow: hidden;
 }
 
 /* Footer carte */
-.fl-card-divider { height: 1px; background: var(--border); margin: 0 22px; }
 .fl-footer {
-  padding: 14px 22px;
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
 }
+.fl-price-wrap { display: flex; align-items: baseline; gap: 8px; }
+.fl-price-old { font-size: .85rem; color: var(--muted); text-decoration: line-through; }
 .fl-price {
   font-family: var(--serif); font-size: 1.35rem; font-weight: 900;
   color: var(--ink); letter-spacing: -.03em; line-height: 1;
@@ -193,18 +179,23 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* Bouton Voir */
 .fl-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 20px; background: var(--accent); color: #fff;
+  padding: 10px 20px; background: var(--ink); color: #fff;
   text-decoration: none; border-radius: 10px;
   font-size: .85rem; font-weight: 800;
   transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 14px rgba(201,68,10,.3); white-space: nowrap;
+  white-space: nowrap;
 }
 .fl-btn:hover {
-  background: #b53c09; transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(201,68,10,.4);
+  background: var(--accent2); transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(201,68,10,.25);
 }
 .fl-btn i { font-size: .8rem; transition: transform .2s; }
 .fl-card:hover .fl-btn i { transform: translateX(3px); }
+
+@media (max-width: 640px) {
+  .fl-card { grid-template-columns: 1fr; }
+  .fl-img { height: 180px; }
+}
 
 /* Empty */
 .fl-empty {
@@ -219,12 +210,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 
 @media (max-width: 640px) {
-  .fl-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .fl-grid { gap: 14px; }
   .fl-section { padding: 0 18px 60px; }
   .fl-hero { padding: 28px 18px 24px; }
-}
-@media (max-width: 420px) {
-  .fl-grid { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -255,7 +243,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
   <div class="fl-grid">
     {% for f in formations %}
-    <article class="fl-card" style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
+    <a href="{% url 'formations:formation_detail' f.pk %}" class="fl-card" style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
 
       <div class="fl-img">
         {% if f.image %}
@@ -263,24 +251,32 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         {% else %}
           <div class="fl-img-placeholder">🎓</div>
         {% endif %}
-        <span class="fl-badge"><i class="fa fa-check-circle"></i> Disponible</span>
+        <div class="fl-badges">
+          <span class="fl-badge level">{{ f.get_level_display }}</span>
+          {% if f.is_on_sale %}<span class="fl-badge sale">-{{ f.discount_percent }}%</span>{% endif %}
+        </div>
       </div>
 
       <div class="fl-body">
+        <div class="fl-meta">
+          {% if f.duration %}<span class="fl-meta-item"><i class="fa fa-clock-o"></i> {{ f.duration }}</span>{% endif %}
+          {% if f.students_count %}<span class="fl-meta-item"><i class="fa fa-users"></i> {{ f.students_count }} inscrits</span>{% endif %}
+        </div>
         <h2 class="fl-title">{{ f.title }}</h2>
         <p class="fl-desc">{{ f.description }}</p>
+
+        <div class="fl-footer">
+          <div class="fl-price-wrap">
+            {% if f.is_on_sale %}<span class="fl-price-old">{{ f.old_price }} FCFA</span>{% endif %}
+            <div class="fl-price">{{ f.price }}<small>FCFA</small></div>
+          </div>
+          <span class="fl-btn">
+            Voir la formation <i class="fa fa-arrow-right"></i>
+          </span>
+        </div>
       </div>
 
-      <div class="fl-card-divider"></div>
-
-      <div class="fl-footer">
-        <div class="fl-price">{{ f.price }}<small>FCFA</small></div>
-        <a href="{% url 'formations:formation_detail' f.pk %}" class="fl-btn">
-          Voir <i class="fa fa-arrow-right"></i>
-        </a>
-      </div>
-
-    </article>
+    </a>
     {% empty %}
     <div class="fl-empty">
       <span class="fl-empty-icon">📭</span>
