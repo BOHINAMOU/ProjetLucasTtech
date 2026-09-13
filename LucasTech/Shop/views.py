@@ -86,10 +86,13 @@ def cart(request):
     # ← "cart_items" pour correspondre au template
     cart_items  = cart_obj.items.select_related('product__category').all()
     total_price = cart_obj.total_price()
+    in_cart_ids = cart_items.values_list('product_id', flat=True)
+    recommended = Product.objects.filter(is_available=True).exclude(pk__in=in_cart_ids).order_by('-is_featured', '-created_at')[:4]
     return render(request, 'shop/cart.html', {
         'cart':        cart_obj,
         'cart_items':  cart_items,   # ← nom correct
         'total_price': total_price,  # ← nom correct
+        'recommended': recommended,
     })
 
 
