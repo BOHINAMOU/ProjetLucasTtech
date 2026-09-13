@@ -343,17 +343,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <h1 class="pd-title">{{ publication.title }}</h1>
 
     <div class="pd-meta">
-      <div class="pd-meta-author">
-        <div class="pd-author-avatar">{{ publication.author.public_name|slice:":1"|upper }}</div>
-        <div class="pd-author-info">
-          <span class="pd-author-name">{{ publication.author.public_name }}</span>
-          <span class="pd-author-label">Auteur · LucasTech</span>
-        </div>
-      </div>
+      <span class="pd-author-label">LucasTech</span>
       <div class="pd-meta-stats">
         <span><i class="fa fa-clock-o"></i> {{ publication.get_reading_time }} min de lecture</span>
         <span><i class="fa fa-eye"></i> {{ publication.views_count }} vues</span>
-        <span><i class="fa fa-calendar-o"></i> {{ publication.created_at|date:"d F Y" }}</span>
       </div>
     </div>
   </div>
@@ -387,14 +380,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   {% endwith %}
 
   <!-- Pied article -->
-  <div class="pd-footer">
-    <span class="pd-footer-date">
-      <i class="fa fa-calendar-o"></i>
-      Publié le {{ publication.created_at|date:"d F Y" }}
-      {% if publication.updated_at != publication.created_at %}
-        · Mis à jour le {{ publication.updated_at|date:"d F Y" }}
-      {% endif %}
-    </span>
+  <div class="pd-footer" style="justify-content:flex-end;">
     <a href="{% url 'publications:publications' %}" class="pd-back">
       <i class="fa fa-arrow-left"></i> Retour aux publications
     </a>
@@ -426,7 +412,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           <h3 class="pd-rel-card-title">{{ pub.title }}</h3>
           <div class="pd-rel-card-meta">
             <span><i class="fa fa-clock-o"></i> {{ pub.get_reading_time }} min</span>
-            <span><i class="fa fa-calendar-o"></i> {{ pub.created_at|date:"d M Y" }}</span>
           </div>
         </div>
       </a>

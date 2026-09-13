@@ -22,7 +22,7 @@
   --gold:    #c9a84c;
   --forest:  #2c5f4a;
   --rose:    #c93060;
-  --nav-h:   88px;
+  --nav-h:   96px;
   --font:    'Outfit', sans-serif;
   --serif:   'Cormorant Garamond', serif;
   --mono:    'JetBrains Mono', monospace;
@@ -113,22 +113,22 @@ header { position: sticky; top: 0; z-index: 400; }
 
 .brand-text { display: flex; flex-direction: column; gap: 2px; }
 .brand-name {
-  font-family: var(--serif); font-size: 1.55rem; font-weight: 700;
+  font-family: var(--serif); font-size: 1.85rem; font-weight: 700;
   color: var(--ink); letter-spacing: -.03em; line-height: 1;
 }
 .brand-name em { color: var(--terra); font-style: italic; font-weight: 600; }
 .brand-tagline {
-  font-size: .58rem; font-weight: 600; letter-spacing: .2em;
+  font-size: .72rem; font-weight: 600; letter-spacing: .16em;
   text-transform: uppercase; color: var(--muted);
 }
 
 /* ── Nav links ── */
 .navbar__links {
   display: flex; align-items: center;
-  gap: .1rem; list-style: none; margin-left: auto;
+  gap: .2rem; list-style: none; margin-left: auto;
 }
 .navbar__links a {
-  padding: .5rem 1rem; font-size: .83rem; font-weight: 600;
+  padding: .6rem 1.15rem; font-size: 1.02rem; font-weight: 600;
   color: var(--muted); text-decoration: none;
   position: relative; transition: color .2s;
   white-space: nowrap;
@@ -152,7 +152,7 @@ header { position: sticky; top: 0; z-index: 400; }
 }
 .nav-auth__status {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: .78rem; font-weight: 600; color: var(--forest);
+  font-size: .92rem; font-weight: 600; color: var(--forest);
   border: 1px solid rgba(44,95,74,.25);
   background: rgba(44,95,74,.07);
   padding: .45rem 1rem; border-radius: 2px;
@@ -167,7 +167,7 @@ header { position: sticky; top: 0; z-index: 400; }
 
 .nav-auth__logout {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: .78rem; font-weight: 600; color: var(--rose);
+  font-size: .92rem; font-weight: 600; color: var(--rose);
   border: 1px solid rgba(201,48,96,.2); background: none;
   padding: .45rem 1rem; border-radius: 2px;
   font-family: var(--font); cursor: pointer; transition: all .2s; white-space: nowrap;
@@ -176,7 +176,7 @@ header { position: sticky; top: 0; z-index: 400; }
 
 .nav-auth__login {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: .78rem; font-weight: 600; color: var(--ink2);
+  font-size: .92rem; font-weight: 600; color: var(--ink2);
   border: 1px solid var(--border); background: none;
   padding: .45rem 1rem; border-radius: 2px;
   text-decoration: none; transition: all .2s; white-space: nowrap;

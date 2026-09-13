@@ -259,11 +259,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </div>
 
       <div class="fl-body">
-        <div class="fl-author">
-          <div class="fl-avatar">{{ f.author.public_name|slice:":1"|upper }}</div>
-          <span class="fl-author-name">{{ f.author.public_name }}</span>
-          <span class="fl-author-date">{{ f.created_at|date:"d M Y" }}</span>
-        </div>
         <h2 class="fl-title">{{ f.title }}</h2>
         <p class="fl-desc">{{ f.description }}</p>
       </div>

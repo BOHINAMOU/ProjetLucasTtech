@@ -1,6 +1,4 @@
 {% load static %}
- <link rel="stylesheet" href="{% static 'core/css/footer.css' %}">
-
 <footer class="lt-footer">
 
     <!-- Fond décoratif animé -->
@@ -69,43 +67,17 @@
         <div class="lt-footer__col" data-animate="fade-up" data-delay="300">
             <h3 class="lt-footer__col-title">Suivez-nous</h3>
             <div class="lt-footer__socials">
-                <a href="https://facebook.com"  target="_blank" rel="noopener" aria-label="Facebook"  class="lt-social lt-social--fb"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram" class="lt-social lt-social--ig"><i class="fab fa-instagram"></i></a>
-                <a href="https://tiktok.com"    target="_blank" rel="noopener" aria-label="TikTok"    class="lt-social lt-social--tt"><i class="fab fa-tiktok"></i></a>
-                <a href="https://youtube.com"   target="_blank" rel="noopener" aria-label="YouTube"   class="lt-social lt-social--yt"><i class="fab fa-youtube"></i></a>
-                <a href="https://t.me"          target="_blank" rel="noopener" aria-label="Telegram"  class="lt-social lt-social--tg"><i class="fab fa-telegram"></i></a>
-                <a href="https://twitter.com"   target="_blank" rel="noopener" aria-label="X/Twitter" class="lt-social lt-social--tw"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://facebook.com"  target="_blank" rel="noopener" class="lt-social lt-social--fb"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
+                <a href="https://instagram.com" target="_blank" rel="noopener" class="lt-social lt-social--ig"><i class="fab fa-instagram"></i><span>Instagram</span></a>
+                <a href="https://tiktok.com"    target="_blank" rel="noopener" class="lt-social lt-social--tt"><i class="fab fa-tiktok"></i><span>TikTok</span></a>
+                <a href="https://youtube.com"   target="_blank" rel="noopener" class="lt-social lt-social--yt"><i class="fab fa-youtube"></i><span>YouTube</span></a>
+                <a href="https://t.me"          target="_blank" rel="noopener" class="lt-social lt-social--tg"><i class="fab fa-telegram"></i><span>Telegram</span></a>
+                <a href="https://twitter.com"   target="_blank" rel="noopener" class="lt-social lt-social--tw"><i class="fab fa-x-twitter"></i><span>X / Twitter</span></a>
             </div>
             <p class="lt-footer__social-text">Rejoignez notre communauté et restez informés de nos dernières actualités.</p>
         </div>
 
     </div>
-
-    <!-- ── PARTENAIRES ── -->
-    {% if partners %}
-    <div class="lt-footer__partners" data-animate="fade-up" data-delay="400">
-        <h4 class="lt-footer__partners-title">Nos partenaires</h4>
-        <div class="lt-footer__ticker-wrap" aria-label="Défilement des partenaires">
-            <div class="lt-footer__ticker" id="partnerTicker">
-                {% for partner in partners %}
-                <div class="lt-footer__partner-item">
-                    <a href="{{ partner.website.url }}" target="_blank" rel="noopener" aria-label="{{ partner.name }}">
-                        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
-                    </a>
-                </div>
-                {% endfor %}
-                <!-- Duplication pour boucle infinie -->
-                {% for partner in partners %}
-                <div class="lt-footer__partner-item" aria-hidden="true">
-                    <a href="{{ partner.website.url }}" target="_blank" rel="noopener" aria-label="{{ partner.name }}">
-                        <img src="{{ partner.logo.url }}" alt="">
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- ── SÉPARATEUR ── -->
     <div class="lt-footer__divider" aria-hidden="true"></div>
@@ -121,9 +93,14 @@
             <a href="#">Conditions d'utilisation</a>
         </div>
         <p class="lt-footer__made">
-            LucasTech <span class="lt-footer__heart">♥</span> au Togo 
+            LucasTech <span class="lt-footer__heart">♥</span> au Togo
         </p>
     </div>
+
+    <!-- ── RETOUR EN HAUT ── -->
+    <button type="button" class="lt-footer__totop" id="footerToTop" aria-label="Retour en haut">
+        <i class="fa fa-arrow-up"></i>
+    </button>
 
 </footer>
 
@@ -134,16 +111,16 @@
 ═══════════════════════════════════════════ */
 
 .lt-footer {
-    --ft-bg:      #080a10;
-    --ft-surface: #0f1219;
-    --ft-border:  #1c2030;
-    --ft-accent:  #00d4ff;
-    --ft-accent2: #7b5cf5;
-    --ft-green:   #00d278;
-    --ft-text:    #dde1ef;
-    --ft-muted:   #636a85;
-    --ft-font-h:  'Syne', sans-serif;
-    --ft-font-b:  'DM Sans', sans-serif;
+    --ft-bg:      #14100c;
+    --ft-surface: #1c1712;
+    --ft-border:  #302a22;
+    --ft-accent:  #e8a23d;
+    --ft-accent2: #d4652a;
+    --ft-green:   #4ade80;
+    --ft-text:    #f2ede6;
+    --ft-muted:   #a89c8c;
+    --ft-font-h:  'Cormorant Garamond', serif;
+    --ft-font-b:  'Outfit', sans-serif;
 
     position: relative;
     overflow: hidden;
@@ -201,9 +178,9 @@
 /* ── Titres colonnes ── */
 .lt-footer__col-title {
     font-family: var(--ft-font-h);
-    font-size: 1rem; /* était .75rem */
+    font-size: 1.3rem;
     font-weight: 700;
-    letter-spacing: .14em;
+    letter-spacing: .08em;
     text-transform: uppercase;
     color: var(--ft-muted);
     margin-bottom: 1.4rem;
@@ -233,7 +210,7 @@
 }
 .lt-footer__logo-name {
     font-family: var(--ft-font-h);
-    font-size: 1.9rem; /* était 1.4rem */
+    font-size: 2.2rem;
     font-weight: 800;
     background: linear-gradient(90deg, var(--ft-accent), var(--ft-accent2));
     -webkit-background-clip: text;
@@ -331,22 +308,24 @@
 .lt-footer__socials {
     display: flex;
     flex-wrap: wrap;
-    gap: .65rem;
-    margin-bottom: 1rem;
+    gap: .75rem;
+    margin-bottom: 1.2rem;
 }
 .lt-social {
-    width: 44px; height: 44px; /* était 40px */
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem; /* était 1rem */
+    width: 84px; height: 78px;
+    border-radius: 14px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: .4rem;
+    font-size: 1.35rem;
     border: 1px solid var(--ft-border);
     color: var(--ft-muted);
     background: var(--ft-surface);
+    text-decoration: none;
     transition: transform .25s cubic-bezier(.34,1.56,.64,1), color .2s, border-color .2s, box-shadow .2s;
 }
-.lt-social:hover { transform: translateY(-5px) scale(1.08); }
+.lt-social span { font-size: .68rem; font-weight: 600; }
+.lt-social:hover { transform: translateY(-5px) scale(1.05); }
 .lt-social--fb:hover { color: #1877f2; border-color: #1877f2; box-shadow: 0 4px 20px rgba(24,119,242,.25); }
 .lt-social--ig:hover { color: #e1306c; border-color: #e1306c; box-shadow: 0 4px 20px rgba(225,48,108,.25); }
 .lt-social--tt:hover { color: #69c9d0; border-color: #69c9d0; box-shadow: 0 4px 20px rgba(105,201,208,.25); }
@@ -358,57 +337,6 @@
     font-size: 1rem; /* était .8rem */
     color: var(--ft-muted);
     line-height: 1.6;
-}
-
-/* ── Partenaires ticker ── */
-.lt-footer__partners {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 clamp(1rem, 5vw, 3rem) 2.5rem;
-}
-.lt-footer__partners-title {
-    font-family: var(--ft-font-h);
-    font-size: 1rem; /* était .7rem */
-    letter-spacing: .15em;
-    text-transform: uppercase;
-    color: var(--ft-muted);
-    text-align: center;
-    margin-bottom: 1.2rem;
-}
-.lt-footer__ticker-wrap {
-    overflow: hidden;
-    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-}
-.lt-footer__ticker {
-    display: flex;
-    gap: 2.5rem;
-    width: max-content;
-    animation: ticker-scroll 28s linear infinite;
-}
-.lt-footer__ticker:hover { animation-play-state: paused; }
-@keyframes ticker-scroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-.lt-footer__partner-item {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50px;
-    /* ✅ SUPPRIMÉ : filter: grayscale(1) brightness(.7); — les logos gardent leurs vraies couleurs */
-    transition: transform .3s;
-}
-.lt-footer__partner-item:hover {
-    /* ✅ SUPPRIMÉ : filter: grayscale(0) brightness(1); — plus nécessaire */
-    transform: scale(1.06);
-}
-.lt-footer__partner-item img {
-    height: 100%;
-    width: auto;
-    max-width: 120px;
-    object-fit: contain;
 }
 
 /* ── Séparateur ── */
@@ -456,6 +384,26 @@
     60%       { transform: scale(1); }
 }
 
+/* ── Retour en haut ── */
+.lt-footer__totop {
+    position: fixed;
+    right: 24px; bottom: 24px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--ft-accent2), var(--ft-accent));
+    color: #14100c;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    opacity: 0; visibility: hidden; transform: translateY(12px);
+    transition: opacity .25s, transform .25s, visibility .25s, box-shadow .2s;
+    z-index: 500;
+}
+.lt-footer__totop.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+.lt-footer__totop:hover { box-shadow: 0 10px 30px rgba(0,0,0,.45); transform: translateY(-3px); }
+
 /* ── Animation d'entrée ── */
 [data-animate] {
     opacity: 0;
@@ -475,6 +423,17 @@
     /* ── 1. Année automatique ── */
     const yrEl = document.getElementById('footerYear');
     if (yrEl) yrEl.textContent = new Date().getFullYear();
+
+    /* ── 1bis. Retour en haut ── */
+    const toTopBtn = document.getElementById('footerToTop');
+    if (toTopBtn) {
+        window.addEventListener('scroll', () => {
+            toTopBtn.classList.toggle('visible', window.scrollY > 400);
+        });
+        toTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 
     /* ── 2. Intersection Observer pour les animations d'entrée ── */
     const animEls = document.querySelectorAll('[data-animate]');

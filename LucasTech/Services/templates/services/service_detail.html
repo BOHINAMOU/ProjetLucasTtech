@@ -262,11 +262,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% if service.is_featured %}
         <span class="sd-badge"><i class="fa fa-star"></i> Vedette</span>
       {% endif %}
-      <span class="sd-date-badge">
-        <i class="fa fa-calendar-o"></i>
-        {{ service.created_at|date:"d F Y" }}
-      </span>
-
       {% if service.video %}
         <video src="{{ service.video.url }}" autoplay muted loop playsinline></video>
       {% elif service.image %}
@@ -283,15 +278,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% endif %}
 
       <h1 class="sd-title">{{ service.title }}</h1>
-
-      <!-- Admin -->
-      <div class="sd-admin">
-        <div class="sd-admin-avatar">{{ service.admin.public_name|slice:":1"|upper }}</div>
-        <div class="sd-admin-info">
-          <span class="sd-admin-label">Service proposé par</span>
-          <span class="sd-admin-name">{{ service.admin.public_name }}</span>
-        </div>
-      </div>
 
       <p class="sd-desc">{{ service.description }}</p>
 

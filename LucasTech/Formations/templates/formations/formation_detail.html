@@ -210,12 +210,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
       {% endif %}
     </div>
 
-    <div class="fd-meta">
-      <div class="fd-avatar">{{ formation.author.public_name|slice:":1"|upper }}</div>
-      <div class="fd-author-name">Publié par <strong>{{ formation.author.public_name }}</strong></div>
-      <span class="fd-date">{{ formation.created_at|date:"d M Y" }}</span>
-    </div>
-
     {% if messages %}
     <div class="fd-msgs">
       {% for msg in messages %}
@@ -264,10 +258,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
     </a>
 
     <div class="fd-info">
-      <div class="fd-info-row">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        Publié le {{ formation.created_at|date:"d M Y" }}
-      </div>
       <div class="fd-info-row">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
         Accès immédiat après paiement

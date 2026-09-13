@@ -381,8 +381,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         {% if service.is_featured %}
           <span class="sv-badge"><i class="fa fa-star"></i> Vedette</span>
         {% endif %}
-        <span class="sv-card-date">{{ service.created_at|date:"d M Y" }}</span>
-
         {% if service.video %}
           <video src="{{ service.video.url }}" autoplay muted loop playsinline></video>
         {% elif service.image %}
@@ -398,11 +396,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         {% endif %}
         <h3 class="sv-card-title">{{ service.title }}</h3>
         <p class="sv-card-desc">{{ service.description }}</p>
-
-        <div class="sv-card-admin">
-          <div class="sv-card-admin-avatar">{{ service.admin.public_name|slice:":1"|upper }}</div>
-          <span class="sv-card-admin-name">par {{ service.admin.public_name }}</span>
-        </div>
       </div>
 
       <div class="sv-card-divider"></div>
