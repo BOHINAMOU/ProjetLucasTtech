@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Boutique E-Commerce — LucasTech{% endblock %}
 {% block meta_description %}Découvrez la boutique Tech LucasTech : produits et accessoires numériques sélectionnés, prix compétitifs, promotions et livraison au Togo.{% endblock %}
 {% block og_title %}Boutique E-Commerce — LucasTech{% endblock %}
@@ -37,31 +38,26 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 ═══════════════════════════════════ */
 .sh-hero {
   position: relative; overflow: hidden;
-  padding: 40px clamp(1.5rem,6vw,5rem) 36px;
+  padding: 28px clamp(1.5rem,6vw,5rem);
   background: var(--ink);
+  min-height: 200px;
+  display: flex; align-items: center;
 }
 
-/* Grain texture overlay */
-.sh-hero::before {
-  content: '';
+/* Photo de couverture */
+.sh-hero-bg {
   position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: 0.4; pointer-events: none;
+  background-size: cover; background-position: center 35%;
 }
-
-/* Decorative circle blob */
-.sh-hero::after {
-  content: '';
-  position: absolute; right: -120px; top: -80px;
-  width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,68,10,.18) 0%, transparent 70%);
-  pointer-events: none;
+.sh-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(10,8,6,.92) 0%, rgba(10,8,6,.8) 45%, rgba(10,8,6,.55) 100%);
 }
 
 .sh-hero-inner {
   position: relative; z-index: 1;
-  max-width: 1300px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 28px;
+  max-width: 1300px; margin: 0 auto; width: 100%;
+  display: flex; flex-direction: column; gap: 14px;
 }
 
 .sh-announcement {
@@ -75,27 +71,21 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 
 .sh-hero-eyebrow {
-  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  font-size: .72rem; font-weight: 700; letter-spacing: .15em;
   text-transform: uppercase; color: var(--accent);
   animation: fadeUp .45s .05s ease both;
 }
 
 .sh-hero-title {
   font-family: var(--serif);
-  font-size: clamp(2rem, 3.6vw, 3rem);
-  font-weight: 900; line-height: 1.1;
-  letter-spacing: -.03em; color: #f5f2ee;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  font-weight: 800; line-height: 1.15;
+  letter-spacing: -.02em; color: #f5f2ee;
   animation: fadeUp .5s .1s ease both;
 }
 .sh-hero-title em {
   font-style: italic; font-weight: 300;
   color: var(--accent);
-}
-
-.sh-hero-sub {
-  font-size: 1rem; color: rgba(245,242,238,.5);
-  max-width: 480px; line-height: 1.7;
-  animation: fadeUp .5s .15s ease both;
 }
 
 /* ── Search ── */
@@ -403,7 +393,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ─── Responsive ─── */
 @media (max-width: 640px) {
   .sh-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
-  .sh-hero { padding: 32px 18px 28px; }
+  .sh-hero { padding: 24px 18px; min-height: unset; }
   .sh-section { padding: 0 18px 60px; }
   .sh-cats-label { display: none; }
   .sh-btn-voir { padding: 10px 16px; font-size: .8rem; }
@@ -416,6 +406,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 <!-- ══ HERO ══ -->
 <div class="sh-hero">
+  <div class="sh-hero-bg" style="background-image:url('{% static 'core/images/image1.png' %}')"></div>
+  <div class="sh-hero-overlay"></div>
   <div class="sh-hero-inner">
 
     {% if announcement %}
@@ -428,13 +420,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <p class="sh-hero-eyebrow">LucasTech E-Commerce</p>
 
     <h1 class="sh-hero-title">
-      La boutique qui<br><em>fait la différence.</em>
+      La boutique qui <em>fait la différence.</em>
     </h1>
-
-    <p class="sh-hero-sub">
-      Des produits sélectionnés avec soin, livrés avec excellence.
-      Bienvenue dans votre espace shopping premium.
-    </p>
 
     <!-- Search -->
     <div class="sh-search-wrap">
