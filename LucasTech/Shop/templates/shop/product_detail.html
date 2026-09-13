@@ -65,6 +65,20 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-size: 5rem; opacity: .2;
 }
 
+/* ── Vignettes (galerie) ── */
+.pd-thumbs {
+  display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+}
+.pd-thumb {
+  width: 72px; height: 72px; padding: 0; flex-shrink: 0;
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  background: var(--surf); border: 2px solid transparent;
+  transition: border-color .2s, opacity .2s;
+}
+.pd-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pd-thumb:hover { opacity: .85; }
+.pd-thumb.active { border-color: var(--accent); }
+
 /* Accent bar bottom */
 .pd-media::after {
   content: '';
@@ -260,11 +274,26 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% if product.video %}
         <video src="{{ product.video.url }}" autoplay muted loop playsinline></video>
       {% elif product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        <img id="pdMainImage" src="{{ product.image.url }}" alt="{{ product.name }}">
       {% else %}
         <div class="pd-media-placeholder">🛍️</div>
       {% endif %}
     </div>
+
+    {% with gallery=product.images.all %}
+    {% if product.image and gallery %}
+    <div class="pd-thumbs">
+      <button type="button" class="pd-thumb active" onclick="pdSwapImage(this, '{{ product.image.url }}')">
+        <img src="{{ product.image.url }}" alt="">
+      </button>
+      {% for img in gallery %}
+      <button type="button" class="pd-thumb" onclick="pdSwapImage(this, '{{ img.image.url }}')">
+        <img src="{{ img.image.url }}" alt="">
+      </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
     <!-- Avis -->
     {% with reviews=product.reviews.all %}
@@ -395,4 +424,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   </div>
 
 </div>
+
+<script>
+function pdSwapImage(btn, url) {
+  const main = document.getElementById('pdMainImage');
+  if (main) main.src = url;
+  document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
 {% endblock %}

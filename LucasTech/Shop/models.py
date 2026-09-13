@@ -65,6 +65,21 @@ class Product(models.Model):
 
 
 # ─────────────────────────────
+# 🖼️ PHOTOS SUPPLÉMENTAIRES (galerie produit)
+# ─────────────────────────────
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image   = models.ImageField(upload_to='shop/products/gallery/')
+    order   = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Photo de {self.product.name}"
+
+
+# ─────────────────────────────
 # 🛒 PANIER
 # ─────────────────────────────
 class ShopCart(models.Model):

@@ -1,6 +1,12 @@
 # Fichier : Shop/admin.py
 from django.contrib import admin
-from .models import Category, Product, ShopOrder, ShopOrderItem, Reservation, Review
+from .models import Category, Product, ProductImage, ShopOrder, ShopOrderItem, Reservation, Review
+
+
+class ProductImageInline(admin.TabularInline):
+    model  = ProductImage
+    extra  = 3
+    fields = ['image', 'order']
 
 class ShopOrderItemInline(admin.TabularInline):
     model = ShopOrderItem
@@ -33,6 +39,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'stock', 'is_available', 'is_featured')
     list_filter = ('category', 'is_available', 'is_featured')
     search_fields = ('name', 'description')
+    inlines = [ProductImageInline]
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):

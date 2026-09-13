@@ -18,9 +18,6 @@
 
 <body>
 
-<!-- Curseur -->
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
 <!-- Barre de progression -->
 <div id="progress-bar"></div>
 
@@ -441,24 +438,6 @@
 {% block extra_scripts %}{% endblock %}
 
 <script>
-/* ── Curseur ── */
-const cur = document.getElementById('cursor');
-const ring = document.getElementById('cursor-ring');
-let mx=0, my=0, rx=0, ry=0;
-document.addEventListener('mousemove', e => {
-  mx=e.clientX; my=e.clientY;
-  cur.style.left=mx+'px'; cur.style.top=my+'px';
-});
-(function animR(){
-  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(animR);
-})();
-document.querySelectorAll('a,button,.svc-card,.pub-card').forEach(el=>{
-  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
-  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
-});
-
 /* ── Barre de progression ── */
 const bar = document.getElementById('progress-bar');
 window.addEventListener('scroll',()=>{
