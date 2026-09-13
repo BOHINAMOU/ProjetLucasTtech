@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Formations — LucasTech{% endblock %}
 {% block meta_description %}Formations professionnelles LucasTech : développement web, e-commerce, réseaux sociaux, systèmes et réseaux. Progressez avec des formateurs qui construisent de vrais projets.{% endblock %}
 {% block og_title %}Formations — LucasTech{% endblock %}
@@ -29,37 +30,39 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ══ HERO ══ */
 .fl-hero {
   position: relative; overflow: hidden;
-  padding: 72px clamp(1.5rem,6vw,5rem) 64px;
+  padding: 40px clamp(1.5rem,6vw,5rem) 36px;
   background: var(--ink);
 }
-.fl-hero::after {
-  content: '';
-  position: absolute; left: -80px; top: -60px;
-  width: 440px; height: 440px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,68,10,.18) 0%, transparent 70%);
-  pointer-events: none;
+.fl-hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('{% static "core/images/image7.png" %}');
+  background-size: cover; background-position: center;
+}
+.fl-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(10,8,6,.92) 0%, rgba(10,8,6,.78) 45%, rgba(10,8,6,.5) 100%);
 }
 .fl-hero-inner {
   position: relative; z-index: 1;
   max-width: 1300px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 18px;
+  display: flex; flex-direction: column; gap: 10px;
 }
 .fl-hero-eyebrow {
-  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  font-size: .72rem; font-weight: 700; letter-spacing: .15em;
   text-transform: uppercase; color: var(--accent);
   animation: fadeUp .45s ease both;
 }
 .fl-hero-title {
   font-family: var(--serif);
-  font-size: clamp(2.4rem, 6vw, 4.5rem);
-  font-weight: 900; line-height: 1.05;
-  letter-spacing: -.03em; color: #f5f2ee;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  font-weight: 800; line-height: 1.15;
+  letter-spacing: -.02em; color: #f5f2ee;
   animation: fadeUp .5s .08s ease both;
 }
 .fl-hero-title em { font-style: italic; font-weight: 300; color: var(--accent); }
 .fl-hero-sub {
-  font-size: .95rem; color: rgba(245,242,238,.5);
-  max-width: 480px; line-height: 1.7;
+  font-size: .9rem; color: rgba(245,242,238,.6);
+  max-width: 480px; line-height: 1.6;
   animation: fadeUp .5s .14s ease both;
 }
 
@@ -218,7 +221,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 @media (max-width: 640px) {
   .fl-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
   .fl-section { padding: 0 18px 60px; }
-  .fl-hero { padding: 48px 18px 40px; }
+  .fl-hero { padding: 28px 18px 24px; }
 }
 @media (max-width: 420px) {
   .fl-grid { grid-template-columns: 1fr; }
@@ -227,10 +230,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 <!-- ══ HERO ══ -->
 <div class="fl-hero">
+  <div class="fl-hero-bg"></div>
+  <div class="fl-hero-overlay"></div>
   <div class="fl-hero-inner">
     <p class="fl-hero-eyebrow">LucasTech Formations</p>
     <h1 class="fl-hero-title">
-      BIENVENUE<br> <em>SUR NOS</em><br>Formations
+      Bienvenue sur nos <em>formations</em>
     </h1>
     <p class="fl-hero-sub">
       Des formations créées par nos experts pour vous accompagner dans votre montée en compétence.
