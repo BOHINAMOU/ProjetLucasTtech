@@ -1,0 +1,154 @@
+{% extends 'core/base.html' %}
+{% block title %}Réserver {{ product.name }} — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg:      #f7f3ee;
+  --surf:    #faf8f5;
+  --surf2:   #f2ede6;
+  --border:  rgba(0,0,0,.085);
+  --shadow:  rgba(0,0,0,.07);
+  --ink:     #1c1814;
+  --ink2:    #3a3530;
+  --muted:   #8a8078;
+  --accent:  #b8420a;
+  --accent2: #c9a84c;
+  --green:   #2c5f4a;
+  --r:       16px;
+  --font:    'Outfit', sans-serif;
+  --serif:   'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.rv-wrapper {
+  max-width: 680px; margin: 48px auto 96px;
+  padding: 0 clamp(1.5rem,6vw,2rem);
+}
+.rv-breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; color: var(--muted); margin-bottom: 24px;
+}
+.rv-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.rv-breadcrumb span { opacity: .4; }
+
+.rv-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 20px; padding: 40px clamp(1.5rem,5vw,2.5rem);
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.rv-product {
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 24px; margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.rv-product-media {
+  width: 72px; height: 72px; border-radius: 12px; overflow: hidden;
+  background: var(--surf2); flex-shrink: 0;
+}
+.rv-product-media img { width: 100%; height: 100%; object-fit: cover; }
+.rv-product-name { font-family: var(--serif); font-size: 1.3rem; font-weight: 700; color: var(--ink); }
+.rv-product-price { font-size: .9rem; color: var(--muted); margin-top: 4px; }
+
+h1.rv-title {
+  font-family: var(--serif); font-size: 1.6rem; font-weight: 800;
+  margin-bottom: 8px; color: var(--ink);
+}
+p.rv-sub { font-size: .9rem; color: var(--muted); margin-bottom: 28px; }
+
+.rv-form { display: flex; flex-direction: column; gap: 16px; }
+.rv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px) { .rv-row { grid-template-columns: 1fr; } }
+
+.rv-field { display: flex; flex-direction: column; gap: 7px; }
+.rv-label {
+  font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.rv-input, .rv-textarea {
+  padding: 13px 16px; background: var(--surf2);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  color: var(--ink); font-family: var(--font); font-size: .95rem;
+  outline: none; transition: border-color .2s;
+}
+.rv-input:focus, .rv-textarea:focus { border-color: var(--accent); }
+.rv-textarea { resize: vertical; min-height: 90px; }
+
+.btn-reserve {
+  margin-top: 8px; padding: 15px;
+  background: var(--ink); color: #faf9f7;
+  border: none; border-radius: 12px;
+  font-family: var(--font); font-size: .97rem; font-weight: 700;
+  cursor: pointer; transition: background .2s, transform .2s;
+}
+.btn-reserve:hover { background: var(--ink2); transform: translateY(-2px); }
+</style>
+
+<div class="rv-wrapper">
+  <nav class="rv-breadcrumb">
+    <a href="{% url 'shop:shop' %}">Boutique</a>
+    <span>/</span>
+    <a href="{% url 'shop:product_detail' product.pk %}">{{ product.name }}</a>
+    <span>/</span>
+    Réserver
+  </nav>
+
+  <div class="rv-card">
+    <div class="rv-product">
+      <div class="rv-product-media">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+      <div>
+        <div class="rv-product-name">{{ product.name }}</div>
+        <div class="rv-product-price">{{ product.price }} FCFA</div>
+      </div>
+    </div>
+
+    <h1 class="rv-title">Réserver ce produit</h1>
+    <p class="rv-sub">Remplissez ce formulaire, nous vous contacterons pour confirmer votre réservation.</p>
+
+    <form method="post" class="rv-form">
+      {% csrf_token %}
+      <div class="rv-row">
+        <div class="rv-field">
+          <label class="rv-label">Prénom</label>
+          <input class="rv-input" type="text" name="first_name" required>
+        </div>
+        <div class="rv-field">
+          <label class="rv-label">Nom</label>
+          <input class="rv-input" type="text" name="last_name" required>
+        </div>
+      </div>
+      <div class="rv-row">
+        <div class="rv-field">
+          <label class="rv-label">Téléphone</label>
+          <input class="rv-input" type="tel" name="phone" required>
+        </div>
+        <div class="rv-field">
+          <label class="rv-label">WhatsApp (optionnel)</label>
+          <input class="rv-input" type="tel" name="whatsapp">
+        </div>
+      </div>
+      <div class="rv-field">
+        <label class="rv-label">Email (optionnel)</label>
+        <input class="rv-input" type="email" name="email">
+      </div>
+      <div class="rv-field">
+        <label class="rv-label">Quantité</label>
+        <input class="rv-input" type="number" name="quantity" min="1" value="1" style="max-width:120px;">
+      </div>
+      <div class="rv-field">
+        <label class="rv-label">Notes (optionnel)</label>
+        <textarea class="rv-textarea" name="notes" placeholder="Précisions sur votre réservation..."></textarea>
+      </div>
+      <button type="submit" class="btn-reserve">
+        <i class="fa fa-check-circle"></i> Confirmer la réservation
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

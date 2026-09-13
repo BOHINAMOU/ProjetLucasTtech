@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -9,6 +11,7 @@ from .models import PasswordResetCode
 from .forms import RegisterForm, LoginForm, SetNewPasswordForm, ProfileUpdateForm
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 # ─────────────────────────────
@@ -82,13 +85,22 @@ Ce code est valable 5 minutes.
 ⚠️ Ne partagez jamais ce code.
 """
 
-            send_mail(
-                subject="Réinitialisation de mot de passe - LucasTech",
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+            try:
+                send_mail(
+                    subject="Réinitialisation de mot de passe - LucasTech",
+                    message=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+            except Exception:
+                logger.exception("Échec d'envoi de l'email de réinitialisation")
+                messages.error(
+                    request,
+                    "Le service d'envoi d'email est momentanément indisponible. "
+                    "Réessayez plus tard ou contactez le support."
+                )
+                return redirect("users:password_reset")
 
             # IMPORTANT : stocker session
             request.session["reset_user_id"] = user.id

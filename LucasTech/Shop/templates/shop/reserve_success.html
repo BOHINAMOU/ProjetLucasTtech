@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% block title %}Réservation confirmée — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #faf8f5; --border: rgba(0,0,0,.085);
+  --ink: #1c1814; --muted: #8a8078; --accent: #b8420a; --green: #2c5f4a;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.rs-wrapper {
+  max-width: 520px; margin: 96px auto; padding: 0 1.5rem;
+  text-align: center;
+}
+.rs-icon {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: rgba(44,95,74,.1); border: 1px solid rgba(44,95,74,.25);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 28px; font-size: 2.2rem; color: var(--green);
+}
+h1 {
+  font-family: var(--serif); font-size: 2rem; font-weight: 800;
+  margin-bottom: 14px; color: var(--ink);
+}
+p { font-size: 1rem; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
+.btn-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: var(--ink); color: #faf9f7;
+  border-radius: 12px; text-decoration: none; font-weight: 700;
+  transition: background .2s, transform .2s;
+}
+.btn-back:hover { background: #3a3530; transform: translateY(-2px); }
+</style>
+
+<div class="rs-wrapper">
+  <div class="rs-icon"><i class="fa fa-check"></i></div>
+  <h1>Réservation envoyée !</h1>
+  <p>Merci, votre demande de réservation a bien été enregistrée. Nous vous contacterons rapidement pour la confirmer.</p>
+  <a href="{% url 'shop:shop' %}" class="btn-back">
+    <i class="fa fa-arrow-left"></i> Retour à la boutique
+  </a>
+</div>
+{% endblock %}
