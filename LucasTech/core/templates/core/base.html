@@ -123,9 +123,7 @@
 <section class="hero-slider" id="heroSlider" aria-label="Présentation LucasTech">
 
   {% for slide in hero_slides %}
-  <a href="{{ slide.link_url }}" class="hs-slide{% if forloop.first %} is-active{% endif %}">
-    <div class="hs-bg-blur" style="background-image:url('{{ slide.image.url }}')"></div>
-    <div class="hs-bg-photo" style="background-image:url('{{ slide.image.url }}')"></div>
+  <a href="{{ slide.link_url }}" class="hs-slide{% if forloop.first %} is-active{% endif %}" style="background-image:url('{{ slide.image.url }}')">
     <div class="hs-overlay"></div>
     <div class="hs-content">
       {% if slide.tag %}<p class="hs-tag">{{ slide.tag }}</p>{% endif %}
