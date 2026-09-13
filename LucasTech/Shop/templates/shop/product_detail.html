@@ -312,22 +312,25 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   margin-right: 6px; font-size: .85rem;
 }
 
-/* Description complète — sous la photo, dans la colonne de gauche */
+/* Description complète — pleine largeur, sous photo + achat */
 .pd-full {
-  margin-top: 28px; padding-top: 28px;
-  border-top: 1px solid var(--border);
+  max-width: 1240px; margin: 0 auto 88px; padding: 0 clamp(1.5rem,6vw,5rem);
+  padding-top: 48px; border-top: 1px solid var(--border);
 }
 .pd-full-title {
-  font-family: var(--serif); font-size: 1.3rem; font-weight: 800;
-  margin-bottom: 14px;
+  font-family: var(--serif); font-size: 1.5rem; font-weight: 800;
+  margin-bottom: 16px;
 }
 .pd-full-text {
-  font-size: .95rem; color: var(--ink2); line-height: 1.8;
-  margin-bottom: 28px;
+  font-size: .98rem; color: var(--ink2); line-height: 1.85;
+  max-width: 760px; margin-bottom: 36px;
 }
-.pd-features { display: flex; flex-direction: column; gap: 20px; }
+.pd-features {
+  display: flex; flex-wrap: wrap; gap: 28px; margin-bottom: 44px;
+}
 .pd-feature {
-  display: flex; align-items: flex-start; gap: 16px;
+  display: flex; align-items: flex-start; gap: 14px;
+  flex: 1 1 220px; min-width: 220px;
 }
 .pd-feature i {
   width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
@@ -337,38 +340,36 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-feature strong { display: block; font-size: .92rem; color: var(--ink); margin-bottom: 2px; }
 .pd-feature span { font-size: .82rem; color: var(--muted); }
 
-.pd-full-side {
-  background: var(--surf); border: 1px solid var(--border); border-radius: 16px;
-  padding: 24px; margin-top: 28px;
-}
 .pd-full-side-title {
   font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   color: var(--muted); margin-bottom: 16px;
 }
-.pd-explore-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+/* Rangée de vignettes (pas une grille) — défile horizontalement si besoin */
+.pd-explore-row {
+  display: flex; gap: 16px; overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: thin;
 }
 .pd-explore-tile {
-  position: relative; overflow: hidden; border-radius: 12px;
-  height: 92px; display: flex; align-items: flex-end;
+  position: relative; overflow: hidden; border-radius: 14px; flex-shrink: 0;
+  width: 220px; height: 130px; display: flex; align-items: flex-end;
   background-size: cover; background-position: center;
   text-decoration: none;
   transition: transform .25s, box-shadow .25s;
 }
-.pd-explore-tile:first-child:nth-last-child(odd) {
-  grid-column: 1 / -1;
-}
 .pd-explore-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
 .pd-explore-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(10,8,6,.82) 0%, rgba(10,8,6,.15) 70%);
+  background: linear-gradient(to top, rgba(10,8,6,.85) 0%, rgba(10,8,6,.1) 75%);
 }
 .pd-explore-label {
   position: relative; z-index: 1;
-  display: flex; align-items: center; gap: 7px;
-  padding: 10px 12px; font-size: .78rem; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px; font-size: .85rem; font-weight: 700; color: #fff;
 }
-.pd-explore-label i { color: var(--accent2, #c9a84c); font-size: .82rem; }
+.pd-explore-label i { color: var(--accent2, #c9a84c); font-size: .88rem; }
+@media (max-width: 600px) {
+  .pd-explore-tile { width: 170px; height: 110px; }
+}
 
 </style>
 
@@ -447,68 +448,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% endif %}
     {% endwith %}
 
-    <!-- Description complète, juste sous la photo -->
-    <div class="pd-full">
-      <h2 class="pd-full-title">Description du produit</h2>
-      <p class="pd-full-text">{{ product.description|linebreaksbr }}</p>
-
-      <div class="pd-features">
-        <div class="pd-feature">
-          <i class="fa fa-truck"></i>
-          <div>
-            <strong>Livraison rapide</strong>
-            <span>Partout au Togo, délai calculé à la commande</span>
-          </div>
-        </div>
-        <div class="pd-feature">
-          <i class="fa fa-rotate-left"></i>
-          <div>
-            <strong>Produit vérifié</strong>
-            <span>Contrôlé avant expédition</span>
-          </div>
-        </div>
-        <div class="pd-feature">
-          <i class="fa fa-headset"></i>
-          <div>
-            <strong>Support client</strong>
-            <span>Une question ? Contactez-nous via WhatsApp</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="pd-full-side">
-        <h3 class="pd-full-side-title">Explorer</h3>
-        <div class="pd-explore-grid">
-          {% if product.category %}
-          <a href="{% url 'shop:shop' %}?category={{ product.category.slug }}" class="pd-explore-tile"
-             style="background-image:url('{% static 'core/images/image3.png' %}')">
-            <span class="pd-explore-overlay"></span>
-            <span class="pd-explore-label"><i class="fa fa-th-large"></i> {{ product.category.name }}</span>
-          </a>
-          {% endif %}
-          <a href="{% url 'shop:shop' %}" class="pd-explore-tile"
-             style="background-image:url('{% static 'core/images/image3.png' %}')">
-            <span class="pd-explore-overlay"></span>
-            <span class="pd-explore-label"><i class="fa fa-store"></i> Toute la boutique</span>
-          </a>
-          <a href="{% url 'services:services' %}" class="pd-explore-tile"
-             style="background-image:url('{% static 'core/images/image1.png' %}')">
-            <span class="pd-explore-overlay"></span>
-            <span class="pd-explore-label"><i class="fa fa-code"></i> Nos services</span>
-          </a>
-          <a href="{% url 'formations:formations' %}" class="pd-explore-tile"
-             style="background-image:url('{% static 'core/images/image2.png' %}')">
-            <span class="pd-explore-overlay"></span>
-            <span class="pd-explore-label"><i class="fa fa-graduation-cap"></i> Nos formations</span>
-          </a>
-          <a href="{% url 'publications:publications' %}" class="pd-explore-tile"
-             style="background-image:url('{% static 'core/images/image4.png' %}')">
-            <span class="pd-explore-overlay"></span>
-            <span class="pd-explore-label"><i class="fa fa-newspaper"></i> Publications</span>
-          </a>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ══ INFOS + CARTE ACHAT ══ -->
@@ -619,6 +558,67 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </a>
   </div>
 
+</div>
+
+<!-- ══ DESCRIPTION COMPLÈTE (pleine largeur) ══ -->
+<div class="pd-full">
+  <h2 class="pd-full-title">Description du produit</h2>
+  <p class="pd-full-text">{{ product.description|linebreaksbr }}</p>
+
+  <div class="pd-features">
+    <div class="pd-feature">
+      <i class="fa fa-truck"></i>
+      <div>
+        <strong>Livraison rapide</strong>
+        <span>Partout au Togo, délai calculé à la commande</span>
+      </div>
+    </div>
+    <div class="pd-feature">
+      <i class="fa fa-rotate-left"></i>
+      <div>
+        <strong>Produit vérifié</strong>
+        <span>Contrôlé avant expédition</span>
+      </div>
+    </div>
+    <div class="pd-feature">
+      <i class="fa fa-headset"></i>
+      <div>
+        <strong>Support client</strong>
+        <span>Une question ? Contactez-nous via WhatsApp</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="pd-full-side-title">Explorer</h3>
+  <div class="pd-explore-row">
+    {% if product.category %}
+    <a href="{% url 'shop:shop' %}?category={{ product.category.slug }}" class="pd-explore-tile"
+       style="background-image:url('{% static 'core/images/image3.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-th-large"></i> {{ product.category.name }}</span>
+    </a>
+    {% endif %}
+    <a href="{% url 'shop:shop' %}" class="pd-explore-tile"
+       style="background-image:url('{% static 'core/images/image3.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-store"></i> Toute la boutique</span>
+    </a>
+    <a href="{% url 'services:services' %}" class="pd-explore-tile"
+       style="background-image:url('{% static 'core/images/image1.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-code"></i> Nos services</span>
+    </a>
+    <a href="{% url 'formations:formations' %}" class="pd-explore-tile"
+       style="background-image:url('{% static 'core/images/image2.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-graduation-cap"></i> Nos formations</span>
+    </a>
+    <a href="{% url 'publications:publications' %}" class="pd-explore-tile"
+       style="background-image:url('{% static 'core/images/image4.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-newspaper"></i> Publications</span>
+    </a>
+  </div>
 </div>
 
 {% if related_products %}
