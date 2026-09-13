@@ -47,9 +47,20 @@ def formation_detail(request, pk):
         is_published=True, level=formation.level
     ).exclude(pk=formation.pk)[:4]
 
+    # Images réelles pour la rangée "Explorer" plutôt que des photos statiques
+    from Shop.models import Product
+    from Publications.models import Publication
+    shop_sample = (
+        Product.objects.filter(is_available=True, is_featured=True).exclude(image='').first()
+        or Product.objects.filter(is_available=True).exclude(image='').first()
+    )
+    pub_sample = Publication.objects.filter(is_published=True).exclude(cover_image='').first()
+
     return render(request, 'formations/formation_detail.html', {
         'formation': formation,
         'related_formations': related_formations,
+        'shop_tile_image': shop_sample.image.url if shop_sample else None,
+        'pub_tile_image': pub_sample.cover_image.url if pub_sample else None,
     })
 
 

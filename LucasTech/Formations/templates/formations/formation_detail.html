@@ -308,7 +308,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <span class="fd-explore-overlay"></span>
       <span class="fd-explore-label"><i class="fa fa-th-large"></i> Toutes les formations</span>
     </a>
-    <a href="{% url 'shop:shop' %}" class="fd-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
+    <a href="{% url 'shop:shop' %}" class="fd-explore-tile" style="background-image:url('{% if shop_tile_image %}{{ shop_tile_image }}{% else %}{% static 'core/images/image3.png' %}{% endif %}')">
       <span class="fd-explore-overlay"></span>
       <span class="fd-explore-label"><i class="fa fa-store"></i> Boutique</span>
     </a>
@@ -316,7 +316,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <span class="fd-explore-overlay"></span>
       <span class="fd-explore-label"><i class="fa fa-code"></i> Nos services</span>
     </a>
-    <a href="{% url 'publications:publications' %}" class="fd-explore-tile" style="background-image:url('{% static 'core/images/image4.png' %}')">
+    <a href="{% url 'publications:publications' %}" class="fd-explore-tile" style="background-image:url('{% if pub_tile_image %}{{ pub_tile_image }}{% else %}{% static 'core/images/image4.png' %}{% endif %}')">
       <span class="fd-explore-overlay"></span>
       <span class="fd-explore-label"><i class="fa fa-newspaper"></i> Publications</span>
     </a>
