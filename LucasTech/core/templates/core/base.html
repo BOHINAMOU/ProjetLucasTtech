@@ -103,75 +103,63 @@
 <!-- ═══════════ MAIN ═══════════ -->
 <main id="main-content">
 {% block content %}
-<!-- ── TICKER ── -->
-<div class="ticker" aria-hidden="true">
-  <div class="ticker__track">
-    <span class="ticker__item"><span class="ticker__dot"></span>Développement web et  mobile</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Formations professionnelles</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Boutique Tech en ligne</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Logos et identité visuelle</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Applications desktop</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Systèmes d'exploitation</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Comptes  monétisables</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>E-commerce et Facebook,youtube Ads</span>
-    <!-- Dupliquer pour loop infini -->
-    <span class="ticker__item"><span class="ticker__dot"></span>Développement web et mobile</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Formations professionnelles</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Boutique Tech en ligne</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Logos et identité visuelle</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Applications desktop</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Systèmes d'exploitation</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>Comptes  monétisables</span>
-    <span class="ticker__item"><span class="ticker__dot"></span>E-commerce et Facebook,youtube Ads</span>
+<!-- ── BARRE D'ACTUALITÉS (liens datés) ── -->
+<div class="news-ticker" aria-label="Actualités LucasTech">
+  <div class="news-ticker__track">
+    <a href="{% url 'formations:formations' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Nouveau</span> Formation développement web — inscriptions ouvertes</a>
+    <a href="{% url 'shop:shop' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Boutique</span> Nouveaux produits Tech disponibles</a>
+    <a href="{% url 'publications:publications' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Article</span> L'Afrique et la révolution numérique en 2026</a>
+    <a href="{% url 'services:services' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Service</span> Créez votre site vitrine en 2 semaines</a>
+    <a href="{% url 'core:team' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Équipe</span> Découvrez qui est derrière LucasTech</a>
+    <!-- Dupliqué pour boucle infinie -->
+    <a href="{% url 'formations:formations' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Nouveau</span> Formation développement web — inscriptions ouvertes</a>
+    <a href="{% url 'shop:shop' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Boutique</span> Nouveaux produits Tech disponibles</a>
+    <a href="{% url 'publications:publications' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Article</span> L'Afrique et la révolution numérique en 2026</a>
+    <a href="{% url 'services:services' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Service</span> Créez votre site vitrine en 2 semaines</a>
+    <a href="{% url 'core:team' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Équipe</span> Découvrez qui est derrière LucasTech</a>
   </div>
 </div>
 
-<!-- ── HERO ── -->
-<section class="hero" aria-labelledby="hero-title">
-  <div class="hero__content">
-    <p class="hero__tag">Technologie · Formation · Innovation</p>
-    <h1 class="hero__title" id="hero-title">
-      LucasTech<br>
-      <strong>votre avenir</strong>
-      <em>ici</em>
-    </h1>
+<!-- ── HERO — carrousel plein écran ── -->
+<section class="hero-slider" id="heroSlider" aria-label="Présentation LucasTech">
 
-    <p class="hero__sub" id="heroTypewriter" aria-live="polite"></p>
-
-    <p class="hero__desc">
-      LucasTech vous accompagne avec des formations professionnelles,
-      des services numériques sur mesure, une boutique Tech et des actualités ciblées.
-    </p>
-
-    <div class="hero__cta">
-      <a href="#services" class="btn-ghost">En savoir plus <i class="fa fa-arrow-right"></i></a>
-      <a href="{% url 'services:services' %}" class="btn-pill btn-pill--solid">Découvrir nos services</a>
+  <a href="{% url 'services:services' %}" class="hs-slide is-active" style="background-image:url('{% static 'core/images/principale.jpeg' %}')">
+    <div class="hs-overlay"></div>
+    <div class="hs-content">
+      <p class="hs-tag">Technologie · Formation · Innovation</p>
+      <h1 class="hs-title">LucasTech, <em>votre avenir</em> commence ici.</h1>
+      <p class="hs-sub">Des solutions digitales, des formations et une boutique Tech pensées pour vous, à Lomé et partout au Togo.</p>
+      <span class="btn-pill btn-pill--solid">Découvrir nos services <i class="fa fa-arrow-right"></i></span>
     </div>
+  </a>
 
-    <div class="hero__scroll">
-      <div class="scroll-line"></div>
-      <span>Défiler</span>
+  <a href="{% url 'formations:formations' %}" class="hs-slide" style="background-image:url('{% static 'core/images/image2.png' %}')">
+    <div class="hs-overlay"></div>
+    <div class="hs-content">
+      <p class="hs-tag">Formations</p>
+      <h1 class="hs-title">Apprenez avec des <em>formateurs</em> qui construisent de vrais projets.</h1>
+      <p class="hs-sub">Développement web, e-commerce, réseaux sociaux, systèmes — des programmes professionnels pour progresser vite.</p>
+      <span class="btn-pill btn-pill--solid">Voir les formations <i class="fa fa-arrow-right"></i></span>
     </div>
+  </a>
+
+  <a href="{% url 'shop:shop' %}" class="hs-slide" style="background-image:url('{% static 'core/images/image1.png' %}')">
+    <div class="hs-overlay"></div>
+    <div class="hs-content">
+      <p class="hs-tag">E-Commerce</p>
+      <h1 class="hs-title">La boutique Tech <em>pensée</em> pour être vue.</h1>
+      <p class="hs-sub">Produits et accessoires sélectionnés, fiches détaillées, paiement simple et livraison suivie.</p>
+      <span class="btn-pill btn-pill--solid">Voir la boutique <i class="fa fa-arrow-right"></i></span>
+    </div>
+  </a>
+
+  <div class="hs-dots">
+    <button type="button" class="hs-dot is-active" data-slide="0" aria-label="Slide 1"></button>
+    <button type="button" class="hs-dot" data-slide="1" aria-label="Slide 2"></button>
+    <button type="button" class="hs-dot" data-slide="2" aria-label="Slide 3"></button>
   </div>
-
-  <div class="hero__visual">
-    <!--
-      IMAGE HERO — Télécharge cette image et place-la dans static/images/hero.jpg
-      URL : https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=1200&q=90&fit=crop&crop=top
-    -->
-    <img
-      src="{% static 'core/images/principale.jpeg' %}"
-      alt="Professionnelle LucasTech"
-      loading="eager"
-      onerror="this.src="
-    >
-    <div class="hero__visual-num">LucasTech .Lomé · Togo</div>
-    <div class="hero__visual-badge">
-      <span class="hero__visual-badge-val">★ 4.9</span>
-      <span class="hero__visual-badge-lbl">Satisfaction client</span>
-    
-    </div>
-  </div>
+  <button type="button" class="hs-arrow hs-arrow--prev" aria-label="Slide précédente"><i class="fa fa-chevron-left"></i></button>
+  <button type="button" class="hs-arrow hs-arrow--next" aria-label="Slide suivante"><i class="fa fa-chevron-right"></i></button>
 </section>
 
 <!-- ── SERVICES — bandes promo style Samsung ── -->
@@ -436,55 +424,37 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
   });
 }());
 
-/* ── Typewriter ── */
+/* ── Carrousel Hero ── */
 (function(){
-  const el=document.getElementById('heroTypewriter');
-  if(!el) return;
-  const phrases=[
-    'Développement web et mobile',
-    "Création d'applications",
-    'Formation en E-commerce',
-    'Expert systèmes et réseaux',
-    'Formation en technologie',
-    'Création de logos professionnels',
-    'Formation YouTube, tiktok et Facebook',
-  ];
-  const cursor=document.createElement('span');
-  cursor.className='hero__cursor';
-  el.insertAdjacentElement('afterend',cursor);
-  let pIdx=0, cIdx=0, deleting=false;
-  function type(){
-    const p=phrases[pIdx];
-    if(!deleting){ el.textContent=p.slice(0,++cIdx); if(cIdx===p.length){deleting=true;setTimeout(type,2400);return;} }
-    else{ el.textContent=p.slice(0,--cIdx); if(cIdx===0){deleting=false;pIdx=(pIdx+1)%phrases.length;} }
-    setTimeout(type,deleting?38:76);
-  }
-  setTimeout(type,1200);
-}());
+  const slider = document.getElementById('heroSlider');
+  if (!slider) return;
+  const slides = [...slider.querySelectorAll('.hs-slide')];
+  const dots   = [...slider.querySelectorAll('.hs-dot')];
+  const prevBtn = slider.querySelector('.hs-arrow--prev');
+  const nextBtn = slider.querySelector('.hs-arrow--next');
+  let idx = 0, timer = null;
 
-/* ── Compteurs ── */
-(function(){
-  function animVal(el,end,dur){
-    let start=null;
-    function step(ts){
-      if(!start)start=ts;
-      const p=Math.min((ts-start)/dur,1);
-      el.textContent=Math.floor(p*end)+'+';
-      if(p<1)requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
+  function go(n){
+    slides[idx].classList.remove('is-active');
+    dots[idx] && dots[idx].classList.remove('is-active');
+    idx = (n + slides.length) % slides.length;
+    slides[idx].classList.add('is-active');
+    dots[idx] && dots[idx].classList.add('is-active');
   }
-  const c=document.getElementById('clients-count');
-  const p=document.getElementById('projects-count');
-  if(!c)return;
-  new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
-        if(c&&!c.dataset.done){animVal(c,70,2200);c.dataset.done='1';}
-        if(p&&!p.dataset.done){animVal(p,50,2200);p.dataset.done='1';}
-      }
-    });
-  },{threshold:.5}).observe(c);
+  function next(){ go(idx + 1); }
+  function prev(){ go(idx - 1); }
+  function restart(){
+    clearInterval(timer);
+    timer = setInterval(next, 6000);
+  }
+
+  dots.forEach((d,i) => d.addEventListener('click', () => { go(i); restart(); }));
+  nextBtn && nextBtn.addEventListener('click', () => { next(); restart(); });
+  prevBtn && prevBtn.addEventListener('click', () => { prev(); restart(); });
+  slider.addEventListener('mouseenter', () => clearInterval(timer));
+  slider.addEventListener('mouseleave', restart);
+
+  restart();
 }());
 
 /* ── Scroll reveal ── */
