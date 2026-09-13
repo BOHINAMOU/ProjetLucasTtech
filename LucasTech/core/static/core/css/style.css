@@ -496,7 +496,7 @@ header { position: sticky; top: 0; z-index: 400; }
 }
 .hs-slide {
   position: absolute; inset: 0;
-  background-size: cover; background-position: center;
+  background-size: cover; background-position: center 20%;
   display: flex; align-items: flex-end;
   text-decoration: none;
   opacity: 0; visibility: hidden;

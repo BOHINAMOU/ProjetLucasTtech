@@ -429,7 +429,7 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
   function prev(){ go(idx - 1); }
   function restart(){
     clearInterval(timer);
-    timer = setInterval(next, 6000);
+    timer = setInterval(next, 3000);
   }
 
   dots.forEach((d,i) => d.addEventListener('click', () => { go(i); restart(); }));
