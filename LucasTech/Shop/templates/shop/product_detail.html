@@ -310,6 +310,55 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-weight: 500; color: var(--muted); text-decoration: line-through;
   margin-right: 6px; font-size: .85rem;
 }
+
+/* Description complète */
+.pd-full {
+  max-width: 1240px; margin: 0 auto 72px; padding: 0 clamp(1.5rem,6vw,5rem);
+  display: grid; grid-template-columns: 2fr 1fr; gap: 48px;
+  border-top: 1px solid var(--border); padding-top: 48px;
+}
+.pd-full-title {
+  font-family: var(--serif); font-size: 1.5rem; font-weight: 800;
+  margin-bottom: 18px;
+}
+.pd-full-text {
+  font-size: .98rem; color: var(--ink2); line-height: 1.85;
+  margin-bottom: 36px;
+}
+.pd-features { display: flex; flex-direction: column; gap: 20px; }
+.pd-feature {
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.pd-feature i {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  background: rgba(184,66,10,.08); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+}
+.pd-feature strong { display: block; font-size: .92rem; color: var(--ink); margin-bottom: 2px; }
+.pd-feature span { font-size: .82rem; color: var(--muted); }
+
+.pd-full-side {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 16px;
+  padding: 26px; height: fit-content;
+}
+.pd-full-side-title {
+  font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 16px;
+}
+.pd-full-links { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.pd-full-links a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; font-size: .88rem; font-weight: 600; color: var(--ink2);
+  text-decoration: none; border-bottom: 1px solid var(--border);
+  transition: color .2s, padding-left .2s;
+}
+.pd-full-links li:last-child a { border-bottom: none; }
+.pd-full-links a i { width: 18px; color: var(--accent); text-align: center; }
+.pd-full-links a:hover { color: var(--accent); padding-left: 4px; }
+
+@media (max-width: 860px) {
+  .pd-full { grid-template-columns: 1fr; }
+}
 </style>
 
 <!-- Breadcrumb -->
@@ -496,6 +545,51 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </a>
   </div>
 
+</div>
+
+<!-- ══ DESCRIPTION COMPLÈTE ══ -->
+<div class="pd-full">
+  <div class="pd-full-main">
+    <h2 class="pd-full-title">Description du produit</h2>
+    <p class="pd-full-text">{{ product.description|linebreaksbr }}</p>
+
+    <div class="pd-features">
+      <div class="pd-feature">
+        <i class="fa fa-truck"></i>
+        <div>
+          <strong>Livraison rapide</strong>
+          <span>Partout au Togo, délai calculé à la commande</span>
+        </div>
+      </div>
+      <div class="pd-feature">
+        <i class="fa fa-rotate-left"></i>
+        <div>
+          <strong>Produit vérifié</strong>
+          <span>Contrôlé avant expédition</span>
+        </div>
+      </div>
+      <div class="pd-feature">
+        <i class="fa fa-headset"></i>
+        <div>
+          <strong>Support client</strong>
+          <span>Une question ? Contactez-nous via WhatsApp</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pd-full-side">
+    <h3 class="pd-full-side-title">Explorer</h3>
+    <ul class="pd-full-links">
+      {% if product.category %}
+      <li><a href="{% url 'shop:shop' %}?category={{ product.category.slug }}"><i class="fa fa-th-large"></i> Tous les produits « {{ product.category.name }} »</a></li>
+      {% endif %}
+      <li><a href="{% url 'shop:shop' %}"><i class="fa fa-store"></i> Toute la boutique</a></li>
+      <li><a href="{% url 'services:services' %}"><i class="fa fa-code"></i> Nos services numériques</a></li>
+      <li><a href="{% url 'formations:formations' %}"><i class="fa fa-graduation-cap"></i> Nos formations</a></li>
+      <li><a href="{% url 'publications:publications' %}"><i class="fa fa-newspaper"></i> Nos publications</a></li>
+    </ul>
+  </div>
 </div>
 
 {% if related_products %}
