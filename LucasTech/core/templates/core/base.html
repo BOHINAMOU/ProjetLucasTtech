@@ -143,21 +143,10 @@
       des services numériques sur mesure, une boutique Tech et des actualités ciblées.
     </p>
 
-    <div class="hero__stats">
-      <div class="hero__stat">
-        <span class="hero__stat-num" id="clients-count">0+</span>
-        <span class="hero__stat-lbl">Clients satisfaits</span>
-      </div>
-      <div class="hero__stat">
-        <span class="hero__stat-num" id="projects-count">0+</span>
-        <span class="hero__stat-lbl">Projets livrés</span>
-      </div>
-      <div class="hero__stat">
-        <span class="hero__stat-num">24/7</span>
-        <span class="hero__stat-lbl">Support</span>
-      </div>
+    <div class="hero__cta">
+      <a href="#services" class="btn-ghost">En savoir plus <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'services:services' %}" class="btn-pill btn-pill--solid">Découvrir nos services</a>
     </div>
-
 
     <div class="hero__scroll">
       <div class="scroll-line"></div>
@@ -185,116 +174,82 @@
   </div>
 </section>
 
-<!-- ── SERVICES ── -->
-<section class="services-section reveal" aria-label="Nos expertises">
-  <div class="services-header">
-    <div>
-      <p class="section-eyebrow">Ce que nous proposons</p>
-      <h2 class="section-title">
-        Nos <em>expertises</em><br>
-        <strong>à votre service.</strong>
-      </h2>
+<!-- ── SERVICES — bandes promo style Samsung ── -->
+<div id="services"></div>
+
+<section class="promo-band promo-band--sand reveal">
+  <div>
+    <p class="promo-eyebrow">Service phare</p>
+    <h2 class="promo-title">Sites web &amp; applications sur mesure</h2>
+    <p class="promo-desc">Du site vitrine à l'application complexe, nous créons des solutions digitales pensées pour vous et vos clients.</p>
+    <div class="promo-cta">
+      <a href="{% url 'services:services' %}" class="btn-ghost">En savoir plus <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'services:services' %}" class="btn-pill">Découvrir</a>
     </div>
-    <a href="{% url 'services:services' %}" class="section-link">
-      Tout voir <i class="fa fa-arrow-right"></i>
-    </a>
   </div>
+  <div class="promo-media">
+    <img src="{% static 'core/images/image1.png' %}" alt="Développement web et applications">
+  </div>
+</section>
 
-  <div class="services-grid">
-
-    <!-- Card hero — grande carte gauche -->
-    <a href="{% url 'services:services' %}" class="svc-card svc-card--hero">
-      <div class="svc-media">
-        <!--
-          IMAGE SERVICE HERO
-          URL : https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=85&fit=crop
-          → static/images/svc-dev.jpg
-        -->
-        <img
-          src="{% static 'core/images/image1.png' %}"
-          alt="Développement"
-          onerror="this.src='https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=85&fit=crop'"
-        >
-      </div>
-      <div class="svc-body">
-        <span class="svc-tag">Service phare</span>
-        <h3 class="svc-title">Sites web et Applications sur mesure</h3>
-        <p class="svc-desc">Du site vitrine à l'application complexe, nous créons des solutions digitales pensées pour vous et vos clients.</p>
-        <span class="svc-cta">Découvrir <i class="fa fa-arrow-right"></i></span>
-      </div>
-    </a>
-
-    <!-- Formations -->
-    <a href="{% url 'formations:formations' %}" class="svc-card svc-card--sm">
-      <div class="svc-media">
-        <!--
-          URL : https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80&fit=crop
-          → static/images/svc-formation.jpg
-        -->
-        <img
-          src="{% static 'core/images/image2.png' %}"
-          alt="Formations"
-          onerror="this.src='https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80&fit=crop'"
-        >
-      </div>
-      <div class="svc-body">
-        <span class="svc-tag">Formations</span>
-        <h3 class="svc-title">Programmes professionnels</h3>
-        <span class="svc-cta">Explorer <i class="fa fa-arrow-right"></i></span>
-      </div>
-    </a>
-
-    <!-- Stat card -->
-    <div class="svc-card svc-card--stat">
-      <div class="svc-stat-bg"></div>
-      <span class="svc-stat-num-deco">70</span>
-      <div class="svc-stat-content">
-        <div class="svc-stat-label">Clients satisfaits</div>
-        <div class="svc-stat-value">70+</div>
-        <div class="svc-stat-desc">Projets livrés avec succès depuis 2022.</div>
-      </div>
+<section class="promo-band promo-band--terra promo-band--reverse reveal">
+  <div>
+    <p class="promo-eyebrow">Formations</p>
+    <h2 class="promo-title">Des programmes professionnels pour progresser vite</h2>
+    <p class="promo-desc">Développement, e-commerce, réseaux sociaux, systèmes — apprenez avec des formateurs qui construisent de vrais projets.</p>
+    <div class="promo-cta">
+      <a href="{% url 'formations:formations' %}" class="btn-ghost">Voir le catalogue <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'formations:formations' %}" class="btn-pill">Explorer</a>
     </div>
+  </div>
+  <div class="promo-media">
+    <img src="{% static 'core/images/image2.png' %}" alt="Formations professionnelles">
+  </div>
+</section>
 
-    <!-- Boutique -->
-    <a href="{% url 'shop:shop' %}" class="svc-card svc-card--sm">
-      <div class="svc-media">
-        <!--
-          URL : https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80&fit=crop
-          → static/images/svc-shop.jpg
-        -->
-        <img
-          src="{% static 'core/images/image3.png' %}"
-          alt="Boutique tech"
-          onerror="this.src='https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80&fit=crop'"
-        >
-      </div>
-      <div class="svc-body">
-        <span class="svc-tag">Boutique</span>
-        <h3 class="svc-title">Produits et accessoires Tech</h3>
-        <span class="svc-cta">Acheter <i class="fa fa-arrow-right"></i></span>
-      </div>
-    </a>
+<section class="promo-band promo-band--warm reveal">
+  <div>
+    <p class="promo-eyebrow">E-Commerce</p>
+    <h2 class="promo-title">La boutique Tech, pensée pour être vue</h2>
+    <p class="promo-desc">Produits et accessoires sélectionnés, fiches détaillées avec galerie photo, paiement simple et livraison suivie.</p>
+    <div class="promo-cta">
+      <a href="{% url 'shop:shop' %}" class="btn-ghost">Voir la boutique <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'shop:shop' %}" class="btn-pill">Acheter</a>
+    </div>
+  </div>
+  <div class="promo-media">
+    <img src="{% static 'core/images/image3.png' %}" alt="Boutique Tech LucasTech">
+  </div>
+</section>
 
-    <!-- Publications -->
-    <a href="{% url 'publications:publications' %}" class="svc-card svc-card--sm">
-      <div class="svc-media">
-        <!--
-          URL : https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80&fit=crop
-          → static/images/svc-pub.jpg
-        -->
-        <img
-          src="{% static 'core/images/image4.png' %}"
-          alt="Publications"
-          onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80&fit=crop'"
-        >
-      </div>
-      <div class="svc-body">
-        <span class="svc-tag">Actualités</span>
-        <h3 class="svc-title">Publications et articles tech</h3>
-        <span class="svc-cta">Lire <i class="fa fa-arrow-right"></i></span>
-      </div>
-    </a>
+<section class="promo-band promo-band--sage promo-band--reverse reveal">
+  <div>
+    <p class="promo-eyebrow">Actualités</p>
+    <h2 class="promo-title">Restez informé de l'actualité tech</h2>
+    <p class="promo-desc">Guides, tendances et retours d'expérience pensés pour l'Afrique, publiés régulièrement par notre équipe.</p>
+    <div class="promo-cta">
+      <a href="{% url 'publications:publications' %}" class="btn-ghost">Lire les articles <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'publications:publications' %}" class="btn-pill">Découvrir</a>
+    </div>
+  </div>
+  <div class="promo-media">
+    <img src="{% static 'core/images/image4.png' %}" alt="Publications LucasTech">
+  </div>
+</section>
 
+<!-- ── Chiffres clés ── -->
+<section class="stats-band reveal">
+  <div class="stats-band-item">
+    <span class="stats-band-num">70+</span>
+    <span class="stats-band-lbl">Clients satisfaits</span>
+  </div>
+  <div class="stats-band-item">
+    <span class="stats-band-num">50+</span>
+    <span class="stats-band-lbl">Projets livrés</span>
+  </div>
+  <div class="stats-band-item">
+    <span class="stats-band-num">24/7</span>
+    <span class="stats-band-lbl">Support</span>
   </div>
 </section>
 
