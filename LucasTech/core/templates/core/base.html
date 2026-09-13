@@ -43,6 +43,9 @@
       <li><a href="{% url 'formations:formations' %}">Formations</a></li>
       <li><a href="{% url 'services:services' %}">Services</a></li>
       <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+      <li><a href="{% url 'core:projects' %}">Projets</a></li>
+      <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
+      <li><a href="{% url 'core:team' %}">Équipe</a></li>
     </ul>
 
     <div class="nav-auth">
@@ -74,6 +77,9 @@
       <li><a href="{% url 'formations:formations' %}">Formations</a></li>
       <li><a href="{% url 'services:services' %}">Services</a></li>
       <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+      <li><a href="{% url 'core:projects' %}">Projets réalisés</a></li>
+      <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
+      <li><a href="{% url 'core:team' %}">Équipe</a></li>
     </ul>
     <div class="drawer-auth">
       {% if user.is_authenticated %}

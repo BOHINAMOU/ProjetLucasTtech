@@ -1,0 +1,166 @@
+{% extends 'core/base.html' %}
+{% block title %}Notre équipe — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
+  --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.07);
+  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
+  --accent: #b8420a; --accent2: #c9a84c;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.tm-hero {
+  background: #14100c; color: #f2ede6;
+  padding: 64px clamp(1.5rem,6vw,5rem) 56px;
+}
+.tm-hero-eyebrow { color: var(--accent2); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
+.tm-hero-title { font-family: var(--serif); font-size: clamp(2rem,4vw,3rem); font-weight: 800; }
+.tm-hero-title em { color: var(--accent); font-style: italic; }
+.tm-hero-sub { margin-top: 14px; font-size: 1rem; color: #a89c8c; max-width: 640px; line-height: 1.7; }
+
+.tm-wrap { max-width: 1200px; margin: 0 auto; padding: 56px clamp(1.5rem,6vw,5rem) 96px; }
+
+/* ── Fondateur ── */
+.tm-founder {
+  display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: center;
+  background: var(--surf); border: 1px solid var(--border); border-radius: 24px;
+  padding: 40px; box-shadow: 0 8px 32px var(--shadow); margin-bottom: 56px;
+}
+@media (max-width: 640px) { .tm-founder { grid-template-columns: 1fr; text-align: center; } }
+.tm-founder-photo {
+  width: 220px; height: 220px; border-radius: 20px; overflow: hidden;
+  background: var(--surf2); display: flex; align-items: center; justify-content: center;
+}
+.tm-founder-photo img { width: 100%; height: 100%; object-fit: cover; }
+.tm-founder-photo-placeholder { font-size: 4rem; opacity: .25; }
+.tm-founder-badge {
+  display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent); background: rgba(184,66,10,.08);
+  border: 1px solid rgba(184,66,10,.2); padding: 4px 12px; border-radius: 99px; margin-bottom: 12px;
+}
+.tm-founder-name { font-family: var(--serif); font-size: 2rem; font-weight: 800; }
+.tm-founder-role { font-size: 1rem; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+.tm-founder-bio { font-size: .95rem; color: var(--muted); line-height: 1.75; margin-bottom: 18px; }
+.tm-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.tm-tag {
+  font-size: .75rem; font-weight: 600; padding: 5px 14px; border-radius: 99px;
+  background: rgba(201,168,76,.12); color: #8a6d1f; border: 1px solid rgba(201,168,76,.3);
+}
+.tm-contacts { display: flex; flex-wrap: wrap; gap: 12px; }
+.tm-contact {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border);
+  color: var(--ink2); text-decoration: none; font-size: .85rem; font-weight: 600;
+  background: var(--surf2); transition: border-color .2s, color .2s;
+}
+.tm-contact:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Grille équipe ── */
+.tm-section-title {
+  font-family: var(--serif); font-size: 1.5rem; font-weight: 800; margin-bottom: 24px;
+}
+.tm-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;
+}
+.tm-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 18px;
+  padding: 28px; text-align: center;
+}
+.tm-card-photo {
+  width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px;
+  background: var(--surf2); overflow: hidden;
+  display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: .3;
+}
+.tm-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+.tm-card-name { font-family: var(--serif); font-size: 1.15rem; font-weight: 700; }
+.tm-card-role { font-size: .85rem; color: var(--accent); font-weight: 600; margin: 4px 0 12px; }
+.tm-card-bio { font-size: .82rem; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+.tm-card-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.tm-card-tag {
+  font-size: .68rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+  background: var(--surf2); color: var(--ink2);
+}
+
+.tm-empty { text-align: center; color: var(--muted); padding: 40px 0; }
+</style>
+
+<div class="tm-hero">
+  <p class="tm-hero-eyebrow">LucasTech</p>
+  <h1 class="tm-hero-title">Notre <em>équipe</em></h1>
+  <p class="tm-hero-sub">Les personnes qui font vivre LucasTech au quotidien.</p>
+</div>
+
+<div class="tm-wrap">
+
+  {% if founder %}
+  <div class="tm-founder">
+    <div class="tm-founder-photo">
+      {% if founder.photo %}
+        <img src="{{ founder.photo.url }}" alt="{{ founder.name }}">
+      {% else %}
+        <span class="tm-founder-photo-placeholder">👤</span>
+      {% endif %}
+    </div>
+    <div>
+      <span class="tm-founder-badge">Fondateur</span>
+      <h2 class="tm-founder-name">{{ founder.name }}</h2>
+      <p class="tm-founder-role">{{ founder.role }}</p>
+      {% if founder.bio %}<p class="tm-founder-bio">{{ founder.bio }}</p>{% endif %}
+      {% if founder.get_technologies %}
+      <div class="tm-tags">
+        {% for tech in founder.get_technologies %}<span class="tm-tag">{{ tech }}</span>{% endfor %}
+      </div>
+      {% endif %}
+      <div class="tm-contacts">
+        {% if founder.whatsapp %}
+        <a class="tm-contact" href="https://wa.me/{{ founder.whatsapp }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        {% endif %}
+        {% if founder.phone %}
+        <a class="tm-contact" href="tel:{{ founder.phone }}"><i class="fa fa-phone"></i> {{ founder.phone }}</a>
+        {% endif %}
+        {% if founder.email %}
+        <a class="tm-contact" href="mailto:{{ founder.email }}"><i class="fa fa-envelope"></i> Email</a>
+        {% endif %}
+        {% if founder.linkedin %}
+        <a class="tm-contact" href="{{ founder.linkedin }}" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        {% endif %}
+        {% if founder.instagram %}
+        <a class="tm-contact" href="{{ founder.instagram }}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Instagram</a>
+        {% endif %}
+        {% if founder.facebook %}
+        <a class="tm-contact" href="{{ founder.facebook }}" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i> Facebook</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if members %}
+  <h3 class="tm-section-title">L'équipe</h3>
+  <div class="tm-grid">
+    {% for member in members %}
+    <div class="tm-card">
+      <div class="tm-card-photo">
+        {% if member.photo %}<img src="{{ member.photo.url }}" alt="{{ member.name }}">{% else %}👤{% endif %}
+      </div>
+      <div class="tm-card-name">{{ member.name }}</div>
+      <div class="tm-card-role">{{ member.role }}</div>
+      {% if member.bio %}<p class="tm-card-bio">{{ member.bio }}</p>{% endif %}
+      {% if member.get_technologies %}
+      <div class="tm-card-tags">
+        {% for tech in member.get_technologies %}<span class="tm-card-tag">{{ tech }}</span>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% elif not founder %}
+  <p class="tm-empty">L'équipe sera bientôt présentée ici.</p>
+  {% endif %}
+
+</div>
+{% endblock %}

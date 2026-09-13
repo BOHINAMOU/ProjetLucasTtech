@@ -67,6 +67,7 @@
         <div class="lt-footer__col" data-animate="fade-up" data-delay="300">
             <h3 class="lt-footer__col-title">Suivez-nous</h3>
             <div class="lt-footer__socials">
+                <a href="https://wa.me/22891973334" target="_blank" rel="noopener" class="lt-social lt-social--wa"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
                 <a href="https://facebook.com"  target="_blank" rel="noopener" class="lt-social lt-social--fb"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
                 <a href="https://instagram.com" target="_blank" rel="noopener" class="lt-social lt-social--ig"><i class="fab fa-instagram"></i><span>Instagram</span></a>
                 <a href="https://tiktok.com"    target="_blank" rel="noopener" class="lt-social lt-social--tt"><i class="fab fa-tiktok"></i><span>TikTok</span></a>
@@ -326,12 +327,23 @@
 }
 .lt-social span { font-size: .68rem; font-weight: 600; }
 .lt-social:hover { transform: translateY(-5px) scale(1.05); }
-.lt-social--fb:hover { color: #1877f2; border-color: #1877f2; box-shadow: 0 4px 20px rgba(24,119,242,.25); }
-.lt-social--ig:hover { color: #e1306c; border-color: #e1306c; box-shadow: 0 4px 20px rgba(225,48,108,.25); }
-.lt-social--tt:hover { color: #69c9d0; border-color: #69c9d0; box-shadow: 0 4px 20px rgba(105,201,208,.25); }
-.lt-social--yt:hover { color: #ff0000; border-color: #ff0000; box-shadow: 0 4px 20px rgba(255,0,0,.25); }
-.lt-social--tg:hover { color: #0088cc; border-color: #0088cc; box-shadow: 0 4px 20px rgba(0,136,204,.25); }
-.lt-social--tw:hover { color: #e7e7e7; border-color: #e7e7e7; box-shadow: 0 4px 20px rgba(231,231,231,.15); }
+
+/* Couleurs de marque réelles */
+.lt-social--wa { background: #25d366; color: #fff; border-color: #25d366; }
+.lt-social--fb { background: #1877f2; color: #fff; border-color: #1877f2; }
+.lt-social--ig { background: linear-gradient(135deg, #f9ce34, #ee2a7b, #6228d7); color: #fff; border-color: transparent; }
+.lt-social--tt { background: #010101; color: #fff; border-color: #010101; }
+.lt-social--yt { background: #ff0000; color: #fff; border-color: #ff0000; }
+.lt-social--tg { background: #0088cc; color: #fff; border-color: #0088cc; }
+.lt-social--tw { background: #000000; color: #fff; border-color: #000000; }
+
+.lt-social--wa:hover { box-shadow: 0 8px 24px rgba(37,211,102,.4); }
+.lt-social--fb:hover { box-shadow: 0 8px 24px rgba(24,119,242,.4); }
+.lt-social--ig:hover { box-shadow: 0 8px 24px rgba(238,42,123,.35); }
+.lt-social--tt:hover { box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.lt-social--yt:hover { box-shadow: 0 8px 24px rgba(255,0,0,.35); }
+.lt-social--tg:hover { box-shadow: 0 8px 24px rgba(0,136,204,.4); }
+.lt-social--tw:hover { box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 
 .lt-footer__social-text {
     font-size: 1rem; /* était .8rem */

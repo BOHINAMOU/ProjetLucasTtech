@@ -128,7 +128,7 @@ header { position: sticky; top: 0; z-index: 400; }
   gap: .2rem; list-style: none; margin-left: auto;
 }
 .navbar__links a {
-  padding: .6rem 1.15rem; font-size: 1.02rem; font-weight: 600;
+  padding: .6rem .8rem; font-size: .98rem; font-weight: 600;
   color: var(--muted); text-decoration: none;
   position: relative; transition: color .2s;
   white-space: nowrap;
@@ -254,7 +254,7 @@ header { position: sticky; top: 0; z-index: 400; }
   font-weight: 700 !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1150px) {
   .navbar__links { display: none; }
   .nav-auth      { display: none; }
   .navbar__burger { display: flex; }

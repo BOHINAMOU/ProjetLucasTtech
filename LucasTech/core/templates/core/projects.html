@@ -1,0 +1,107 @@
+{% extends 'core/base.html' %}
+{% block title %}Projets réalisés — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
+  --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.07);
+  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
+  --accent: #b8420a; --accent2: #c9a84c;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.pj-hero {
+  background: #14100c; color: #f2ede6;
+  padding: 64px clamp(1.5rem,6vw,5rem) 56px;
+}
+.pj-hero-eyebrow { color: var(--accent2); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
+.pj-hero-title { font-family: var(--serif); font-size: clamp(2rem,4vw,3rem); font-weight: 800; }
+.pj-hero-title em { color: var(--accent); font-style: italic; }
+.pj-hero-sub { margin-top: 14px; font-size: 1rem; color: #a89c8c; max-width: 640px; line-height: 1.7; }
+
+.pj-grid {
+  max-width: 1200px; margin: 0 auto;
+  padding: 56px clamp(1.5rem,6vw,5rem) 96px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+}
+.pj-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 20px;
+  overflow: hidden; box-shadow: 0 8px 32px var(--shadow);
+  transition: transform .3s;
+}
+.pj-card:hover { transform: translateY(-4px); }
+.pj-media {
+  aspect-ratio: 16/10; background: var(--surf2);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.pj-media img { width: 100%; height: 100%; object-fit: cover; }
+.pj-media-placeholder { font-size: 3rem; opacity: .2; }
+.pj-body { padding: 24px 26px 28px; }
+.pj-client { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.pj-title { font-family: var(--serif); font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; }
+.pj-desc { font-size: .92rem; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+.pj-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.pj-tag {
+  font-size: .72rem; font-weight: 600; padding: 4px 12px; border-radius: 99px;
+  background: rgba(184,66,10,.08); color: var(--accent); border: 1px solid rgba(184,66,10,.18);
+}
+.pj-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .85rem; font-weight: 700; color: var(--ink); text-decoration: none;
+}
+.pj-link:hover { color: var(--accent); }
+
+.pj-empty {
+  max-width: 1200px; margin: 0 auto; padding: 80px clamp(1.5rem,6vw,5rem);
+  text-align: center; color: var(--muted);
+}
+</style>
+
+<div class="pj-hero">
+  <p class="pj-hero-eyebrow">LucasTech</p>
+  <h1 class="pj-hero-title">Projets <em>réalisés</em></h1>
+  <p class="pj-hero-sub">Un aperçu des projets que nous avons menés pour nos clients et partenaires.</p>
+</div>
+
+{% if projects %}
+<div class="pj-grid">
+  {% for project in projects %}
+  <div class="pj-card">
+    <div class="pj-media">
+      {% if project.image %}
+        <img src="{{ project.image.url }}" alt="{{ project.title }}">
+      {% else %}
+        <div class="pj-media-placeholder">🚀</div>
+      {% endif %}
+    </div>
+    <div class="pj-body">
+      {% if project.client or project.year %}
+      <p class="pj-client">{{ project.client }}{% if project.client and project.year %} · {% endif %}{{ project.year }}</p>
+      {% endif %}
+      <h3 class="pj-title">{{ project.title }}</h3>
+      <p class="pj-desc">{{ project.description }}</p>
+      {% if project.get_technologies %}
+      <div class="pj-tags">
+        {% for tech in project.get_technologies %}
+          <span class="pj-tag">{{ tech }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if project.link %}
+      <a href="{{ project.link }}" target="_blank" rel="noopener" class="pj-link">
+        Voir le projet <i class="fa fa-arrow-right"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="pj-empty">Nos projets réalisés seront bientôt présentés ici.</p>
+{% endif %}
+{% endblock %}
