@@ -4,8 +4,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="LucasTech – Formations, services numériques, boutique et publications tech au Togo.">
+  <meta name="description" content="{% block meta_description %}LucasTech – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}LucasTech, Togo, formations, services numériques, boutique tech, Lomé{% endblock %}">
   <title>{% block title %}LucasTech — Technologie & Formation{% endblock %}</title>
+
+  <!-- Open Graph / réseaux sociaux -->
+  <meta property="og:site_name" content="LucasTech">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_title %}LucasTech — Technologie & Formation{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}LucasTech – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,6 +57,14 @@
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
       <li><a href="{% url 'core:team' %}">Équipe</a></li>
     </ul>
+
+    <form class="nav-search" action="{% url 'shop:shop' %}" method="get" id="navSearchForm">
+      <button type="button" class="nav-search__toggle" id="navSearchToggle" aria-label="Rechercher un produit">
+        <i class="fa fa-search"></i>
+      </button>
+      <input type="search" name="q" class="nav-search__input" id="navSearchInput"
+             placeholder="Rechercher un produit…" autocomplete="off">
+    </form>
 
     <div class="nav-auth">
       {% if user.is_authenticated %}
@@ -370,6 +388,22 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
     btn.classList.remove('open');
     btn.setAttribute('aria-expanded','false');
   }));
+}());
+
+/* ── Recherche navbar ── */
+(function(){
+  const toggle = document.getElementById('navSearchToggle');
+  const form   = document.getElementById('navSearchForm');
+  const input  = document.getElementById('navSearchInput');
+  if(!toggle||!form||!input) return;
+  toggle.addEventListener('click', function(e){
+    e.stopPropagation();
+    const open = form.classList.toggle('open');
+    if(open) input.focus();
+  });
+  document.addEventListener('click', function(e){
+    if(!form.contains(e.target)) form.classList.remove('open');
+  });
 }());
 
 /* ── Lien actif ── */

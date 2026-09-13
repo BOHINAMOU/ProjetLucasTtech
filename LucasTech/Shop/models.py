@@ -43,6 +43,10 @@ class Product(models.Model):
     name         = models.CharField(max_length=255, db_index=True)  # 🔥 index pour recherche rapide
     description  = models.TextField()
     price        = models.DecimalField(max_digits=10, decimal_places=2)
+    old_price    = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Ancien prix (avant réduction). Laisser vide si le produit n'est pas en promotion."
+    )
     bulk_price   = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Prix en gros")
     bulk_min_qty = models.PositiveIntegerField(default=10, help_text="Quantité min pour prix en gros")
     image        = models.ImageField(upload_to='shop/products/', blank=True, null=True)
@@ -62,6 +66,16 @@ class Product(models.Model):
     @property
     def is_in_stock(self):
         return self.stock > 0
+
+    @property
+    def is_on_sale(self):
+        return bool(self.old_price and self.old_price > self.price)
+
+    @property
+    def discount_percent(self):
+        if not self.is_on_sale:
+            return 0
+        return round((self.old_price - self.price) / self.old_price * 100)
 
 
 # ─────────────────────────────

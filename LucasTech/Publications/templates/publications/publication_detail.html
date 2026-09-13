@@ -1,5 +1,9 @@
 {% extends 'core/base.html' %}
 {% block title %}{{ publication.title }} — LucasTech{% endblock %}
+{% block meta_description %}{{ publication.content|striptags|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ publication.title }} — LucasTech{% endblock %}
+{% block og_description %}{{ publication.content|striptags|truncatechars:155 }}{% endblock %}
+{% block og_image %}{% if publication.cover_image %}{{ publication.cover_image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block content %}
 <style>

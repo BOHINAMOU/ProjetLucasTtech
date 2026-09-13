@@ -1,5 +1,9 @@
 {% extends 'core/base.html' %}
 {% block title %}{{ product.name }} — LucasTech{% endblock %}
+{% block meta_description %}{{ product.description|striptags|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ product.name }} — LucasTech{% endblock %}
+{% block og_description %}{{ product.description|striptags|truncatechars:155 }}{% endblock %}
+{% block og_image %}{% if product.image %}{{ product.image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block content %}
 <style>
@@ -95,6 +99,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-badge.featured    { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(201,68,10,.35); }
 .pd-badge.available   { background: rgba(45,122,95,.12); color: var(--green); border: 1.5px solid rgba(45,122,95,.3); }
 .pd-badge.unavailable { background: rgba(201,48,96,.1); color: var(--rose); border: 1.5px solid rgba(201,48,96,.25); }
+.pd-badge.sale { background: var(--rose); color: #fff; box-shadow: 0 4px 14px rgba(201,48,96,.35); }
 
 /* ── Info column ── */
 .pd-info { animation: fadeUp .5s .1s ease both; }
@@ -157,6 +162,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-price-note {
   font-size: .75rem; color: var(--muted); margin-top: 6px;
 }
+.pd-price-old {
+  font-size: 1.1rem; color: var(--muted);
+  text-decoration: line-through; margin-bottom: 2px;
+}
+.pd-price-save {
+  font-family: var(--font); font-size: .78rem; font-weight: 800;
+  color: #fff; background: var(--rose);
+  padding: 4px 10px; border-radius: 99px; margin-left: 10px;
+  vertical-align: middle;
+}
 
 .pd-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
@@ -195,6 +210,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: var(--ink2);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(26,23,19,.2);
+}
+
+/* Achat direct */
+.btn-buy-now {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 16px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 12px;
+  font-family: var(--font); font-size: .97rem; font-weight: 700;
+  cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s;
+  letter-spacing: .01em; margin-bottom: 10px;
+}
+.btn-buy-now:hover {
+  background: var(--accent2, var(--accent));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201,68,10,.3);
 }
 
 /* WhatsApp */
@@ -245,6 +276,40 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 @media (max-width: 600px) {
   .pd-wrapper { padding: 0 18px; margin-bottom: 60px; }
 }
+
+/* Produits similaires */
+.pd-related {
+  max-width: 1240px; margin: 0 auto 96px; padding: 0 clamp(1.5rem,6vw,5rem);
+}
+.pd-related-title {
+  font-family: var(--serif); font-size: 1.6rem; font-weight: 800;
+  margin-bottom: 24px;
+}
+.pd-related-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 22px;
+}
+.pd-related-card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--surf); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; transition: transform .25s, box-shadow .25s;
+}
+.pd-related-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.08); }
+.pd-related-media {
+  position: relative; aspect-ratio: 1/1; background: var(--surf2);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.pd-related-media img { width: 100%; height: 100%; object-fit: cover; }
+.pd-related-body { padding: 16px 18px; }
+.pd-related-name {
+  font-size: .92rem; font-weight: 700; color: var(--ink);
+  margin-bottom: 6px; line-height: 1.35;
+}
+.pd-related-price { font-size: .95rem; font-weight: 800; color: var(--accent); }
+.pd-related-price-old {
+  font-weight: 500; color: var(--muted); text-decoration: line-through;
+  margin-right: 6px; font-size: .85rem;
+}
 </style>
 
 <!-- Breadcrumb -->
@@ -263,7 +328,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <!-- ══ MÉDIA ══ -->
   <div>
     <div class="pd-media">
-      {% if product.is_featured %}
+      {% if product.is_on_sale %}
+        <span class="pd-badge sale">-{{ product.discount_percent }}%</span>
+      {% elif product.is_featured %}
         <span class="pd-badge featured"><i class="fa fa-star"></i> Vedette</span>
       {% elif product.is_in_stock %}
         <span class="pd-badge available">Disponible</span>
@@ -363,7 +430,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <!-- Carte achat -->
     <div class="pd-buy-card">
       <div class="pd-price-block">
-        <div class="pd-price">{{ product.price }}<small>FCFA</small></div>
+        {% if product.is_on_sale %}
+          <div class="pd-price-old">{{ product.old_price }} FCFA</div>
+        {% endif %}
+        <div class="pd-price">{{ product.price }}<small>FCFA</small>{% if product.is_on_sale %}<span class="pd-price-save">-{{ product.discount_percent }}%</span>{% endif %}</div>
         <p class="pd-price-note">Prix TTC · Livraison calculée à la commande</p>
       </div>
 
@@ -376,6 +446,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           <span class="pd-qty-label">Quantité</span>
           <input class="pd-qty-input" type="number" name="quantity" min="1" max="{{ product.stock }}" value="1">
         </div>
+        <button type="submit" name="buy_now" value="1" class="btn-buy-now">
+          <i class="fa fa-bolt"></i> Acheter maintenant
+        </button>
         <button type="submit" class="btn-add-cart">
           <i class="fa fa-shopping-cart"></i> Ajouter au panier
         </button>
@@ -424,6 +497,33 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   </div>
 
 </div>
+
+{% if related_products %}
+<div class="pd-related">
+  <h2 class="pd-related-title">Vous pourriez aussi aimer</h2>
+  <div class="pd-related-grid">
+    {% for rp in related_products %}
+    <a href="{% url 'shop:product_detail' rp.pk %}" class="pd-related-card">
+      <div class="pd-related-media">
+        {% if rp.is_on_sale %}<span class="pd-badge sale" style="position:absolute;">-{{ rp.discount_percent }}%</span>{% endif %}
+        {% if rp.image %}
+          <img src="{{ rp.image.url }}" alt="{{ rp.name }}" loading="lazy">
+        {% else %}
+          <div class="sh-card-media-placeholder">🛍️</div>
+        {% endif %}
+      </div>
+      <div class="pd-related-body">
+        <h3 class="pd-related-name">{{ rp.name }}</h3>
+        <div class="pd-related-price">
+          {% if rp.is_on_sale %}<span class="pd-related-price-old">{{ rp.old_price }}</span>{% endif %}
+          {{ rp.price }} FCFA
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 
 <script>
 function pdSwapImage(btn, url) {

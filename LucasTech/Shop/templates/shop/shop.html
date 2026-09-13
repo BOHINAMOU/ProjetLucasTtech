@@ -1,5 +1,8 @@
 {% extends 'core/base.html' %}
 {% block title %}Boutique E-Commerce — LucasTech{% endblock %}
+{% block meta_description %}Découvrez la boutique Tech LucasTech : produits et accessoires numériques sélectionnés, prix compétitifs, promotions et livraison au Togo.{% endblock %}
+{% block og_title %}Boutique E-Commerce — LucasTech{% endblock %}
+{% block og_description %}Produits et accessoires Tech sélectionnés, promotions en cours, livraison au Togo.{% endblock %}
 
 {% block content %}
 <style>
@@ -268,6 +271,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: var(--accent); color: #fff;
   border: none; box-shadow: 0 4px 14px rgba(201,68,10,.35);
 }
+.sh-badge.sale {
+  background: var(--rose); color: #fff;
+  border: none; box-shadow: 0 4px 14px rgba(201,48,96,.35);
+}
 
 /* Body */
 .sh-card-body {
@@ -327,6 +334,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-card-price small {
   font-size: .7rem; color: var(--muted);
   font-weight: 500; margin-top: 2px;
+}
+.sh-card-price-old {
+  font-size: .78rem; color: var(--muted);
+  text-decoration: line-through; margin-bottom: 1px;
 }
 
 /* ★★★ BOUTON VOIR — Très lisible, très visible ★★★ */
@@ -505,7 +516,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
       <!-- Media -->
       <div class="sh-card-media">
-        {% if product.is_featured %}
+        {% if product.is_on_sale %}
+          <span class="sh-badge sale">-{{ product.discount_percent }}%</span>
+        {% elif product.is_featured %}
           <span class="sh-badge featured"><i class="fa fa-star"></i> Vedette</span>
         {% elif product.is_in_stock %}
           <span class="sh-badge available">Disponible</span>
@@ -558,6 +571,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <!-- Footer -->
       <div class="sh-card-footer">
         <div class="sh-card-price">
+          {% if product.is_on_sale %}
+            <span class="sh-card-price-old">{{ product.old_price }} FCFA</span>
+          {% endif %}
           <strong>{{ product.price }}</strong>
           <small>FCFA</small>
         </div>

@@ -1,5 +1,9 @@
 {% extends 'core/base.html' %}
-{% block title %}{{ formation.title }}{% endblock %}
+{% block title %}{{ formation.title }} — LucasTech{% endblock %}
+{% block meta_description %}{{ formation.description|striptags|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ formation.title }} — LucasTech{% endblock %}
+{% block og_description %}{{ formation.description|striptags|truncatechars:155 }}{% endblock %}
+{% block og_image %}{% if formation.image %}{{ formation.image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block content %}
 <style>

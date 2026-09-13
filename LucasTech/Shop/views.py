@@ -49,9 +49,13 @@ def shop(request):
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk, is_available=True)
     reviews = product.reviews.all()
+    related_products = Product.objects.filter(
+        category=product.category, is_available=True
+    ).exclude(pk=product.pk)[:4] if product.category else Product.objects.none()
     return render(request, 'shop/product_detail.html', {
         'product': product,
         'reviews': reviews,
+        'related_products': related_products,
     })
 
 
@@ -68,6 +72,8 @@ def add_to_cart(request, pk):
         item.quantity = item.quantity + quantity if not created else quantity
         item.save()
         messages.success(request, f'✓ "{product.name}" ajouté au panier.')
+        if request.POST.get('buy_now'):
+            return redirect('shop:checkout')
     return redirect('shop:cart')
 
 
