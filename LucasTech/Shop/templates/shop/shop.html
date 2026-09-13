@@ -153,9 +153,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-cats-scroll::-webkit-scrollbar { display: none; }
 
 .sh-cat-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 18px; border-radius: 99px; white-space: nowrap;
-  font-size: .82rem; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 99px; white-space: nowrap;
+  font-size: .95rem; font-weight: 700; cursor: pointer;
   border: 1.5px solid transparent; background: transparent;
   color: var(--muted); text-decoration: none;
   transition: all .2s; flex-shrink: 0;
@@ -166,7 +166,32 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-cat-btn.active {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
-.sh-cat-btn i { font-size: .85rem; }
+.sh-cat-btn i { font-size: .95rem; }
+
+/* Couleur distincte par catégorie */
+.sh-cat-btn.c-1 { color: #b8420a; }
+.sh-cat-btn.c-1:hover { background: rgba(184,66,10,.09); }
+.sh-cat-btn.c-1.active { background: #b8420a; border-color: #b8420a; color: #fff; }
+
+.sh-cat-btn.c-2 { color: #2c5f4a; }
+.sh-cat-btn.c-2:hover { background: rgba(44,95,74,.09); }
+.sh-cat-btn.c-2.active { background: #2c5f4a; border-color: #2c5f4a; color: #fff; }
+
+.sh-cat-btn.c-3 { color: #a5761f; }
+.sh-cat-btn.c-3:hover { background: rgba(165,118,31,.09); }
+.sh-cat-btn.c-3.active { background: #a5761f; border-color: #a5761f; color: #fff; }
+
+.sh-cat-btn.c-4 { color: #c93060; }
+.sh-cat-btn.c-4:hover { background: rgba(201,48,96,.09); }
+.sh-cat-btn.c-4.active { background: #c93060; border-color: #c93060; color: #fff; }
+
+.sh-cat-btn.c-5 { color: #3b5a7a; }
+.sh-cat-btn.c-5:hover { background: rgba(59,90,122,.09); }
+.sh-cat-btn.c-5.active { background: #3b5a7a; border-color: #3b5a7a; color: #fff; }
+
+.sh-cat-btn.c-6 { color: #6b3fa0; }
+.sh-cat-btn.c-6:hover { background: rgba(107,63,160,.09); }
+.sh-cat-btn.c-6.active { background: #6b3fa0; border-color: #6b3fa0; color: #fff; }
 
 /* ═══════════════════════════════════
    SECTION / GRID
@@ -465,7 +490,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
       {% for cat in categories %}
       <a href="{% url 'shop:shop' %}?category={{ cat.slug }}"
-         class="sh-cat-btn {% if active_category.slug == cat.slug %}active{% endif %}">
+         class="sh-cat-btn {% cycle 'c-1' 'c-2' 'c-3' 'c-4' 'c-5' 'c-6' %} {% if active_category.slug == cat.slug %}active{% endif %}">
         {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
         {{ cat.name }}
       </a>
