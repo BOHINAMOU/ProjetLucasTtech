@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Mon Panier — LucasTech{% endblock %}
 
 {% block content %}
@@ -160,6 +161,32 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
   .ct-item{grid-template-columns:68px 1fr;}
   .ct-item-right{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;}
 }
+
+/* Explorer — rangée de vignettes en pleine largeur */
+.ct-explore{
+  max-width:1040px;margin:0 auto 96px;padding:0 clamp(1.2rem,5vw,4rem) 0;
+}
+.ct-explore-title{
+  font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:16px;
+}
+.ct-explore-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px;}
+.ct-explore-tile{
+  position:relative;overflow:hidden;border-radius:14px;flex-shrink:0;
+  width:220px;height:120px;display:flex;align-items:flex-end;
+  background-size:cover;background-position:center;text-decoration:none;
+  transition:transform .25s,box-shadow .25s;
+}
+.ct-explore-tile:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.18);}
+.ct-explore-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(10,8,6,.85) 0%,rgba(10,8,6,.1) 75%);
+}
+.ct-explore-label{
+  position:relative;z-index:1;display:flex;align-items:center;gap:8px;
+  padding:14px;font-size:.85rem;font-weight:700;color:#fff;
+}
+.ct-explore-label i{color:var(--gold);font-size:.88rem;}
 </style>
 
 <div class="ct-wrap">
@@ -246,5 +273,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
 
   {% endif %}
 
+</div>
+
+<!-- ══ EXPLORER ══ -->
+<div class="ct-explore">
+  <p class="ct-explore-title">Explorer</p>
+  <div class="ct-explore-row">
+    <a href="{% url 'shop:shop' %}" class="ct-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
+      <span class="ct-explore-overlay"></span>
+      <span class="ct-explore-label"><i class="fa fa-store"></i> Toute la boutique</span>
+    </a>
+    <a href="{% url 'services:services' %}" class="ct-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
+      <span class="ct-explore-overlay"></span>
+      <span class="ct-explore-label"><i class="fa fa-code"></i> Nos services</span>
+    </a>
+    <a href="{% url 'formations:formations' %}" class="ct-explore-tile" style="background-image:url('{% static 'core/images/image2.png' %}')">
+      <span class="ct-explore-overlay"></span>
+      <span class="ct-explore-label"><i class="fa fa-graduation-cap"></i> Nos formations</span>
+    </a>
+    <a href="{% url 'publications:publications' %}" class="ct-explore-tile" style="background-image:url('{% static 'core/images/image4.png' %}')">
+      <span class="ct-explore-overlay"></span>
+      <span class="ct-explore-label"><i class="fa fa-newspaper"></i> Publications</span>
+    </a>
+  </div>
 </div>
 {% endblock %}
