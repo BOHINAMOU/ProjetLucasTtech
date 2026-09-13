@@ -61,10 +61,7 @@
         </form>
       {% else %}
         <a href="{% url 'users:login' %}" class="nav-auth__login">
-          <i class="fa fa-sign-in-alt"></i> Connexion
-        </a>
-        <a href="{% url 'users:register' %}" class="nav-auth__register">
-          <i class="fa fa-user-plus"></i> S'inscrire
+          <i class="fa fa-sign-in-alt"></i> Se connecter
         </a>
       {% endif %}
     </div>
@@ -95,9 +92,6 @@
       {% else %}
         <a href="{% url 'users:login' %}" class="drawer-auth__login">
           <i class="fa fa-sign-in-alt"></i> Se connecter
-        </a>
-        <a href="{% url 'users:register' %}" class="drawer-auth__register">
-          <i class="fa fa-user-plus"></i> S'inscrire
         </a>
       {% endif %}
     </div>

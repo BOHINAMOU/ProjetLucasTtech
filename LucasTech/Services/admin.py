@@ -17,11 +17,9 @@ class ServiceAdmin(admin.ModelAdmin):
     list_editable = ['is_featured', 'is_active']
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Un superadmin voit tout, un admin ne voit que ses services
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(admin=request.user)
+        # Tout admin ayant accès à ce module voit tous les services
+        # (et pas seulement les siens).
+        return super().get_queryset(request)
 
     def save_model(self, request, obj, form, change):
         # Assigne automatiquement l'admin connecté si pas de superuser

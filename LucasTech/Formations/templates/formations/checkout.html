@@ -3,16 +3,15 @@
 
 {% block content %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500&display=swap');
 
 :root {
-  --navy:  #0B1120; --navy2: #111827; --navy3: #1E2A3D;
-  --blue:  #2563EB; --blue2: #3B82F6; --cyan: #06B6D4;
-  --white: #F0F4FF; --muted: #94A3B8;
-  --green: #10B981; --r: 14px;
+  --navy:  #f7f3ee; --navy2: #faf8f5; --navy3: #f2ede6;
+  --blue:  #b8420a; --blue2: #d4652a; --cyan: #c9a84c;
+  --white: #1c1814; --muted: #8a8078;
+  --green: #2c5f4a; --r: 14px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); }
+body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--white); }
 
 .co-wrap {
   max-width: 860px; margin: 48px auto 80px; padding: 0 24px;
@@ -25,7 +24,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
   animation: fadeUp .4s ease both;
 }
 .co-header h1 {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -.02em;
 }
 .co-header p { color: var(--muted); font-size: .9rem; margin-top: 6px; }
@@ -56,7 +55,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 /* ── LEFT: récap items ── */
 .co-items { animation: fadeUp .4s .1s ease both; }
 .co-items-title {
-  font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+  font-family: 'Cormorant Garamond', serif; font-size: .95rem; font-weight: 700;
   letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
   margin-bottom: 16px;
 }
@@ -85,21 +84,21 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 .co-item-sub { font-size: .76rem; color: var(--muted); margin-top: 2px; }
 
 .co-item-price {
-  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+  font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 700;
   white-space: nowrap; flex-shrink: 0;
 }
-.co-item-price sub { font-family:'Inter',sans-serif; font-size:.68rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
+.co-item-price sub { font-family:'Outfit',sans-serif; font-size:.68rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
 
 /* ── RIGHT: summary & confirm ── */
 .co-summary { animation: fadeUp .4s .15s ease both; position: sticky; top: 32px; }
 
 .co-card {
-  background: var(--navy2); border: 1px solid rgba(37,99,235,.2);
+  background: var(--navy2); border: 1px solid rgba(0,0,0,.085);
   border-radius: var(--r); padding: 28px 24px;
 }
 
 .co-card-title {
-  font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+  font-family: 'Cormorant Garamond', serif; font-size: .95rem; font-weight: 700;
   letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
   margin-bottom: 20px;
 }
@@ -113,9 +112,9 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
   margin-top: 8px; font-size: 1rem; font-weight: 600; color: var(--white);
 }
 .co-total-amount {
-  font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 800;
 }
-.co-total-amount sub { font-family:'Inter',sans-serif; font-size:.75rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
+.co-total-amount sub { font-family:'Outfit',sans-serif; font-size:.75rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
 
 /* Guarantee badges */
 .co-badges {
@@ -131,7 +130,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 .btn-confirm {
   display: block; width: 100%;
   padding: 15px; background: var(--green); color: #fff; border: none;
-  border-radius: 10px; font-family: 'Inter', sans-serif;
+  border-radius: 10px; font-family: 'Outfit', sans-serif;
   font-size: 1rem; font-weight: 600; text-align: center;
   cursor: pointer; transition: background .2s, transform .15s;
   letter-spacing: .02em;
@@ -208,7 +207,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
       </div>
       <div class="co-item-info">
         <div class="co-item-title">{{ item.formation.title }}</div>
-        <div class="co-item-sub">par {{ item.formation.author.email }} &nbsp;·&nbsp; qté : {{ item.quantity }}</div>
+        <div class="co-item-sub">par {{ item.formation.author.public_name }} &nbsp;·&nbsp; qté : {{ item.quantity }}</div>
       </div>
       <div class="co-item-price">{{ item.total_price }}<sub>FCFA</sub></div>
     </div>

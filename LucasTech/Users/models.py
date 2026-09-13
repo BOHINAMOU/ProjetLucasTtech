@@ -51,6 +51,14 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
+    @property
+    def public_name(self):
+        """Nom affichable publiquement (jamais l'email, pour la confidentialité)."""
+        full = self.get_full_name().strip()
+        if full:
+            return full
+        return "Membre LucasTech"
+
 
 # ─────────────────────────────
 # 🔑 CODE RESET MOT DE PASSE (OTP)

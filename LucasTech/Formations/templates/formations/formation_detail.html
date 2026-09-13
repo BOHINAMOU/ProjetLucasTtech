@@ -3,23 +3,22 @@
 
 {% block content %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500&display=swap');
 
 :root {
-  --navy:   #0B1120;
-  --navy2:  #111827;
-  --navy3:  #1E2A3D;
-  --blue:   #2563EB;
-  --blue2:  #3B82F6;
-  --cyan:   #06B6D4;
-  --white:  #F0F4FF;
-  --muted:  #94A3B8;
-  --border: rgba(37,99,235,.2);
+  --navy:   #f7f3ee;
+  --navy2:  #faf8f5;
+  --navy3:  #f2ede6;
+  --blue:   #b8420a;
+  --blue2:  #d4652a;
+  --cyan:   #c9a84c;
+  --white:  #1c1814;
+  --muted:  #8a8078;
+  --border: rgba(0,0,0,.085);
   --r:      14px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); }
+body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--white); }
 
 /* ── BREADCRUMB ── */
 .fd-breadcrumb {
@@ -83,14 +82,14 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 
 /* ── TEXT ── */
 .fd-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: clamp(1.6rem, 3vw, 2.3rem);
   font-weight: 800; line-height: 1.2; letter-spacing: -.02em;
   margin: 24px 0 16px;
   animation: fadeUp .5s .15s ease both;
 }
 .fd-desc {
-  font-size: .98rem; color: #94A3B8; line-height: 1.78;
+  font-size: .98rem; color: #8a8078; line-height: 1.78;
   animation: fadeUp .5s .2s ease both;
 }
 
@@ -114,13 +113,13 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 }
 
 .fd-price {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 2.4rem; font-weight: 800; letter-spacing: -.02em;
   color: var(--white);
   margin-bottom: 4px;
 }
 .fd-price sub {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: .9rem; font-weight: 400; color: var(--muted); vertical-align: baseline; margin-left: 4px;
 }
 
@@ -134,7 +133,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 .fd-qty-input {
   width: 68px; padding: 9px 12px;
   border: 1.5px solid rgba(37,99,235,.3); border-radius: 8px;
-  background: var(--navy3); font-family: 'Inter', sans-serif;
+  background: var(--navy3); font-family: 'Outfit', sans-serif;
   font-size: 1rem; color: var(--white); text-align: center; outline: none;
   transition: border-color .2s;
 }
@@ -144,7 +143,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 .btn-primary {
   display: block; width: 100%; padding: 14px;
   background: var(--blue); color: #fff; border: none; border-radius: 10px;
-  font-family: 'Inter', sans-serif; font-size: .95rem; font-weight: 500;
+  font-family: 'Outfit', sans-serif; font-size: .95rem; font-weight: 500;
   cursor: pointer; transition: background .2s, transform .15s;
   margin-bottom: 10px; letter-spacing: .02em;
 }
@@ -155,7 +154,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
   display: flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 13px;
   background: #25D366; color: #fff; text-decoration: none; border-radius: 10px;
-  font-family: 'Inter', sans-serif; font-size: .95rem; font-weight: 500;
+  font-family: 'Outfit', sans-serif; font-size: .95rem; font-weight: 500;
   transition: background .2s, transform .15s;
 }
 .btn-whatsapp:hover { background: #1EB85A; transform: translateY(-1px); }
@@ -212,8 +211,8 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
     </div>
 
     <div class="fd-meta">
-      <div class="fd-avatar">{{ formation.author.email|slice:":1"|upper }}</div>
-      <div class="fd-author-name">Publié par <strong>{{ formation.author.email }}</strong></div>
+      <div class="fd-avatar">{{ formation.author.public_name|slice:":1"|upper }}</div>
+      <div class="fd-author-name">Publié par <strong>{{ formation.author.public_name }}</strong></div>
       <span class="fd-date">{{ formation.created_at|date:"d M Y" }}</span>
     </div>
 

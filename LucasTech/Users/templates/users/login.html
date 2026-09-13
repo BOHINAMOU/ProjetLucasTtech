@@ -3,16 +3,15 @@
 
 {% block content %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
 
 :root {
-  --navy:  #05070f; --navy2: #0d1121; --navy3: #1e2640;
-  --accent: #00d4ff; --accent2: #7b5cf5;
-  --green: #00d278;
-  --white: #eef0f8; --muted: #8892b0;
+  --navy:  #f7f3ee; --navy2: #faf8f5; --navy3: #f2ede6;
+  --accent: #b8420a; --accent2: #c9a84c;
+  --green: #2c5f4a;
+  --white: #1c1814; --muted: #8a8078;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); }
+body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--white); }
 
 .auth-page {
   min-height: calc(100vh - 76px);
@@ -23,16 +22,16 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
   content: '';
   position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
   width: 600px; height: 400px;
-  background: radial-gradient(ellipse, rgba(37,99,235,.18) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(184,66,10,.15) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .auth-card {
   width: 100%; max-width: 460px;
   background: var(--navy2);
-  border: 1px solid rgba(37,99,235,.2);
+  border: 1px solid rgba(184,66,10,.2);
   border-radius: 20px; padding: 48px 44px;
-  box-shadow: 0 24px 80px rgba(0,0,0,.4);
+  box-shadow: 0 24px 80px rgba(0,0,0,.12);
   position: relative; z-index: 1;
   animation: fadeUp .5s ease both;
 }
@@ -45,7 +44,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 }
 
 .auth-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 1.8rem; font-weight: 800;
   text-align: center; margin-bottom: 6px;
 }
@@ -92,7 +91,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 .auth-input {
   padding: 13px 16px;
   background: var(--navy3);
-  border: 1.5px solid rgba(255,255,255,.08);
+  border: 1.5px solid rgba(0,0,0,.085);
   border-radius: 10px;
   color: var(--white);
   outline: none;
@@ -100,7 +99,7 @@ body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--w
 
 .auth-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0,212,255,.1);
+  box-shadow: 0 0 0 3px rgba(184,66,10,.12);
 }
 
 .input-wrap { position: relative; }
