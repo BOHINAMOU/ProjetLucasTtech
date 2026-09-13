@@ -496,17 +496,29 @@ header { position: sticky; top: 0; z-index: 400; }
 }
 .hs-slide {
   position: absolute; inset: 0;
-  background-size: cover; background-position: center 20%;
   display: flex; align-items: flex-end;
-  text-decoration: none;
+  text-decoration: none; overflow: hidden;
   opacity: 0; visibility: hidden;
   transition: opacity 1s ease;
   z-index: 1;
 }
 .hs-slide.is-active { opacity: 1; visibility: visible; z-index: 2; }
+
+/* Fond flouté plein cadre (comble les bords) */
+.hs-bg-blur {
+  position: absolute; inset: -30px;
+  background-size: cover; background-position: center;
+  filter: blur(38px) brightness(.55) saturate(1.15);
+  transform: scale(1.15);
+}
+/* Photo complète, jamais recadrée */
+.hs-bg-photo {
+  position: absolute; inset: 0;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+}
 .hs-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(10,8,6,.88) 0%, rgba(10,8,6,.45) 42%, rgba(10,8,6,.08) 68%);
+  background: linear-gradient(to top, rgba(10,8,6,.85) 0%, rgba(10,8,6,.32) 38%, rgba(10,8,6,0) 62%);
 }
 .hs-content {
   position: relative; z-index: 2; color: #fff;

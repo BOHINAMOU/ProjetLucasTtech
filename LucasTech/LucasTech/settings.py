@@ -153,6 +153,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.partners',
+                'core.context_processors.cache_bust',
 
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
