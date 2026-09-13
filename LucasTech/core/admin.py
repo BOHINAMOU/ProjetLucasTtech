@@ -1,7 +1,19 @@
 from django.contrib import admin
-from .models import Partner, Project, TeamMember
+from .models import Partner, Project, TeamMember, HeroSlide, NewsTickerItem
 
 admin.site.register(Partner)
+
+
+@admin.register(HeroSlide)
+class HeroSlideAdmin(admin.ModelAdmin):
+    list_display = ('tag', 'title', 'link_url', 'order', 'is_active')
+    list_editable = ('order', 'is_active')
+
+
+@admin.register(NewsTickerItem)
+class NewsTickerItemAdmin(admin.ModelAdmin):
+    list_display = ('label', 'message', 'link_url', 'order', 'is_active')
+    list_editable = ('order', 'is_active')
 
 
 @admin.register(Project)

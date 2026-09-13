@@ -103,64 +103,48 @@
 <!-- ═══════════ MAIN ═══════════ -->
 <main id="main-content">
 {% block content %}
-<!-- ── BARRE D'ACTUALITÉS (liens datés) ── -->
+{% if news_items %}
+<!-- ── BARRE D'ACTUALITÉS (liens datés, gérable dans l'admin) ── -->
 <div class="news-ticker" aria-label="Actualités LucasTech">
   <div class="news-ticker__track">
-    <a href="{% url 'formations:formations' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Nouveau</span> Formation développement web — inscriptions ouvertes</a>
-    <a href="{% url 'shop:shop' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Boutique</span> Nouveaux produits Tech disponibles</a>
-    <a href="{% url 'publications:publications' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Article</span> L'Afrique et la révolution numérique en 2026</a>
-    <a href="{% url 'services:services' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Service</span> Créez votre site vitrine en 2 semaines</a>
-    <a href="{% url 'core:team' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Équipe</span> Découvrez qui est derrière LucasTech</a>
+    {% for item in news_items %}
+    <a href="{{ item.link_url }}" class="news-chip"><span class="news-chip__date">{{ item.label }}</span> {{ item.message }}</a>
+    {% endfor %}
     <!-- Dupliqué pour boucle infinie -->
-    <a href="{% url 'formations:formations' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Nouveau</span> Formation développement web — inscriptions ouvertes</a>
-    <a href="{% url 'shop:shop' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Boutique</span> Nouveaux produits Tech disponibles</a>
-    <a href="{% url 'publications:publications' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Article</span> L'Afrique et la révolution numérique en 2026</a>
-    <a href="{% url 'services:services' %}" class="news-chip news-chip--forest"><span class="news-chip__date">Service</span> Créez votre site vitrine en 2 semaines</a>
-    <a href="{% url 'core:team' %}" class="news-chip news-chip--gold"><span class="news-chip__date">Équipe</span> Découvrez qui est derrière LucasTech</a>
+    {% for item in news_items %}
+    <a href="{{ item.link_url }}" class="news-chip" aria-hidden="true"><span class="news-chip__date">{{ item.label }}</span> {{ item.message }}</a>
+    {% endfor %}
   </div>
 </div>
+{% endif %}
 
-<!-- ── HERO — carrousel plein écran ── -->
+{% if hero_slides %}
+<!-- ── HERO — carrousel plein écran (slides gérables dans l'admin) ── -->
 <section class="hero-slider" id="heroSlider" aria-label="Présentation LucasTech">
 
-  <a href="{% url 'services:services' %}" class="hs-slide is-active" style="background-image:url('{% static 'core/images/principale.jpeg' %}')">
+  {% for slide in hero_slides %}
+  <a href="{{ slide.link_url }}" class="hs-slide{% if forloop.first %} is-active{% endif %}" style="background-image:url('{{ slide.image.url }}')">
     <div class="hs-overlay"></div>
     <div class="hs-content">
-      <p class="hs-tag">Technologie · Formation · Innovation</p>
-      <h1 class="hs-title">LucasTech, <em>votre avenir</em> commence ici.</h1>
-      <p class="hs-sub">Des solutions digitales, des formations et une boutique Tech pensées pour vous, à Lomé et partout au Togo.</p>
-      <span class="btn-pill btn-pill--solid">Découvrir nos services <i class="fa fa-arrow-right"></i></span>
+      {% if slide.tag %}<p class="hs-tag">{{ slide.tag }}</p>{% endif %}
+      <h1 class="hs-title">{{ slide.title|safe }}</h1>
+      {% if slide.subtitle %}<p class="hs-sub">{{ slide.subtitle }}</p>{% endif %}
+      <span class="btn-pill btn-pill--solid">{{ slide.link_text }} <i class="fa fa-arrow-right"></i></span>
     </div>
   </a>
+  {% endfor %}
 
-  <a href="{% url 'formations:formations' %}" class="hs-slide" style="background-image:url('{% static 'core/images/image2.png' %}')">
-    <div class="hs-overlay"></div>
-    <div class="hs-content">
-      <p class="hs-tag">Formations</p>
-      <h1 class="hs-title">Apprenez avec des <em>formateurs</em> qui construisent de vrais projets.</h1>
-      <p class="hs-sub">Développement web, e-commerce, réseaux sociaux, systèmes — des programmes professionnels pour progresser vite.</p>
-      <span class="btn-pill btn-pill--solid">Voir les formations <i class="fa fa-arrow-right"></i></span>
-    </div>
-  </a>
-
-  <a href="{% url 'shop:shop' %}" class="hs-slide" style="background-image:url('{% static 'core/images/image1.png' %}')">
-    <div class="hs-overlay"></div>
-    <div class="hs-content">
-      <p class="hs-tag">E-Commerce</p>
-      <h1 class="hs-title">La boutique Tech <em>pensée</em> pour être vue.</h1>
-      <p class="hs-sub">Produits et accessoires sélectionnés, fiches détaillées, paiement simple et livraison suivie.</p>
-      <span class="btn-pill btn-pill--solid">Voir la boutique <i class="fa fa-arrow-right"></i></span>
-    </div>
-  </a>
-
+  {% if hero_slides|length > 1 %}
   <div class="hs-dots">
-    <button type="button" class="hs-dot is-active" data-slide="0" aria-label="Slide 1"></button>
-    <button type="button" class="hs-dot" data-slide="1" aria-label="Slide 2"></button>
-    <button type="button" class="hs-dot" data-slide="2" aria-label="Slide 3"></button>
+    {% for slide in hero_slides %}
+    <button type="button" class="hs-dot{% if forloop.first %} is-active{% endif %}" data-slide="{{ forloop.counter0 }}" aria-label="Slide {{ forloop.counter }}"></button>
+    {% endfor %}
   </div>
   <button type="button" class="hs-arrow hs-arrow--prev" aria-label="Slide précédente"><i class="fa fa-chevron-left"></i></button>
   <button type="button" class="hs-arrow hs-arrow--next" aria-label="Slide suivante"><i class="fa fa-chevron-right"></i></button>
+  {% endif %}
 </section>
+{% endif %}
 
 <!-- ── SERVICES — bandes promo style Samsung ── -->
 <div id="services"></div>

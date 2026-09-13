@@ -1,9 +1,12 @@
 from django.shortcuts import render
-from .models import Partner, Project, TeamMember
+from .models import Partner, Project, TeamMember, HeroSlide, NewsTickerItem
 
 
 def home(request):
-    return render(request, 'core/base.html')
+    return render(request, 'core/base.html', {
+        'hero_slides': HeroSlide.objects.filter(is_active=True),
+        'news_items': NewsTickerItem.objects.filter(is_active=True),
+    })
 
 
 def partners(request):
