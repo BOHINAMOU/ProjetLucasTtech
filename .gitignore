@@ -1,0 +1,31 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ── Django ──
+LucasTech/db.sqlite3
+LucasTech/staticfiles/
+*.log
+
+# NOTE: LucasTech/media/ is intentionally NOT ignored — Render has no
+# persistent disk configured, so git is currently the only thing keeping
+# uploaded product/partner images across deploys. Move this to Render's
+# persistent disk or an object store (S3/Cloudinary) and THEN ignore it.
+
+# ── Secrets / env ──
+.env
+*.env
+!.env.example
+
+# ── Virtualenv ──
+venv/
+env/
+.venv/
+
+# ── Editors / OS ──
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

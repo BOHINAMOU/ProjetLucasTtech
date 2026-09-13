@@ -62,13 +62,9 @@ def password_reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email", "").strip().lower()
 
-        print("📩 EMAIL SAISI :", email)
-
         user = User.objects.filter(email__iexact=email).first()
 
         if user:
-            print("✅ USER TROUVÉ :", user.email)
-
             otp = PasswordResetCode.objects.create(
                 user=user,
                 code=PasswordResetCode.generate_code()
@@ -96,9 +92,7 @@ Ce code est valable 5 minutes.
 
             # IMPORTANT : stocker session
             request.session["reset_user_id"] = user.id
-
-        else:
-            print("❌ AUCUN UTILISATEUR TROUVÉ POUR :", email)
+            request.session["reset_attempts"] = 0
 
         messages.success(request, "Un email contenant un code vous a été envoyé.")
         return redirect("users:password_reset_email_sent")
@@ -125,7 +119,16 @@ def password_reset_verify(request):
 
     user = get_object_or_404(User, id=user_id)
 
+    MAX_ATTEMPTS = 5
+
     if request.method == "POST":
+        attempts = request.session.get("reset_attempts", 0)
+
+        if attempts >= MAX_ATTEMPTS:
+            request.session.flush()
+            messages.error(request, "Trop de tentatives. Recommencez la procédure.")
+            return redirect("users:password_reset")
+
         code = request.POST.get("code", "").strip()
 
         otp = PasswordResetCode.objects.filter(
@@ -135,7 +138,13 @@ def password_reset_verify(request):
         ).first()
 
         if not otp or not otp.is_valid():
-            messages.error(request, "Code invalide ou expiré")
+            request.session["reset_attempts"] = attempts + 1
+            remaining = MAX_ATTEMPTS - (attempts + 1)
+            if remaining <= 0:
+                request.session.flush()
+                messages.error(request, "Trop de tentatives. Recommencez la procédure.")
+                return redirect("users:password_reset")
+            messages.error(request, f"Code invalide ou expiré ({remaining} tentative(s) restante(s))")
             return redirect("users:password_reset_verify")
 
         otp.is_used = True
