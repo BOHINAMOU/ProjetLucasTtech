@@ -312,34 +312,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   margin-right: 6px; font-size: .85rem;
 }
 
-/* Description complète — pleine largeur, sous photo + achat */
-.pd-full {
-  max-width: 1240px; margin: 0 auto 88px; padding: 0 clamp(1.5rem,6vw,5rem);
-  padding-top: 48px; border-top: 1px solid var(--border);
+/* Description — collée sous la photo, dans la colonne de gauche */
+.pd-desc-block {
+  margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);
 }
-.pd-full-title {
-  font-family: var(--serif); font-size: 1.5rem; font-weight: 800;
-  margin-bottom: 16px;
+.pd-desc-block-title {
+  font-family: var(--serif); font-size: 1.2rem; font-weight: 800;
+  margin-bottom: 12px;
 }
-.pd-full-text {
-  font-size: .98rem; color: var(--ink2); line-height: 1.85;
-  max-width: 760px; margin-bottom: 36px;
+.pd-desc-block-text {
+  font-size: .92rem; color: var(--ink2); line-height: 1.8;
+  margin-bottom: 24px;
 }
 .pd-features {
-  display: flex; flex-wrap: wrap; gap: 28px; margin-bottom: 44px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 .pd-feature {
   display: flex; align-items: flex-start; gap: 14px;
-  flex: 1 1 220px; min-width: 220px;
 }
 .pd-feature i {
-  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
   background: rgba(184,66,10,.08); color: var(--accent);
-  display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
 }
-.pd-feature strong { display: block; font-size: .92rem; color: var(--ink); margin-bottom: 2px; }
-.pd-feature span { font-size: .82rem; color: var(--muted); }
+.pd-feature strong { display: block; font-size: .9rem; color: var(--ink); margin-bottom: 2px; }
+.pd-feature span { font-size: .8rem; color: var(--muted); }
 
+/* Explorer — pleine largeur, sous les deux colonnes */
+.pd-full {
+  max-width: 1240px; margin: 0 auto 88px; padding: 0 clamp(1.5rem,6vw,5rem);
+  padding-top: 40px; border-top: 1px solid var(--border);
+}
 .pd-full-side-title {
   font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   color: var(--muted); margin-bottom: 16px;
@@ -447,6 +450,36 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </div>
     {% endif %}
     {% endwith %}
+
+    <!-- Description, juste sous la photo -->
+    <div class="pd-desc-block">
+      <h2 class="pd-desc-block-title">Description du produit</h2>
+      <p class="pd-desc-block-text">{{ product.description|linebreaksbr }}</p>
+
+      <div class="pd-features">
+        <div class="pd-feature">
+          <i class="fa fa-truck"></i>
+          <div>
+            <strong>Livraison rapide</strong>
+            <span>Partout au Togo, délai calculé à la commande</span>
+          </div>
+        </div>
+        <div class="pd-feature">
+          <i class="fa fa-rotate-left"></i>
+          <div>
+            <strong>Produit vérifié</strong>
+            <span>Contrôlé avant expédition</span>
+          </div>
+        </div>
+        <div class="pd-feature">
+          <i class="fa fa-headset"></i>
+          <div>
+            <strong>Support client</strong>
+            <span>Une question ? Contactez-nous via WhatsApp</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 
@@ -560,35 +593,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 </div>
 
-<!-- ══ DESCRIPTION COMPLÈTE (pleine largeur) ══ -->
+<!-- ══ EXPLORER (pleine largeur) ══ -->
 <div class="pd-full">
-  <h2 class="pd-full-title">Description du produit</h2>
-  <p class="pd-full-text">{{ product.description|linebreaksbr }}</p>
-
-  <div class="pd-features">
-    <div class="pd-feature">
-      <i class="fa fa-truck"></i>
-      <div>
-        <strong>Livraison rapide</strong>
-        <span>Partout au Togo, délai calculé à la commande</span>
-      </div>
-    </div>
-    <div class="pd-feature">
-      <i class="fa fa-rotate-left"></i>
-      <div>
-        <strong>Produit vérifié</strong>
-        <span>Contrôlé avant expédition</span>
-      </div>
-    </div>
-    <div class="pd-feature">
-      <i class="fa fa-headset"></i>
-      <div>
-        <strong>Support client</strong>
-        <span>Une question ? Contactez-nous via WhatsApp</span>
-      </div>
-    </div>
-  </div>
-
   <h3 class="pd-full-side-title">Explorer</h3>
   <div class="pd-explore-row">
     {% if product.category %}
