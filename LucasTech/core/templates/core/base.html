@@ -53,12 +53,6 @@
         <a href="{% url 'users:profile' %}" class="nav-auth__status">
           <span class="dot"></span> Mon profil
         </a>
-        <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="nav-auth__logout">
-            <i class="fa fa-sign-out-alt"></i> Déconnexion
-          </button>
-        </form>
       {% else %}
         <a href="{% url 'users:login' %}" class="nav-auth__login">
           <i class="fa fa-sign-in-alt"></i> Se connecter
@@ -86,12 +80,6 @@
         <a href="{% url 'users:profile' %}" class="drawer-auth__status">
           <i class="fa fa-user-circle"></i> Mon profil
         </a>
-        <form method="post" action="{% url 'users:logout' %}" style="display:block;width:100%;">
-          {% csrf_token %}
-          <button type="submit" class="drawer-auth__logout">
-            <i class="fa fa-sign-out-alt"></i> Se déconnecter
-          </button>
-        </form>
       {% else %}
         <a href="{% url 'users:login' %}" class="drawer-auth__login">
           <i class="fa fa-sign-in-alt"></i> Se connecter
@@ -206,22 +194,6 @@
   </div>
   <div class="promo-media">
     <img src="{% static 'core/images/image4.png' %}" alt="Publications LucasTech">
-  </div>
-</section>
-
-<!-- ── Chiffres clés ── -->
-<section class="stats-band reveal">
-  <div class="stats-band-item">
-    <span class="stats-band-num">70+</span>
-    <span class="stats-band-lbl">Clients satisfaits</span>
-  </div>
-  <div class="stats-band-item">
-    <span class="stats-band-num">50+</span>
-    <span class="stats-band-lbl">Projets livrés</span>
-  </div>
-  <div class="stats-band-item">
-    <span class="stats-band-num">24/7</span>
-    <span class="stats-band-lbl">Support</span>
   </div>
 </section>
 

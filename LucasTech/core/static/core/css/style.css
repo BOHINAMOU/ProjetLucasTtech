@@ -626,22 +626,6 @@ header { position: sticky; top: 0; z-index: 400; }
   .promo-cta { justify-content: center; }
 }
 
-/* ══ BANDE CHIFFRES CLÉS ══ */
-.stats-band {
-  display: flex; justify-content: center; flex-wrap: wrap;
-  gap: clamp(2.5rem, 8vw, 6rem);
-  background: var(--ink); padding: 3.5rem 1.5rem;
-}
-.stats-band-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.stats-band-num {
-  font-family: var(--serif); font-size: 2.6rem; font-weight: 700;
-  color: var(--cream); letter-spacing: -.03em; line-height: 1;
-}
-.stats-band-lbl {
-  font-size: .74rem; font-weight: 600; letter-spacing: .14em;
-  text-transform: uppercase; color: rgba(247,243,238,.55);
-}
-
 /* ══ SERVICES ══ */
 .services-section {
   padding: 96px clamp(1.5rem, 6vw, 5rem);
