@@ -66,6 +66,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   animation: fadeUp .5s .14s ease both;
 }
 
+/* ── Recherche ── */
+.fl-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 580px; margin-top: 22px; }
+.fl-search {
+  display: flex; align-items: center;
+  background: rgba(245,242,238,.08);
+  border: 1.5px solid rgba(245,242,238,.18);
+  border-radius: 14px; overflow: hidden;
+  backdrop-filter: blur(8px);
+  transition: border-color .2s, box-shadow .2s;
+}
+.fl-search:focus-within {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 4px rgba(201,168,76,.18);
+}
+.fl-search i { padding: 0 18px; color: rgba(245,242,238,.45); font-size: .92rem; flex-shrink: 0; }
+.fl-search input {
+  flex: 1; background: none; border: none; outline: none;
+  padding: 14px 0; color: #f5f2ee;
+  font-family: var(--font); font-size: .92rem;
+}
+.fl-search input::placeholder { color: rgba(245,242,238,.4); }
+.fl-search-btn {
+  padding: 10px 22px; margin: 5px;
+  background: var(--accent); color: #fff; border: none; border-radius: 9px;
+  font-family: var(--font); font-size: .85rem; font-weight: 700; cursor: pointer;
+  transition: background .2s;
+}
+.fl-search-btn:hover { background: #b53c09; }
+.fl-search-result { margin-top: 12px; font-size: .82rem; color: rgba(245,242,238,.6); }
+.fl-search-result strong { color: var(--accent2); }
+
 /* ══ SECTION ══ */
 .fl-section {
   max-width: 1300px; margin: 48px auto 96px;
@@ -228,6 +259,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <p class="fl-hero-sub">
       Des formations créées par nos experts pour vous accompagner dans votre montée en compétence.
     </p>
+
+    <div class="fl-search-wrap">
+      <form method="get" action="{% url 'formations:formations' %}">
+        <div class="fl-search">
+          <i class="fa fa-search"></i>
+          <input type="text" name="q" value="{{ search_query }}" placeholder="Rechercher une formation…" autocomplete="off">
+          <button type="submit" class="fl-search-btn">Rechercher</button>
+        </div>
+      </form>
+      {% if search_query %}
+      <p class="fl-search-result">
+        Résultats pour <strong>"{{ search_query }}"</strong> —
+        {{ formations|length }} formation{% if formations|length != 1 %}s{% endif %} trouvée{% if formations|length != 1 %}s{% endif %}
+      </p>
+      {% endif %}
+    </div>
   </div>
 </div>
 

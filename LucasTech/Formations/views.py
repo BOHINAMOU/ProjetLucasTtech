@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from .models import Formation, Cart, CartItem, Order, OrderItem
 
 
@@ -9,8 +10,14 @@ from .models import Formation, Cart, CartItem, Order, OrderItem
 # ──────────────────────────────────────────
 def formations(request):
     qs = Formation.objects.filter(is_published=True).select_related('author')
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        qs = qs.filter(
+            Q(title__icontains=search_query) | Q(description__icontains=search_query)
+        )
     return render(request, 'formations/formations.html', {
         'formations': qs,
+        'search_query': search_query,
     })
 
 
