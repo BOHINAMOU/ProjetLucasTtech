@@ -12,6 +12,7 @@ from .models import (
     Formation, Cart, CartItem, Order, OrderItem,
     Registration, user_has_purchased,
 )
+from core.countries import COUNTRIES
 
 WHATSAPP_NUMBER = "22891973334"
 
@@ -104,6 +105,7 @@ def formation_register(request, pk):
             return render(request, 'formations/formation_register.html', {
                 'formation': formation,
                 'form_data': request.POST,
+                'countries': COUNTRIES,
             })
 
         Registration.objects.create(
@@ -135,7 +137,10 @@ def formation_register(request, pk):
 
         return redirect('formations:formation_register_success', pk=formation.pk)
 
-    return render(request, 'formations/formation_register.html', {'formation': formation})
+    return render(request, 'formations/formation_register.html', {
+        'formation': formation,
+        'countries': COUNTRIES,
+    })
 
 
 def formation_register_success(request, pk):

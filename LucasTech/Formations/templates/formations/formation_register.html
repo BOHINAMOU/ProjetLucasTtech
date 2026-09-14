@@ -98,11 +98,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <label class="rg-label">Pays</label>
         <select class="rg-select" name="country" required>
           <option value="">Sélectionnez votre pays</option>
-          <option>Togo</option><option>Bénin</option><option>Côte d'Ivoire</option>
-          <option>Ghana</option><option>Nigeria</option><option>Sénégal</option>
-          <option>Mali</option><option>Burkina Faso</option><option>Niger</option>
-          <option>Cameroun</option><option>RD Congo</option><option>Maroc</option>
-          <option>Tunisie</option><option>France</option><option>Autre</option>
+          {% for c in countries %}
+          <option value="{{ c }}" {% if form_data.country == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
         </select>
       </div>
 

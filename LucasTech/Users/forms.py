@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from .models import User
+from core.countries import COUNTRY_CHOICES
 
 
 # ─────────────────────────────
@@ -9,6 +10,10 @@ from .models import User
 class RegisterForm(forms.ModelForm):
     password1 = forms.CharField(widget=forms.PasswordInput)
     password2 = forms.CharField(widget=forms.PasswordInput)
+    country = forms.ChoiceField(
+        choices=COUNTRY_CHOICES, required=False,
+        widget=forms.Select(attrs={'class': 'auth-input'}),
+    )
 
     class Meta:
         model = User
@@ -109,6 +114,8 @@ class SetNewPasswordForm(forms.Form):
 #  PROFIL
 # ─────────────────────────────
 class ProfileUpdateForm(forms.ModelForm):
+    country = forms.ChoiceField(choices=COUNTRY_CHOICES, required=False)
+
     class Meta:
         model = User
         fields = ['phone', 'country', 'city', 'date_of_birth']
