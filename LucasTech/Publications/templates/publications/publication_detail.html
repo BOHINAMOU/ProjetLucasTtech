@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}{{ publication.title }} — LucasTech{% endblock %}
 {% block meta_description %}{{ publication.content|striptags|truncatechars:155 }}{% endblock %}
 {% block og_title %}{{ publication.title }} — LucasTech{% endblock %}
@@ -329,14 +330,32 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: none; border: none; line-height: 1;
 }
 
+/* ══ EXPLORER (pleine largeur) ══ */
+.pd-explore { max-width: 1300px; margin: 0 auto; padding: 56px clamp(1.5rem,6vw,5rem) 100px; }
+.pd-explore-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -.01em; }
+.pd-explore-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.pd-explore-tile {
+  position: relative; height: 140px; border-radius: 14px; overflow: hidden;
+  text-decoration: none; display: flex; align-items: flex-end; padding: 16px;
+  background-size: cover; background-position: center;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2);
+}
+.pd-explore-tile:hover { transform: translateY(-5px); }
+.pd-explore-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,12,5,.15), rgba(20,12,5,.85)); }
+.pd-explore-label { position: relative; z-index: 1; color: #fff; font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 900px) {
+  .pd-explore-row { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
   .pd-article { padding: 0 18px; }
   .pd-related { padding: 40px 18px 60px; }
   .pd-gallery-grid { grid-template-columns: 1fr 1fr; }
+  .pd-explore { padding: 40px 18px 72px; }
 }
 </style>
 
@@ -378,8 +397,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div class="pd-meta">
       <span class="pd-author-label">LucasTech</span>
       <div class="pd-meta-stats">
-        <span><i class="fa fa-clock"></i> {{ publication.get_reading_time }} min de lecture</span>
-        <span><i class="fa fa-eye"></i> {{ publication.views_count }} vues</span>
+        <span><i class="fa fa-calendar"></i> {{ publication.created_at|date:"d F Y" }}</span>
       </div>
     </div>
 
@@ -486,7 +504,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {% endif %}
           <h3 class="pd-rel-card-title">{{ pub.title }}</h3>
           <div class="pd-rel-card-meta">
-            <span><i class="fa fa-clock"></i> {{ pub.get_reading_time }} min</span>
+            <span><i class="fa fa-calendar"></i> {{ pub.created_at|date:"d M Y" }}</span>
           </div>
         </div>
       </a>
@@ -495,6 +513,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   </div>
 </div>
 {% endif %}
+
+<!-- ══ EXPLORER ══ -->
+<section class="pd-explore">
+  <p class="pd-explore-title">Explorer aussi</p>
+  <div class="pd-explore-row">
+    <a href="{% url 'publications:publications' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#b8420a,#20140a);">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-newspaper"></i> Toutes les publications</span>
+    </a>
+    <a href="{% url 'services:services' %}" class="pd-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-wrench"></i> Nos services</span>
+    </a>
+    <a href="{% url 'formations:formations' %}" class="pd-explore-tile" style="background-image:url('{% static 'core/images/image2.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-graduation-cap"></i> Formations</span>
+    </a>
+    <a href="{% url 'shop:shop' %}" class="pd-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-shopping-bag"></i> Boutique</span>
+    </a>
+  </div>
+</section>
 
 <!-- Lightbox -->
 <div class="lb-overlay" id="lightbox" style="display:none;" onclick="closeLightbox()">

@@ -301,14 +301,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* Footer card */
 .pb-card-footer {
   padding: 12px 20px 16px;
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
   border-top: 1px solid var(--border);
 }
-.pb-card-meta {
-  display: flex; align-items: center; gap: 10px;
-  font-size: .72rem; color: var(--muted);
-}
-.pb-card-meta span { display: flex; align-items: center; gap: 4px; }
 .pb-card-read {
   font-size: .75rem; font-weight: 700; color: var(--accent);
   display: flex; align-items: center; gap: 5px;
@@ -411,11 +406,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div class="pb-featured-content">
       <div class="pb-featured-badge"><i class="fa fa-star"></i> À la une</div>
       <h2 class="pb-featured-title">{{ featured.title }}</h2>
+      {% if featured.category %}
       <div class="pb-featured-meta">
-        {% if featured.category %}<span><i class="fa fa-tag"></i> {{ featured.category.name }}</span>{% endif %}
-        <span><i class="fa fa-clock"></i> {{ featured.get_reading_time }} min de lecture</span>
-        <span><i class="fa fa-eye"></i> {{ featured.views_count }}</span>
+        <span><i class="fa fa-tag"></i> {{ featured.category.name }}</span>
       </div>
+      {% endif %}
     </div>
   </a>
 </div>
@@ -484,11 +479,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </div>
 
       <div class="pb-card-footer">
-        <div class="pb-card-meta">
-          <span><i class="fa fa-clock"></i> {{ pub.get_reading_time }} min</span>
-          <span><i class="fa fa-eye"></i> {{ pub.views_count }}</span>
-        </div>
-        <span class="pb-card-read">Lire <i class="fa fa-arrow-right"></i></span>
+        <span class="pb-card-read">Lire l'article <i class="fa fa-arrow-right"></i></span>
       </div>
 
     </a>

@@ -60,15 +60,16 @@ def publication_detail(request, slug):
     # Incrémenter les vues
     Publication.objects.filter(pk=publication.pk).update(views_count=publication.views_count + 1)
 
-    # Articles similaires (même catégorie, pas le même)
-    related = Publication.objects.filter(
-        is_published=True
-    ).exclude(pk=publication.pk)
+    # Articles similaires (même catégorie) ; on complète avec les plus
+    # récentes publications toutes catégories confondues si besoin, pour
+    # toujours proposer jusqu'à 4 suggestions.
+    base_qs = Publication.objects.filter(is_published=True).exclude(pk=publication.pk)
 
-    if publication.category:
-        related = related.filter(category=publication.category)
-
-    related = related[:4]
+    related = list(base_qs.filter(category=publication.category)[:4]) if publication.category else []
+    if len(related) < 4:
+        exclude_ids = [publication.pk] + [p.pk for p in related]
+        extra = base_qs.exclude(pk__in=exclude_ids)[:4 - len(related)]
+        related += list(extra)
 
     return render(request, 'publications/publication_detail.html', {
         'publication': publication,
