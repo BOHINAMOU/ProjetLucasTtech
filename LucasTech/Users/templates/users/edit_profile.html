@@ -1,119 +1,149 @@
 {% extends 'core/base.html' %}
+{% block title %}Modifier mon profil — LucasTech{% endblock %}
 
 {% block content %}
 <style>
 :root {
-  --navy:#f7f3ee;
-  --navy2:#faf8f5;
-  --accent:#b8420a;
-  --accent2:#c9a84c;
-  --white:#1c1814;
-  --muted:#8a8078;
+  --bg: #f7f3ee; --surf: #ffffff; --surf2: #f2ede6;
+  --border: rgba(0,0,0,.1); --shadow: rgba(0,0,0,.08);
+  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
+  --accent: #b8420a; --accent2: #c9a84c;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
 }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.ep-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted); max-width: 650px; margin: 32px auto 0; padding: 0 24px; }
+.ep-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.ep-breadcrumb span { opacity: .5; }
 
 .edit-profile {
   max-width: 650px;
-  margin: 60px auto;
-  padding: 32px;
-  background: var(--navy2);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
+  margin: 24px auto 80px;
+  padding: 36px clamp(1.5rem,4vw,3rem);
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px var(--shadow);
   animation: fadeUp .5s ease;
 }
 
 .edit-profile h2 {
-  font-family: 'Cormorant Garamond', serif;
-  color: var(--white);
-  margin-bottom: 25px;
-  font-size: 1.6rem;
+  font-family: var(--serif);
+  color: var(--ink);
+  margin-bottom: 8px;
+  font-size: 1.7rem;
+  font-weight: 800;
 }
+.edit-profile .ep-sub { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
+
+.ep-msgs { margin-bottom: 20px; }
+.ep-msg { padding: 11px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
+.ep-msg.error { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: #c93060; }
+.ep-msg.success { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); color: #0f7a45; }
 
 /* Form layout */
-.form-group {
-  margin-bottom: 18px;
-}
+.form-group { margin-bottom: 20px; }
 
 /* Labels */
 .form-group label {
-  display: block;
-  font-size: .85rem;
-  color: var(--muted);
-  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink2); margin-bottom: 8px;
 }
 
 /* Inputs */
 .form-group input,
-.form-group select {
+.form-group select,
+.ep-input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 15px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.03);
-  color: var(--white);
+  border: 1.5px solid var(--border);
+  background: var(--surf2);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: .94rem;
   outline: none;
-  transition: .2s;
+  transition: border-color .2s, box-shadow .2s;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.ep-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(184,66,10,0.15);
+  box-shadow: 0 0 0 3px rgba(184,66,10,.15);
 }
 
 /* Button */
 .btn-save {
   width: 100%;
-  padding: 12px;
+  padding: 15px;
   border: none;
   border-radius: 10px;
   margin-top: 10px;
-  font-weight: 600;
+  font-family: var(--font);
+  font-size: .96rem;
+  font-weight: 700;
   cursor: pointer;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #05070f;
-  transition: .2s;
+  color: #fff;
+  transition: transform .15s, box-shadow .2s;
 }
 
 .btn-save:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(184,66,10,0.2);
+  box-shadow: 0 10px 25px rgba(184,66,10,.25);
 }
 
 @keyframes fadeUp {
-  from {opacity:0; transform:translateY(20px);}
-  to {opacity:1; transform:translateY(0);}
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
 
+<nav class="ep-breadcrumb">
+  <a href="{% url 'users:profile' %}">Mon profil</a>
+  <span>›</span>
+  <span>Modifier</span>
+</nav>
+
 <div class="edit-profile">
 
-  <h2> Modifier mon profil</h2>
+  <h2>Modifier mon profil</h2>
+  <p class="ep-sub">Mettez à jour vos informations personnelles.</p>
+
+  {% if messages %}
+  <div class="ep-msgs">
+    {% for msg in messages %}<div class="ep-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}
+  </div>
+  {% endif %}
 
   <form method="post">
     {% csrf_token %}
 
     <div class="form-group">
-      {{ form.phone.label }}
+      <label><i class="fa fa-phone"></i> {{ form.phone.label }}</label>
       {{ form.phone }}
     </div>
 
     <div class="form-group">
-      {{ form.country.label }}
+      <label><i class="fa fa-globe"></i> {{ form.country.label }}</label>
       {{ form.country }}
     </div>
 
     <div class="form-group">
-      {{ form.city.label }}
+      <label><i class="fa fa-map-marker-alt"></i> {{ form.city.label }}</label>
       {{ form.city }}
     </div>
 
     <div class="form-group">
-      {{ form.date_of_birth.label }}
+      <label><i class="fa fa-calendar"></i> {{ form.date_of_birth.label }}</label>
       {{ form.date_of_birth }}
     </div>
 
     <button type="submit" class="btn-save">
-      Enregistrer les modifications
+      <i class="fa fa-check"></i> Enregistrer les modifications
     </button>
 
   </form>

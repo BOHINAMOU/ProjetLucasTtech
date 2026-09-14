@@ -114,7 +114,22 @@ class SetNewPasswordForm(forms.Form):
 #  PROFIL
 # ─────────────────────────────
 class ProfileUpdateForm(forms.ModelForm):
-    country = forms.ChoiceField(choices=COUNTRY_CHOICES, required=False)
+    country = forms.ChoiceField(
+        choices=COUNTRY_CHOICES, required=False, label="Pays",
+        widget=forms.Select(attrs={'class': 'ep-input'}),
+    )
+    phone = forms.CharField(
+        required=False, label="Téléphone",
+        widget=forms.TextInput(attrs={'class': 'ep-input', 'placeholder': 'Ex : 22890000000'}),
+    )
+    city = forms.CharField(
+        required=False, label="Ville",
+        widget=forms.TextInput(attrs={'class': 'ep-input', 'placeholder': 'Ex : Lomé'}),
+    )
+    date_of_birth = forms.DateField(
+        required=False, label="Date de naissance",
+        widget=forms.DateInput(attrs={'class': 'ep-input', 'type': 'date'}),
+    )
 
     class Meta:
         model = User
