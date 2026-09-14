@@ -111,7 +111,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   box-shadow: 0 4px 16px rgba(184,66,10,.3);
 }
 .pd-event-btn:hover { background: #9c3708; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(184,66,10,.4); }
-.pd-event-closed { font-size: .85rem; color: var(--muted); font-style: italic; }
 
 /* ── Contenu article ── */
 .pd-content {
@@ -383,8 +382,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <a href="{% url 'publications:publication_register' publication.slug %}" class="pd-event-btn">
         <i class="fa fa-pencil"></i> S'inscrire à cet événement
       </a>
-      {% else %}
-      <p class="pd-event-closed"><i class="fa fa-info-circle"></i> Les inscriptions sont actuellement fermées.</p>
       {% endif %}
     </div>
     {% endif %}

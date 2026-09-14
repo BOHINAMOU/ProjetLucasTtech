@@ -56,8 +56,9 @@ class Publication(models.Model):
     event_date        = models.DateTimeField(blank=True, null=True, verbose_name="Date de l'événement")
     event_location     = models.CharField(max_length=200, blank=True, verbose_name="Lieu de l'événement")
     registration_open  = models.BooleanField(default=True,
-                                             verbose_name="Inscriptions ouvertes",
-                                             help_text="Décochez pour fermer les inscriptions sans dépublier l'article.")
+                                             verbose_name="Formulaire d'inscription activé",
+                                             help_text="Décochez si cet événement ne propose pas d'inscription "
+                                                        "(ex : simple annonce) — le bouton d'inscription n'apparaîtra pas.")
 
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)

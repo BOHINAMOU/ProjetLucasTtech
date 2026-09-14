@@ -1,5 +1,8 @@
 {% extends 'core/base.html' %}
 {% block title %}Reçu #{{ order.receipt_number }} — LucasTech{% endblock %}
+{% block meta_description %}Reçu de votre commande #{{ order.receipt_number }} sur la boutique LucasTech.{% endblock %}
+{% block og_title %}Reçu #{{ order.receipt_number }} — LucasTech{% endblock %}
+{% block og_description %}Reçu de votre commande #{{ order.receipt_number }} sur la boutique LucasTech.{% endblock %}
 
 {% block content %}
 <style>
