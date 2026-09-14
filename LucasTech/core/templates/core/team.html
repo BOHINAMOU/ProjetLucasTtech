@@ -24,12 +24,48 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .tm-hero-title em { color: var(--accent); font-style: italic; }
 .tm-hero-sub { margin-top: 14px; font-size: 1rem; color: #a89c8c; max-width: 640px; line-height: 1.7; }
 
-.tm-wrap { max-width: 1200px; margin: 0 auto; padding: 56px clamp(1.5rem,6vw,5rem) 96px; }
+.tm-wrap { position: relative; overflow: hidden; max-width: 1200px; margin: 0 auto; padding: 56px clamp(1.5rem,6vw,5rem) 96px; }
 
 @keyframes tmSpin { to { transform: rotate(360deg); } }
 
+/* ══ Bulles, cœurs et fleurs animés qui remplissent la section ══ */
+.tm-bubbles-field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.tm-float {
+  position: absolute; border-radius: 50%; line-height: 1;
+  opacity: 0; transform: translate(-50%, 0) scale(.4);
+}
+.tm-float.circle {
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.85), transparent 45%), var(--bc, #b8420a);
+  box-shadow: 0 0 10px 0 rgba(0,0,0,.12);
+}
+.tm-float.heart, .tm-float.flower { border-radius: 0; filter: drop-shadow(0 2px 5px rgba(0,0,0,.1)); }
+.tm-float.up { animation-name: tmRiseBurst, tmHue; animation-timing-function: ease-in, linear; animation-iteration-count: infinite, infinite; }
+.tm-float.down { animation-name: tmFallBurst, tmHue; animation-timing-function: ease-in, linear; animation-iteration-count: infinite, infinite; }
+.tm-float.flower.up { animation-name: tmRiseBurst, tmSway; }
+.tm-float.flower.down { animation-name: tmFallBurst, tmSway; }
+
+@keyframes tmRiseBurst {
+  0%   { opacity: 0;   transform: translate(-50%, 0)      scale(.4); }
+  10%  { opacity: .95; transform: translate(-50%, -26px)  scale(.85); }
+  70%  { opacity: .95; transform: translate(-50%, -220px) scale(1); }
+  88%  { opacity: .85; transform: translate(-50%, -270px) scale(1.6); }
+  100% { opacity: 0;   transform: translate(-50%, -284px) scale(2.4); }
+}
+@keyframes tmFallBurst {
+  0%   { opacity: 0;   transform: translate(-50%, 0)     scale(.4); }
+  10%  { opacity: .95; transform: translate(-50%, 26px)  scale(.85); }
+  70%  { opacity: .95; transform: translate(-50%, 220px) scale(1); }
+  88%  { opacity: .85; transform: translate(-50%, 270px) scale(1.6); }
+  100% { opacity: 0;   transform: translate(-50%, 284px) scale(2.4); }
+}
+@keyframes tmHue { from { filter: hue-rotate(0deg) saturate(1.3); } to { filter: hue-rotate(360deg) saturate(1.3); } }
+@keyframes tmSway { 0%,100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(30deg); } }
+@media (max-width: 640px) {
+  .tm-bubbles-field .tm-float:nth-child(2n) { display: none; }
+}
+
 /* ── Fondateur (carte cliquable, verticale) ── */
-.tm-founder-link { display: block; text-decoration: none; color: inherit; margin-bottom: 56px; }
+.tm-founder-link { position: relative; z-index: 1; display: block; text-decoration: none; color: inherit; margin-bottom: 56px; }
 .tm-founder {
   display: flex; flex-direction: column; align-items: center; text-align: center;
   background: var(--surf); border: 1px solid var(--border); border-radius: 24px;
@@ -72,12 +108,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── Grille équipe (cartes cliquables) ── */
 .tm-section-title {
+  position: relative; z-index: 1;
   font-family: var(--serif); font-size: 1.5rem; font-weight: 800; margin-bottom: 24px;
 }
 .tm-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px;
 }
-.tm-card-link { display: block; text-decoration: none; color: inherit; }
+.tm-card-link { position: relative; z-index: 1; display: block; text-decoration: none; color: inherit; }
 .tm-card {
   background: var(--surf); border: 1px solid var(--border); border-radius: 18px;
   padding: 28px; text-align: center;
@@ -119,6 +156,34 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 </div>
 
 <div class="tm-wrap">
+  <div class="tm-bubbles-field" aria-hidden="true">
+      <span class="tm-float circle down" style="left:1%; animation-delay:3.1s,3.1s; animation-duration:7.23s,7.23s; width:15.1px; height:15.1px; --bc:#ec4899; top:26.4%;"></span>
+      <span class="tm-float circle up" style="left:4.9%; animation-delay:2.27s,2.27s; animation-duration:5.52s,5.52s; width:11.3px; height:11.3px; --bc:#f97316; bottom:0.2%;"></span>
+      <span class="tm-float circle down" style="left:7.9%; animation-delay:3.38s,3.38s; animation-duration:8.46s,8.46s; width:13.2px; height:13.2px; --bc:#0ea5e9; top:38.2%;"></span>
+      <span class="tm-float flower up" style="left:11.6%; animation-delay:1.48s,1.48s; animation-duration:6.64s,6.64s; font-size:16.2px; bottom:6.4%;">🌸</span>
+      <span class="tm-float circle down" style="left:15.7%; animation-delay:4.18s,4.18s; animation-duration:6.45s,6.45s; width:8.5px; height:8.5px; --bc:#ec4899; top:30.4%;"></span>
+      <span class="tm-float circle up" style="left:21.0%; animation-delay:2.11s,2.11s; animation-duration:8.03s,8.03s; width:16.9px; height:16.9px; --bc:#f97316; bottom:4.1%;"></span>
+      <span class="tm-float circle down" style="left:23.4%; animation-delay:2.52s,2.52s; animation-duration:6.9s,6.9s; width:15.9px; height:15.9px; --bc:#6b8f5e; top:21.3%;"></span>
+      <span class="tm-float flower up" style="left:28.2%; animation-delay:1.64s,1.64s; animation-duration:6.44s,6.44s; font-size:18.7px; bottom:21.2%;">🌼</span>
+      <span class="tm-float circle down" style="left:31.5%; animation-delay:3.22s,3.22s; animation-duration:8.72s,8.72s; width:14.5px; height:14.5px; --bc:#f97316; top:0.2%;"></span>
+      <span class="tm-float circle up" style="left:35.6%; animation-delay:2.74s,2.74s; animation-duration:6.89s,6.89s; width:13.3px; height:13.3px; --bc:#6b8f5e; bottom:34.2%;"></span>
+      <span class="tm-float circle down" style="left:41.1%; animation-delay:1.5s,1.5s; animation-duration:7.78s,7.78s; width:7.7px; height:7.7px; --bc:#6b8f5e; top:51.1%;"></span>
+      <span class="tm-float heart up" style="left:44.9%; animation-delay:3.5s,3.5s; animation-duration:6.11s,6.11s; font-size:18.5px; color:#c93060; bottom:37.6%;">❤️</span>
+      <span class="tm-float circle down" style="left:49.2%; animation-delay:2.66s,2.66s; animation-duration:8.3s,8.3s; width:16.4px; height:16.4px; --bc:#c93060; top:27.0%;"></span>
+      <span class="tm-float heart up" style="left:51.3%; animation-delay:2.53s,2.53s; animation-duration:6.39s,6.39s; font-size:23.2px; color:#b8420a; bottom:22.4%;">💚</span>
+      <span class="tm-float circle down" style="left:56.8%; animation-delay:2.96s,2.96s; animation-duration:4.65s,4.65s; width:13.5px; height:13.5px; --bc:#7c3aed; top:13.7%;"></span>
+      <span class="tm-float circle up" style="left:58.9%; animation-delay:0.68s,0.68s; animation-duration:7.63s,7.63s; width:16.1px; height:16.1px; --bc:#15803d; bottom:2.7%;"></span>
+      <span class="tm-float circle down" style="left:63.6%; animation-delay:4.29s,4.29s; animation-duration:8.37s,8.37s; width:13.0px; height:13.0px; --bc:#7c3aed; top:20.1%;"></span>
+      <span class="tm-float circle up" style="left:67.4%; animation-delay:2.62s,2.62s; animation-duration:8.15s,8.15s; width:8.4px; height:8.4px; --bc:#0d3b7a; bottom:16.9%;"></span>
+      <span class="tm-float circle down" style="left:72.2%; animation-delay:1.72s,1.72s; animation-duration:5.04s,5.04s; width:13.4px; height:13.4px; --bc:#7c3aed; top:39.4%;"></span>
+      <span class="tm-float flower up" style="left:76.4%; animation-delay:2.63s,2.63s; animation-duration:5.61s,5.61s; font-size:17.3px; bottom:22.3%;">🌺</span>
+      <span class="tm-float circle down" style="left:79.1%; animation-delay:0.84s,0.84s; animation-duration:7.26s,7.26s; width:13.6px; height:13.6px; --bc:#c9a84c; top:43.2%;"></span>
+      <span class="tm-float circle up" style="left:82.3%; animation-delay:2.42s,2.42s; animation-duration:5.89s,5.89s; width:8.8px; height:8.8px; --bc:#6b8f5e; bottom:27.2%;"></span>
+      <span class="tm-float heart down" style="left:88.1%; animation-delay:0.91s,0.91s; animation-duration:7.7s,7.7s; font-size:23.6px; color:#15803d; top:41.6%;">🧡</span>
+      <span class="tm-float circle up" style="left:90.0%; animation-delay:4.18s,4.18s; animation-duration:6.17s,6.17s; width:8.8px; height:8.8px; --bc:#f97316; bottom:47.5%;"></span>
+      <span class="tm-float circle down" style="left:95.6%; animation-delay:1.14s,1.14s; animation-duration:7.5s,7.5s; width:8.6px; height:8.6px; --bc:#0ea5e9; top:17.2%;"></span>
+      <span class="tm-float circle up" style="left:98%; animation-delay:4.46s,4.46s; animation-duration:8.02s,8.02s; width:8.0px; height:8.0px; --bc:#f97316; bottom:44.2%;"></span>
+  </div>
 
   {% if founder %}
   <a href="{% url 'core:team_member_detail' founder.pk %}" class="tm-founder-link">
