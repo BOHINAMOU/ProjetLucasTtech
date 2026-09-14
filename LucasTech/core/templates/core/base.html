@@ -58,14 +58,6 @@
       <li><a href="{% url 'core:team' %}">Équipe</a></li>
     </ul>
 
-    <form class="nav-search" action="{% url 'shop:shop' %}" method="get" id="navSearchForm">
-      <button type="button" class="nav-search__toggle" id="navSearchToggle" aria-label="Rechercher un produit">
-        <i class="fa fa-search"></i>
-      </button>
-      <input type="search" name="q" class="nav-search__input" id="navSearchInput"
-             placeholder="Rechercher un produit…" autocomplete="off">
-    </form>
-
     <div class="nav-auth">
       {% if user.is_authenticated %}
         <a href="{% url 'users:profile' %}" class="nav-auth__status">
@@ -388,22 +380,6 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
     btn.classList.remove('open');
     btn.setAttribute('aria-expanded','false');
   }));
-}());
-
-/* ── Recherche navbar ── */
-(function(){
-  const toggle = document.getElementById('navSearchToggle');
-  const form   = document.getElementById('navSearchForm');
-  const input  = document.getElementById('navSearchInput');
-  if(!toggle||!form||!input) return;
-  toggle.addEventListener('click', function(e){
-    e.stopPropagation();
-    const open = form.classList.toggle('open');
-    if(open) input.focus();
-  });
-  document.addEventListener('click', function(e){
-    if(!form.contains(e.target)) form.classList.remove('open');
-  });
 }());
 
 /* ── Lien actif ── */

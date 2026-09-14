@@ -145,32 +145,6 @@ header { position: sticky; top: 0; z-index: 400; }
 .navbar__links a.active::after { transform: scaleX(1); }
 .navbar__links a.active { color: var(--ink); }
 
-/* ── Recherche navbar ── */
-.nav-search {
-  display: flex; align-items: center;
-  margin-left: .5rem; flex-shrink: 0;
-}
-.nav-search__toggle {
-  width: 38px; height: 38px; border-radius: 50%;
-  border: none; background: transparent; color: var(--ink2);
-  font-size: 1rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .2s, color .2s;
-  flex-shrink: 0;
-}
-.nav-search__toggle:hover { background: var(--surf2); color: var(--ink); }
-.nav-search__input {
-  width: 0; opacity: 0; padding: 0; margin-left: 0;
-  border: none; border-bottom: 1.5px solid var(--border);
-  background: transparent; font-family: var(--font); font-size: .88rem;
-  color: var(--ink); outline: none;
-  transition: width .3s ease, opacity .2s ease, padding .3s ease, margin .3s ease;
-}
-.nav-search.open .nav-search__input {
-  width: 200px; opacity: 1; padding: 6px 4px; margin-left: 6px;
-  border-bottom-color: var(--terra);
-}
-
 /* ── Auth ── */
 .nav-auth {
   display: flex; align-items: center;
