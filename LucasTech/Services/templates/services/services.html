@@ -298,15 +298,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 14px 22px;
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
-.sv-card-price {
-  display: flex; flex-direction: column;
+.sv-card-no-price {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: var(--muted); font-weight: 600;
 }
-.sv-card-price strong {
-  font-family: var(--serif); font-size: 1.2rem; font-weight: 900;
-  color: var(--ink); letter-spacing: -.03em; line-height: 1;
-}
-.sv-card-price small { font-size: .68rem; color: var(--muted); margin-top: 2px; }
-.sv-card-no-price { font-size: .78rem; color: var(--muted); font-style: italic; }
+.sv-card-no-price i { color: #25D366; font-size: .9rem; }
 
 /* Bouton Voir */
 .sv-btn-voir {
@@ -530,11 +526,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <div class="sv-card-divider"></div>
 
         <div class="sv-card-footer">
-          {% if service.price_from %}
-          <div class="sv-card-price"><strong>{{ service.price_from }}</strong><small>FCFA / à partir de</small></div>
-          {% else %}
-          <span class="sv-card-no-price">Sur devis</span>
-          {% endif %}
+          <span class="sv-card-no-price"><i class="fab fa-whatsapp"></i> Nous contacter</span>
           <a href="{% url 'services:service_detail' service.pk %}" class="sv-btn-voir">Voir <i class="fa fa-arrow-right"></i></a>
         </div>
       </article>
@@ -577,11 +569,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         </div>
         <div class="sv-card-divider"></div>
         <div class="sv-card-footer">
-          {% if service.price_from %}
-          <div class="sv-card-price"><strong>{{ service.price_from }}</strong><small>FCFA / à partir de</small></div>
-          {% else %}
-          <span class="sv-card-no-price">Sur devis</span>
-          {% endif %}
+          <span class="sv-card-no-price"><i class="fab fa-whatsapp"></i> Nous contacter</span>
           <a href="{% url 'services:service_detail' service.pk %}" class="sv-btn-voir">Voir <i class="fa fa-arrow-right"></i></a>
         </div>
       </article>
