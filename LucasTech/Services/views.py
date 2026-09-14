@@ -8,10 +8,21 @@ from .models import Service, ServiceCategory, ServiceContact
 # ─────────────────────────────
 # 🏠 LISTE DES SERVICES
 # ─────────────────────────────
+CAT_COLORS = ['c-1', 'c-2', 'c-3', 'c-4', 'c-5']
+
+
 def services(request):
     categories    = ServiceCategory.objects.all()
     category_slug = request.GET.get('category', '').strip()
     search_query  = request.GET.get('q', '').strip()
+
+    # Couleur stable par catégorie (calculée ici plutôt qu'avec {% cycle %},
+    # car la bande de catégories affiche la liste deux fois de suite pour
+    # boucler en continu — {% cycle %} se désynchroniserait entre les deux
+    # copies si le nombre de catégories changeait).
+    nav_categories = [
+        (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
+    ]
 
     qs = Service.objects.filter(is_active=True).select_related('category', 'admin')
 
@@ -46,6 +57,7 @@ def services(request):
     return render(request, 'services/services.html', {
         'services':         qs,
         'categories':       categories,
+        'nav_categories':   nav_categories,
         'active_category':  active_category,
         'search_query':     search_query,
         'grouped_services': grouped_services,
