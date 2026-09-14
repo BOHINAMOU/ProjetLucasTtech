@@ -31,8 +31,34 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .pj-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 40%; opacity: .8; }
 .pj-hero-overlay { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(13,59,122,.55), rgba(9,26,54,.75)); }
+.pj-hero-blob {
+  position: absolute; border-radius: 50%; filter: blur(60px);
+  pointer-events: none; opacity: .55;
+  animation: pjFloat 15s ease-in-out infinite;
+}
+.pj-hero-blob-1 { width: 300px; height: 300px; top: -120px; left: 8%; background: radial-gradient(circle, rgba(15,122,69,.5), transparent 70%); }
+.pj-hero-blob-2 { width: 260px; height: 260px; bottom: -130px; right: 10%; background: radial-gradient(circle, rgba(242,207,107,.35), transparent 70%); animation-delay: -7s; animation-duration: 19s; }
+@keyframes pjFloat {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%      { transform: translate(26px, -18px) scale(1.08); }
+  66%      { transform: translate(-20px, 16px) scale(.95); }
+}
 .pj-hero-inner { position: relative; z-index: 1; }
-.pj-hero-eyebrow { color: #cfe0f7; font-size: .8rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 16px; }
+.pj-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 9px;
+  color: #f2cf6b; font-size: 1.05rem; font-weight: 800; letter-spacing: .22em;
+  text-transform: uppercase; margin-bottom: 18px;
+}
+.pj-hero-eyebrow .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #f2cf6b;
+  box-shadow: 0 0 0 0 rgba(242,207,107,.6);
+  animation: pjPulseDot 2s ease-in-out infinite;
+}
+@keyframes pjPulseDot {
+  0%   { box-shadow: 0 0 0 0 rgba(242,207,107,.55); }
+  70%  { box-shadow: 0 0 0 9px rgba(242,207,107,0); }
+  100% { box-shadow: 0 0 0 0 rgba(242,207,107,0); }
+}
 .pj-hero-title { font-family: var(--serif); font-size: clamp(1.9rem,4vw,2.8rem); font-weight: 800; color: #fff; }
 .pj-hero-title em {
   font-style: italic;
@@ -140,9 +166,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pj-cta-blob {
   position: absolute; border-radius: 50%; filter: blur(60px);
   pointer-events: none; opacity: .5;
+  animation: pjFloat 15s ease-in-out infinite;
 }
 .pj-cta-blob-1 { width: 320px; height: 320px; top: -140px; right: -80px; background: radial-gradient(circle, rgba(15,122,69,.55), transparent 70%); }
-.pj-cta-blob-2 { width: 260px; height: 260px; bottom: -120px; left: -70px; background: radial-gradient(circle, rgba(212,160,23,.3), transparent 70%); }
+.pj-cta-blob-2 { width: 260px; height: 260px; bottom: -120px; left: -70px; background: radial-gradient(circle, rgba(212,160,23,.3), transparent 70%); animation-delay: -7s; animation-duration: 19s; }
 .pj-cta-inner { position: relative; z-index: 1; max-width: 620px; margin: 0 auto; }
 .pj-cta-title { font-family: var(--serif); font-size: clamp(1.6rem,3.4vw,2.3rem); font-weight: 800; color: #fff; margin-bottom: 16px; }
 .pj-cta-sub { font-size: .96rem; color: #c3d1e8; line-height: 1.7; margin-bottom: 30px; }
@@ -167,8 +194,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <div class="pj-hero">
   <div class="pj-hero-bg" style="background-image:url('{% static 'core/images/projects-hero.jpg' %}')"></div>
   <div class="pj-hero-overlay"></div>
+  <span class="pj-hero-blob pj-hero-blob-1"></span>
+  <span class="pj-hero-blob pj-hero-blob-2"></span>
   <div class="pj-hero-inner">
-    <p class="pj-hero-eyebrow">LucasTech</p>
+    <p class="pj-hero-eyebrow"><span class="dot"></span> LucasTech</p>
     <h1 class="pj-hero-title">Projets <em>réalisés</em></h1>
     <p class="pj-hero-sub">Un aperçu des projets que nous avons menés pour nos clients et partenaires.</p>
   </div>
