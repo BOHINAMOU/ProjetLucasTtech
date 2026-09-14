@@ -72,14 +72,63 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pt-slide { display: none; }
 .pt-slide.active { display: block; animation: ptFade .6s ease; }
 @keyframes ptFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.pt-slide-media-wrap { position: relative; width: min(460px, 90vw); margin: 0 auto 24px; }
 .pt-slide-media {
-  width: min(460px, 90vw); aspect-ratio: 16/10; margin: 0 auto 24px;
+  width: 100%; aspect-ratio: 16/10;
   border-radius: 18px; overflow: hidden; background: var(--surf2);
   box-shadow: 0 20px 50px var(--shadow);
   display: flex; align-items: center; justify-content: center; padding: 12px;
 }
 .pt-slide-media img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .pt-slide-media-placeholder { font-size: 3rem; opacity: .18; }
+
+/* ══ Bulles décoratives colorées de part et d'autre du logo ══ */
+.pt-decor {
+  position: absolute; top: 6%; bottom: 6%; width: 56px;
+  pointer-events: none; z-index: 1;
+}
+.pt-decor-left  { right: calc(100% + 2px); }
+.pt-decor-right { left: calc(100% + 2px); }
+.pt-bubble {
+  position: absolute; left: 50%; bottom: 14%;
+  width: 12px; height: 12px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,.85), transparent 45%),
+    var(--bc, #0f7a45);
+  box-shadow: 0 0 10px 0 rgba(0,0,0,.12);
+  opacity: 0;
+  transform: translate(-50%, 0) scale(.4);
+  animation: ptRiseBurst 5s ease-in infinite, ptHue 5s linear infinite;
+}
+.pt-decor-right .pt-bubble { bottom: auto; top: 14%; animation-name: ptFallBurst, ptHue; }
+
+.pt-bubble:nth-child(1) { left: 18%; width: 9px;  height: 9px;  --bc:#0f7a45; animation-delay: 0s,    0s; }
+.pt-bubble:nth-child(2) { left: 50%; width: 14px; height: 14px; --bc:#0d3b7a; animation-delay: .9s,  .9s; }
+.pt-bubble:nth-child(3) { left: 82%; width: 8px;  height: 8px;  --bc:#f2cf6b; animation-delay: 1.8s, 1.8s; }
+.pt-bubble:nth-child(4) { left: 34%; width: 11px; height: 11px; --bc:#c93060; animation-delay: 2.7s, 2.7s; }
+.pt-bubble:nth-child(5) { left: 66%; width: 8px;  height: 8px;  --bc:#15803d; animation-delay: 3.6s, 3.6s; }
+
+@keyframes ptRiseBurst {
+  0%   { opacity: 0;   transform: translate(-50%, 0)      scale(.4); }
+  10%  { opacity: .95; transform: translate(-50%, -14px)  scale(.85); }
+  70%  { opacity: .95; transform: translate(-50%, -150px) scale(1); }
+  88%  { opacity: .85; transform: translate(-50%, -188px) scale(1.7); }
+  100% { opacity: 0;   transform: translate(-50%, -196px) scale(2.6); }
+}
+@keyframes ptFallBurst {
+  0%   { opacity: 0;   transform: translate(-50%, 0)     scale(.4); }
+  10%  { opacity: .95; transform: translate(-50%, 14px)  scale(.85); }
+  70%  { opacity: .95; transform: translate(-50%, 150px) scale(1); }
+  88%  { opacity: .85; transform: translate(-50%, 188px) scale(1.7); }
+  100% { opacity: 0;   transform: translate(-50%, 196px) scale(2.6); }
+}
+@keyframes ptHue {
+  from { filter: hue-rotate(0deg) saturate(1.3); }
+  to   { filter: hue-rotate(360deg) saturate(1.3); }
+}
+@media (max-width: 640px) {
+  .pt-decor { display: none; }
+}
 .pt-slide-title { font-family: var(--serif); font-size: clamp(1.4rem,2.6vw,1.9rem); font-weight: 800; color: var(--ink); margin: 0 auto 18px; max-width: 620px; line-height: 1.3; }
 .pt-slide-btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -225,12 +274,20 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <div class="pt-spotlight" id="ptSlideshow">
   {% for partner in slides %}
   <div class="pt-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
-    <div class="pt-slide-media">
-      {% if partner.logo %}
-        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
-      {% else %}
-        <div class="pt-slide-media-placeholder">🤝</div>
-      {% endif %}
+    <div class="pt-slide-media-wrap">
+      <div class="pt-decor pt-decor-left">
+        <span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span>
+      </div>
+      <div class="pt-slide-media">
+        {% if partner.logo %}
+          <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
+        {% else %}
+          <div class="pt-slide-media-placeholder">🤝</div>
+        {% endif %}
+      </div>
+      <div class="pt-decor pt-decor-right">
+        <span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span>
+      </div>
     </div>
     <h2 class="pt-slide-title">{{ partner.name }}</h2>
     <a href="{% url 'core:partner_detail' partner.pk %}" class="pt-slide-btn">
