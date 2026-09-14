@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Actualités — LucasTech{% endblock %}
 {% block meta_description %}Actualités et publications LucasTech : guides, tendances et retours d'expérience tech pensés pour l'Afrique.{% endblock %}
 {% block og_title %}Actualités — LucasTech{% endblock %}
@@ -26,45 +27,42 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
-/* ══ HERO ══ */
+/* ══ HERO (compact, photo de fond) ══ */
 .pb-hero {
   position: relative; overflow: hidden;
-  padding: 72px clamp(1.5rem,6vw,5rem) 64px;
+  padding: 26px clamp(1.5rem,6vw,5rem);
+  min-height: 210px; display: flex; align-items: center;
   background: var(--ink);
 }
-.pb-hero::after {
-  content: '';
-  position: absolute; right: -80px; bottom: -80px;
-  width: 420px; height: 420px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,68,10,.18) 0%, transparent 70%);
-  pointer-events: none;
+.pb-hero-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center 30%;
+}
+.pb-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(20,12,5,.94) 0%, rgba(20,12,5,.86) 45%, rgba(30,18,8,.68) 100%);
 }
 .pb-hero-inner {
   position: relative; z-index: 1;
-  max-width: 1300px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 22px;
+  max-width: 1300px; margin: 0 auto; width: 100%;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .pb-hero-eyebrow {
-  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
-  text-transform: uppercase; color: var(--accent);
+  font-size: .74rem; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--accent2);
   animation: fadeUp .45s ease both;
 }
 .pb-hero-title {
   font-family: var(--serif);
-  font-size: clamp(2.4rem, 6vw, 4.5rem);
-  font-weight: 900; line-height: 1.05;
-  letter-spacing: -.03em; color: #f5f2ee;
+  font-size: clamp(1.5rem, 2.8vw, 2.3rem);
+  font-weight: 800; line-height: 1.18;
+  letter-spacing: -.02em; color: #f5f2ee;
   animation: fadeUp .5s .08s ease both;
 }
-.pb-hero-title em { font-style: italic; font-weight: 300; color: var(--accent); }
-.pb-hero-sub {
-  font-size: .95rem; color: rgba(245,242,238,.5);
-  max-width: 480px; line-height: 1.7;
-  animation: fadeUp .5s .14s ease both;
-}
+.pb-hero-title em { font-style: italic; font-weight: 300; color: var(--accent2); }
 
 /* Search */
-.pb-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 560px; }
+.pb-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 480px; }
 .pb-search {
   display: flex; align-items: center;
   background: rgba(245,242,238,.07);
@@ -76,15 +74,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(201,68,10,.2);
 }
-.pb-search i { padding: 0 18px; color: rgba(245,242,238,.4); font-size: .95rem; flex-shrink: 0; }
+.pb-search i { padding: 0 16px; color: rgba(245,242,238,.4); font-size: .9rem; flex-shrink: 0; }
 .pb-search input {
   flex: 1; background: none; border: none; outline: none;
-  padding: 16px 0; color: #f5f2ee;
-  font-family: var(--font); font-size: .95rem;
+  padding: 11px 0; color: #f5f2ee;
+  font-family: var(--font); font-size: .9rem;
 }
 .pb-search input::placeholder { color: rgba(245,242,238,.35); }
 .pb-search-btn {
-  padding: 11px 24px; margin: 5px;
+  padding: 9px 20px; margin: 4px;
   background: var(--accent); color: #fff;
   border: none; border-radius: 10px;
   font-weight: 700; font-size: .85rem;
@@ -158,20 +156,46 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   flex-shrink: 0;
 }
 .pb-cats-scroll {
-  display: flex; gap: 4px; overflow-x: auto;
-  padding: 14px 0; scrollbar-width: none;
+  display: flex; gap: 8px; overflow-x: auto;
+  padding: 16px 4px; scrollbar-width: none;
 }
 .pb-cats-scroll::-webkit-scrollbar { display: none; }
 .pb-cat-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 18px; border-radius: 99px; white-space: nowrap;
-  font-size: .82rem; font-weight: 600; cursor: pointer;
-  border: 1.5px solid transparent; background: transparent;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 99px; white-space: nowrap;
+  font-size: .88rem; font-weight: 700; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--surf2);
   color: var(--muted); text-decoration: none;
-  transition: all .2s; flex-shrink: 0;
+  transition: transform .2s, box-shadow .2s, background .2s, color .2s, border-color .2s;
+  flex-shrink: 0;
 }
-.pb-cat-btn:hover { color: var(--accent); background: rgba(201,68,10,.07); }
-.pb-cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pb-cat-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
+.pb-cat-btn.active { color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+.pb-cat-btn.all.active { background: var(--ink); border-color: var(--ink); }
+
+/* Couleur distincte par catégorie */
+.pb-cat-btn.c-1 { color: #b8420a; }
+.pb-cat-btn.c-1:hover { background: rgba(184,66,10,.1); border-color: rgba(184,66,10,.3); }
+.pb-cat-btn.c-1.active { background: #b8420a; border-color: #b8420a; }
+
+.pb-cat-btn.c-2 { color: #2c5f4a; }
+.pb-cat-btn.c-2:hover { background: rgba(44,95,74,.1); border-color: rgba(44,95,74,.3); }
+.pb-cat-btn.c-2.active { background: #2c5f4a; border-color: #2c5f4a; }
+
+.pb-cat-btn.c-3 { color: #3b5a7a; }
+.pb-cat-btn.c-3:hover { background: rgba(59,90,122,.1); border-color: rgba(59,90,122,.3); }
+.pb-cat-btn.c-3.active { background: #3b5a7a; border-color: #3b5a7a; }
+
+.pb-cat-btn.c-4 { color: #a5761f; }
+.pb-cat-btn.c-4:hover { background: rgba(165,118,31,.1); border-color: rgba(165,118,31,.3); }
+.pb-cat-btn.c-4.active { background: #a5761f; border-color: #a5761f; }
+
+.pb-cat-btn.c-5 { color: #6b3fa0; }
+.pb-cat-btn.c-5:hover { background: rgba(107,63,160,.1); border-color: rgba(107,63,160,.3); }
+.pb-cat-btn.c-5.active { background: #6b3fa0; border-color: #6b3fa0; }
+
+.pb-cat-btn.active.c-1, .pb-cat-btn.active.c-2, .pb-cat-btn.active.c-3,
+.pb-cat-btn.active.c-4, .pb-cat-btn.active.c-5 { color: #fff; }
 
 /* ══ SECTION ══ */
 .pb-section {
@@ -249,6 +273,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   text-transform: uppercase; padding: 4px 10px; border-radius: 99px;
   background: var(--accent); color: #fff;
 }
+.pb-card-event-badge {
+  position: absolute; top: 12px; right: 12px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .66rem; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 99px;
+  background: var(--green); color: #fff;
+}
 
 /* Body */
 .pb-card-body {
@@ -297,30 +328,54 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   text-decoration: none; font-weight: 700;
 }
 
+/* ══ EXPLORER ══ */
+.pb-explore {
+  max-width: 1300px; margin: 0 auto;
+  padding: 0 clamp(1.5rem,6vw,5rem) 100px;
+}
+.pb-explore-title {
+  font-family: var(--serif); font-size: 1.3rem; font-weight: 700;
+  margin-bottom: 20px; letter-spacing: -.01em;
+}
+.pb-explore-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.pb-explore-tile {
+  position: relative; height: 140px; border-radius: 14px; overflow: hidden;
+  text-decoration: none; display: flex; align-items: flex-end; padding: 16px;
+  background-size: cover; background-position: center;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2);
+}
+.pb-explore-tile:hover { transform: translateY(-5px); }
+.pb-explore-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,12,5,.15), rgba(20,12,5,.85)); }
+.pb-explore-label { position: relative; z-index: 1; color: #fff; font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@media (max-width: 900px) {
+  .pb-explore-row { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 640px) {
   .pb-grid { grid-template-columns: 1fr; gap: 16px; }
-  .pb-hero { padding: 48px 18px 40px; }
+  .pb-hero { padding: 22px 18px; min-height: 190px; }
   .pb-section { padding: 0 18px 60px; }
   .pb-featured { height: 280px; }
   .pb-featured-content { padding: 20px; }
   .pb-cats-label { display: none; }
+  .pb-explore { padding: 0 18px 72px; }
+  .pb-explore-row { grid-template-columns: 1fr 1fr; }
 }
 </style>
 
 <!-- ══ HERO ══ -->
 <div class="pb-hero">
+  <div class="pb-hero-bg" style="background-image:url('{% static 'core/images/image4.png' %}')"></div>
+  <div class="pb-hero-overlay"></div>
   <div class="pb-hero-inner">
     <p class="pb-hero-eyebrow">LucasTech — Actualités</p>
     <h1 class="pb-hero-title">
-      Restez informé,<br>lisez nos <em>publications.</em>
+      Restez informé, lisez nos <em>publications.</em>
     </h1>
-    <p class="pb-hero-sub">
-      Articles, actualités, conseils — tout ce qu'il faut savoir, organisé par thème.
-    </p>
 
     <div class="pb-search-wrap">
       <form method="get" action="{% url 'publications:publications' %}">
@@ -358,7 +413,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <h2 class="pb-featured-title">{{ featured.title }}</h2>
       <div class="pb-featured-meta">
         {% if featured.category %}<span><i class="fa fa-tag"></i> {{ featured.category.name }}</span>{% endif %}
-        <span><i class="fa fa-clock-o"></i> {{ featured.get_reading_time }} min de lecture</span>
+        <span><i class="fa fa-clock"></i> {{ featured.get_reading_time }} min de lecture</span>
         <span><i class="fa fa-eye"></i> {{ featured.views_count }}</span>
       </div>
     </div>
@@ -372,12 +427,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <span class="pb-cats-label">Thèmes</span>
     <div class="pb-cats-scroll">
       <a href="{% url 'publications:publications' %}"
-         class="pb-cat-btn {% if not active_category %}active{% endif %}">
+         class="pb-cat-btn all {% if not active_category %}active{% endif %}">
         <i class="fa fa-th-large"></i> Tout voir
       </a>
-      {% for cat in categories %}
+      {% for cat, color in nav_categories %}
       <a href="{% url 'publications:publications' %}?category={{ cat.slug }}"
-         class="pb-cat-btn {% if active_category.slug == cat.slug %}active{% endif %}">
+         class="pb-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}">
         {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
         {{ cat.name }}
       </a>
@@ -411,6 +466,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         {% if pub.category %}
           <span class="pb-card-cat-badge">{{ pub.category.name }}</span>
         {% endif %}
+        {% if pub.is_event %}
+          <span class="pb-card-event-badge"><i class="fa fa-calendar"></i> Événement</span>
+        {% endif %}
         {% if pub.cover_video %}
           <video src="{{ pub.cover_video.url }}" autoplay muted loop playsinline></video>
         {% elif pub.cover_image %}
@@ -427,7 +485,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
       <div class="pb-card-footer">
         <div class="pb-card-meta">
-          <span><i class="fa fa-clock-o"></i> {{ pub.get_reading_time }} min</span>
+          <span><i class="fa fa-clock"></i> {{ pub.get_reading_time }} min</span>
           <span><i class="fa fa-eye"></i> {{ pub.views_count }}</span>
         </div>
         <span class="pb-card-read">Lire <i class="fa fa-arrow-right"></i></span>
@@ -442,6 +500,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <a href="{% url 'publications:publications' %}">Voir toutes les publications</a>
     </div>
     {% endfor %}
+  </div>
+</section>
+
+<!-- ══ EXPLORER ══ -->
+<section class="pb-explore">
+  <p class="pb-explore-title">Explorer aussi</p>
+  <div class="pb-explore-row">
+    <a href="{% url 'services:services' %}" class="pb-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
+      <span class="pb-explore-overlay"></span>
+      <span class="pb-explore-label"><i class="fa fa-wrench"></i> Nos services</span>
+    </a>
+    <a href="{% url 'formations:formations' %}" class="pb-explore-tile" style="background-image:url('{% static 'core/images/image2.png' %}')">
+      <span class="pb-explore-overlay"></span>
+      <span class="pb-explore-label"><i class="fa fa-graduation-cap"></i> Formations</span>
+    </a>
+    <a href="{% url 'shop:shop' %}" class="pb-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
+      <span class="pb-explore-overlay"></span>
+      <span class="pb-explore-label"><i class="fa fa-shopping-bag"></i> Boutique</span>
+    </a>
+    <a href="https://wa.me/22891973334?text=Bonjour%2C%20j%27ai%20une%20question." target="_blank" rel="noopener noreferrer" class="pb-explore-tile" style="background:linear-gradient(135deg,#b8420a,#20140a);">
+      <span class="pb-explore-overlay"></span>
+      <span class="pb-explore-label"><i class="fab fa-whatsapp"></i> Nous contacter</span>
+    </a>
   </div>
 </section>
 

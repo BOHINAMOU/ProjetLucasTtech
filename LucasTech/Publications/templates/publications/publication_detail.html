@@ -112,6 +112,32 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .pd-meta-stats span { display: flex; align-items: center; gap: 5px; }
 
+/* ── Bloc événement ── */
+.pd-event {
+  margin-top: 20px; padding: 22px 24px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(184,66,10,.08), rgba(201,168,76,.06));
+  border: 1px solid rgba(184,66,10,.2);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.pd-event-badge {
+  display: inline-flex; align-items: center; gap: 7px; width: fit-content;
+  background: var(--accent); color: #fff;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  padding: 5px 13px; border-radius: 99px;
+}
+.pd-event-info { display: flex; flex-wrap: wrap; gap: 18px; font-size: .88rem; color: var(--ink2); font-weight: 600; }
+.pd-event-info span { display: flex; align-items: center; gap: 8px; }
+.pd-event-info i { color: var(--accent); }
+.pd-event-btn {
+  display: inline-flex; align-items: center; gap: 9px; width: fit-content;
+  padding: 13px 26px; background: var(--accent); color: #fff;
+  border-radius: 11px; text-decoration: none; font-weight: 700; font-size: .9rem;
+  transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 16px rgba(184,66,10,.3);
+}
+.pd-event-btn:hover { background: #9c3708; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(184,66,10,.4); }
+.pd-event-closed { font-size: .85rem; color: var(--muted); font-style: italic; }
+
 /* ── Contenu article ── */
 .pd-content {
   animation: fadeUp .5s .14s ease both;
@@ -200,6 +226,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-gallery-item img {
   width: 100%; height: 100%; object-fit: cover;
 }
+.pd-gallery-video { cursor: default; }
+.pd-gallery-video video { width: 100%; height: 100%; object-fit: cover; background: #000; }
+.pd-gallery-video:hover { transform: none; }
 .pd-gallery-caption {
   font-size: .72rem; color: var(--muted); text-align: center; margin-top: 6px;
 }
@@ -349,10 +378,31 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div class="pd-meta">
       <span class="pd-author-label">LucasTech</span>
       <div class="pd-meta-stats">
-        <span><i class="fa fa-clock-o"></i> {{ publication.get_reading_time }} min de lecture</span>
+        <span><i class="fa fa-clock"></i> {{ publication.get_reading_time }} min de lecture</span>
         <span><i class="fa fa-eye"></i> {{ publication.views_count }} vues</span>
       </div>
     </div>
+
+    {% if publication.is_event %}
+    <div class="pd-event">
+      <div class="pd-event-badge"><i class="fa fa-calendar"></i> Événement</div>
+      <div class="pd-event-info">
+        {% if publication.event_date %}
+        <span><i class="fa fa-calendar"></i> {{ publication.event_date|date:"d/m/Y à H:i" }}</span>
+        {% endif %}
+        {% if publication.event_location %}
+        <span><i class="fa fa-map-marker"></i> {{ publication.event_location }}</span>
+        {% endif %}
+      </div>
+      {% if publication.registration_open %}
+      <a href="{% url 'publications:publication_register' publication.slug %}" class="pd-event-btn">
+        <i class="fa fa-pencil"></i> S'inscrire à cet événement
+      </a>
+      {% else %}
+      <p class="pd-event-closed"><i class="fa fa-info-circle"></i> Les inscriptions sont actuellement fermées.</p>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 
   <!-- ══ CONTENU RICHE ══ -->
@@ -375,6 +425,27 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         </div>
         {% if img.caption %}
         <p class="pd-gallery-caption">{{ img.caption }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- ══ GALERIE VIDÉOS SUPPLÉMENTAIRES ══ -->
+  {% with vids=publication.videos.all %}
+  {% if vids %}
+  <div class="pd-gallery">
+    <p class="pd-gallery-title">Galerie vidéos</p>
+    <div class="pd-gallery-grid">
+      {% for vid in vids %}
+      <div>
+        <div class="pd-gallery-item pd-gallery-video">
+          <video src="{{ vid.video.url }}" controls></video>
+        </div>
+        {% if vid.caption %}
+        <p class="pd-gallery-caption">{{ vid.caption }}</p>
         {% endif %}
       </div>
       {% endfor %}
@@ -415,7 +486,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {% endif %}
           <h3 class="pd-rel-card-title">{{ pub.title }}</h3>
           <div class="pd-rel-card-meta">
-            <span><i class="fa fa-clock-o"></i> {{ pub.get_reading_time }} min</span>
+            <span><i class="fa fa-clock"></i> {{ pub.get_reading_time }} min</span>
           </div>
         </div>
       </a>

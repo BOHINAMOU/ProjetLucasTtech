@@ -1,15 +1,28 @@
+import csv
+
 from django.contrib import admin
+from django.http import HttpResponse
 from django.utils.html import format_html
-from .models import PublicationCategory, Publication, PublicationImage
+
+from .models import (
+    PublicationCategory, Publication, PublicationImage, PublicationVideo,
+    EventRegistration,
+)
 
 
 # ─────────────────────────────
-# Images inline
+# Images / vidéos inline
 # ─────────────────────────────
 class PublicationImageInline(admin.TabularInline):
     model  = PublicationImage
     extra  = 3
     fields = ['image', 'caption', 'order']
+
+
+class PublicationVideoInline(admin.TabularInline):
+    model  = PublicationVideo
+    extra  = 1
+    fields = ['video', 'caption', 'order']
 
 
 # ─────────────────────────────
@@ -23,16 +36,36 @@ class PublicationCategoryAdmin(admin.ModelAdmin):
 
 
 # ─────────────────────────────
+# 📤 Export CSV des inscriptions
+# ─────────────────────────────
+@admin.action(description="Exporter la sélection en CSV (Excel)")
+def export_registrations_csv(modeladmin, request, queryset):
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="inscriptions_evenements.csv"'
+    response.write('﻿')  # BOM pour qu'Excel affiche correctement les accents
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['Événement', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Pays', 'Message', 'Date'])
+    for reg in queryset.select_related('publication'):
+        writer.writerow([
+            reg.publication.title, reg.first_name, reg.last_name, reg.email,
+            reg.phone, reg.country, reg.message,
+            reg.created_at.strftime('%d/%m/%Y %H:%M'),
+        ])
+    return response
+
+
+# ─────────────────────────────
 # Publication
 # ─────────────────────────────
 @admin.register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
-    list_display   = ['title', 'author', 'category', 'is_published', 'is_featured', 'views_count', 'created_at']
-    list_filter    = ['is_published', 'is_featured', 'category']
+    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'is_featured', 'views_count', 'created_at']
+    list_filter    = ['is_published', 'is_featured', 'publication_type', 'category']
     list_editable  = ['is_published', 'is_featured']
     search_fields  = ['title', 'content']
     prepopulated_fields = {'slug': ('title',)}
-    inlines        = [PublicationImageInline]
+    inlines        = [PublicationImageInline, PublicationVideoInline]
 
     # ── Utilise CKEditor si disponible, sinon Textarea large ──
     def formfield_for_dbfield(self, db_field, request, **kwargs):
@@ -69,6 +102,19 @@ class PublicationAdmin(admin.ModelAdmin):
         ('Informations principales', {
             'fields': ('title', 'slug', 'category', 'author')
         }),
+        ('Type de publication', {
+            'fields': ('publication_type',),
+            'description': (
+                "« Article / Actualité » : un article classique. "
+                "« Événement » : affiche les infos de date/lieu et permet aux visiteurs "
+                "de s'inscrire via un formulaire (les inscrits sont exportables en CSV/Excel "
+                "depuis l'onglet « Inscriptions aux événements »)."
+            ),
+        }),
+        ('Détails de l\'événement (si type = Événement)', {
+            'fields': ('event_date', 'event_location', 'registration_open'),
+            'classes': ('collapse',),
+        }),
         ('Médias de couverture', {
             'fields': ('cover_image', 'cover_video'),
             'classes': ('collapse',),
@@ -80,3 +126,15 @@ class PublicationAdmin(admin.ModelAdmin):
             'fields': ('is_published', 'is_featured'),
         }),
     )
+
+
+# ─────────────────────────────
+# Inscriptions aux événements
+# ─────────────────────────────
+@admin.register(EventRegistration)
+class EventRegistrationAdmin(admin.ModelAdmin):
+    list_display    = ['first_name', 'last_name', 'publication', 'email', 'phone', 'country', 'created_at']
+    list_filter     = ['publication']
+    search_fields   = ['first_name', 'last_name', 'email', 'phone']
+    readonly_fields = ['first_name', 'last_name', 'email', 'phone', 'country', 'message', 'publication', 'created_at']
+    actions         = [export_registrations_csv]

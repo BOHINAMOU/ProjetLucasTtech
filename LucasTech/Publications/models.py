@@ -26,6 +26,11 @@ class PublicationCategory(models.Model):
 # 📰 PUBLICATION
 # ─────────────────────────────
 class Publication(models.Model):
+    TYPE_CHOICES = [
+        ('article',   'Article / Actualité'),
+        ('evenement', 'Événement (avec inscription possible)'),
+    ]
+
     author      = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         related_name='publications', verbose_name="Auteur"
@@ -44,6 +49,16 @@ class Publication(models.Model):
     is_published = models.BooleanField(default=False, verbose_name="Publié")
     is_featured  = models.BooleanField(default=False, verbose_name="À la une")
     views_count  = models.PositiveIntegerField(default=0, editable=False)
+
+    # ── Événement (optionnel) ──
+    publication_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='article',
+                                        verbose_name="Type de publication")
+    event_date        = models.DateTimeField(blank=True, null=True, verbose_name="Date de l'événement")
+    event_location     = models.CharField(max_length=200, blank=True, verbose_name="Lieu de l'événement")
+    registration_open  = models.BooleanField(default=True,
+                                             verbose_name="Inscriptions ouvertes",
+                                             help_text="Décochez pour fermer les inscriptions sans dépublier l'article.")
+
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
 
@@ -74,6 +89,10 @@ class Publication(models.Model):
         minutes = max(1, round(words / 200))
         return minutes
 
+    @property
+    def is_event(self):
+        return self.publication_type == 'evenement'
+
 
 # ─────────────────────────────
 # 🖼️ IMAGES SUPPLÉMENTAIRES
@@ -86,6 +105,50 @@ class PublicationImage(models.Model):
 
     class Meta:
         ordering = ['order']
+
+    def __str__(self):
+        return f"Image de {self.publication.title}"
+
+
+# ─────────────────────────────
+# 🎬 VIDÉOS SUPPLÉMENTAIRES
+# ─────────────────────────────
+class PublicationVideo(models.Model):
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='videos')
+    video       = models.FileField(upload_to='publications/gallery-videos/')
+    caption     = models.CharField(max_length=200, blank=True, verbose_name="Légende")
+    order       = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Vidéo de {self.publication.title}"
+
+
+# ─────────────────────────────
+# 📝 INSCRIPTION À UN ÉVÉNEMENT
+# ─────────────────────────────
+class EventRegistration(models.Model):
+    publication = models.ForeignKey(
+        Publication, on_delete=models.CASCADE, related_name='registrations',
+        limit_choices_to={'publication_type': 'evenement'},
+    )
+    first_name  = models.CharField(max_length=100, verbose_name="Prénom")
+    last_name   = models.CharField(max_length=100, verbose_name="Nom")
+    email       = models.EmailField(verbose_name="Email")
+    phone       = models.CharField(max_length=30, verbose_name="Téléphone / WhatsApp")
+    country     = models.CharField(max_length=100, blank=True, verbose_name="Pays")
+    message     = models.TextField(blank=True, verbose_name="Message (optionnel)")
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name        = "Inscription à un événement"
+        verbose_name_plural = "Inscriptions aux événements"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} → {self.publication.title}"
 
     def __str__(self):
         return f"Image de {self.publication.title}"

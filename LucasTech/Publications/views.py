@@ -1,17 +1,27 @@
-
 # Create your views here.
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.db.models import Q
-from .models import Publication, PublicationCategory
+from django.core.mail import send_mail
+from django.conf import settings
+
+from core.countries import COUNTRIES
+from .models import Publication, PublicationCategory, EventRegistration
 
 
 # ─────────────────────────────
 # 📰 LISTE DES PUBLICATIONS
 # ─────────────────────────────
+CAT_COLORS = ['c-1', 'c-2', 'c-3', 'c-4', 'c-5']
+
+
 def publications(request):
     categories    = PublicationCategory.objects.all()
     category_slug = request.GET.get('category', '').strip()
     search_query  = request.GET.get('q', '').strip()
+    nav_categories = [
+        (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
+    ]
 
     qs = Publication.objects.filter(is_published=True).select_related('author', 'category')
 
@@ -34,6 +44,7 @@ def publications(request):
     return render(request, 'publications/publications.html', {
         'publications':    qs,
         'categories':      categories,
+        'nav_categories':  nav_categories,
         'active_category': active_category,
         'search_query':    search_query,
         'featured':        featured,
@@ -62,4 +73,80 @@ def publication_detail(request, slug):
     return render(request, 'publications/publication_detail.html', {
         'publication': publication,
         'related':     related,
+    })
+
+
+# ─────────────────────────────
+# 📝 INSCRIPTION À UN ÉVÉNEMENT
+# ─────────────────────────────
+def publication_register(request, slug):
+    publication = get_object_or_404(
+        Publication, slug=slug, is_published=True, publication_type='evenement'
+    )
+
+    if not publication.registration_open:
+        messages.error(request, "Les inscriptions pour cet événement sont fermées.")
+        return redirect('publications:publication_detail', slug=slug)
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        email      = request.POST.get('email', '').strip()
+        phone      = request.POST.get('phone', '').strip()
+        country    = request.POST.get('country', '').strip()
+        message    = request.POST.get('message', '').strip()
+
+        errors = []
+        if not first_name: errors.append("Le prénom est requis.")
+        if not last_name: errors.append("Le nom est requis.")
+        if not email: errors.append("L'email est requis.")
+        if not phone: errors.append("Le téléphone est requis.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'publications/publication_register.html', {
+                'publication': publication,
+                'form_data': request.POST,
+                'countries': COUNTRIES,
+            })
+
+        EventRegistration.objects.create(
+            publication=publication,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            country=country,
+            message=message,
+        )
+
+        try:
+            subject = f"Merci pour votre inscription — {publication.title}"
+            body = (
+                f"Bonjour {first_name},\n\n"
+                f"Merci pour votre inscription à l'événement « {publication.title} ».\n\n"
+            )
+            if publication.event_date:
+                body += f"Date : {publication.event_date.strftime('%d/%m/%Y à %H:%M')}\n"
+            if publication.event_location:
+                body += f"Lieu : {publication.event_location}\n"
+            body += "\nNous vous recontacterons si des informations complémentaires sont nécessaires.\n\n"
+            body += "À très bientôt,\nL'équipe LucasTech"
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=True)
+        except Exception:
+            pass
+
+        return redirect('publications:publication_register_success', slug=publication.slug)
+
+    return render(request, 'publications/publication_register.html', {
+        'publication': publication,
+        'countries': COUNTRIES,
+    })
+
+
+def publication_register_success(request, slug):
+    publication = get_object_or_404(Publication, slug=slug)
+    return render(request, 'publications/publication_register_success.html', {
+        'publication': publication,
     })

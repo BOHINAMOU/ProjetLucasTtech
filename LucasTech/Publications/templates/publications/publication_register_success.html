@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+{% block title %}Inscription confirmée — LucasTech{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #faf8f5;
+  --border: rgba(0,0,0,.085);
+  --ink: #1c1814; --muted: #8a8078;
+  --accent: #b8420a; --green: #2c5f4a;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.ok-wrap { max-width: 560px; margin: 80px auto 120px; padding: 0 1.5rem; text-align: center; }
+.ok-icon {
+  width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 24px;
+  background: rgba(44,95,74,.1); color: var(--green);
+  display: flex; align-items: center; justify-content: center; font-size: 2.2rem;
+}
+.ok-title { font-family: var(--serif); font-size: 1.9rem; font-weight: 800; margin-bottom: 14px; letter-spacing: -.02em; }
+.ok-text { font-size: .98rem; color: var(--muted); line-height: 1.75; margin-bottom: 32px; }
+.ok-text strong { color: var(--ink); }
+.ok-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.ok-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 26px; border-radius: 10px; text-decoration: none;
+  font-size: .9rem; font-weight: 700; transition: transform .2s;
+}
+.ok-btn:hover { transform: translateY(-2px); }
+.ok-btn.primary { background: var(--accent); color: #fff; }
+.ok-btn.ghost { background: var(--surf); border: 1px solid var(--border); color: var(--ink); }
+</style>
+
+<div class="ok-wrap">
+  <div class="ok-icon"><i class="fa fa-check"></i></div>
+  <h1 class="ok-title">Merci pour votre inscription !</h1>
+  <p class="ok-text">
+    Votre inscription à l'événement <strong>{{ publication.title }}</strong> a bien été enregistrée.
+    Vous allez recevoir un email de confirmation avec les détails. Pensez à vérifier vos spams
+    si vous ne le voyez pas d'ici quelques minutes.
+  </p>
+  <div class="ok-actions">
+    <a href="{% url 'publications:publication_detail' publication.slug %}" class="ok-btn primary"><i class="fa fa-newspaper"></i> Retour à l'article</a>
+    <a href="{% url 'core:home' %}" class="ok-btn ghost"><i class="fa fa-home"></i> Retour à l'accueil</a>
+  </div>
+</div>
+{% endblock %}
