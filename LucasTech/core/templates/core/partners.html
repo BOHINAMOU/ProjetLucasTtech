@@ -68,13 +68,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pt-hero-sub { margin: 14px auto 0; font-size: .96rem; color: #cfd9ea; max-width: 580px; line-height: 1.7; }
 
 /* ══ SPOTLIGHT (fond de page, sans carte) ══ */
-.pt-spotlight { background: var(--bg); padding: 56px clamp(1.5rem,6vw,5rem) 8px; text-align: center; }
-.pt-slide { display: none; }
+.pt-spotlight { position: relative; overflow: hidden; background: var(--bg); padding: 56px clamp(1.5rem,6vw,5rem) 8px; text-align: center; }
+.pt-slide { position: relative; z-index: 1; display: none; }
 .pt-slide.active { display: block; animation: ptFade .6s ease; }
 @keyframes ptFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.pt-slide-media-wrap { position: relative; width: min(460px, 90vw); margin: 0 auto 24px; }
 .pt-slide-media {
-  width: 100%; aspect-ratio: 16/10;
+  width: min(460px, 90vw); aspect-ratio: 16/10; margin: 0 auto 24px;
   border-radius: 18px; overflow: hidden; background: var(--surf2);
   box-shadow: 0 20px 50px var(--shadow);
   display: flex; align-items: center; justify-content: center; padding: 12px;
@@ -82,52 +81,55 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pt-slide-media img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .pt-slide-media-placeholder { font-size: 3rem; opacity: .18; }
 
-/* ══ Bulles décoratives colorées de part et d'autre du logo ══ */
-.pt-decor {
-  position: absolute; top: 6%; bottom: 6%; width: 56px;
-  pointer-events: none; z-index: 1;
+/* ══ Bulles, cœurs et étoiles animés qui remplissent toute la section ══ */
+.pt-bubbles-field {
+  position: absolute; inset: 0; overflow: hidden;
+  pointer-events: none; z-index: 0;
 }
-.pt-decor-left  { right: calc(100% + 2px); }
-.pt-decor-right { left: calc(100% + 2px); }
-.pt-bubble {
-  position: absolute; left: 50%; bottom: 14%;
-  width: 12px; height: 12px; border-radius: 50%;
+.pt-float {
+  position: absolute; border-radius: 50%; line-height: 1;
+  opacity: 0; transform: translate(-50%, 0) scale(.4);
+}
+.pt-float.circle {
   background:
     radial-gradient(circle at 32% 28%, rgba(255,255,255,.85), transparent 45%),
     var(--bc, #0f7a45);
   box-shadow: 0 0 10px 0 rgba(0,0,0,.12);
-  opacity: 0;
-  transform: translate(-50%, 0) scale(.4);
-  animation: ptRiseBurst 5s ease-in infinite, ptHue 5s linear infinite;
 }
-.pt-decor-right .pt-bubble { bottom: auto; top: 14%; animation-name: ptFallBurst, ptHue; }
-
-.pt-bubble:nth-child(1) { left: 18%; width: 9px;  height: 9px;  --bc:#0f7a45; animation-delay: 0s,    0s; }
-.pt-bubble:nth-child(2) { left: 50%; width: 14px; height: 14px; --bc:#0d3b7a; animation-delay: .9s,  .9s; }
-.pt-bubble:nth-child(3) { left: 82%; width: 8px;  height: 8px;  --bc:#f2cf6b; animation-delay: 1.8s, 1.8s; }
-.pt-bubble:nth-child(4) { left: 34%; width: 11px; height: 11px; --bc:#c93060; animation-delay: 2.7s, 2.7s; }
-.pt-bubble:nth-child(5) { left: 66%; width: 8px;  height: 8px;  --bc:#15803d; animation-delay: 3.6s, 3.6s; }
+.pt-float.heart, .pt-float.star {
+  border-radius: 0; filter: drop-shadow(0 2px 5px rgba(0,0,0,.12));
+}
+.pt-float.up {
+  animation-name: ptRiseBurst, ptHue;
+  animation-timing-function: ease-in, linear;
+  animation-iteration-count: infinite, infinite;
+}
+.pt-float.down {
+  animation-name: ptFallBurst, ptHue;
+  animation-timing-function: ease-in, linear;
+  animation-iteration-count: infinite, infinite;
+}
 
 @keyframes ptRiseBurst {
   0%   { opacity: 0;   transform: translate(-50%, 0)      scale(.4); }
-  10%  { opacity: .95; transform: translate(-50%, -14px)  scale(.85); }
-  70%  { opacity: .95; transform: translate(-50%, -150px) scale(1); }
-  88%  { opacity: .85; transform: translate(-50%, -188px) scale(1.7); }
-  100% { opacity: 0;   transform: translate(-50%, -196px) scale(2.6); }
+  10%  { opacity: .95; transform: translate(-50%, -30px)  scale(.85); }
+  70%  { opacity: .95; transform: translate(-50%, -260px) scale(1); }
+  88%  { opacity: .85; transform: translate(-50%, -320px) scale(1.7); }
+  100% { opacity: 0;   transform: translate(-50%, -336px) scale(2.6); }
 }
 @keyframes ptFallBurst {
   0%   { opacity: 0;   transform: translate(-50%, 0)     scale(.4); }
-  10%  { opacity: .95; transform: translate(-50%, 14px)  scale(.85); }
-  70%  { opacity: .95; transform: translate(-50%, 150px) scale(1); }
-  88%  { opacity: .85; transform: translate(-50%, 188px) scale(1.7); }
-  100% { opacity: 0;   transform: translate(-50%, 196px) scale(2.6); }
+  10%  { opacity: .95; transform: translate(-50%, 30px)  scale(.85); }
+  70%  { opacity: .95; transform: translate(-50%, 260px) scale(1); }
+  88%  { opacity: .85; transform: translate(-50%, 320px) scale(1.7); }
+  100% { opacity: 0;   transform: translate(-50%, 336px) scale(2.6); }
 }
 @keyframes ptHue {
   from { filter: hue-rotate(0deg) saturate(1.3); }
   to   { filter: hue-rotate(360deg) saturate(1.3); }
 }
 @media (max-width: 640px) {
-  .pt-decor { display: none; }
+  .pt-bubbles-field .pt-float:nth-child(2n) { display: none; }
 }
 .pt-slide-title { font-family: var(--serif); font-size: clamp(1.4rem,2.6vw,1.9rem); font-weight: 800; color: var(--ink); margin: 0 auto 18px; max-width: 620px; line-height: 1.3; }
 .pt-slide-btn {
@@ -272,22 +274,50 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 {% if slides %}
 <div class="pt-spotlight" id="ptSlideshow">
+  <div class="pt-bubbles-field" aria-hidden="true">
+      <span class="pt-float circle down" style="left:1%; animation-delay:0.68s,0.68s; animation-duration:7.0s,7.0s; width:13.4px; height:13.4px; --bc:#7c3aed; top:4.3%;"></span>
+      <span class="pt-float circle up" style="left:5.0%; animation-delay:0.97s,0.97s; animation-duration:4.57s,4.57s; width:11.7px; height:11.7px; --bc:#ec4899; bottom:25.1%;"></span>
+      <span class="pt-float star down" style="left:7.7%; animation-delay:0.56s,0.56s; animation-duration:5.16s,5.16s; font-size:17.9px; color:#14b8a6; top:37.6%;">✨</span>
+      <span class="pt-float circle up" style="left:11.0%; animation-delay:0.21s,0.21s; animation-duration:7.89s,7.89s; width:13.3px; height:13.3px; --bc:#0d3b7a; bottom:17.4%;"></span>
+      <span class="pt-float circle down" style="left:13.0%; animation-delay:3.07s,3.07s; animation-duration:4.64s,4.64s; width:13.0px; height:13.0px; --bc:#0d3b7a; top:34.3%;"></span>
+      <span class="pt-float circle up" style="left:14.8%; animation-delay:0.27s,0.27s; animation-duration:5.09s,5.09s; width:12.1px; height:12.1px; --bc:#7c3aed; bottom:40.8%;"></span>
+      <span class="pt-float heart down" style="left:19.8%; animation-delay:1.63s,1.63s; animation-duration:5.27s,5.27s; font-size:20.9px; color:#0d3b7a; top:10.8%;">💜</span>
+      <span class="pt-float circle up" style="left:21.8%; animation-delay:1.55s,1.55s; animation-duration:6.13s,6.13s; width:11.6px; height:11.6px; --bc:#ec4899; bottom:36.5%;"></span>
+      <span class="pt-float heart down" style="left:25.4%; animation-delay:0.68s,0.68s; animation-duration:6.3s,6.3s; font-size:20.9px; color:#ec4899; top:2.4%;">🧡</span>
+      <span class="pt-float circle up" style="left:27.3%; animation-delay:3.13s,3.13s; animation-duration:6.76s,6.76s; width:17.4px; height:17.4px; --bc:#0d3b7a; bottom:34.8%;"></span>
+      <span class="pt-float heart down" style="left:30.6%; animation-delay:2.99s,2.99s; animation-duration:4.46s,4.46s; font-size:17.4px; color:#0ea5e9; top:42.1%;">💛</span>
+      <span class="pt-float circle up" style="left:34.6%; animation-delay:1.56s,1.56s; animation-duration:8.24s,8.24s; width:7.6px; height:7.6px; --bc:#0ea5e9; bottom:21.3%;"></span>
+      <span class="pt-float star down" style="left:37.2%; animation-delay:0.58s,0.58s; animation-duration:5.26s,5.26s; font-size:13.7px; color:#0d3b7a; top:23.5%;">⭐</span>
+      <span class="pt-float circle up" style="left:39.7%; animation-delay:3.98s,3.98s; animation-duration:7.72s,7.72s; width:17.9px; height:17.9px; --bc:#f97316; bottom:51.8%;"></span>
+      <span class="pt-float circle down" style="left:43.0%; animation-delay:1.71s,1.71s; animation-duration:5.19s,5.19s; width:7.1px; height:7.1px; --bc:#c93060; top:5.0%;"></span>
+      <span class="pt-float circle up" style="left:46.3%; animation-delay:0.82s,0.82s; animation-duration:5.41s,5.41s; width:13.2px; height:13.2px; --bc:#14b8a6; bottom:8.7%;"></span>
+      <span class="pt-float heart down" style="left:49.6%; animation-delay:3.11s,3.11s; animation-duration:6.42s,6.42s; font-size:19.5px; color:#0f7a45; top:37.1%;">🧡</span>
+      <span class="pt-float circle up" style="left:52.2%; animation-delay:3.94s,3.94s; animation-duration:7.63s,7.63s; width:12.3px; height:12.3px; --bc:#0d3b7a; bottom:23.5%;"></span>
+      <span class="pt-float circle down" style="left:54.3%; animation-delay:0.86s,0.86s; animation-duration:8.43s,8.43s; width:7.6px; height:7.6px; --bc:#14b8a6; top:26.4%;"></span>
+      <span class="pt-float circle up" style="left:56.2%; animation-delay:0.68s,0.68s; animation-duration:4.64s,4.64s; width:13.8px; height:13.8px; --bc:#c93060; bottom:21.8%;"></span>
+      <span class="pt-float circle down" style="left:59.6%; animation-delay:1.14s,1.14s; animation-duration:5.69s,5.69s; width:17.9px; height:17.9px; --bc:#0ea5e9; top:21.8%;"></span>
+      <span class="pt-float circle up" style="left:63.3%; animation-delay:2.18s,2.18s; animation-duration:4.57s,4.57s; width:12.3px; height:12.3px; --bc:#15803d; bottom:6.1%;"></span>
+      <span class="pt-float circle down" style="left:66.8%; animation-delay:2.32s,2.32s; animation-duration:5.08s,5.08s; width:17.1px; height:17.1px; --bc:#ec4899; top:57.1%;"></span>
+      <span class="pt-float heart up" style="left:69.9%; animation-delay:1.34s,1.34s; animation-duration:6.96s,6.96s; font-size:18.4px; color:#ec4899; bottom:5.5%;">❤️</span>
+      <span class="pt-float heart down" style="left:72.0%; animation-delay:1.0s,1.0s; animation-duration:6.53s,6.53s; font-size:23.7px; color:#14b8a6; top:30.2%;">🧡</span>
+      <span class="pt-float circle up" style="left:76.0%; animation-delay:3.63s,3.63s; animation-duration:7.72s,7.72s; width:12.4px; height:12.4px; --bc:#ec4899; bottom:44.4%;"></span>
+      <span class="pt-float circle down" style="left:78.8%; animation-delay:4.45s,4.45s; animation-duration:7.6s,7.6s; width:17.5px; height:17.5px; --bc:#14b8a6; top:28.3%;"></span>
+      <span class="pt-float circle up" style="left:81.1%; animation-delay:4.22s,4.22s; animation-duration:8.45s,8.45s; width:8.1px; height:8.1px; --bc:#c93060; bottom:57.3%;"></span>
+      <span class="pt-float circle down" style="left:84.1%; animation-delay:1.52s,1.52s; animation-duration:6.28s,6.28s; width:12.3px; height:12.3px; --bc:#0f7a45; top:59.1%;"></span>
+      <span class="pt-float star up" style="left:87.5%; animation-delay:3.6s,3.6s; animation-duration:4.56s,4.56s; font-size:16.8px; color:#c93060; bottom:39.6%;">✨</span>
+      <span class="pt-float heart down" style="left:89.9%; animation-delay:2.86s,2.86s; animation-duration:4.57s,4.57s; font-size:18.8px; color:#0ea5e9; top:56.8%;">💚</span>
+      <span class="pt-float star up" style="left:93.6%; animation-delay:0.77s,0.77s; animation-duration:4.75s,4.75s; font-size:18.1px; color:#f2cf6b; bottom:9.1%;">⭐</span>
+      <span class="pt-float circle down" style="left:96.4%; animation-delay:1.58s,1.58s; animation-duration:6.56s,6.56s; width:12.8px; height:12.8px; --bc:#0d3b7a; top:7.9%;"></span>
+      <span class="pt-float circle up" style="left:98%; animation-delay:1.95s,1.95s; animation-duration:7.95s,7.95s; width:9.3px; height:9.3px; --bc:#15803d; bottom:49.6%;"></span>
+  </div>
   {% for partner in slides %}
   <div class="pt-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
-    <div class="pt-slide-media-wrap">
-      <div class="pt-decor pt-decor-left">
-        <span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span>
-      </div>
-      <div class="pt-slide-media">
-        {% if partner.logo %}
-          <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
-        {% else %}
-          <div class="pt-slide-media-placeholder">🤝</div>
-        {% endif %}
-      </div>
-      <div class="pt-decor pt-decor-right">
-        <span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span><span class="pt-bubble"></span>
-      </div>
+    <div class="pt-slide-media">
+      {% if partner.logo %}
+        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
+      {% else %}
+        <div class="pt-slide-media-placeholder">🤝</div>
+      {% endif %}
     </div>
     <h2 class="pt-slide-title">{{ partner.name }}</h2>
     <a href="{% url 'core:partner_detail' partner.pk %}" class="pt-slide-btn">
