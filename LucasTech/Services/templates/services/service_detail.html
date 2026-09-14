@@ -221,10 +221,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .btn-submit:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(13,130,130,.4); }
 
-/* Infos contact */
-.sd-contact-info { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
-.sd-contact-row { display: flex; align-items: center; gap: 9px; font-size: .78rem; color: var(--muted); }
-.sd-contact-row i { color: var(--accent); width: 14px; text-align: center; }
+/* Pourquoi nous faire confiance */
+.sd-trust {
+  margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.sd-trust-row { display: flex; align-items: center; gap: 13px; }
+.sd-trust-icon {
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  background: rgba(13,130,130,.1); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.sd-trust-row strong { display: block; font-size: .84rem; font-weight: 700; color: var(--ink); }
+.sd-trust-row small { display: block; font-size: .74rem; color: var(--muted); margin-top: 1px; }
+
+/* Liens utiles */
+.sd-links {
+  margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.sd-link-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 14px; border-radius: 11px;
+  background: var(--surf2); border: 1px solid var(--border);
+  text-decoration: none; color: var(--ink2);
+  font-size: .83rem; font-weight: 600;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.sd-link-row i:first-child { color: var(--accent); margin-right: 9px; }
+.sd-link-row i.fa-arrow-right { font-size: .78rem; color: var(--muted); transition: transform .2s; }
+.sd-link-row:hover { background: rgba(13,130,130,.07); border-color: rgba(13,130,130,.3); transform: translateX(2px); }
+.sd-link-row:hover i.fa-arrow-right { transform: translateX(3px); color: var(--accent); }
 
 /* Messages */
 .sd-msgs { margin-bottom: 16px; }
@@ -382,18 +409,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </form>
     </div>
 
-    <!-- Infos de contact -->
-    {% if service.phone or service.whatsapp %}
-    <div class="sd-contact-info">
-      {% if service.phone %}
-      <div class="sd-contact-row"><i class="fa fa-phone"></i><span>{{ service.phone }}</span></div>
-      {% endif %}
-      {% if service.whatsapp %}
-      <div class="sd-contact-row"><i class="fab fa-whatsapp"></i><span>+{{ service.whatsapp }}</span></div>
-      {% endif %}
-      <div class="sd-contact-row"><i class="fa fa-clock-o"></i><span>Réponse sous 24h</span></div>
+    <!-- Pourquoi nous faire confiance -->
+    <div class="sd-trust">
+      <div class="sd-trust-row">
+        <span class="sd-trust-icon"><i class="fa fa-clock-o"></i></span>
+        <div><strong>Réponse rapide</strong><small>Sous 24h, WhatsApp ou message</small></div>
+      </div>
+      <div class="sd-trust-row">
+        <span class="sd-trust-icon"><i class="fa fa-file-text-o"></i></span>
+        <div><strong>Devis gratuit</strong><small>Sans engagement de votre part</small></div>
+      </div>
+      <div class="sd-trust-row">
+        <span class="sd-trust-icon"><i class="fa fa-map-marker"></i></span>
+        <div><strong>Équipe locale</strong><small>Basée à Lomé, à votre écoute</small></div>
+      </div>
     </div>
-    {% endif %}
+
+    <!-- Liens utiles -->
+    <div class="sd-links">
+      <a href="{% url 'core:projects' %}" class="sd-link-row">
+        <span><i class="fa fa-briefcase"></i> Voir nos projets réalisés</span>
+        <i class="fa fa-arrow-right"></i>
+      </a>
+      <a href="{% url 'core:team' %}" class="sd-link-row">
+        <span><i class="fa fa-users"></i> Rencontrer notre équipe</span>
+        <i class="fa fa-arrow-right"></i>
+      </a>
+      <a href="{% url 'core:partners' %}" class="sd-link-row">
+        <span><i class="fa fa-handshake-o"></i> Nos partenaires</span>
+        <i class="fa fa-arrow-right"></i>
+      </a>
+    </div>
 
   </div>
 </div>
