@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Partner, Project, TeamMember, HeroSlide, NewsTickerItem
 
 
@@ -22,8 +22,27 @@ def partners_page(request):
 
 
 def projects_page(request):
+    projects = Project.objects.all()
+
+    clients = {p.client.strip() for p in projects if p.client and p.client.strip()}
+    techs = set()
+    for p in projects:
+        techs.update(p.get_technologies())
+
     return render(request, 'core/projects.html', {
-        'projects': Project.objects.all(),
+        'projects': projects,
+        'slides': projects.exclude(image=''),
+        'client_count': len(clients),
+        'tech_count': len(techs),
+    })
+
+
+def project_detail(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    related = Project.objects.exclude(pk=project.pk)[:3]
+    return render(request, 'core/project_detail.html', {
+        'project': project,
+        'related': related,
     })
 
 

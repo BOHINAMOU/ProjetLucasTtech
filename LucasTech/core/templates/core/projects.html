@@ -2,65 +2,178 @@
 {% block title %}Projets réalisés — LucasTech{% endblock %}
 {% block meta_description %}Un aperçu des projets réalisés par LucasTech pour ses clients et partenaires au Togo.{% endblock %}
 {% block og_title %}Projets réalisés — LucasTech{% endblock %}
+{% block og_description %}Un aperçu des projets réalisés par LucasTech pour ses clients et partenaires au Togo.{% endblock %}
 
 {% block content %}
 <style>
 :root {
-  --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
-  --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.07);
+  --bg: #f7f3ee; --surf: #ffffff; --surf2: #f2ede6;
+  --border: rgba(0,0,0,.08); --shadow: rgba(20,16,12,.08);
   --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
-  --accent: #b8420a; --accent2: #c9a84c;
+  --accent: #b8420a; --accent2: #c9a84c; --green: #1f7a5c;
   --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
-.pj-hero {
-  background: #14100c; color: #f2ede6;
-  padding: 64px clamp(1.5rem,6vw,5rem) 56px;
-}
-.pj-hero-eyebrow { color: var(--accent2); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
-.pj-hero-title { font-family: var(--serif); font-size: clamp(2rem,4vw,3rem); font-weight: 800; }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ══ HERO clair ══ */
+.pj-hero { background: var(--bg); padding: 64px clamp(1.5rem,6vw,5rem) 8px; text-align: center; }
+.pj-hero-eyebrow { color: var(--accent); font-size: .8rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 16px; }
+.pj-hero-title { font-family: var(--serif); font-size: clamp(2.1rem,4.4vw,3.2rem); font-weight: 800; color: var(--ink); }
 .pj-hero-title em { color: var(--accent); font-style: italic; }
-.pj-hero-sub { margin-top: 14px; font-size: 1rem; color: #a89c8c; max-width: 640px; line-height: 1.7; }
+.pj-hero-sub { margin: 16px auto 0; font-size: 1rem; color: var(--muted); max-width: 580px; line-height: 1.7; }
 
-.pj-grid {
-  max-width: 1200px; margin: 0 auto;
-  padding: 56px clamp(1.5rem,6vw,5rem) 96px;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 32px;
+.pj-stats { display: flex; justify-content: center; gap: 56px; margin: 36px 0 8px; flex-wrap: wrap; }
+.pj-stat-num { font-family: var(--serif); font-size: 2.1rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.pj-stat-label { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+/* ══ SLIDESHOW (carte claire) ══ */
+.pj-slideshow-wrap { max-width: 1100px; margin: 40px auto 0; padding: 0 clamp(1.5rem,6vw,5rem); }
+.pj-slideshow {
+  position: relative; border-radius: 22px; overflow: hidden;
+  background: var(--surf); border: 1px solid var(--border);
+  box-shadow: 0 20px 60px var(--shadow);
 }
-.pj-card {
-  background: var(--surf); border: 1px solid var(--border); border-radius: 20px;
-  overflow: hidden; box-shadow: 0 8px 32px var(--shadow);
-  transition: transform .3s;
+.pj-slide {
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  transition: opacity .7s ease;
+  display: grid; grid-template-columns: 1.2fr 1fr;
 }
-.pj-card:hover { transform: translateY(-4px); }
-.pj-media {
-  aspect-ratio: 16/10; background: var(--surf2);
+.pj-slide.active { position: relative; opacity: 1; pointer-events: auto; }
+.pj-slide-media { aspect-ratio: 16/10; background: var(--surf2); overflow: hidden; }
+.pj-slide-media img { width: 100%; height: 100%; object-fit: cover; }
+.pj-slide-media-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 4rem; opacity: .15; }
+.pj-slide-info { padding: 40px clamp(1.5rem,3vw,3rem); display: flex; flex-direction: column; justify-content: center; }
+.pj-slide-badge {
+  display: inline-flex; align-items: center; gap: 6px; width: fit-content;
+  background: rgba(31,122,92,.1); color: var(--green);
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  padding: 5px 13px; border-radius: 99px; margin-bottom: 16px;
+}
+.pj-slide-client { font-size: .78rem; font-weight: 700; color: var(--accent); letter-spacing: .04em; margin-bottom: 8px; }
+.pj-slide-title { font-family: var(--serif); font-size: clamp(1.3rem,2.4vw,1.8rem); font-weight: 800; color: var(--ink); margin-bottom: 20px; line-height: 1.25; }
+.pj-slide-btn {
+  display: inline-flex; align-items: center; gap: 8px; width: fit-content;
+  padding: 13px 26px; background: var(--ink); color: #fff;
+  border-radius: 10px; text-decoration: none; font-weight: 700; font-size: .88rem;
+  transition: background .2s, transform .2s;
+}
+.pj-slide-btn:hover { background: var(--accent); transform: translateY(-2px); }
+
+.pj-dots { display: flex; justify-content: center; gap: 8px; padding: 18px 0 22px; background: var(--surf); }
+.pj-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+  border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s;
+}
+.pj-dot.active { background: var(--accent); transform: scale(1.3); }
+
+.pj-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer;
+  background: #fff; color: var(--ink); font-size: .85rem;
   display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
+  box-shadow: 0 4px 14px var(--shadow); transition: background .2s, color .2s;
 }
-.pj-media img { width: 100%; height: 100%; object-fit: cover; }
-.pj-media-placeholder { font-size: 3rem; opacity: .2; }
-.pj-body { padding: 24px 26px 28px; }
-.pj-client { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-.pj-title { font-family: var(--serif); font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; }
-.pj-desc { font-size: .92rem; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
-.pj-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-.pj-tag {
-  font-size: .72rem; font-weight: 600; padding: 4px 12px; border-radius: 99px;
-  background: rgba(184,66,10,.08); color: var(--accent); border: 1px solid rgba(184,66,10,.18);
-}
-.pj-link {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: .85rem; font-weight: 700; color: var(--ink); text-decoration: none;
-}
-.pj-link:hover { color: var(--accent); }
+.pj-nav:hover { background: var(--accent); color: #fff; }
+.pj-nav.prev { left: -18px; }
+.pj-nav.next { right: -18px; }
 
-.pj-empty {
-  max-width: 1200px; margin: 0 auto; padding: 80px clamp(1.5rem,6vw,5rem);
-  text-align: center; color: var(--muted);
+/* ══ CATEGORIES fictives (filtre visuel, années) ══ */
+.pj-filters-wrap { max-width: 1200px; margin: 56px auto 0; padding: 0 clamp(1.5rem,6vw,5rem); display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.pj-filter-btn {
+  padding: 10px 22px; border-radius: 99px; border: 1.5px solid var(--border);
+  background: var(--surf); color: var(--muted); font-weight: 700; font-size: .85rem;
+  cursor: pointer; text-decoration: none; transition: all .2s;
+}
+.pj-filter-btn.active, .pj-filter-btn:hover { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ══ GRID ══ */
+.pj-section { max-width: 1200px; margin: 0 auto; padding: 48px clamp(1.5rem,6vw,5rem) 96px; }
+.pj-section-title { font-family: var(--serif); font-size: clamp(1.4rem,3vw,2rem); font-weight: 800; margin-bottom: 36px; display: flex; align-items: center; gap: 16px; }
+.pj-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.pj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 28px; }
+.pj-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 18px;
+  overflow: hidden; box-shadow: 0 6px 20px var(--shadow);
+  display: flex; flex-direction: column;
+  transition: transform .3s, box-shadow .3s, border-color .3s;
+}
+.pj-card:hover { transform: translateY(-5px); box-shadow: 0 18px 44px rgba(20,16,12,.12); border-color: rgba(184,66,10,.25); }
+.pj-media { position: relative; aspect-ratio: 16/10; background: var(--surf2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pj-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+.pj-card:hover .pj-media img { transform: scale(1.06); }
+.pj-media-placeholder { font-size: 3rem; opacity: .18; }
+.pj-badge {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+  background: rgba(31,122,92,.12); color: var(--green);
+  font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 99px; backdrop-filter: blur(4px);
+}
+.pj-body { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; }
+.pj-client { font-size: .74rem; font-weight: 700; letter-spacing: .06em; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.pj-title { font-family: var(--serif); font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; line-height: 1.3; color: var(--ink); }
+.pj-desc { font-size: .88rem; color: var(--muted); line-height: 1.7; margin-bottom: 18px; flex: 1; }
+.pj-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+.pj-tag { font-size: .7rem; font-weight: 600; padding: 4px 11px; border-radius: 99px; background: var(--surf2); color: var(--ink2); border: 1px solid var(--border); }
+.pj-detail-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .85rem; font-weight: 700; color: var(--green); text-decoration: none;
+  align-self: flex-start; transition: gap .2s;
+}
+.pj-detail-btn:hover { gap: 11px; }
+
+.pj-empty { max-width: 1200px; margin: 0 auto; padding: 80px clamp(1.5rem,6vw,5rem); text-align: center; color: var(--muted); }
+
+/* ══ CTA CONTACT ══ */
+.pj-cta {
+  position: relative; overflow: hidden;
+  background: linear-gradient(120deg, #0f1c18 0%, #16241f 100%);
+  padding: 72px clamp(1.5rem,6vw,5rem);
+  text-align: center;
+}
+.pj-cta-blob {
+  position: absolute; border-radius: 50%; filter: blur(70px);
+  pointer-events: none; opacity: .55;
+  animation: pjFloat 16s ease-in-out infinite;
+}
+.pj-cta-blob-1 { width: 380px; height: 380px; top: -160px; left: -100px;
+  background: radial-gradient(circle, rgba(31,122,92,.45), transparent 70%); }
+.pj-cta-blob-2 { width: 300px; height: 300px; bottom: -140px; right: -80px;
+  background: radial-gradient(circle, rgba(184,66,10,.35), transparent 70%); animation-delay: -8s; animation-duration: 20s; }
+@keyframes pjFloat {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%      { transform: translate(30px, -20px) scale(1.08); }
+  66%      { transform: translate(-24px, 18px) scale(.95); }
+}
+.pj-cta-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+.pj-cta-title { font-family: var(--serif); font-size: clamp(1.6rem,3.4vw,2.4rem); font-weight: 800; color: #faf8f5; margin-bottom: 16px; }
+.pj-cta-sub { font-size: .98rem; color: #b9c7c0; line-height: 1.7; margin-bottom: 30px; }
+.pj-cta-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 34px; border-radius: 12px; text-decoration: none;
+  font-weight: 700; font-size: .95rem; color: #fff;
+  background: linear-gradient(120deg, var(--green), #25D366);
+  background-size: 200% 100%;
+  box-shadow: 0 10px 30px rgba(31,122,92,.4);
+  transition: transform .2s, box-shadow .2s, background-position .6s;
+}
+.pj-cta-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(31,122,92,.55); background-position: 100% 0; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 860px) {
+  .pj-slide { grid-template-columns: 1fr; }
+  .pj-nav.prev { left: 12px; }
+  .pj-nav.next { right: 12px; }
+}
+@media (max-width: 640px) {
+  .pj-grid { grid-template-columns: 1fr; }
+  .pj-stats { gap: 36px; }
+  .pj-slide-info { padding: 28px 20px; }
 }
 </style>
 
@@ -68,42 +181,140 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <p class="pj-hero-eyebrow">LucasTech</p>
   <h1 class="pj-hero-title">Projets <em>réalisés</em></h1>
   <p class="pj-hero-sub">Un aperçu des projets que nous avons menés pour nos clients et partenaires.</p>
+
+  {% if projects %}
+  <div class="pj-stats">
+    <div><div class="pj-stat-num">{{ projects|length }}</div><div class="pj-stat-label">Projets</div></div>
+    <div><div class="pj-stat-num">{{ client_count }}</div><div class="pj-stat-label">Clients</div></div>
+    <div><div class="pj-stat-num">{{ tech_count }}</div><div class="pj-stat-label">Technologies</div></div>
+  </div>
+  {% endif %}
 </div>
 
-{% if projects %}
-<div class="pj-grid">
-  {% for project in projects %}
-  <div class="pj-card">
-    <div class="pj-media">
-      {% if project.image %}
-        <img src="{{ project.image.url }}" alt="{{ project.title }}">
-      {% else %}
-        <div class="pj-media-placeholder">🚀</div>
-      {% endif %}
-    </div>
-    <div class="pj-body">
-      {% if project.client or project.year %}
-      <p class="pj-client">{{ project.client }}{% if project.client and project.year %} · {% endif %}{{ project.year }}</p>
-      {% endif %}
-      <h3 class="pj-title">{{ project.title }}</h3>
-      <p class="pj-desc">{{ project.description }}</p>
-      {% if project.get_technologies %}
-      <div class="pj-tags">
-        {% for tech in project.get_technologies %}
-          <span class="pj-tag">{{ tech }}</span>
-        {% endfor %}
+{% if slides %}
+<div class="pj-slideshow-wrap">
+  <div class="pj-slideshow" id="pjSlideshow">
+    {% for project in slides %}
+    <div class="pj-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+      <div class="pj-slide-media">
+        {% if project.image %}
+          <img src="{{ project.image.url }}" alt="{{ project.title }}">
+        {% else %}
+          <div class="pj-slide-media-placeholder">🚀</div>
+        {% endif %}
       </div>
-      {% endif %}
-      {% if project.link %}
-      <a href="{{ project.link }}" target="_blank" rel="noopener" class="pj-link">
-        Voir le projet <i class="fa fa-arrow-right"></i>
-      </a>
-      {% endif %}
+      <div class="pj-slide-info">
+        <span class="pj-slide-badge"><i class="fa fa-check"></i> Projet réalisé</span>
+        {% if project.client %}<p class="pj-slide-client">{{ project.client }}</p>{% endif %}
+        <h2 class="pj-slide-title">{{ project.title }}</h2>
+        <a href="{% url 'core:project_detail' project.pk %}" class="pj-slide-btn">
+          Voir détail <i class="fa fa-arrow-right"></i>
+        </a>
+      </div>
     </div>
+    {% endfor %}
+
+    {% if slides|length > 1 %}
+    <button class="pj-nav prev" id="pjPrev" aria-label="Précédent"><i class="fa fa-chevron-left"></i></button>
+    <button class="pj-nav next" id="pjNext" aria-label="Suivant"><i class="fa fa-chevron-right"></i></button>
+    {% endif %}
   </div>
-  {% endfor %}
+  {% if slides|length > 1 %}
+  <div class="pj-dots" id="pjDots">
+    {% for project in slides %}
+    <button class="pj-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" aria-label="Slide {{ forloop.counter }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
-{% else %}
-<p class="pj-empty">Nos projets réalisés seront bientôt présentés ici.</p>
 {% endif %}
+
+<section class="pj-section">
+  <h2 class="pj-section-title">Tous nos projets</h2>
+  {% if projects %}
+  <div class="pj-grid">
+    {% for project in projects %}
+    <div class="pj-card reveal" style="transition-delay:{{ forloop.counter0 }}0ms">
+      <div class="pj-media">
+        {% if project.image %}
+          <img src="{{ project.image.url }}" alt="{{ project.title }}" loading="lazy">
+        {% else %}
+          <div class="pj-media-placeholder">🚀</div>
+        {% endif %}
+        {% if project.year %}<span class="pj-badge">{{ project.year }}</span>{% endif %}
+      </div>
+      <div class="pj-body">
+        {% if project.client %}<p class="pj-client"><i class="fa fa-building"></i> {{ project.client }}</p>{% endif %}
+        <h3 class="pj-title">{{ project.title }}</h3>
+        <p class="pj-desc">{{ project.description|truncatewords:20 }}</p>
+        {% if project.get_technologies %}
+        <div class="pj-tags">
+          {% for tech in project.get_technologies %}
+            <span class="pj-tag">{{ tech }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <a href="{% url 'core:project_detail' project.pk %}" class="pj-detail-btn">
+          Voir le détail <i class="fa fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="pj-empty">Nos projets réalisés seront bientôt présentés ici.</p>
+  {% endif %}
+</section>
+
+<!-- ══ CTA CONTACT ══ -->
+<section class="pj-cta">
+  <div class="pj-cta-blob pj-cta-blob-1"></div>
+  <div class="pj-cta-blob pj-cta-blob-2"></div>
+  <div class="pj-cta-inner">
+    <h2 class="pj-cta-title">Un projet en tête ?</h2>
+    <p class="pj-cta-sub">Parlez-nous de votre idée : sites web, applications, réseaux, design ou marketing — notre équipe vous accompagne de A à Z.</p>
+    <a href="https://wa.me/22891973334?text=Bonjour%2C%20j%27ai%20un%20projet%20%C3%A0%20vous%20pr%C3%A9senter." target="_blank" rel="noopener noreferrer" class="pj-cta-btn">
+      <i class="fab fa-whatsapp"></i> Contactez-nous pour votre projet
+    </a>
+  </div>
+</section>
+
+<script>
+(function() {
+  var slideshow = document.getElementById('pjSlideshow');
+  if (!slideshow) return;
+
+  var slides = Array.from(slideshow.querySelectorAll('.pj-slide'));
+  var dots = Array.from(document.querySelectorAll('.pj-dot'));
+  var prevBtn = document.getElementById('pjPrev');
+  var nextBtn = document.getElementById('pjNext');
+  var current = 0;
+  var timer = null;
+
+  function go(i) {
+    slides[current].classList.remove('active');
+    dots[current] && dots[current].classList.remove('active');
+    current = (i + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current] && dots[current].classList.add('active');
+  }
+  function next() { go(current + 1); }
+  function prev() { go(current - 1); }
+  function restart() {
+    clearInterval(timer);
+    if (slides.length > 1) timer = setInterval(next, 3000);
+  }
+
+  dots.forEach(function(d) {
+    d.addEventListener('click', function() { go(parseInt(d.dataset.index, 10)); restart(); });
+  });
+  nextBtn && nextBtn.addEventListener('click', function() { next(); restart(); });
+  prevBtn && prevBtn.addEventListener('click', function() { prev(); restart(); });
+  slideshow.addEventListener('mouseenter', function() { clearInterval(timer); });
+  slideshow.addEventListener('mouseleave', restart);
+
+  restart();
+})();
+</script>
+
 {% endblock %}
