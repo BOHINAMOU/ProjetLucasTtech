@@ -1,0 +1,147 @@
+{% extends 'core/base.html' %}
+{% block title %}Inscription — {{ formation.title }} — LucasTech{% endblock %}
+{% block meta_description %}Inscrivez-vous à la formation {{ formation.title }} et rejoignez le groupe WhatsApp dédié.{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
+  --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.08);
+  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
+  --indigo: #4f46e5; --indigo2: #7c3aed; --rose: #c93060;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.rg-wrap { max-width: 640px; margin: 48px auto 96px; padding: 0 clamp(1.2rem,5vw,3rem); }
+
+.rg-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted); margin-bottom: 24px; }
+.rg-breadcrumb a { color: var(--indigo); text-decoration: none; font-weight: 600; }
+.rg-breadcrumb span { opacity: .5; }
+
+.rg-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 20px;
+  padding: 36px clamp(1.5rem,4vw,3rem); box-shadow: 0 8px 40px var(--shadow);
+}
+
+.rg-eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 10px; }
+.rg-title { font-family: var(--serif); font-size: 1.7rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -.02em; }
+.rg-sub { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+
+.rg-msgs { margin-bottom: 20px; }
+.rg-msg { padding: 11px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
+.rg-msg.error { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: var(--rose); }
+
+.rg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.rg-field { margin-bottom: 16px; }
+.rg-label { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: var(--ink2); margin-bottom: 7px; }
+.rg-input, .rg-select, .rg-textarea {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surf2); font-family: var(--font); font-size: .92rem; color: var(--ink);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.rg-input:focus, .rg-select:focus, .rg-textarea:focus {
+  border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+}
+.rg-textarea { resize: vertical; min-height: 90px; }
+
+.rg-whatsapp-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+
+.rg-submit {
+  width: 100%; padding: 15px; margin-top: 8px;
+  background: var(--indigo); color: #fff; border: none; border-radius: 10px;
+  font-family: var(--font); font-size: .96rem; font-weight: 700; cursor: pointer;
+  transition: background .2s, transform .15s;
+}
+.rg-submit:hover { background: var(--indigo2); transform: translateY(-2px); }
+</style>
+
+<nav class="rg-breadcrumb">
+  <a href="{% url 'formations:formations' %}">Formations</a>
+  <span>›</span>
+  <a href="{% url 'formations:formation_detail' formation.pk %}">{{ formation.title }}</a>
+  <span>›</span>
+  <span>Inscription</span>
+</nav>
+
+<div class="rg-wrap">
+  <div class="rg-card">
+    <p class="rg-eyebrow">Inscription</p>
+    <h1 class="rg-title">{{ formation.title }}</h1>
+    <p class="rg-sub">
+      Remplissez ce formulaire pour vous inscrire. Vous recevrez un email de confirmation avec
+      le lien du groupe WhatsApp de la formation.
+    </p>
+
+    {% if messages %}
+    <div class="rg-msgs">
+      {% for msg in messages %}<div class="rg-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="rg-row">
+        <div class="rg-field">
+          <label class="rg-label">Prénom</label>
+          <input class="rg-input" type="text" name="first_name" value="{{ form_data.first_name|default:'' }}" required>
+        </div>
+        <div class="rg-field">
+          <label class="rg-label">Nom</label>
+          <input class="rg-input" type="text" name="last_name" value="{{ form_data.last_name|default:'' }}" required>
+        </div>
+      </div>
+
+      <div class="rg-field">
+        <label class="rg-label">Pays</label>
+        <select class="rg-select" name="country" required>
+          <option value="">Sélectionnez votre pays</option>
+          <option>Togo</option><option>Bénin</option><option>Côte d'Ivoire</option>
+          <option>Ghana</option><option>Nigeria</option><option>Sénégal</option>
+          <option>Mali</option><option>Burkina Faso</option><option>Niger</option>
+          <option>Cameroun</option><option>RD Congo</option><option>Maroc</option>
+          <option>Tunisie</option><option>France</option><option>Autre</option>
+        </select>
+      </div>
+
+      <div class="rg-field">
+        <label class="rg-label">Numéro WhatsApp</label>
+        <div class="rg-whatsapp-row">
+          <select class="rg-select" name="whatsapp_country_code">
+            <option value="+228" selected>🇹🇬 +228</option>
+            <option value="+229">🇧🇯 +229</option>
+            <option value="+225">🇨🇮 +225</option>
+            <option value="+233">🇬🇭 +233</option>
+            <option value="+234">🇳🇬 +234</option>
+            <option value="+221">🇸🇳 +221</option>
+            <option value="+223">🇲🇱 +223</option>
+            <option value="+226">🇧🇫 +226</option>
+            <option value="+227">🇳🇪 +227</option>
+            <option value="+237">🇨🇲 +237</option>
+            <option value="+243">🇨🇩 +243</option>
+            <option value="+212">🇲🇦 +212</option>
+            <option value="+216">🇹🇳 +216</option>
+            <option value="+33">🇫🇷 +33</option>
+            <option value="+1">🇺🇸 +1</option>
+          </select>
+          <input class="rg-input" type="tel" name="whatsapp_number" placeholder="90 00 00 00" value="{{ form_data.whatsapp_number|default:'' }}" required>
+        </div>
+      </div>
+
+      <div class="rg-field">
+        <label class="rg-label">Email</label>
+        <input class="rg-input" type="email" name="email" value="{{ form_data.email|default:'' }}" required>
+      </div>
+
+      <div class="rg-field">
+        <label class="rg-label">Message de motivation (optionnel)</label>
+        <textarea class="rg-textarea" name="motivation" placeholder="Pourquoi souhaitez-vous suivre cette formation ?">{{ form_data.motivation|default:'' }}</textarea>
+      </div>
+
+      <button type="submit" class="rg-submit"><i class="fa fa-paper-plane"></i> Envoyer mon inscription</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

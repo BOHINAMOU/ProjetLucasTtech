@@ -8,6 +8,25 @@ class Formation(models.Model):
         ('intermediaire','Intermédiaire'),
         ('avance',       'Avancé'),
     ]
+    TYPE_CHOICES = [
+        ('cours',       'Formation payante en ligne (panier + WhatsApp)'),
+        ('inscription', 'Inscription par formulaire (groupe WhatsApp)'),
+        ('numerique',   'Formation numérique à télécharger (PDF / Word / Excel)'),
+    ]
+
+    formation_type = models.CharField(
+        max_length=20, choices=TYPE_CHOICES, default='cours',
+        verbose_name="Type de formation"
+    )
+    whatsapp_group_link = models.URLField(
+        blank=True, verbose_name="Lien du groupe WhatsApp",
+        help_text="Envoyé par email après inscription (type « Inscription par formulaire »)."
+    )
+    file = models.FileField(
+        upload_to='formations/fichiers/', blank=True, null=True,
+        verbose_name="Fichier à télécharger",
+        help_text="PDF, Word ou Excel — accessible uniquement après paiement confirmé (type « Formation numérique »)."
+    )
 
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -114,3 +133,40 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.formation.title} x {self.quantity}"
+
+
+def user_has_purchased(user, formation):
+    """True si l'utilisateur a une commande PAYÉE contenant cette formation
+    (donne le droit de télécharger une formation numérique à vie)."""
+    if not user or not user.is_authenticated:
+        return False
+    return OrderItem.objects.filter(
+        order__user=user, order__status='paid', formation=formation
+    ).exists()
+
+
+# ─────────────────────────────
+# 📝 INSCRIPTION PAR FORMULAIRE (formations type "inscription")
+# ─────────────────────────────
+class Registration(models.Model):
+    formation  = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name='registrations')
+    country    = models.CharField(max_length=100, verbose_name="Pays")
+    first_name = models.CharField(max_length=100, verbose_name="Prénom")
+    last_name  = models.CharField(max_length=100, verbose_name="Nom")
+    whatsapp_country_code = models.CharField(max_length=6, default='+228', verbose_name="Indicatif")
+    whatsapp_number = models.CharField(max_length=20, verbose_name="Numéro WhatsApp")
+    email      = models.EmailField(verbose_name="Email")
+    motivation = models.TextField(blank=True, verbose_name="Message de motivation")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Inscription"
+        verbose_name_plural = "Inscriptions"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} — {self.formation.title}"
+
+    @property
+    def whatsapp_full_number(self):
+        return f"{self.whatsapp_country_code} {self.whatsapp_number}"

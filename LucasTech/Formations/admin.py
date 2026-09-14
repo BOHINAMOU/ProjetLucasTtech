@@ -1,6 +1,8 @@
+import csv
 from django import forms
 from django.contrib import admin
-from .models import Formation
+from django.http import HttpResponse
+from .models import Formation, Order, OrderItem, Registration
 
 
 class FormationAdminForm(forms.ModelForm):
@@ -19,12 +21,23 @@ class FormationAdminForm(forms.ModelForm):
 @admin.register(Formation)
 class FormationAdmin(admin.ModelAdmin):
     form = FormationAdminForm
-    list_display = ('title', 'level', 'price', 'old_price', 'is_featured', 'author', 'is_published', 'created_at')
-    list_filter = ('is_published', 'is_featured', 'level', 'created_at')
+    list_display = ('title', 'formation_type', 'level', 'price', 'old_price', 'is_featured', 'author', 'is_published', 'created_at')
+    list_filter = ('formation_type', 'is_published', 'is_featured', 'level', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
 
     fieldsets = (
+        ('Type de formation', {
+            'fields': ('formation_type',),
+            'description': (
+                "• Formation payante en ligne : achat via panier, le client peut ensuite nous "
+                "contacter sur WhatsApp avec la liste de ses formations choisies.<br>"
+                "• Inscription par formulaire : le client remplit un formulaire, reçoit un email "
+                "avec le lien du groupe WhatsApp. Voir les inscriptions dans « Inscriptions » ci-dessous.<br>"
+                "• Formation numérique : fichier PDF/Word/Excel téléchargeable une fois la commande "
+                "marquée « Payé » dans Commandes."
+            ),
+        }),
         ('Informations principales', {
             'fields': ('title', 'author', 'image', 'description')
         }),
@@ -39,7 +52,59 @@ class FormationAdmin(admin.ModelAdmin):
         ('Détails affichés', {
             'fields': ('level', 'duration', 'students_count'),
         }),
+        ('Inscription par formulaire', {
+            'fields': ('whatsapp_group_link',),
+            'classes': ('collapse',),
+        }),
+        ('Formation numérique à télécharger', {
+            'fields': ('file',),
+            'classes': ('collapse',),
+        }),
         ('Publication', {
             'fields': ('is_published', 'is_featured'),
         }),
     )
+
+
+# ─────────────────────────────
+# 📝 Inscriptions (formulaire) — export CSV/Excel
+# ─────────────────────────────
+@admin.action(description="Exporter la sélection en CSV (Excel)")
+def export_registrations_csv(modeladmin, request, queryset):
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="inscriptions_formations.csv"'
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['Formation', 'Prénom', 'Nom', 'Pays', 'WhatsApp', 'Email', 'Motivation', 'Date'])
+    for r in queryset.select_related('formation'):
+        writer.writerow([
+            r.formation.title, r.first_name, r.last_name, r.country,
+            r.whatsapp_full_number, r.email, r.motivation,
+            r.created_at.strftime('%d/%m/%Y %H:%M'),
+        ])
+    return response
+
+
+@admin.register(Registration)
+class RegistrationAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'formation', 'country', 'whatsapp_full_number', 'email', 'created_at')
+    list_filter = ('formation', 'country', 'created_at')
+    search_fields = ('first_name', 'last_name', 'email', 'whatsapp_number')
+    actions = [export_registrations_csv]
+
+
+# ─────────────────────────────
+# 🧾 Commandes — confirmer le paiement manuellement
+# ─────────────────────────────
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ('formation', 'quantity', 'price')
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'total_price', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    list_editable = ('status',)
+    search_fields = ('user__email',)
+    inlines = [OrderItemInline]

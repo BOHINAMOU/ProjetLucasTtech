@@ -1,8 +1,19 @@
+import urllib.parse
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from .models import Formation, Cart, CartItem, Order, OrderItem
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import FileResponse, Http404
+
+from .models import (
+    Formation, Cart, CartItem, Order, OrderItem,
+    Registration, user_has_purchased,
+)
+
+WHATSAPP_NUMBER = "22891973334"
 
 
 # ──────────────────────────────────────────
@@ -27,12 +38,12 @@ def formations(request):
 def formation_detail(request, pk):
     formation = get_object_or_404(Formation, pk=pk, is_published=True)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and formation.formation_type in ('cours', 'numerique'):
         if not request.user.is_authenticated:
             messages.error(request, 'Connectez-vous pour ajouter au panier.')
-            return redirect('users:login')  # ✅ CORRECTION ICI
+            return redirect('users:login')
 
-        quantity = max(1, int(request.POST.get('quantity', 1)))
+        quantity = 1 if formation.formation_type == 'numerique' else max(1, int(request.POST.get('quantity', 1)))
         cart, _ = Cart.objects.get_or_create(user=request.user)
         item, created = CartItem.objects.get_or_create(cart=cart, formation=formation)
         item.quantity = item.quantity + quantity if not created else quantity
@@ -61,7 +72,90 @@ def formation_detail(request, pk):
         'related_formations': related_formations,
         'shop_tile_image': shop_sample.image.url if shop_sample else None,
         'pub_tile_image': pub_sample.cover_image.url if pub_sample else None,
+        'has_purchased': user_has_purchased(request.user, formation) if formation.formation_type == 'numerique' else False,
     })
+
+
+# ──────────────────────────────────────────
+# 📝 Inscription par formulaire (formations type "inscription")
+# ──────────────────────────────────────────
+def formation_register(request, pk):
+    formation = get_object_or_404(Formation, pk=pk, is_published=True, formation_type='inscription')
+
+    if request.method == 'POST':
+        country               = request.POST.get('country', '').strip()
+        first_name             = request.POST.get('first_name', '').strip()
+        last_name              = request.POST.get('last_name', '').strip()
+        whatsapp_country_code  = request.POST.get('whatsapp_country_code', '+228').strip()
+        whatsapp_number        = request.POST.get('whatsapp_number', '').strip()
+        email                  = request.POST.get('email', '').strip()
+        motivation              = request.POST.get('motivation', '').strip()
+
+        errors = []
+        if not country: errors.append("Le pays est requis.")
+        if not first_name: errors.append("Le prénom est requis.")
+        if not last_name: errors.append("Le nom est requis.")
+        if not whatsapp_number: errors.append("Le numéro WhatsApp est requis.")
+        if not email: errors.append("L'email est requis.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'formations/formation_register.html', {
+                'formation': formation,
+                'form_data': request.POST,
+            })
+
+        Registration.objects.create(
+            formation=formation,
+            country=country,
+            first_name=first_name,
+            last_name=last_name,
+            whatsapp_country_code=whatsapp_country_code,
+            whatsapp_number=whatsapp_number,
+            email=email,
+            motivation=motivation,
+        )
+
+        # Email de confirmation (ne bloque pas l'inscription si l'envoi échoue)
+        try:
+            subject = f"Merci pour votre inscription — {formation.title}"
+            body = (
+                f"Bonjour {first_name},\n\n"
+                f"Merci pour votre inscription à la formation « {formation.title} ».\n\n"
+            )
+            if formation.whatsapp_group_link:
+                body += f"Rejoignez dès maintenant le groupe WhatsApp de la formation :\n{formation.whatsapp_group_link}\n\n"
+            else:
+                body += "Notre équipe vous enverra très bientôt le lien du groupe WhatsApp de la formation.\n\n"
+            body += "À très bientôt,\nL'équipe LucasTech"
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=True)
+        except Exception:
+            pass
+
+        return redirect('formations:formation_register_success', pk=formation.pk)
+
+    return render(request, 'formations/formation_register.html', {'formation': formation})
+
+
+def formation_register_success(request, pk):
+    formation = get_object_or_404(Formation, pk=pk)
+    return render(request, 'formations/formation_register_success.html', {'formation': formation})
+
+
+# ──────────────────────────────────────────
+# ⬇️ Téléchargement d'une formation numérique (après paiement confirmé)
+# ──────────────────────────────────────────
+@login_required
+def formation_download(request, pk):
+    formation = get_object_or_404(Formation, pk=pk, formation_type='numerique')
+    if not user_has_purchased(request.user, formation):
+        messages.error(request, "Vous devez d'abord acheter cette formation pour la télécharger.")
+        return redirect('formations:formation_detail', pk=pk)
+    if not formation.file:
+        raise Http404("Aucun fichier disponible pour cette formation.")
+    filename = formation.file.name.rsplit('/', 1)[-1]
+    return FileResponse(formation.file.open('rb'), as_attachment=True, filename=filename)
 
 
 # ──────────────────────────────────────────
@@ -72,10 +166,21 @@ def cart(request):
     cart_obj, _ = Cart.objects.get_or_create(user=request.user)
     items = cart_obj.items.select_related('formation').all()
     total = cart_obj.total_price()
+
+    whatsapp_url = None
+    if items:
+        lines = "\n".join(f"- {item.formation.title} (x{item.quantity})" for item in items)
+        message = (
+            "Bonjour, je souhaite suivre les formations suivantes :\n"
+            f"{lines}\n\nJe suis disponible pour suivre ces formations."
+        )
+        whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={urllib.parse.quote(message)}"
+
     return render(request, 'formations/cart.html', {
         'cart':  cart_obj,
         'items': items,
         'total': total,
+        'whatsapp_url': whatsapp_url,
     })
 
 

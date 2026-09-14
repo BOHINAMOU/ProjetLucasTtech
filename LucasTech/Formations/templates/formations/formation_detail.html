@@ -260,42 +260,86 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <!-- ══ DROITE — carte ══ -->
   <aside class="fd-card">
 
-    {% if formation.is_on_sale %}<div class="fd-price-old">{{ formation.old_price }} FCFA</div>{% endif %}
-    <div class="fd-price">
-      {{ formation.price }}<sub>FCFA</sub>
-      {% if formation.is_on_sale %}<span class="fd-price-save">-{{ formation.discount_percent }}%</span>{% endif %}
-    </div>
-    <p class="fd-price-note">Accès à vie · Prix TTC</p>
+    {% if formation.formation_type == 'inscription' %}
+      <!-- ── Inscription par formulaire ── -->
+      <p class="fd-price-note" style="margin-bottom:16px;">
+        <i class="fa fa-users"></i> Inscription gratuite via formulaire — rejoignez le groupe WhatsApp de la formation.
+      </p>
+      <a href="{% url 'formations:formation_register' formation.pk %}" class="btn-buy-now" style="text-decoration:none;">
+        <i class="fa fa-pen"></i> S'inscrire à cette formation
+      </a>
 
-    <hr class="fd-divider">
+      <hr class="fd-divider">
 
-    <form method="post" action="{% url 'formations:formation_detail' formation.pk %}">
-      {% csrf_token %}
-      <div class="fd-qty-row">
-        <span class="fd-qty-label">Quantité</span>
-        <input class="fd-qty-input" type="number" name="quantity" min="1" value="1">
+      <a class="btn-whatsapp"
+         href="https://wa.me/22891973334?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20formation%20:{{ formation.title|urlencode }}"
+         target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-whatsapp"></i> Une question ? Contactez-nous
+      </a>
+
+      <div class="fd-info">
+        <div class="fd-info-row"><i class="fa fa-envelope"></i> Confirmation par email après inscription</div>
+        <div class="fd-info-row"><i class="fa fa-whatsapp"></i> Lien du groupe WhatsApp inclus</div>
       </div>
-      <button type="submit" name="buy_now" value="1" class="btn-buy-now">
-        <i class="fa fa-bolt"></i> S'inscrire maintenant
-      </button>
-      <button type="submit" class="btn-primary">🛒 Ajouter au panier</button>
-    </form>
 
-    <a href="{% url 'formations:cart' %}" class="fd-cart-link">🧺 Voir mon panier</a>
+    {% elif formation.formation_type == 'numerique' and has_purchased %}
+      <!-- ── Formation numérique déjà achetée : téléchargement ── -->
+      <p class="fd-price-note" style="color:#2c5f4a;font-weight:700;margin-bottom:16px;">
+        <i class="fa fa-check-circle"></i> Vous avez déjà acheté cette formation
+      </p>
+      <a href="{% url 'formations:formation_download' formation.pk %}" class="btn-buy-now" style="text-decoration:none;background:#2c5f4a;">
+        <i class="fa fa-download"></i> Télécharger le fichier
+      </a>
+      <p class="fd-price-note" style="margin-top:12px;">Vous pouvez retélécharger ce fichier autant de fois que vous le souhaitez.</p>
 
-    <hr class="fd-divider">
+    {% else %}
+      <!-- ── Formation payante en ligne / numérique (panier) ── -->
+      {% if formation.formation_type == 'numerique' %}
+        <p class="fd-price-note" style="margin-bottom:10px;"><i class="fa fa-file"></i> Formation numérique (PDF / Word / Excel)</p>
+      {% endif %}
+      {% if formation.is_on_sale %}<div class="fd-price-old">{{ formation.old_price }} FCFA</div>{% endif %}
+      <div class="fd-price">
+        {{ formation.price }}<sub>FCFA</sub>
+        {% if formation.is_on_sale %}<span class="fd-price-save">-{{ formation.discount_percent }}%</span>{% endif %}
+      </div>
+      <p class="fd-price-note">
+        {% if formation.formation_type == 'numerique' %}Téléchargement après paiement confirmé{% else %}Accès à vie{% endif %} · Prix TTC
+      </p>
 
-    <a class="btn-whatsapp"
-       href="https://wa.me/22891973334?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20formation%20:{{ formation.title|urlencode }}"
-       target="_blank" rel="noopener noreferrer">
-      <i class="fab fa-whatsapp"></i> Contacter via WhatsApp
-    </a>
+      <hr class="fd-divider">
 
-    <div class="fd-info">
-      <div class="fd-info-row"><i class="fa fa-lock"></i> Connexion requise avant l'achat</div>
-      <div class="fd-info-row"><i class="fa fa-download"></i> Contenu téléchargeable après paiement</div>
-      <div class="fd-info-row"><i class="fa fa-shield"></i> Paiement 100% sécurisé</div>
-    </div>
+      <form method="post" action="{% url 'formations:formation_detail' formation.pk %}">
+        {% csrf_token %}
+        {% if formation.formation_type != 'numerique' %}
+        <div class="fd-qty-row">
+          <span class="fd-qty-label">Quantité</span>
+          <input class="fd-qty-input" type="number" name="quantity" min="1" value="1">
+        </div>
+        {% endif %}
+        <button type="submit" name="buy_now" value="1" class="btn-buy-now">
+          <i class="fa fa-bolt"></i> {% if formation.formation_type == 'numerique' %}Acheter maintenant{% else %}S'inscrire maintenant{% endif %}
+        </button>
+        <button type="submit" class="btn-primary">🛒 Ajouter au panier</button>
+      </form>
+
+      <a href="{% url 'formations:cart' %}" class="fd-cart-link">🧺 Voir mon panier</a>
+
+      <hr class="fd-divider">
+
+      <a class="btn-whatsapp"
+         href="https://wa.me/22891973334?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20formation%20:{{ formation.title|urlencode }}"
+         target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-whatsapp"></i> Contacter via WhatsApp
+      </a>
+
+      <div class="fd-info">
+        <div class="fd-info-row"><i class="fa fa-lock"></i> Connexion requise avant l'achat</div>
+        {% if formation.formation_type == 'numerique' %}
+        <div class="fd-info-row"><i class="fa fa-download"></i> Téléchargement débloqué une fois la commande marquée payée</div>
+        {% endif %}
+        <div class="fd-info-row"><i class="fa fa-shield"></i> Paiement 100% sécurisé</div>
+      </div>
+    {% endif %}
   </aside>
 
 </div>
