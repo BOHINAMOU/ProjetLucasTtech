@@ -374,7 +374,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% endif %}
 
       <button class="btn-form-toggle" id="formToggleBtn" type="button">
-        <i class="fa fa-envelope-o"></i> Envoyer un message
+        <i class="fa fa-envelope"></i> Envoyer un message
       </button>
     </div>
 
@@ -412,11 +412,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <!-- Pourquoi nous faire confiance -->
     <div class="sd-trust">
       <div class="sd-trust-row">
-        <span class="sd-trust-icon"><i class="fa fa-clock-o"></i></span>
+        <span class="sd-trust-icon"><i class="fa fa-clock"></i></span>
         <div><strong>Réponse rapide</strong><small>Sous 24h, WhatsApp ou message</small></div>
       </div>
       <div class="sd-trust-row">
-        <span class="sd-trust-icon"><i class="fa fa-file-text-o"></i></span>
+        <span class="sd-trust-icon"><i class="fa fa-file-lines"></i></span>
         <div><strong>Devis gratuit</strong><small>Sans engagement de votre part</small></div>
       </div>
       <div class="sd-trust-row">
@@ -436,7 +436,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <i class="fa fa-arrow-right"></i>
       </a>
       <a href="{% url 'core:partners' %}" class="sd-link-row">
-        <span><i class="fa fa-handshake-o"></i> Nos partenaires</span>
+        <span><i class="fa fa-handshake"></i> Nos partenaires</span>
         <i class="fa fa-arrow-right"></i>
       </a>
     </div>
@@ -479,7 +479,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </a>
     <a href="{% url 'publications:publications' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
       <span class="sd-explore-overlay"></span>
-      <span class="sd-explore-label"><i class="fa fa-newspaper-o"></i> Publications</span>
+      <span class="sd-explore-label"><i class="fa fa-newspaper"></i> Publications</span>
     </a>
   </div>
 </section>
@@ -495,7 +495,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   }
   function closeForm() {
     form.classList.remove('open');
-    btn.innerHTML = '<i class="fa fa-envelope-o"></i> Envoyer un message';
+    btn.innerHTML = '<i class="fa fa-envelope"></i> Envoyer un message';
   }
 
   btn.addEventListener('click', function() {
