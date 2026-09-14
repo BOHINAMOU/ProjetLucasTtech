@@ -43,8 +43,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-info { margin-top: 28px; animation: fadeUp .5s .08s ease both; }
 .pd-client { font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
 .pd-title { font-family: var(--serif); font-size: clamp(1.8rem,4vw,2.6rem); font-weight: 900; letter-spacing: -.02em; margin-bottom: 20px; }
-.pd-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-.pd-tag { font-size: .74rem; font-weight: 600; padding: 5px 13px; border-radius: 99px; background: var(--badge-bg); color: var(--accent); border: 1px solid rgba(15,122,69,.18); }
 .pd-desc { font-size: .98rem; color: var(--ink2); line-height: 1.85; white-space: pre-line; }
 
 .pd-sidebar { position: sticky; top: 28px; animation: fadeUp .5s .1s ease both; }
@@ -126,11 +124,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div class="pd-info">
       {% if project.client %}<p class="pd-client">{{ project.client }}</p>{% endif %}
       <h1 class="pd-title">{{ project.title }}</h1>
-      {% if project.get_technologies %}
-      <div class="pd-tags">
-        {% for tech in project.get_technologies %}<span class="pd-tag">{{ tech }}</span>{% endfor %}
-      </div>
-      {% endif %}
       <p class="pd-desc">{{ project.description }}</p>
     </div>
   </div>
