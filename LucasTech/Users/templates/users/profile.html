@@ -13,81 +13,117 @@
 body{font-family:'Outfit', sans-serif;background:var(--bg);color:var(--ink);}
 
 .profile-page {
-  max-width:860px; margin:48px auto 80px; padding:0 24px;
+  max-width:900px; margin:48px auto 80px; padding:0 24px;
   animation:fadeUp .5s ease both;
 }
 
 /* ── HEADER ── */
 .profile-header {
-  display:flex; align-items:center; gap:24px; margin-bottom:36px;
-  background:var(--surf); border:1px solid var(--border);
-  border-radius:16px; padding:32px; box-shadow:0 8px 32px var(--shadow);
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; gap:26px; margin-bottom:32px;
+  background:linear-gradient(160deg,#1c1814,#3a2e22);
+  border-radius:20px; padding:36px 40px; box-shadow:0 16px 44px var(--shadow);
 }
+.profile-header::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(184,66,10,.35), transparent 55%),
+    radial-gradient(circle at 90% 85%, rgba(201,168,76,.28), transparent 55%);
+}
+.profile-avatar-ring {
+  position:relative; z-index:1; flex-shrink:0;
+  width:96px; height:96px; border-radius:50%; padding:4px;
+  overflow:hidden;
+}
+.profile-avatar-ring::before {
+  content:''; position:absolute; inset:-60%; z-index:0;
+  background:conic-gradient(from 0deg, var(--accent), var(--accent2), #6b8f5e, var(--accent));
+  animation:profSpin 7s linear infinite;
+}
+@keyframes profSpin { to { transform:rotate(360deg); } }
 .profile-avatar {
-  width:80px; height:80px; border-radius:50%; flex-shrink:0;
+  position:relative; z-index:1;
+  width:100%; height:100%; border-radius:50%;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   display:flex; align-items:center; justify-content:center;
-  font-family:'Cormorant Garamond', serif; font-size:2rem; font-weight:800; color:#fff;
+  font-family:'Cormorant Garamond', serif; font-size:2.1rem; font-weight:800; color:#fff;
 }
+.profile-info { position:relative; z-index:1; }
 .profile-info h1 {
-  font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:800;
-  letter-spacing:-.02em; margin-bottom:4px; color:var(--ink);
+  font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:800;
+  letter-spacing:-.02em; margin-bottom:6px; color:#fff; word-break:break-all;
 }
-.profile-info p { font-size:.88rem; color:var(--muted); }
+.profile-info p { font-size:.85rem; color:#cbbfae; }
 .profile-badge {
-  margin-left:auto; display:inline-flex; align-items:center; gap:6px;
-  font-size:.75rem; font-weight:700; color:var(--green);
-  border:1px solid rgba(15,122,69,.3); background:rgba(15,122,69,.08);
-  padding:5px 12px; border-radius:99px; white-space:nowrap;
+  position:relative; z-index:1; margin-left:auto; flex-shrink:0;
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:.75rem; font-weight:700; color:#6ee7b7;
+  border:1px solid rgba(110,231,183,.35); background:rgba(110,231,183,.1);
+  padding:6px 14px; border-radius:99px; white-space:nowrap;
 }
 .profile-badge .dot {
-  width:6px; height:6px; border-radius:50%; background:var(--green);
+  width:6px; height:6px; border-radius:50%; background:#6ee7b7;
   animation:dotPulse 2s ease-in-out infinite;
 }
 @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.75);}}
 
 /* ── GRILLE INFOS ── */
 .profile-grid {
-  display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;
+  display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px;
 }
-@media(max-width:600px){.profile-grid{grid-template-columns:1fr;} .profile-header{flex-direction:column;text-align:center;} .profile-badge{margin-left:0;}}
+@media(max-width:600px){.profile-grid{grid-template-columns:1fr;} .profile-header{flex-direction:column;text-align:center;padding:32px 24px;} .profile-badge{margin-left:0;}}
 
 .profile-card {
+  display:flex; align-items:flex-start; gap:14px;
   background:var(--surf); border:1px solid var(--border);
-  border-radius:14px; padding:22px 24px; box-shadow:0 4px 16px var(--shadow);
-  transition:border-color .2s, transform .2s;
+  border-radius:14px; padding:20px 22px; box-shadow:0 4px 16px var(--shadow);
+  transition:border-color .2s, transform .2s, box-shadow .2s;
 }
-.profile-card:hover { border-color:rgba(184,66,10,.35); transform:translateY(-2px); }
+.profile-card:hover { border-color:rgba(184,66,10,.3); transform:translateY(-3px); box-shadow:0 12px 28px var(--shadow); }
+.profile-card-icon {
+  flex-shrink:0; width:38px; height:38px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center; font-size:.95rem;
+}
+.profile-card.c-1 .profile-card-icon { background:rgba(184,66,10,.12); color:var(--accent); }
+.profile-card.c-2 .profile-card-icon { background:rgba(15,122,69,.12); color:#0f7a45; }
+.profile-card.c-3 .profile-card-icon { background:rgba(13,59,122,.12); color:#0d3b7a; }
+.profile-card.c-4 .profile-card-icon { background:rgba(124,58,237,.12); color:#7c3aed; }
+.profile-card.c-5 .profile-card-icon { background:rgba(201,168,76,.18); color:#a5761f; }
+.profile-card.c-6 .profile-card-icon { background:rgba(14,165,233,.12); color:#0ea5e9; }
 .profile-card-label {
-  font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:8px;
+  font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:6px;
 }
-.profile-card-label i { color:var(--accent); }
-.profile-card-value { font-size:.98rem; color:var(--ink); font-weight:600; }
+.profile-card-value { font-size:.98rem; color:var(--ink); font-weight:600; word-break:break-word; }
 .profile-card-value.empty { color:var(--muted); font-style:italic; font-weight:400; }
 
 /* ── ACTIONS ── */
 .profile-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
 .btn-action {
-  display:inline-flex; align-items:center; gap:8px;
-  padding:11px 22px; border-radius:10px;
-  font-family:'Outfit', sans-serif; font-size:.88rem; font-weight:700;
-  cursor:pointer; text-decoration:none; transition:background .2s,transform .15s,box-shadow .2s;
-  border:none;
+  display:inline-flex; align-items:center; gap:10px;
+  padding:9px 20px 9px 9px; border-radius:99px;
+  font-family:'Outfit', sans-serif; font-size:.87rem; font-weight:700;
+  cursor:pointer; text-decoration:none; transition:transform .18s, box-shadow .2s, background .2s;
+  border:1px solid var(--border); background:var(--surf); color:var(--ink2);
 }
-.btn-action:hover { transform:translateY(-2px); }
+.btn-action .btn-action-icon {
+  width:30px; height:30px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:.82rem;
+  background:var(--surf2); color:var(--ink2); transition:background .2s, color .2s;
+}
+.btn-action:hover { transform:translateY(-2px); box-shadow:0 10px 22px var(--shadow); }
 .btn-primary-action {
-  background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border-color:transparent;
 }
-.btn-primary-action:hover { box-shadow:0 10px 22px rgba(184,66,10,.25); }
-.btn-secondary-action {
-  background:var(--surf2); border:1px solid var(--border); color:var(--ink2);
-}
-.btn-secondary-action:hover { background:#e9e2d6; border-color:rgba(184,66,10,.3); color:var(--accent); }
+.btn-primary-action .btn-action-icon { background:rgba(255,255,255,.22); color:#fff; }
+.btn-primary-action:hover { box-shadow:0 12px 26px rgba(184,66,10,.3); }
+.btn-secondary-action:hover { border-color:rgba(184,66,10,.3); color:var(--accent); }
+.btn-secondary-action:hover .btn-action-icon { background:rgba(184,66,10,.14); color:var(--accent); }
 .btn-danger-action {
-  background:rgba(201,48,96,.08); border:1px solid rgba(201,48,96,.25); color:#c93060;
+  background:rgba(201,48,96,.06); border-color:rgba(201,48,96,.22); color:#c93060;
 }
-.btn-danger-action:hover { background:rgba(201,48,96,.16); }
+.btn-danger-action .btn-action-icon { background:rgba(201,48,96,.12); color:#c93060; }
+.btn-danger-action:hover { background:rgba(201,48,96,.14); box-shadow:0 10px 22px rgba(201,48,96,.18); }
 
 /* Messages */
 .profile-msgs { margin-bottom:20px; }
@@ -111,8 +147,10 @@ body{font-family:'Outfit', sans-serif;background:var(--bg);color:var(--ink);}
 
   <!-- Header -->
   <div class="profile-header">
-    <div class="profile-avatar">
-      {{ user.email|slice:":1"|upper }}
+    <div class="profile-avatar-ring">
+      <div class="profile-avatar">
+        {{ user.email|slice:":1"|upper }}
+      </div>
     </div>
     <div class="profile-info">
       <h1>{{ user.email }}</h1>
@@ -127,53 +165,71 @@ body{font-family:'Outfit', sans-serif;background:var(--bg);color:var(--ink);}
   <!-- Grille d'informations -->
   <div class="profile-grid">
 
-    <div class="profile-card">
-      <div class="profile-card-label"><i class="fa fa-envelope"></i> Email</div>
-      <div class="profile-card-value">{{ user.email }}</div>
-    </div>
-
-    <div class="profile-card">
-      <div class="profile-card-label"><i class="fa fa-phone"></i> Téléphone</div>
-      <div class="profile-card-value {% if not user.phone %}empty{% endif %}">
-        {{ user.phone|default:"Non renseigné" }}
+    <div class="profile-card c-1">
+      <div class="profile-card-icon"><i class="fa fa-envelope"></i></div>
+      <div>
+        <div class="profile-card-label">Email</div>
+        <div class="profile-card-value">{{ user.email }}</div>
       </div>
     </div>
 
-    <div class="profile-card">
-      <div class="profile-card-label"><i class="fa fa-globe"></i> Pays</div>
-      <div class="profile-card-value {% if not user.country %}empty{% endif %}">
-        {{ user.country|default:"Non renseigné" }}
+    <div class="profile-card c-2">
+      <div class="profile-card-icon"><i class="fa fa-phone"></i></div>
+      <div>
+        <div class="profile-card-label">Téléphone</div>
+        <div class="profile-card-value {% if not user.phone %}empty{% endif %}">
+          {{ user.phone|default:"Non renseigné" }}
+        </div>
       </div>
     </div>
 
-    <div class="profile-card">
-      <div class="profile-card-label"><i class="fa fa-map-marker-alt"></i> Ville</div>
-      <div class="profile-card-value {% if not user.city %}empty{% endif %}">
-        {{ user.city|default:"Non renseigné" }}
+    <div class="profile-card c-3">
+      <div class="profile-card-icon"><i class="fa fa-globe"></i></div>
+      <div>
+        <div class="profile-card-label">Pays</div>
+        <div class="profile-card-value {% if not user.country %}empty{% endif %}">
+          {{ user.country|default:"Non renseigné" }}
+        </div>
       </div>
     </div>
 
-    <div class="profile-card">
-      <div class="profile-card-label"><i class="fa fa-calendar"></i> Date de naissance</div>
-      <div class="profile-card-value {% if not user.date_of_birth %}empty{% endif %}">
-        {{ user.date_of_birth|date:"d M Y"|default:"Non renseignée" }}
+    <div class="profile-card c-4">
+      <div class="profile-card-icon"><i class="fa fa-map-marker-alt"></i></div>
+      <div>
+        <div class="profile-card-label">Ville</div>
+        <div class="profile-card-value {% if not user.city %}empty{% endif %}">
+          {{ user.city|default:"Non renseigné" }}
+        </div>
       </div>
     </div>
 
-    <div class="profile-card">
-      <div class="profile-card-label"><i class="fa fa-shield-alt"></i> Statut</div>
-      <div class="profile-card-value">
-        {% if user.is_verified %}
-          <span style="color:var(--green);">✓Vérifié</span>
-        {% else %}
-          <span style="color:var(--muted);">Non vérifié</span>
-        {% endif %}
-        &nbsp;·&nbsp;
-        {% if user.is_premium %}
-          <span style="color:var(--accent);"></span>
-        {% else %}
-          <span style="color:var(--muted);">Gratuit</span>
-        {% endif %}
+    <div class="profile-card c-5">
+      <div class="profile-card-icon"><i class="fa fa-calendar"></i></div>
+      <div>
+        <div class="profile-card-label">Date de naissance</div>
+        <div class="profile-card-value {% if not user.date_of_birth %}empty{% endif %}">
+          {{ user.date_of_birth|date:"d M Y"|default:"Non renseignée" }}
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card c-6">
+      <div class="profile-card-icon"><i class="fa fa-shield-alt"></i></div>
+      <div>
+        <div class="profile-card-label">Statut</div>
+        <div class="profile-card-value">
+          {% if user.is_verified %}
+            <span style="color:var(--green);">✓ Vérifié</span>
+          {% else %}
+            <span style="color:var(--muted);">Non vérifié</span>
+          {% endif %}
+          &nbsp;·&nbsp;
+          {% if user.is_premium %}
+            <span style="color:var(--accent);">Premium</span>
+          {% else %}
+            <span style="color:var(--muted);">Gratuit</span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
@@ -182,21 +238,21 @@ body{font-family:'Outfit', sans-serif;background:var(--bg);color:var(--ink);}
   <!-- Actions -->
   <div class="profile-actions">
     <a href="{% url 'formations:formations' %}" class="btn-action btn-secondary-action">
-      <i class="fa fa-graduation-cap"></i> Mes formations
+      <span class="btn-action-icon"><i class="fa fa-graduation-cap"></i></span> Mes formations
     </a>
     <a href="{% url 'formations:cart' %}" class="btn-action btn-secondary-action">
-      <i class="fa fa-shopping-cart"></i> Mon panier
+      <span class="btn-action-icon"><i class="fa fa-shopping-cart"></i></span> Mon panier
     </a>
     <a href="{% url 'users:edit_profile' %}" class="btn-action btn-primary-action">
-  <i class="fa fa-user-edit"></i> Modifier le profil
-</a>
+      <span class="btn-action-icon"><i class="fa fa-user-edit"></i></span> Modifier le profil
+    </a>
     <a href="{% url 'users:password_reset' %}" class="btn-action btn-secondary-action">
-      <i class="fa fa-key"></i> Changer le mot de passe
+      <span class="btn-action-icon"><i class="fa fa-key"></i></span> Changer le mot de passe
     </a>
     <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
       {% csrf_token %}
       <button type="submit" class="btn-action btn-danger-action">
-        <i class="fa fa-sign-out-alt"></i> Se déconnecter
+        <span class="btn-action-icon"><i class="fa fa-sign-out-alt"></i></span> Se déconnecter
       </button>
     </form>
   </div>
