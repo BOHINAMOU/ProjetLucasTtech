@@ -137,9 +137,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sv-cats-outer {
   background: var(--surf); border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 2px 12px var(--shadow);
+  box-shadow: 0 2px 16px var(--shadow);
 }
 .sv-cats-wrap {
+  position: relative;
   max-width: 1300px; margin: 0 auto;
   padding: 0 clamp(1.5rem,6vw,5rem);
   display: flex; align-items: center;
@@ -148,24 +149,58 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-size: .72rem; font-weight: 700; letter-spacing: .12em;
   text-transform: uppercase; color: var(--muted);
   white-space: nowrap; padding-right: 20px;
-  border-right: 1px solid var(--border); margin-right: 16px;
+  border-right: 1px solid var(--border); margin-right: 18px;
   flex-shrink: 0;
 }
 .sv-cats-scroll {
-  display: flex; gap: 4px; overflow-x: auto;
-  padding: 14px 0; scrollbar-width: none;
+  display: flex; gap: 8px; overflow-x: auto;
+  padding: 16px 4px; scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 .sv-cats-scroll::-webkit-scrollbar { display: none; }
-.sv-cat-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 18px; border-radius: 99px; white-space: nowrap;
-  font-size: .82rem; font-weight: 600; cursor: pointer;
-  border: 1.5px solid transparent; background: transparent;
-  color: var(--muted); text-decoration: none;
-  transition: all .2s; flex-shrink: 0;
+/* Fondu indiquant qu'on peut défiler horizontalement */
+.sv-cats-fade {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 56px;
+  background: linear-gradient(90deg, transparent, var(--surf) 78%);
+  pointer-events: none; transition: opacity .25s ease;
 }
-.sv-cat-btn:hover { color: var(--accent); background: rgba(13,130,130,.07); }
-.sv-cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sv-cat-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 99px; white-space: nowrap;
+  font-size: .88rem; font-weight: 700; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--surf2);
+  color: var(--muted); text-decoration: none;
+  transition: transform .2s, box-shadow .2s, background .2s, color .2s, border-color .2s;
+  flex-shrink: 0;
+}
+.sv-cat-btn i { font-size: .92rem; }
+.sv-cat-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(9,60,60,.12); }
+.sv-cat-btn.active { color: #fff; box-shadow: 0 6px 18px rgba(9,60,60,.28); }
+.sv-cat-btn.all.active { background: var(--ink); border-color: var(--ink); }
+
+/* Couleur distincte par catégorie */
+.sv-cat-btn.c-1 { color: #0d8282; }
+.sv-cat-btn.c-1:hover { background: rgba(13,130,130,.1); border-color: rgba(13,130,130,.3); }
+.sv-cat-btn.c-1.active { background: #0d8282; border-color: #0d8282; }
+
+.sv-cat-btn.c-2 { color: #3b5a7a; }
+.sv-cat-btn.c-2:hover { background: rgba(59,90,122,.1); border-color: rgba(59,90,122,.3); }
+.sv-cat-btn.c-2.active { background: #3b5a7a; border-color: #3b5a7a; }
+
+.sv-cat-btn.c-3 { color: #c93060; }
+.sv-cat-btn.c-3:hover { background: rgba(201,48,96,.1); border-color: rgba(201,48,96,.3); }
+.sv-cat-btn.c-3.active { background: #c93060; border-color: #c93060; }
+
+.sv-cat-btn.c-4 { color: #a5761f; }
+.sv-cat-btn.c-4:hover { background: rgba(165,118,31,.1); border-color: rgba(165,118,31,.3); }
+.sv-cat-btn.c-4.active { background: #a5761f; border-color: #a5761f; }
+
+.sv-cat-btn.c-5 { color: #6b3fa0; }
+.sv-cat-btn.c-5:hover { background: rgba(107,63,160,.1); border-color: rgba(107,63,160,.3); }
+.sv-cat-btn.c-5.active { background: #6b3fa0; border-color: #6b3fa0; }
+
+.sv-cat-btn.active.c-1, .sv-cat-btn.active.c-2, .sv-cat-btn.active.c-3,
+.sv-cat-btn.active.c-4, .sv-cat-btn.active.c-5 { color: #fff; }
 
 /* ══ SECTION / GRID ══ */
 .sv-section {
@@ -470,17 +505,18 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <span class="sv-cats-label">Catégories</span>
     <div class="sv-cats-scroll">
       <a href="{% url 'services:services' %}"
-         class="sv-cat-btn {% if not active_category %}active{% endif %}">
+         class="sv-cat-btn all {% if not active_category %}active{% endif %}">
         <i class="fa fa-th-large"></i> Tout voir
       </a>
       {% for cat in categories %}
       <a href="{% url 'services:services' %}?category={{ cat.slug }}"
-         class="sv-cat-btn {% if active_category.slug == cat.slug %}active{% endif %}">
+         class="sv-cat-btn {% cycle 'c-1' 'c-2' 'c-3' 'c-4' 'c-5' %} {% if active_category.slug == cat.slug %}active{% endif %}">
         {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
         {{ cat.name }}
       </a>
       {% endfor %}
     </div>
+    <span class="sv-cats-fade"></span>
   </div>
 </div>
 
@@ -643,5 +679,30 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </a>
   </div>
 </section>
+
+<script>
+(function() {
+  // Amène le filtre actif dans la vue et masque le fondu de défilement
+  // quand on est déjà tout à droite.
+  var scroller = document.querySelector('.sv-cats-scroll');
+  var fade = document.querySelector('.sv-cats-fade');
+  if (!scroller) return;
+
+  var activePill = scroller.querySelector('.sv-cat-btn.active');
+  if (activePill) {
+    var target = activePill.offsetLeft - 24;
+    scroller.scrollLeft = Math.max(0, target);
+  }
+
+  function updateFade() {
+    if (!fade) return;
+    var atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4;
+    fade.style.opacity = atEnd ? '0' : '1';
+  }
+  updateFade();
+  scroller.addEventListener('scroll', updateFade);
+  window.addEventListener('resize', updateFade);
+})();
+</script>
 
 {% endblock %}
