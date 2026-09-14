@@ -35,6 +35,8 @@ class Service(models.Model):
     )
     title       = models.CharField(max_length=255)
     description = models.TextField()
+    icon        = models.CharField(max_length=60, blank=True,
+                                   help_text="Classe Font Awesome ex: fa-desktop (sinon, icône de la catégorie)")
     image       = models.ImageField(upload_to='services/', blank=True, null=True)
     video       = models.FileField(upload_to='services/videos/', blank=True, null=True)
     price_from  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,

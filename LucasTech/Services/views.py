@@ -33,11 +33,22 @@ def services(request):
             )
         qs = qs.filter(query)
 
+    # Par défaut (pas de filtre ni de recherche) : on regroupe par catégorie
+    # pour montrer d'un coup d'œil tout ce que nous faisons.
+    grouped_services = None
+    if not active_category and not search_query:
+        grouped_services = []
+        for cat in categories:
+            cat_services = qs.filter(category=cat)
+            if cat_services.exists():
+                grouped_services.append((cat, cat_services))
+
     return render(request, 'services/services.html', {
-        'services':        qs,
-        'categories':      categories,
-        'active_category': active_category,
-        'search_query':    search_query,
+        'services':         qs,
+        'categories':       categories,
+        'active_category':  active_category,
+        'search_query':     search_query,
+        'grouped_services': grouped_services,
     })
 
 
@@ -65,6 +76,11 @@ def service_detail(request, pk):
         else:
             messages.error(request, 'Veuillez remplir tous les champs.')
 
+    related_services = Service.objects.filter(
+        is_active=True, category=service.category
+    ).exclude(pk=service.pk)[:4] if service.category else Service.objects.none()
+
     return render(request, 'services/service_detail.html', {
         'service': service,
+        'related_services': related_services,
     })

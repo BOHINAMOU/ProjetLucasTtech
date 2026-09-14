@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}{{ service.title }} — LucasTech{% endblock %}
 {% block meta_description %}{{ service.description|striptags|truncatechars:155 }}{% endblock %}
 {% block og_title %}{{ service.title }} — LucasTech{% endblock %}
@@ -17,8 +18,9 @@
   --ink:     #1c1814;
   --ink2:    #3a3530;
   --muted:   #8a8078;
-  --accent:  #b8420a;
-  --accent2: #c9a84c;
+  --accent:  #0d8282;
+  --accent2: #14b8a6;
+  --accent3: #0f766e;
   --green:   #2c5f4a;
   --r:       16px;
   --font:    'Outfit', sans-serif;
@@ -26,6 +28,9 @@
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ── Breadcrumb ── */
 .sd-breadcrumb {
@@ -40,7 +45,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── Layout ── */
 .sd-wrapper {
-  max-width: 1200px; margin: 32px auto 96px;
+  max-width: 1200px; margin: 32px auto 0;
   padding: 0 clamp(1.5rem,6vw,5rem);
   display: grid;
   grid-template-columns: 1fr 400px;
@@ -51,7 +56,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sd-media {
   position: relative; border-radius: 20px; overflow: hidden;
   aspect-ratio: 16/10; background: var(--surf2);
-  box-shadow: 0 24px 80px rgba(0,0,0,.13);
+  box-shadow: 0 24px 80px rgba(9,60,60,.16);
   animation: fadeUp .5s ease both;
 }
 .sd-media img, .sd-media video {
@@ -75,25 +80,25 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-size: .68rem; font-weight: 800; letter-spacing: .1em;
   text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
   background: var(--accent); color: #fff;
-  box-shadow: 0 4px 14px rgba(201,68,10,.35);
+  box-shadow: 0 4px 14px rgba(13,130,130,.4);
 }
 
-/* Date badge */
-.sd-date-badge {
-  position: absolute; top: 16px; right: 16px; z-index: 2;
-  font-size: .72rem; font-weight: 600;
-  background: rgba(250,249,247,.92); color: var(--muted);
-  padding: 5px 12px; border-radius: 99px;
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; gap: 5px;
+/* Icône flottante sur le média */
+.sd-icon-badge {
+  position: absolute; top: 16px; right: 16px; z-index: 3;
+  width: 46px; height: 46px; border-radius: 13px;
+  background: rgba(15,20,18,.55); backdrop-filter: blur(6px);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; border: 1.5px solid rgba(245,242,238,.25);
 }
 
 /* ── Info ── */
-.sd-info { animation: fadeUp .5s .1s ease both; }
+.sd-info { animation: fadeUp .5s .1s ease both; margin-top: 28px; }
 
 .sd-cat {
   font-size: .7rem; font-weight: 700; letter-spacing: .14em;
   text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
 }
 .sd-title {
   font-family: var(--serif);
@@ -133,7 +138,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   color: var(--ink); letter-spacing: -.04em;
 }
 .sd-price small { font-size: .8rem; color: var(--muted); font-weight: 500; }
-.sd-price-devis { font-size: .9rem; color: var(--muted); font-style: italic; margin-bottom: 28px; }
+.sd-price-devis {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .9rem; color: var(--muted); font-style: italic; margin-bottom: 28px;
+  background: var(--surf2); border: 1px solid var(--border);
+  padding: 10px 16px; border-radius: 10px;
+}
 
 /* ── Sidebar ── */
 .sd-sidebar { position: sticky; top: 28px; animation: fadeUp .5s .08s ease both; }
@@ -142,18 +152,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sd-contact-btns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
 
 .btn-whatsapp {
+  position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 15px;
+  width: 100%; padding: 16px;
   background: #25D366; color: #fff;
   border: none; border-radius: 12px; text-decoration: none;
-  font-family: var(--font); font-size: .95rem; font-weight: 700;
+  font-family: var(--font); font-size: .97rem; font-weight: 700;
   transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(37,211,102,.3);
+  box-shadow: 0 4px 16px rgba(37,211,102,.32);
   cursor: pointer;
+}
+.btn-whatsapp::after {
+  content: ''; position: absolute; inset: 0; border-radius: 12px;
+  box-shadow: 0 0 0 0 rgba(37,211,102,.5);
+  animation: waPulse 2.4s ease-out infinite;
+}
+@keyframes waPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(37,211,102,.45); }
+  70%  { box-shadow: 0 0 0 14px rgba(37,211,102,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
 }
 .btn-whatsapp:hover {
   background: #1eb85a; transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(37,211,102,.4);
+  box-shadow: 0 8px 24px rgba(37,211,102,.42);
 }
 .btn-whatsapp svg { flex-shrink: 0; }
 
@@ -173,18 +194,18 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   border-radius: 20px; padding: 28px 24px;
   box-shadow: 0 8px 32px var(--shadow);
   margin-top: 0;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height .45s cubic-bezier(.22,.68,0,1), opacity .35s ease, margin-top .35s ease, padding .35s ease;
+  padding-top: 0; padding-bottom: 0;
 }
-.sd-form-title {
-  font-family: var(--serif); font-size: 1.2rem; font-weight: 700;
-  color: var(--ink); margin-bottom: 20px; letter-spacing: -.02em;
+.sd-form-wrap.open {
+  max-height: 900px; opacity: 1; margin-top: 0;
+  padding-top: 28px; padding-bottom: 28px;
 }
+.sd-form-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 700; color: var(--ink); margin-bottom: 20px; letter-spacing: -.02em; }
 .sd-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.sd-form-label {
-  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--muted);
-}
-.sd-form-input,
-.sd-form-textarea {
+.sd-form-label { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sd-form-input, .sd-form-textarea {
   width: 100%; padding: 12px 14px;
   border: 1.5px solid var(--border); border-radius: 10px;
   background: var(--surf2); font-family: var(--font);
@@ -192,8 +213,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   transition: border-color .2s, box-shadow .2s;
 }
 .sd-form-input:focus, .sd-form-textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(201,68,10,.1);
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(13,130,130,.12);
 }
 .sd-form-textarea { resize: vertical; min-height: 110px; }
 .sd-form-input::placeholder, .sd-form-textarea::placeholder { color: var(--muted); }
@@ -205,44 +225,63 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   border-radius: 12px; font-family: var(--font);
   font-size: .95rem; font-weight: 800;
   cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 14px rgba(201,68,10,.3); margin-top: 6px;
+  box-shadow: 0 4px 14px rgba(13,130,130,.3); margin-top: 6px;
 }
-.btn-submit:hover {
-  background: #b53c09; transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(201,68,10,.4);
-}
+.btn-submit:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(13,130,130,.4); }
 
 /* Infos contact */
-.sd-contact-info {
-  margin-top: 20px; padding-top: 20px;
-  border-top: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 10px;
-}
-.sd-contact-row {
-  display: flex; align-items: center; gap: 9px;
-  font-size: .78rem; color: var(--muted);
-}
+.sd-contact-info { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+.sd-contact-row { display: flex; align-items: center; gap: 9px; font-size: .78rem; color: var(--muted); }
 .sd-contact-row i { color: var(--accent); width: 14px; text-align: center; }
 
 /* Messages */
 .sd-msgs { margin-bottom: 16px; }
-.sd-msg {
-  padding: 12px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px;
-}
+.sd-msg { padding: 12px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
 .sd-msg.success { background: rgba(45,122,95,.1); border: 1px solid rgba(45,122,95,.3); color: var(--green); }
 .sd-msg.error   { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.2); color: #c93060; }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── Services associés ── */
+.sd-related { max-width: 1200px; margin: 88px auto 0; padding: 0 clamp(1.5rem,6vw,5rem); }
+.sd-related-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -.02em; }
+.sd-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+.sd-related-card {
+  display: flex; flex-direction: column; text-decoration: none; color: var(--ink);
+  background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  transition: transform .3s cubic-bezier(.22,.68,0,1.2), box-shadow .3s, border-color .3s;
 }
+.sd-related-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(9,60,60,.14); border-color: var(--accent2); }
+.sd-related-media { height: 130px; background: var(--surf2); overflow: hidden; }
+.sd-related-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+.sd-related-card:hover .sd-related-media img { transform: scale(1.08); }
+.sd-related-body { padding: 14px 16px; }
+.sd-related-body h4 { font-size: .88rem; font-weight: 700; line-height: 1.35; }
 
+/* ── Explorer (pleine largeur) ── */
+.sd-explore { max-width: 1200px; margin: 64px auto 0; padding: 0 clamp(1.5rem,6vw,5rem) 100px; }
+.sd-explore-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -.01em; }
+.sd-explore-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.sd-explore-tile {
+  position: relative; height: 140px; border-radius: 14px; overflow: hidden;
+  text-decoration: none; display: flex; align-items: flex-end; padding: 16px;
+  background-size: cover; background-position: center;
+  transition: transform .35s cubic-bezier(.22,.68,0,1.2);
+}
+.sd-explore-tile:hover { transform: translateY(-5px); }
+.sd-explore-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,20,18,.15), rgba(9,14,13,.85)); }
+.sd-explore-label { position: relative; z-index: 1; color: #fff; font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .sd-explore-row { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 860px) {
   .sd-wrapper { grid-template-columns: 1fr; gap: 32px; }
   .sd-sidebar { position: static; }
 }
 @media (max-width: 600px) {
-  .sd-wrapper { padding: 0 18px; margin-bottom: 60px; }
+  .sd-wrapper { padding: 0 18px; }
+  .sd-related, .sd-explore { padding-left: 18px; padding-right: 18px; }
 }
 </style>
 
@@ -273,12 +312,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% else %}
         <div class="sd-media-placeholder">🛠️</div>
       {% endif %}
+      <span class="sd-icon-badge"><i class="fa {{ service.icon|default:service.category.icon|default:'fa-wrench' }}"></i></span>
     </div>
 
     <!-- Infos -->
-    <div class="sd-info" style="margin-top:28px;">
+    <div class="sd-info">
       {% if service.category %}
-        <p class="sd-cat">{{ service.category.name }}</p>
+        <p class="sd-cat"><i class="fa {{ service.category.icon|default:'fa-th-large' }}"></i> {{ service.category.name }}</p>
       {% endif %}
 
       <h1 class="sd-title">{{ service.title }}</h1>
@@ -291,7 +331,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <small>FCFA / à partir de</small>
       </div>
       {% else %}
-      <p class="sd-price-devis">Prix sur devis — contactez-nous pour un tarif personnalisé.</p>
+      <p class="sd-price-devis"><i class="fa fa-info-circle"></i> Prix sur devis — contactez-nous pour un tarif personnalisé.</p>
       {% endif %}
     </div>
   </div>
@@ -312,7 +352,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div class="sd-contact-btns">
       {% if service.whatsapp %}
       <a class="btn-whatsapp"
-         href="https://wa.me/{{ service.whatsapp }}?text=Bonjour%2C%20je%20suis%20intéressé%20par%20votre%20service%20:{{ service.title|urlencode }}"
+         href="https://wa.me/{{ service.whatsapp }}?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20votre%20service%20:{{ service.title|urlencode }}"
          target="_blank" rel="noopener noreferrer">
         <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
           <path fill="#fff" d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.02 7.8L.5 31.5l7.9-2.01A15.45 15.45 0 0016 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.27 20.36c-.4-.2-2.36-1.16-2.73-1.3-.37-.13-.63-.2-.9.2-.26.4-1.02 1.3-1.26 1.57-.23.26-.46.3-.86.1-.4-.2-1.69-.62-3.21-1.98-1.19-1.06-1.99-2.37-2.22-2.77-.23-.4-.02-.61.17-.81.18-.18.4-.46.6-.7.2-.23.27-.4.4-.66.14-.27.07-.5-.03-.7-.1-.2-.9-2.16-1.23-2.96-.32-.78-.65-.67-.9-.68h-.77c-.27 0-.7.1-1.06.5-.37.4-1.4 1.37-1.4 3.33s1.43 3.86 1.63 4.13c.2.26 2.82 4.3 6.83 6.03.96.41 1.7.66 2.28.84.96.3 1.83.26 2.52.16.77-.12 2.36-.97 2.7-1.9.33-.93.33-1.73.23-1.9-.1-.17-.36-.27-.76-.47z"/>
@@ -321,13 +361,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </a>
       {% endif %}
 
-      <button class="btn-form-toggle" onclick="toggleForm()">
+      <button class="btn-form-toggle" id="formToggleBtn" type="button">
         <i class="fa fa-envelope-o"></i> Envoyer un message
       </button>
     </div>
 
     <!-- Formulaire contact (caché par défaut, s'ouvre au clic) -->
-    <div class="sd-form-wrap" id="contactForm" style="display:none;">
+    <div class="sd-form-wrap" id="contactForm">
       <p class="sd-form-title">Laisser un message</p>
 
       <form method="post" action="{% url 'services:service_detail' service.pk %}">
@@ -361,50 +401,80 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% if service.phone or service.whatsapp %}
     <div class="sd-contact-info">
       {% if service.phone %}
-      <div class="sd-contact-row">
-        <i class="fa fa-phone"></i>
-        <span>{{ service.phone }}</span>
-      </div>
+      <div class="sd-contact-row"><i class="fa fa-phone"></i><span>{{ service.phone }}</span></div>
       {% endif %}
       {% if service.whatsapp %}
-      <div class="sd-contact-row">
-        <i class="fa fa-whatsapp"></i>
-        <span>+{{ service.whatsapp }}</span>
-      </div>
+      <div class="sd-contact-row"><i class="fab fa-whatsapp"></i><span>+{{ service.whatsapp }}</span></div>
       {% endif %}
-      <div class="sd-contact-row">
-        <i class="fa fa-clock-o"></i>
-        <span>Réponse sous 24h</span>
-      </div>
+      <div class="sd-contact-row"><i class="fa fa-clock-o"></i><span>Réponse sous 24h</span></div>
     </div>
     {% endif %}
 
   </div>
 </div>
 
+<!-- ══ SERVICES ASSOCIÉS ══ -->
+{% if related_services %}
+<section class="sd-related reveal">
+  <h2 class="sd-related-title">Autres services {% if service.category %}en {{ service.category.name }}{% endif %}</h2>
+  <div class="sd-related-grid">
+    {% for rs in related_services %}
+    <a href="{% url 'services:service_detail' rs.pk %}" class="sd-related-card">
+      <div class="sd-related-media">
+        {% if rs.image %}<img src="{{ rs.image.url }}" alt="{{ rs.title }}" loading="lazy">{% endif %}
+      </div>
+      <div class="sd-related-body"><h4>{{ rs.title }}</h4></div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ EXPLORER ══ -->
+<section class="sd-explore reveal">
+  <p class="sd-explore-title">Explorer aussi</p>
+  <div class="sd-explore-row">
+    <a href="{% url 'services:services' %}" class="sd-explore-tile" style="background:linear-gradient(135deg,#0d8282,#0f2422);">
+      <span class="sd-explore-overlay"></span>
+      <span class="sd-explore-label"><i class="fa fa-th-large"></i> Tous les services</span>
+    </a>
+    <a href="{% url 'formations:formations' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image2.png' %}')">
+      <span class="sd-explore-overlay"></span>
+      <span class="sd-explore-label"><i class="fa fa-graduation-cap"></i> Formations</span>
+    </a>
+    <a href="{% url 'shop:shop' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
+      <span class="sd-explore-overlay"></span>
+      <span class="sd-explore-label"><i class="fa fa-shopping-bag"></i> Boutique</span>
+    </a>
+    <a href="{% url 'publications:publications' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
+      <span class="sd-explore-overlay"></span>
+      <span class="sd-explore-label"><i class="fa fa-newspaper-o"></i> Publications</span>
+    </a>
+  </div>
+</section>
+
 <script>
-function toggleForm() {
-  const form = document.getElementById('contactForm');
-  const btn  = document.querySelector('.btn-form-toggle');
-  if (form.style.display === 'none') {
-    form.style.display = 'block';
-    form.style.animation = 'fadeUp .4s ease both';
+(function() {
+  var form = document.getElementById('contactForm');
+  var btn  = document.getElementById('formToggleBtn');
+
+  function openForm() {
+    form.classList.add('open');
     btn.innerHTML = '<i class="fa fa-times"></i> Fermer le formulaire';
-  } else {
-    form.style.display = 'none';
+  }
+  function closeForm() {
+    form.classList.remove('open');
     btn.innerHTML = '<i class="fa fa-envelope-o"></i> Envoyer un message';
   }
-}
 
-// Ouvre le formulaire automatiquement si erreur
-{% if messages %}
-{% for msg in messages %}
-{% if 'error' in msg.tags %}
-document.getElementById('contactForm').style.display = 'block';
-document.querySelector('.btn-form-toggle').innerHTML = '<i class="fa fa-times"></i> Fermer le formulaire';
-{% endif %}
-{% endfor %}
-{% endif %}
+  btn.addEventListener('click', function() {
+    form.classList.contains('open') ? closeForm() : openForm();
+  });
+
+  {% if messages %}
+    {% for msg in messages %}{% if 'error' in msg.tags %}openForm();{% endif %}{% endfor %}
+  {% endif %}
+})();
 </script>
 
 {% endblock %}
