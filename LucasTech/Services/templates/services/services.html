@@ -32,30 +32,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s cubic-bezier(.22,.68,0,1), transform .7s cubic-bezier(.22,.68,0,1); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
-/* ══ HERO ══ */
+/* ══ HERO (compact, photo de fond) ══ */
 .sv-hero {
   position: relative; overflow: hidden;
-  padding: 76px clamp(1.5rem,6vw,5rem) 68px;
-  background: linear-gradient(160deg, #0b1516 0%, #0f2422 55%, #0d1e1c 100%);
+  padding: 26px clamp(1.5rem,6vw,5rem);
+  min-height: 210px; display: flex; align-items: center;
+  background: var(--ink);
+}
+.sv-hero-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center 38%;
+}
+.sv-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(7,20,19,.94) 0%, rgba(8,26,25,.86) 45%, rgba(9,35,33,.68) 100%);
 }
 .sv-blob {
-  position: absolute; border-radius: 50%; filter: blur(60px);
-  pointer-events: none; opacity: .55;
+  position: absolute; border-radius: 50%; filter: blur(50px);
+  pointer-events: none; opacity: .5;
   animation: floaty 14s ease-in-out infinite;
 }
-.sv-blob-1 { width: 420px; height: 420px; top: -160px; right: -100px;
-  background: radial-gradient(circle, rgba(20,184,166,.35), transparent 70%); animation-delay: 0s; }
-.sv-blob-2 { width: 320px; height: 320px; bottom: -140px; left: -80px;
-  background: radial-gradient(circle, rgba(184,66,10,.22), transparent 70%); animation-delay: -6s; animation-duration: 18s; }
-.sv-blob-3 { width: 220px; height: 220px; top: 40%; left: 55%;
-  background: radial-gradient(circle, rgba(201,168,76,.18), transparent 70%); animation-delay: -3s; animation-duration: 16s; }
+.sv-blob-1 { width: 260px; height: 260px; top: -110px; right: -60px;
+  background: radial-gradient(circle, rgba(20,184,166,.4), transparent 70%); animation-delay: 0s; }
+.sv-blob-2 { width: 200px; height: 200px; bottom: -110px; left: 20%;
+  background: radial-gradient(circle, rgba(201,168,76,.2), transparent 70%); animation-delay: -6s; animation-duration: 18s; }
 @keyframes floaty {
   0%, 100% { transform: translate(0,0) scale(1); }
-  33%      { transform: translate(-24px, 20px) scale(1.06); }
-  66%      { transform: translate(18px, -16px) scale(.96); }
+  33%      { transform: translate(-20px, 14px) scale(1.06); }
+  66%      { transform: translate(14px, -12px) scale(.96); }
 }
 .sv-grid-lines {
-  position: absolute; inset: 0; pointer-events: none; opacity: .4;
+  position: absolute; inset: 0; pointer-events: none; opacity: .3;
   background-image:
     linear-gradient(rgba(245,242,238,.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(245,242,238,.035) 1px, transparent 1px);
@@ -64,12 +71,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .sv-hero-inner {
   position: relative; z-index: 1;
-  max-width: 1300px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 24px;
+  max-width: 1300px; margin: 0 auto; width: 100%;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .sv-hero-eyebrow {
   display: inline-flex; align-items: center; gap: 8px; width: fit-content;
-  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
+  font-size: .74rem; font-weight: 700; letter-spacing: .15em;
   text-transform: uppercase; color: var(--accent2);
   animation: fadeUp .45s ease both;
 }
@@ -85,26 +92,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .sv-hero-title {
   font-family: var(--serif);
-  font-size: clamp(2.4rem, 6vw, 4.5rem);
-  font-weight: 900; line-height: 1.05;
-  letter-spacing: -.03em; color: #f5f2ee;
+  font-size: clamp(1.5rem, 2.8vw, 2.3rem);
+  font-weight: 800; line-height: 1.18;
+  letter-spacing: -.02em; color: #f5f2ee;
   animation: fadeUp .5s .08s ease both;
 }
 .sv-hero-title em { font-style: italic; font-weight: 300; color: var(--accent2); }
-.sv-hero-sub {
-  font-size: .97rem; color: rgba(245,242,238,.55);
-  max-width: 560px; line-height: 1.7;
-  animation: fadeUp .5s .14s ease both;
-}
-.sv-hero-tags { display: flex; flex-wrap: wrap; gap: 8px; animation: fadeUp .5s .18s ease both; }
-.sv-hero-tag {
-  font-size: .74rem; font-weight: 600; color: rgba(245,242,238,.75);
-  background: rgba(245,242,238,.06); border: 1px solid rgba(245,242,238,.14);
-  padding: 6px 13px; border-radius: 99px;
-}
 
 /* Search */
-.sv-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 560px; }
+.sv-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 480px; }
 .sv-search {
   display: flex; align-items: center;
   background: rgba(245,242,238,.07);
@@ -116,15 +112,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   border-color: var(--accent2);
   box-shadow: 0 0 0 4px rgba(20,184,166,.18);
 }
-.sv-search i { padding: 0 18px; color: rgba(245,242,238,.4); font-size: .95rem; flex-shrink: 0; }
+.sv-search i { padding: 0 16px; color: rgba(245,242,238,.4); font-size: .9rem; flex-shrink: 0; }
 .sv-search input {
   flex: 1; background: none; border: none; outline: none;
-  padding: 16px 0; color: #f5f2ee;
-  font-family: var(--font); font-size: .95rem;
+  padding: 11px 0; color: #f5f2ee;
+  font-family: var(--font); font-size: .9rem;
 }
 .sv-search input::placeholder { color: rgba(245,242,238,.35); }
 .sv-search-btn {
-  padding: 11px 24px; margin: 5px;
+  padding: 9px 20px; margin: 4px;
   background: var(--accent2); color: #06201d;
   border: none; border-radius: 10px;
   font-weight: 800; font-size: .85rem;
@@ -429,7 +425,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 @media (max-width: 640px) {
   .sv-grid { grid-template-columns: 1fr; gap: 16px; }
-  .sv-hero { padding: 48px 18px 40px; }
+  .sv-hero { padding: 22px 18px; min-height: 190px; }
   .sv-section { padding: 0 18px; }
   .sv-cats-label { display: none; }
   .sv-process { padding: 56px 18px; }
@@ -441,26 +437,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 <!-- ══ HERO ══ -->
 <div class="sv-hero">
+  <div class="sv-hero-bg" style="background-image:url('{% static 'core/images/image1.png' %}')"></div>
+  <div class="sv-hero-overlay"></div>
   <div class="sv-blob sv-blob-1"></div>
   <div class="sv-blob sv-blob-2"></div>
-  <div class="sv-blob sv-blob-3"></div>
   <div class="sv-grid-lines"></div>
   <div class="sv-hero-inner">
     <p class="sv-hero-eyebrow"><span class="dot"></span> LucasTech — Expertise informatique</p>
     <h1 class="sv-hero-title">
-      Tout ce qui est <em>informatique,</em><br>avec notre équipe.
+      Tout ce qui est <em>informatique,</em> avec notre équipe.
     </h1>
-    <p class="sv-hero-sub">
-      Sites web, applications, installation de systèmes, réseaux, design, marketing digital, support technique...
-      Un seul interlocuteur pour tous vos besoins numériques, à Lomé et partout au Togo.
-    </p>
-    <div class="sv-hero-tags">
-      <span class="sv-hero-tag"><i class="fa fa-code"></i>&nbsp; Sites & applications</span>
-      <span class="sv-hero-tag"><i class="fa fa-desktop"></i>&nbsp; Systèmes d'exploitation</span>
-      <span class="sv-hero-tag"><i class="fa fa-wifi"></i>&nbsp; Réseaux</span>
-      <span class="sv-hero-tag"><i class="fa fa-paint-brush"></i>&nbsp; Design & marketing</span>
-      <span class="sv-hero-tag"><i class="fa fa-life-ring"></i>&nbsp; Support & conseil</span>
-    </div>
 
     <!-- Recherche -->
     <div class="sv-search-wrap">
