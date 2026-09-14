@@ -110,15 +110,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <div style="text-align:center;"><span class="md-badge"><i class="fa fa-star"></i> Fondateur</span></div>
       {% endif %}
       <div class="md-contacts">
-        {% if member.whatsapp %}
-        <a class="md-contact" href="https://wa.me/{{ member.whatsapp }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-        {% endif %}
-        {% if member.phone %}
-        <a class="md-contact" href="tel:{{ member.phone }}"><i class="fa fa-phone"></i> Appeler</a>
-        {% endif %}
-        {% if member.email %}
-        <a class="md-contact" href="mailto:{{ member.email }}"><i class="fa fa-envelope"></i> Email</a>
-        {% endif %}
         {% if member.linkedin %}
         <a class="md-contact" href="{{ member.linkedin }}" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i> LinkedIn</a>
         {% endif %}
