@@ -11,7 +11,7 @@
   --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
   --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.07);
   --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
-  --accent: #b8420a; --accent2: #c9a84c; --green: #2c5f4a;
+  --accent: #0f7a45; --accent2: #d4a017; --green: #0f7a45; --navy: #0d3b7a; --badge-bg: #dcfce7;
   --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,7 +44,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-client { font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
 .pd-title { font-family: var(--serif); font-size: clamp(1.8rem,4vw,2.6rem); font-weight: 900; letter-spacing: -.02em; margin-bottom: 20px; }
 .pd-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-.pd-tag { font-size: .74rem; font-weight: 600; padding: 5px 13px; border-radius: 99px; background: rgba(184,66,10,.08); color: var(--accent); border: 1px solid rgba(184,66,10,.18); }
+.pd-tag { font-size: .74rem; font-weight: 600; padding: 5px 13px; border-radius: 99px; background: var(--badge-bg); color: var(--accent); border: 1px solid rgba(15,122,69,.18); }
 .pd-desc { font-size: .98rem; color: var(--ink2); line-height: 1.85; white-space: pre-line; }
 
 .pd-sidebar { position: sticky; top: 28px; animation: fadeUp .5s .1s ease both; }
@@ -62,9 +62,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   width: 100%; margin-top: 18px; padding: 15px;
   background: var(--accent); color: #fff; border-radius: 12px; text-decoration: none;
   font-weight: 700; font-size: .92rem; transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(184,66,10,.3);
+  box-shadow: 0 4px 16px rgba(15,122,69,.3);
 }
-.btn-project-link:hover { background: #9c3708; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(184,66,10,.4); }
+.btn-project-link:hover { background: #0d5c34; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,122,69,.4); }
 
 .btn-whatsapp {
   display: flex; align-items: center; justify-content: center; gap: 9px;
@@ -178,15 +178,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <section class="pd-explore reveal">
   <p class="pd-explore-title">Explorer aussi</p>
   <div class="pd-explore-row">
-    <a href="{% url 'services:services' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#b8420a,#14100c);">
+    <a href="{% url 'services:services' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#0a1f3d);">
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-wrench"></i> Nos services</span>
     </a>
-    <a href="{% url 'core:team' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#3a2312,#14100c);">
+    <a href="{% url 'core:team' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#163a63,#0a1f3d);">
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-users"></i> Notre équipe</span>
     </a>
-    <a href="{% url 'core:partners' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#c9a84c,#14100c);">
+    <a href="{% url 'core:partners' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#d4a017,#0a1f3d);">
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-handshake"></i> Nos partenaires</span>
     </a>
