@@ -87,32 +87,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   margin-bottom: 20px;
 }
 
-/* Meta bar */
-.pd-meta {
-  display: flex; align-items: center; gap: 0;
-  padding: 16px 0; border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap; gap: 16px;
-}
-.pd-meta-author {
-  display: flex; align-items: center; gap: 10px; flex: 1;
-}
-.pd-author-avatar {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: .85rem; font-weight: 800;
-}
-.pd-author-info { display: flex; flex-direction: column; gap: 1px; }
-.pd-author-name { font-size: .85rem; font-weight: 700; color: var(--ink); }
-.pd-author-label { font-size: .7rem; color: var(--muted); }
-
-.pd-meta-stats {
-  display: flex; align-items: center; gap: 14px;
-  font-size: .75rem; color: var(--muted);
-}
-.pd-meta-stats span { display: flex; align-items: center; gap: 5px; }
-
 /* ── Bloc événement ── */
 .pd-event {
   margin-top: 20px; padding: 22px 24px; border-radius: 16px;
@@ -393,13 +367,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% endif %}
 
     <h1 class="pd-title">{{ publication.title }}</h1>
-
-    <div class="pd-meta">
-      <span class="pd-author-label">LucasTech</span>
-      <div class="pd-meta-stats">
-        <span><i class="fa fa-calendar"></i> {{ publication.created_at|date:"d F Y" }}</span>
-      </div>
-    </div>
 
     {% if publication.is_event %}
     <div class="pd-event">
