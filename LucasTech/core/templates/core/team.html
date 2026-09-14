@@ -33,12 +33,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 40px; box-shadow: 0 8px 32px var(--shadow); margin-bottom: 56px;
 }
 @media (max-width: 640px) { .tm-founder { grid-template-columns: 1fr; text-align: center; } }
+.tm-photo-ring {
+  position: relative; display: block; border-radius: 24px; padding: 5px;
+  overflow: hidden; text-decoration: none;
+}
+.tm-photo-ring::before {
+  content: ''; position: absolute; inset: -60%; z-index: 0;
+  background: conic-gradient(from 0deg, var(--accent), var(--accent2), #6b8f5e, var(--accent));
+  animation: tmSpin 7s linear infinite;
+}
 .tm-founder-photo {
-  width: 220px; height: 220px; border-radius: 20px; overflow: hidden;
+  position: relative; z-index: 1; width: 220px; height: 220px; border-radius: 19px; overflow: hidden;
   background: var(--surf2); display: flex; align-items: center; justify-content: center;
 }
-.tm-founder-photo img { width: 100%; height: 100%; object-fit: cover; }
+.tm-founder-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .tm-founder-photo-placeholder { font-size: 4rem; opacity: .25; }
+.tm-photo-ring:hover .tm-founder-photo img { transform: scale(1.08); }
+.tm-photo-hint {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(20,16,12,.55); color: #fff; font-size: .78rem; font-weight: 700;
+  opacity: 0; transition: opacity .25s ease; gap: 6px; flex-direction: column;
+}
+.tm-photo-ring:hover .tm-photo-hint { opacity: 1; }
+@keyframes tmSpin { to { transform: rotate(360deg); } }
 .tm-founder-badge {
   display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .1em;
   text-transform: uppercase; color: var(--accent); background: rgba(184,66,10,.08);
@@ -72,12 +89,28 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: var(--surf); border: 1px solid var(--border); border-radius: 18px;
   padding: 28px; text-align: center;
 }
+.tm-card-photo-ring {
+  position: relative; display: block; width: 96px; height: 96px; margin: 0 auto 16px;
+  border-radius: 50%; padding: 4px; overflow: hidden;
+}
+.tm-card-photo-ring::before {
+  content: ''; position: absolute; inset: -60%; z-index: 0;
+  background: conic-gradient(from 0deg, var(--accent), var(--accent2), #6b8f5e, var(--accent));
+  animation: tmSpin 7s linear infinite;
+}
 .tm-card-photo {
-  width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px;
+  position: relative; z-index: 1; width: 100%; height: 100%; border-radius: 50%;
   background: var(--surf2); overflow: hidden;
   display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: .3;
 }
-.tm-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+.tm-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; opacity: 1; }
+.tm-card-photo-ring:hover .tm-card-photo img { transform: scale(1.1); }
+.tm-card-photo-hint {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(20,16,12,.55); color: #fff; font-size: .95rem;
+  opacity: 0; transition: opacity .25s ease;
+}
+.tm-card-photo-ring:hover .tm-card-photo-hint { opacity: 1; }
 .tm-card-name { font-family: var(--serif); font-size: 1.15rem; font-weight: 700; }
 .tm-card-role { font-size: .85rem; color: var(--accent); font-weight: 600; margin: 4px 0 12px; }
 .tm-card-bio { font-size: .82rem; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
@@ -100,13 +133,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
   {% if founder %}
   <div class="tm-founder">
-    <div class="tm-founder-photo">
-      {% if founder.photo %}
-        <img src="{{ founder.photo.url }}" alt="{{ founder.name }}">
-      {% else %}
-        <span class="tm-founder-photo-placeholder">👤</span>
-      {% endif %}
-    </div>
+    <a href="{% url 'core:team_member_detail' founder.pk %}" class="tm-photo-ring">
+      <div class="tm-founder-photo">
+        {% if founder.photo %}
+          <img src="{{ founder.photo.url }}" alt="{{ founder.name }}">
+        {% else %}
+          <span class="tm-founder-photo-placeholder">👤</span>
+        {% endif %}
+        <div class="tm-photo-hint"><i class="fa fa-eye"></i> Voir le profil</div>
+      </div>
+    </a>
     <div>
       <span class="tm-founder-badge">Fondateur</span>
       <h2 class="tm-founder-name">{{ founder.name }}</h2>
@@ -146,9 +182,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <div class="tm-grid">
     {% for member in members %}
     <div class="tm-card">
-      <div class="tm-card-photo">
-        {% if member.photo %}<img src="{{ member.photo.url }}" alt="{{ member.name }}">{% else %}👤{% endif %}
-      </div>
+      <a href="{% url 'core:team_member_detail' member.pk %}" class="tm-card-photo-ring">
+        <div class="tm-card-photo">
+          {% if member.photo %}<img src="{{ member.photo.url }}" alt="{{ member.name }}">{% else %}👤{% endif %}
+          <div class="tm-card-photo-hint"><i class="fa fa-eye"></i></div>
+        </div>
+      </a>
       <div class="tm-card-name">{{ member.name }}</div>
       <div class="tm-card-role">{{ member.role }}</div>
       {% if member.bio %}<p class="tm-card-bio">{{ member.bio }}</p>{% endif %}

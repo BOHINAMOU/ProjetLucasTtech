@@ -141,3 +141,8 @@ def team_page(request):
         'founder': founder,
         'members': members.exclude(pk=founder.pk) if founder else members,
     })
+
+
+def team_member_detail(request, pk):
+    member = get_object_or_404(TeamMember, pk=pk)
+    return render(request, 'core/team_member_detail.html', {'member': member})
