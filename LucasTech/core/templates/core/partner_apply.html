@@ -1,0 +1,163 @@
+{% extends 'core/base.html' %}
+{% block title %}Devenir partenaire — LucasTech{% endblock %}
+{% block meta_description %}Soumettez votre candidature pour devenir partenaire de LucasTech.{% endblock %}
+{% block og_title %}Devenir partenaire — LucasTech{% endblock %}
+{% block og_description %}Soumettez votre candidature pour devenir partenaire de LucasTech.{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #ffffff; --surf2: #f1f4f8;
+  --border: rgba(15,23,42,.08); --shadow: rgba(15,23,42,.08);
+  --ink: #0f172a; --ink2: #334155; --muted: #64748b;
+  --navy: #0d3b7a; --navy2: #163a63;
+  --green: #0f7a45; --green2: #15803d; --rose: #c93060;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.pa-wrap { max-width: 680px; margin: 48px auto 96px; padding: 0 clamp(1.2rem,5vw,3rem); }
+
+.pa-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted); margin-bottom: 24px; }
+.pa-breadcrumb a { color: var(--green); text-decoration: none; font-weight: 600; }
+.pa-breadcrumb span { opacity: .5; }
+
+.pa-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 20px;
+  padding: 36px clamp(1.5rem,4vw,3rem); box-shadow: 0 8px 40px var(--shadow);
+}
+
+.pa-eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+.pa-title { font-family: var(--serif); font-size: 1.7rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -.02em; color: var(--navy); }
+.pa-sub { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+
+.pa-msgs { margin-bottom: 20px; }
+.pa-msg { padding: 11px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
+.pa-msg.error { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: var(--rose); }
+
+.pa-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.pa-field { margin-bottom: 16px; }
+.pa-label { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: var(--ink2); margin-bottom: 7px; }
+.pa-input, .pa-select, .pa-textarea {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surf2); font-family: var(--font); font-size: .92rem; color: var(--ink);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.pa-input:focus, .pa-select:focus, .pa-textarea:focus {
+  border-color: var(--green); box-shadow: 0 0 0 3px rgba(15,122,69,.12);
+}
+.pa-textarea { resize: vertical; min-height: 110px; }
+.pa-hint { font-size: .76rem; color: var(--muted); margin-top: 6px; }
+
+.pa-phone-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+
+.pa-file { display: flex; align-items: center; gap: 12px; }
+.pa-file input[type=file] { font-size: .85rem; }
+
+.pa-submit {
+  width: 100%; padding: 15px; margin-top: 8px;
+  background: var(--green); color: #fff; border: none; border-radius: 10px;
+  font-family: var(--font); font-size: .96rem; font-weight: 700; cursor: pointer;
+  transition: background .2s, transform .15s;
+}
+.pa-submit:hover { background: var(--green2); transform: translateY(-2px); }
+
+@media (max-width: 560px) {
+  .pa-row, .pa-phone-row { grid-template-columns: 1fr; }
+}
+</style>
+
+<nav class="pa-breadcrumb">
+  <a href="{% url 'core:partners' %}">Partenaires</a>
+  <span>›</span>
+  <span>Devenir partenaire</span>
+</nav>
+
+<div class="pa-wrap">
+  <div class="pa-card">
+    <p class="pa-eyebrow">Candidature</p>
+    <h1 class="pa-title">Devenir partenaire de LucasTech</h1>
+    <p class="pa-sub">
+      Remplissez ce formulaire pour soumettre votre candidature. Notre équipe l'examinera
+      et vous serez contacté après décision.
+    </p>
+
+    {% if messages %}
+    <div class="pa-msgs">
+      {% for msg in messages %}<div class="pa-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="pa-field">
+        <label class="pa-label">Nom complet / Organisation</label>
+        <input class="pa-input" type="text" name="full_name" value="{{ form_data.full_name|default:'' }}" required>
+      </div>
+
+      <div class="pa-row">
+        <div class="pa-field" style="margin-bottom:0;">
+          <label class="pa-label">Email</label>
+          <input class="pa-input" type="email" name="email" value="{{ form_data.email|default:'' }}" required>
+        </div>
+        <div class="pa-field" style="margin-bottom:0;">
+          <label class="pa-label">Pays</label>
+          <select class="pa-select" name="country" required>
+            <option value="">Sélectionnez votre pays</option>
+            {% for c in countries %}
+            <option value="{{ c }}" {% if form_data.country == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="pa-field">
+        <label class="pa-label">Numéro WhatsApp</label>
+        <input class="pa-input" type="tel" name="whatsapp" placeholder="22890000000" value="{{ form_data.whatsapp|default:'' }}" required>
+        <p class="pa-hint">Numéro complet avec indicatif, ex : 22890000000</p>
+      </div>
+
+      <div class="pa-field">
+        <label class="pa-label">Téléphone</label>
+        <div class="pa-phone-row">
+          <select class="pa-select" name="phone_code">
+            <option value="+228" {% if form_data.phone_code == '+228' or not form_data.phone_code %}selected{% endif %}>🇹🇬 +228</option>
+            <option value="+229" {% if form_data.phone_code == '+229' %}selected{% endif %}>🇧🇯 +229</option>
+            <option value="+225" {% if form_data.phone_code == '+225' %}selected{% endif %}>🇨🇮 +225</option>
+            <option value="+233" {% if form_data.phone_code == '+233' %}selected{% endif %}>🇬🇭 +233</option>
+            <option value="+234" {% if form_data.phone_code == '+234' %}selected{% endif %}>🇳🇬 +234</option>
+            <option value="+221" {% if form_data.phone_code == '+221' %}selected{% endif %}>🇸🇳 +221</option>
+            <option value="+223" {% if form_data.phone_code == '+223' %}selected{% endif %}>🇲🇱 +223</option>
+            <option value="+226" {% if form_data.phone_code == '+226' %}selected{% endif %}>🇧🇫 +226</option>
+            <option value="+227" {% if form_data.phone_code == '+227' %}selected{% endif %}>🇳🇪 +227</option>
+            <option value="+237" {% if form_data.phone_code == '+237' %}selected{% endif %}>🇨🇲 +237</option>
+            <option value="+243" {% if form_data.phone_code == '+243' %}selected{% endif %}>🇨🇩 +243</option>
+            <option value="+212" {% if form_data.phone_code == '+212' %}selected{% endif %}>🇲🇦 +212</option>
+            <option value="+216" {% if form_data.phone_code == '+216' %}selected{% endif %}>🇹🇳 +216</option>
+            <option value="+33" {% if form_data.phone_code == '+33' %}selected{% endif %}>🇫🇷 +33</option>
+            <option value="+1" {% if form_data.phone_code == '+1' %}selected{% endif %}>🇺🇸 +1</option>
+          </select>
+          <input class="pa-input" type="tel" name="phone_number" placeholder="90 00 00 00" value="{{ form_data.phone_number|default:'' }}" required>
+        </div>
+      </div>
+
+      <div class="pa-field">
+        <label class="pa-label">Logo</label>
+        <div class="pa-file">
+          <input class="pa-input" type="file" name="logo" accept="image/*" required>
+        </div>
+        <p class="pa-hint">Format image (PNG, JPG...). Il sera automatiquement recadré si nécessaire.</p>
+      </div>
+
+      <div class="pa-field">
+        <label class="pa-label">Description / présentation</label>
+        <textarea class="pa-textarea" name="description" placeholder="Présentez votre organisation, votre domaine d'intervention, vos réalisations..." required>{{ form_data.description|default:'' }}</textarea>
+      </div>
+
+      <button type="submit" class="pa-submit"><i class="fa fa-paper-plane"></i> Envoyer ma candidature</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

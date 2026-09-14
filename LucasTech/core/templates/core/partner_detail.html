@@ -1,0 +1,216 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}{{ partner.name }} — LucasTech{% endblock %}
+{% block meta_description %}{{ partner.description|default:partner.domain|striptags|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ partner.name }} — LucasTech{% endblock %}
+{% block og_description %}{{ partner.description|default:partner.domain|striptags|truncatechars:155 }}{% endblock %}
+{% block og_image %}{% if partner.logo %}{{ partner.logo.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #ffffff; --surf2: #f1f4f8;
+  --border: rgba(15,23,42,.08); --shadow: rgba(15,23,42,.08);
+  --ink: #0f172a; --ink2: #334155; --muted: #64748b;
+  --navy: #0d3b7a; --green: #0f7a45; --green2: #15803d;
+  --badge-bg: #dcfce7;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+.pd-breadcrumb {
+  max-width: 1100px; margin: 0 auto; padding: 28px clamp(1.5rem,6vw,3rem) 0;
+  display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted);
+}
+.pd-breadcrumb a { color: var(--green); text-decoration: none; font-weight: 600; }
+.pd-breadcrumb a:hover { text-decoration: underline; }
+.pd-breadcrumb span { opacity: .4; }
+
+.pd-wrap {
+  max-width: 1100px; margin: 28px auto 0; padding: 0 clamp(1.5rem,6vw,3rem);
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: start;
+}
+
+.pd-media {
+  border-radius: 20px; overflow: hidden; aspect-ratio: 16/10; background: var(--surf2);
+  box-shadow: 0 24px 70px rgba(0,0,0,.1); animation: fadeUp .5s ease both;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.pd-media img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pd-media-placeholder { font-size: 5rem; opacity: .15; }
+
+.pd-info { margin-top: 28px; animation: fadeUp .5s .08s ease both; }
+.pd-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.pd-category-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--badge-bg); color: var(--green2);
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 5px 13px; border-radius: 99px;
+}
+.pd-country { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; color: var(--muted); }
+.pd-country i { color: var(--green); }
+.pd-title { font-family: var(--serif); font-size: clamp(1.8rem,4vw,2.6rem); font-weight: 900; letter-spacing: -.02em; margin-bottom: 8px; }
+.pd-domain { font-size: .92rem; font-weight: 600; color: var(--green); margin-bottom: 20px; }
+.pd-desc { font-size: .98rem; color: var(--ink2); line-height: 1.85; margin-bottom: 28px; white-space: pre-line; }
+
+.pd-block-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 800; margin-bottom: 12px; color: var(--ink); }
+.pd-achievements {
+  background: var(--surf2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 22px; font-size: .92rem; color: var(--ink2); line-height: 1.8; white-space: pre-line;
+}
+
+.pd-sidebar { position: sticky; top: 28px; animation: fadeUp .5s .1s ease both; }
+.pd-card {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 18px;
+  padding: 26px 24px; box-shadow: 0 8px 32px var(--shadow);
+}
+.pd-card-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: .86rem; color: var(--ink2); }
+.pd-card-row:last-of-type { border-bottom: none; }
+.pd-card-row i { color: var(--green); width: 16px; text-align: center; flex-shrink: 0; }
+.pd-card-row a { color: var(--ink2); text-decoration: none; word-break: break-word; }
+.pd-card-row a:hover { color: var(--green); }
+
+.btn-site-link {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; margin-top: 18px; padding: 15px;
+  background: var(--navy); color: #fff; border-radius: 12px; text-decoration: none;
+  font-weight: 700; font-size: .92rem; transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 16px rgba(13,59,122,.3);
+}
+.btn-site-link:hover { background: #0a2d5e; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,59,122,.4); }
+
+.btn-whatsapp {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; margin-top: 12px; padding: 15px;
+  background: #25D366; color: #fff; border-radius: 12px; text-decoration: none;
+  font-weight: 700; font-size: .92rem; transition: background .2s, transform .2s;
+}
+.btn-whatsapp:hover { background: #1eb85a; transform: translateY(-2px); }
+
+.pd-back { display: inline-flex; align-items: center; gap: 7px; margin-top: 16px; font-size: .84rem; color: var(--muted); text-decoration: none; }
+.pd-back:hover { color: var(--ink); }
+
+/* ══ AUTRES PARTENAIRES ══ */
+.pd-related { max-width: 1100px; margin: 80px auto 0; padding: 0 clamp(1.5rem,6vw,3rem); }
+.pd-related-title { font-family: var(--serif); font-size: 1.35rem; font-weight: 800; margin-bottom: 24px; }
+.pd-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.pd-rel-card { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: transform .3s, box-shadow .3s; }
+.pd-rel-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,.1); }
+.pd-rel-media { height: 110px; background: var(--surf2); display: flex; align-items: center; justify-content: center; padding: 8px; }
+.pd-rel-media img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pd-rel-body { padding: 14px 16px; }
+.pd-rel-body h4 { font-size: .88rem; font-weight: 700; line-height: 1.35; }
+
+/* ══ EXPLORER ══ */
+.pd-explore { max-width: 1100px; margin: 64px auto 0; padding: 0 clamp(1.5rem,6vw,3rem) 100px; }
+.pd-explore-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
+.pd-explore-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.pd-explore-tile { position: relative; height: 130px; border-radius: 14px; overflow: hidden; text-decoration: none; display: flex; align-items: flex-end; padding: 14px; background-size: cover; background-position: center; transition: transform .3s; }
+.pd-explore-tile:hover { transform: translateY(-4px); }
+.pd-explore-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,26,54,.15), rgba(9,26,54,.85)); }
+.pd-explore-label { position: relative; z-index: 1; color: #fff; font-weight: 700; font-size: .84rem; display: flex; align-items: center; gap: 7px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 860px) {
+  .pd-wrap { grid-template-columns: 1fr; gap: 28px; }
+  .pd-sidebar { position: static; }
+}
+@media (max-width: 700px) {
+  .pd-explore-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<nav class="pd-breadcrumb">
+  <a href="{% url 'core:partners' %}">Partenaires</a>
+  <span>›</span>
+  <span>{{ partner.name|truncatechars:40 }}</span>
+</nav>
+
+<div class="pd-wrap">
+  <div>
+    <div class="pd-media">
+      {% if partner.logo %}
+        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}">
+      {% else %}
+        <div class="pd-media-placeholder">🤝</div>
+      {% endif %}
+    </div>
+    <div class="pd-info">
+      <div class="pd-badge-row">
+        {% if partner.category %}<span class="pd-category-badge">{{ partner.category.name }}</span>{% endif %}
+        {% if partner.country %}<span class="pd-country"><i class="fa fa-map-marker"></i> {{ partner.country }}</span>{% endif %}
+      </div>
+      <h1 class="pd-title">{{ partner.name }}</h1>
+      {% if partner.domain %}<p class="pd-domain"><i class="fa fa-briefcase"></i> {{ partner.domain }}</p>{% endif %}
+      {% if partner.description %}<p class="pd-desc">{{ partner.description }}</p>{% endif %}
+
+      {% if partner.achievements %}
+      <p class="pd-block-title">Réalisations avec LucasTech</p>
+      <div class="pd-achievements">{{ partner.achievements }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="pd-sidebar">
+    <div class="pd-card">
+      {% if partner.email %}
+      <div class="pd-card-row"><i class="fa fa-envelope"></i> <a href="mailto:{{ partner.email }}">{{ partner.email }}</a></div>
+      {% endif %}
+      {% if partner.phone %}
+      <div class="pd-card-row"><i class="fa fa-phone"></i> <span>{{ partner.phone }}</span></div>
+      {% endif %}
+
+      {% if partner.website %}
+      <a href="{{ partner.website }}" target="_blank" rel="noopener noreferrer" class="btn-site-link">
+        <i class="fa fa-globe"></i> Visiter le site
+      </a>
+      {% endif %}
+      {% if partner.whatsapp %}
+      <a href="https://wa.me/{{ partner.whatsapp }}?text=Bonjour%2C%20je%20vous%20contacte%20au%20sujet%20de%20votre%20partenariat%20avec%20LucasTech." target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
+        <i class="fab fa-whatsapp"></i> Contacter sur WhatsApp
+      </a>
+      {% endif %}
+    </div>
+
+    <a href="{% url 'core:partners' %}" class="pd-back"><i class="fa fa-arrow-left"></i> Retour aux partenaires</a>
+  </div>
+</div>
+
+{% if related %}
+<section class="pd-related reveal">
+  <h2 class="pd-related-title">Autres partenaires {% if partner.category %}{{ partner.category.name }}{% endif %}</h2>
+  <div class="pd-related-grid">
+    {% for rp in related %}
+    <a href="{% url 'core:partner_detail' rp.pk %}" class="pd-rel-card">
+      <div class="pd-rel-media">{% if rp.logo %}<img src="{{ rp.logo.url }}" alt="{{ rp.name }}" loading="lazy">{% endif %}</div>
+      <div class="pd-rel-body"><h4>{{ rp.name }}</h4></div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="pd-explore reveal">
+  <p class="pd-explore-title">Explorer aussi</p>
+  <div class="pd-explore-row">
+    <a href="{% url 'core:partners' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#0d3b7a,#0a1f3d);">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-handshake"></i> Tous les partenaires</span>
+    </a>
+    <a href="{% url 'core:projects' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#0a1f3d);">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-briefcase"></i> Projets réalisés</span>
+    </a>
+    <a href="{% url 'services:services' %}" class="pd-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
+      <span class="pd-explore-overlay"></span>
+      <span class="pd-explore-label"><i class="fa fa-wrench"></i> Nos services</span>
+    </a>
+  </div>
+</section>
+
+{% endblock %}
