@@ -208,8 +208,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── Bandeau collaboration / fournisseurs ── */
 .sh-vendor-ticker {
-  background: var(--ink); overflow: hidden; border-radius: 12px;
-  padding: 12px 0; margin-bottom: 32px;
+  background: linear-gradient(100deg, var(--accent), #d4720f 55%, var(--accent2));
+  overflow: hidden; border-radius: 12px;
+  padding: 16px 0; margin-bottom: 32px;
 }
 .sh-vendor-ticker__track {
   display: flex; gap: 0; width: max-content;
@@ -218,13 +219,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-vendor-ticker__track:hover { animation-play-state: paused; }
 @keyframes shTickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .sh-vendor-chip {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 0 44px; font-size: .85rem; font-weight: 600;
-  color: #f7f3ee; white-space: nowrap; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 0 44px; font-size: 1.15rem; font-weight: 700;
+  color: #fff; white-space: nowrap; text-decoration: none;
   transition: color .2s;
 }
-.sh-vendor-chip i { color: var(--accent2); }
-.sh-vendor-chip:hover { color: var(--accent2); }
+.sh-vendor-chip i { color: #1c1814; font-size: 1.3rem; }
+.sh-vendor-chip:hover { color: #1c1814; }
 .sh-section-title {
   font-family: var(--serif);
   font-size: clamp(1.5rem, 3vw, 2.2rem);
