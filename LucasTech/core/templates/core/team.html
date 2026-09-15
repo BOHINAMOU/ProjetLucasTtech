@@ -92,8 +92,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .tm-founder-link:hover .tm-founder-photo img { transform: scale(1.08); }
 .tm-photo-hint {
   position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
-  background: rgba(20,16,12,.55); color: #fff; font-size: .78rem; font-weight: 700;
-  opacity: 0; transition: opacity .25s ease; gap: 6px; flex-direction: column; border-radius: 50%;
+  background: radial-gradient(circle, rgba(20,16,12,.5) 0%, rgba(20,16,12,.22) 62%, transparent 100%);
+  color: #fff; font-size: .78rem; font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,.6);
+  opacity: 0; transition: opacity .25s ease; gap: 6px; flex-direction: column;
 }
 .tm-founder-link:hover .tm-photo-hint { opacity: 1; }
 
@@ -139,8 +140,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .tm-card-link:hover .tm-card-photo img { transform: scale(1.1); }
 .tm-card-photo-hint {
   position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
-  background: rgba(20,16,12,.55); color: #fff; font-size: .95rem;
-  opacity: 0; transition: opacity .25s ease; border-radius: 50%;
+  background: radial-gradient(circle, rgba(20,16,12,.5) 0%, rgba(20,16,12,.22) 62%, transparent 100%);
+  color: #fff; font-size: .95rem; text-shadow: 0 2px 8px rgba(0,0,0,.6);
+  opacity: 0; transition: opacity .25s ease;
 }
 .tm-card-link:hover .tm-card-photo-hint { opacity: 1; }
 .tm-card-name { font-family: var(--serif); font-size: 1.1rem; font-weight: 700; }
