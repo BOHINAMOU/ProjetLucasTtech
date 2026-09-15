@@ -26,7 +26,7 @@
         </div>
 
         <!-- Colonne 2 : Liens rapides -->
-        <div class="lt-footer__col" data-animate="fade-up" data-delay="100">
+        <div class="lt-footer__col lt-footer__col--nav" data-animate="fade-up" data-delay="100">
             <h3 class="lt-footer__col-title">Navigation</h3>
             <ul class="lt-footer__links">
                 <li><a href="/">Accueil</a></li>
@@ -215,18 +215,21 @@
     text-transform: uppercase;
     color: var(--ft-muted);
     margin-bottom: 1.4rem;
-    position: relative;
-    padding-left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .7rem;
 }
 .lt-footer__col-title::before {
     content: '';
-    position: absolute;
-    left: 0; top: 50%;
-    transform: translateY(-50%);
+    flex-shrink: 0;
     width: 3px; height: 14px;
     border-radius: 2px;
     background: linear-gradient(180deg, var(--ft-accent), var(--ft-accent2));
 }
+/* La colonne Navigation a une grille de liens sur plusieurs colonnes :
+   on centre son titre au-dessus de cette grille plutôt qu'à gauche. */
+.lt-footer__col--nav .lt-footer__col-title { justify-content: center; }
 
 /* ── Marque ── */
 .lt-footer__logo {
