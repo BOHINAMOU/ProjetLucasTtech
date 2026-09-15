@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
-from django.conf.urls.static import static
+from django.urls import path, include, re_path
+from django.views.static import serve as serve_static
 
 urlpatterns = [
     path('users/',        include('Users.urls', namespace='users')),
@@ -14,5 +14,13 @@ urlpatterns = [
     path('social-auth/',  include('social_django.urls', namespace='social')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Sert les fichiers médias (logos, photos produits, images d'équipe...)
+# même hors DEBUG. Le helper django.conf.urls.static.static() ne fait
+# volontairement rien quand DEBUG=False, donc on branche directement
+# la vue de service — le projet n'a pas de stockage objet (S3/Cloudinary)
+# ni de disque persistant Render, donc sans cette route chaque
+# /media/... renvoie une 404 en production. Idéalement à remplacer par
+# un vrai stockage objet + CDN quand le volume de trafic le justifiera.
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve_static, {'document_root': settings.MEDIA_ROOT}),
+]
