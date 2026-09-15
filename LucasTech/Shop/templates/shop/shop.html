@@ -205,6 +205,26 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   display: flex; align-items: flex-end; justify-content: space-between;
   margin-bottom: 32px; gap: 16px;
 }
+
+/* ── Bandeau collaboration / fournisseurs ── */
+.sh-vendor-ticker {
+  background: var(--ink); overflow: hidden; border-radius: 12px;
+  padding: 12px 0; margin-bottom: 32px;
+}
+.sh-vendor-ticker__track {
+  display: flex; gap: 0; width: max-content;
+  animation: shTickerScroll 26s linear infinite;
+}
+.sh-vendor-ticker__track:hover { animation-play-state: paused; }
+@keyframes shTickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.sh-vendor-chip {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 0 44px; font-size: .85rem; font-weight: 600;
+  color: #f7f3ee; white-space: nowrap; text-decoration: none;
+  transition: color .2s;
+}
+.sh-vendor-chip i { color: var(--accent2); }
+.sh-vendor-chip:hover { color: var(--accent2); }
 .sh-section-title {
   font-family: var(--serif);
   font-size: clamp(1.5rem, 3vw, 2.2rem);
@@ -519,6 +539,18 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% endif %}
     </h2>
     <span class="sh-count">{{ products|length }} article{% if products|length != 1 %}s{% endif %}</span>
+  </div>
+
+  <!-- ── Bandeau défilant : appel aux entreprises/fournisseurs ── -->
+  <div class="sh-vendor-ticker" aria-label="Collaboration entreprises">
+    <div class="sh-vendor-ticker__track">
+      {% for i in "1234" %}
+      <a href="https://wa.me/22890000000?text=Bonjour%2C%20je%20souhaite%20discuter%20d%27une%20collaboration%20avec%20LucasTech."
+         class="sh-vendor-chip" target="_blank" rel="noopener" {% if not forloop.first %}aria-hidden="true"{% endif %}>
+        <i class="fa fa-handshake"></i> Vous êtes une entreprise ou un fournisseur&nbsp;? Contactez-nous pour une collaboration et proposez vos produits sur notre boutique.
+      </a>
+      {% endfor %}
+    </div>
   </div>
 
   <div class="sh-grid">
