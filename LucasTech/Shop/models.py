@@ -18,6 +18,30 @@ class Announcement(models.Model):
 
 
 # ─────────────────────────────
+# 🤝 BANDEAU COLLABORATION / FOURNISSEURS
+# ─────────────────────────────
+class CollabBanner(models.Model):
+    message = models.CharField(
+        max_length=300,
+        default="Vous êtes une entreprise ou un fournisseur ? Contactez-nous pour une "
+                 "collaboration et proposez vos produits sur notre boutique.",
+        verbose_name="Message",
+    )
+    whatsapp_number = models.CharField(
+        max_length=30, default="22890000000", verbose_name="Numéro WhatsApp",
+        help_text="Numéro complet, ex : 22890000000",
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Actif")
+
+    class Meta:
+        verbose_name = "Bandeau collaboration"
+        verbose_name_plural = "Bandeau collaboration"
+
+    def __str__(self):
+        return self.message[:60]
+
+
+# ─────────────────────────────
 # 📂 CATÉGORIE
 # ─────────────────────────────
 class Category(models.Model):

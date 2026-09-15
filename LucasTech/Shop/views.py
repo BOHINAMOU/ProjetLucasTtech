@@ -6,7 +6,7 @@ import urllib.parse
 
 from .models import (
     Product, Category, ShopCart, ShopCartItem,
-    ShopOrder, ShopOrderItem, Reservation, Review, Announcement
+    ShopOrder, ShopOrderItem, Reservation, Review, Announcement, CollabBanner
 )
 
 
@@ -16,6 +16,7 @@ from .models import (
 def shop(request):
     categories    = Category.objects.all()
     announcement  = Announcement.objects.filter(is_active=True).first()
+    collab_banner = CollabBanner.objects.filter(is_active=True).first()
     category_slug = request.GET.get('category')
     search_query  = request.GET.get('q', '').strip()
 
@@ -38,6 +39,7 @@ def shop(request):
         'products':        products,
         'categories':      categories,
         'announcement':    announcement,
+        'collab_banner':   collab_banner,
         'search_query':    search_query,
         'active_category': active_category,
     })
@@ -177,20 +179,53 @@ def payment(request, pk):
     order = get_object_or_404(ShopOrder, pk=pk, user=request.user, status='pending')
 
     if request.method == 'POST':
-        # Simuler la réception du paiement
-        # En prod : intégrer Flooz / TMoney / Wave API ici
-        transaction_id = request.POST.get('transaction_id', '').strip()
+        payment_method = request.POST.get('payment_method_choice')
 
-        if not transaction_id:
-            messages.error(request, 'Veuillez entrer votre numéro de transaction.')
-            return render(request, 'shop/payment.html', {'order': order})
+        if payment_method == 'cash':
+            name = request.POST.get('cash_delivery_name')
+            phone = request.POST.get('cash_delivery_phone')
+            cash_message = request.POST.get('cash_delivery_message')
 
-        order.status = 'paid'
-        order.save()
-        messages.success(request, f'✓ Paiement confirmé ! Commande #{order.receipt_number}')
-        return redirect('shop:order_receipt', pk=order.pk)
+            if not name or not phone:
+                messages.error(request, "Le nom et le numéro de téléphone sont obligatoires pour la livraison en espèces.")
+                return redirect('shop:payment', pk=order.pk)
+
+            order.status = 'cash_on_delivery'
+            order.cash_delivery_name = name
+            order.cash_delivery_phone = phone
+            order.cash_delivery_message = cash_message
+            order.save()
+
+            messages.success(request, "Votre commande en espèces a été enregistrée ! Notre équipe vous contactera bientôt.")
+            return redirect('shop:order_history')
+
+        elif payment_method in ('flooz', 'tmoney', 'wave'):
+            # Simuler la réception du paiement.
+            # En prod : intégrer les API Flooz / TMoney / Wave ici.
+            transaction_id = request.POST.get('transaction_id', '').strip()
+            if not transaction_id:
+                messages.error(request, 'Veuillez entrer votre numéro de transaction.')
+                return render(request, 'shop/payment.html', {'order': order})
+
+            order.status = 'paid'
+            order.save()
+            messages.success(request, f'✓ Paiement confirmé ! Commande #{order.receipt_number}')
+            return redirect('shop:order_receipt', pk=order.pk)
+
+        else:
+            messages.error(request, "Veuillez sélectionner une méthode de paiement valide.")
+            return redirect('shop:payment', pk=order.pk)
 
     return render(request, 'shop/payment.html', {'order': order})
+
+
+# ─────────────────────────────
+# ✅ CONFIRMATION DE PAIEMENT
+# ─────────────────────────────
+@login_required
+def payment_success(request, pk):
+    order = get_object_or_404(ShopOrder, pk=pk, user=request.user)
+    return render(request, 'shop/payment_success.html', {'order': order})
 
 
 # ─────────────────────────────
@@ -256,73 +291,4 @@ def add_review(request, pk):
         )
         messages.success(request, 'Merci pour votre avis !')
     return redirect('shop:product_detail', pk=pk)
-# Shop/views.py
-
-from django.shortcuts import render, get_object_or_404
-from .models import ShopOrder
-# ... vos autres imports ...
-
-# ... vos vues existantes (shop, product_detail, payment, etc.) ...
-
-
-# AJOUTEZ CETTE NOUVELLE VUE
-@login_required
-def payment_success(request, pk):
-    """
-    Affiche la page de confirmation après un paiement réussi.
-    """
-    order = get_object_or_404(ShopOrder, pk=pk, user=request.user)
-    # Idéalement, ici vous mettriez à jour le statut de la commande en "Payée"
-    # order.status = 'paid'
-    # order.save()
-    return render(request, 'shop/payment_success.html', {'order': order})
-
-# Shop/views.py
-
-# ... vos autres imports
-
-@login_required
-def payment(request, pk):
-    order = get_object_or_404(ShopOrder, pk=pk, user=request.user)
-
-    if request.method == 'POST':
-        payment_method = request.POST.get('payment_method_choice')
-
-        if payment_method == 'cash':
-            # --- LOGIQUE POUR LE PAIEMENT EN ESPÈCES ---
-            
-            # 1. Récupérer les données du formulaire
-            name = request.POST.get('cash_delivery_name')
-            phone = request.POST.get('cash_delivery_phone')
-            message = request.POST.get('cash_delivery_message')
-
-            # 2. Vérifier que les champs obligatoires sont remplis
-            if not name or not phone:
-                messages.error(request, "Le nom et le numéro de téléphone sont obligatoires pour la livraison en espèces.")
-                return redirect('shop:payment', pk=order.pk)
-
-            # 3. Mettre à jour la commande avec les nouvelles informations
-            order.status = 'cash_on_delivery'
-            order.cash_delivery_name = name
-            order.cash_delivery_phone = phone
-            order.cash_delivery_message = message
-            order.save()
-            
-            # 4. Rediriger vers une page de succès spécifique
-            messages.success(request, "Votre commande en espèces a été enregistrée ! Notre équipe vous contactera bientôt.")
-            return redirect('shop:order_history') # Redirige vers l'historique des commandes
-
-        # (Ici, vous ajouteriez la logique pour les autres méthodes de paiement comme Flooz, etc.)
-        else:
-            messages.error(request, "Veuillez sélectionner une méthode de paiement valide.")
-            return redirect('shop:payment', pk=order.pk)
-
-    # Si la requête est GET, on affiche simplement la page
-    return render(request, 'shop/payment.html', {'order': order})
-# Shop/views.py
-# ... (ajoutez à la fin du fichier)
-@login_required
-def order_history(request):
-    orders = ShopOrder.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'shop/order_history.html', {'orders': orders})
 

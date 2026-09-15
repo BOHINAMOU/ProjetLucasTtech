@@ -1,6 +1,9 @@
 # Fichier : Shop/admin.py
 from django.contrib import admin
-from .models import Category, Product, ProductImage, ShopOrder, ShopOrderItem, Reservation, Review
+from .models import (
+    Announcement, CollabBanner, Category, Product, ProductImage,
+    ShopOrder, ShopOrderItem, Reservation, Review,
+)
 
 
 class ProductImageInline(admin.TabularInline):
@@ -50,4 +53,14 @@ class ReservationAdmin(admin.ModelAdmin):
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'rating', 'created_at')
     list_filter = ('rating',)
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('message', 'is_active', 'created_at')
+    list_editable = ('is_active',)
+
+@admin.register(CollabBanner)
+class CollabBannerAdmin(admin.ModelAdmin):
+    list_display = ('message', 'whatsapp_number', 'is_active')
+    list_editable = ('is_active',)
 

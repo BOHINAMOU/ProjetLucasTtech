@@ -543,16 +543,18 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   </div>
 
   <!-- ── Bandeau défilant : appel aux entreprises/fournisseurs ── -->
+  {% if collab_banner %}
   <div class="sh-vendor-ticker" aria-label="Collaboration entreprises">
     <div class="sh-vendor-ticker__track">
       {% for i in "1234" %}
-      <a href="https://wa.me/22890000000?text=Bonjour%2C%20je%20souhaite%20discuter%20d%27une%20collaboration%20avec%20LucasTech."
+      <a href="https://wa.me/{{ collab_banner.whatsapp_number }}?text=Bonjour%2C%20je%20souhaite%20discuter%20d%27une%20collaboration%20avec%20LucasTech."
          class="sh-vendor-chip" target="_blank" rel="noopener" {% if not forloop.first %}aria-hidden="true"{% endif %}>
-        <i class="fa fa-handshake"></i> Vous êtes une entreprise ou un fournisseur&nbsp;? Contactez-nous pour une collaboration et proposez vos produits sur notre boutique.
+        <i class="fa fa-handshake"></i> {{ collab_banner.message }}
       </a>
       {% endfor %}
     </div>
   </div>
+  {% endif %}
 
   <div class="sh-grid">
     {% for product in products %}
