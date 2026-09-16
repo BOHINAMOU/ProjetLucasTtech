@@ -1,0 +1,47 @@
+# ─────────────────────────────────────────────────────────────
+# Service systemd pour faire tourner LucasTech avec Gunicorn.
+#
+# Installation (sur le serveur Hostinger, en root ou avec sudo) :
+#   1. Adapter les chemins/utilisateur ci-dessous à votre installation.
+#   2. sudo cp deploy/gunicorn.service /etc/systemd/system/lucastech.service
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable --now lucastech
+#   5. sudo systemctl status lucastech   # vérifier que ça tourne
+#
+# Logs :  sudo journalctl -u lucastech -f
+# Redémarrer après un déploiement :  sudo systemctl restart lucastech
+# ─────────────────────────────────────────────────────────────
+
+[Unit]
+Description=Gunicorn — LucasTech (Django)
+After=network.target
+
+[Service]
+# Utilisateur système dédié (à créer : sudo adduser --system --group lucastech)
+User=lucastech
+Group=www-data
+
+# Dossier où le dépôt a été cloné sur le serveur.
+WorkingDirectory=/home/lucastech/lucastech/LucasTech
+
+# Variables d'environnement : soit un fichier .env chargé par python-dotenv
+# (déjà géré par settings.py), soit décommenter EnvironmentFile ci-dessous
+# pour que systemd les injecte lui-même (les deux fonctionnent ensemble).
+# EnvironmentFile=/home/lucastech/lucastech/LucasTech/.env
+
+# Socket Unix partagé avec Nginx (voir deploy/nginx.conf).
+ExecStart=/home/lucastech/lucastech/LucasTech/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/run/lucastech/gunicorn.sock \
+    --access-logfile - \
+    --error-logfile - \
+    LucasTech.wsgi:application
+
+RuntimeDirectory=lucastech
+RuntimeDirectoryMode=0775
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,5 +1,16 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from .countries import COUNTRIES
+
+MAX_UPLOAD_SIZE_MB = 5
+
+
+def validate_max_upload_size(file):
+    """Empêche l'envoi de fichiers trop volumineux depuis un formulaire
+    public (ex : candidature de partenariat), Django n'appliquant aucune
+    limite de taille par défaut sur les fichiers envoyés."""
+    if file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+        raise ValidationError(f"Le fichier est trop volumineux (max {MAX_UPLOAD_SIZE_MB} Mo).")
 
 
 # ─────────────────────────────
@@ -146,7 +157,10 @@ class PartnerApplication(models.Model):
     country      = models.CharField(max_length=100, choices=[(c, c) for c in COUNTRIES], verbose_name="Pays")
     phone_code   = models.CharField(max_length=6, default='+228', verbose_name="Indicatif")
     phone_number = models.CharField(max_length=30, verbose_name="Téléphone")
-    logo         = models.ImageField(upload_to='partner_applications/', verbose_name="Logo")
+    logo         = models.ImageField(
+        upload_to='partner_applications/', verbose_name="Logo",
+        validators=[validate_max_upload_size],
+    )
     description  = models.TextField(verbose_name="Présentation / description")
 
     status       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")

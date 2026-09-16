@@ -25,18 +25,36 @@ if not SECRET_KEY:
             "and set it in Render's environment variables."
         )
 
+# Domaines/IP autorisés à servir le site. Toujours inclure 127.0.0.1 et
+# localhost (utile derrière un reverse proxy local) ; ajouter ses propres
+# domaines via la variable d'environnement ALLOWED_HOSTS (séparés par des
+# virgules), ex : ALLOWED_HOSTS=lucastech.tg,www.lucastech.tg,123.45.67.89
 ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    ".onrender.com"
+    h.strip() for h in
+    os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,.onrender.com").split(",")
+    if h.strip()
+]
+
+# Origines autorisées à envoyer des requêtes POST protégées par CSRF
+# (nécessaire dès que le site est servi en HTTPS derrière un reverse proxy).
+# Ex : CSRF_TRUSTED_ORIGINS=https://lucastech.tg,https://www.lucastech.tg
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
 ]
 
 # True when running on Render (Render sets this automatically).
 ON_RENDER = os.getenv("RENDER") is not None
 
-if ON_RENDER:
-    # Render terminates TLS at its edge and forwards over HTTP, telling us
-    # the original scheme via this header.
+# Active la configuration HTTPS de production (HSTS, cookies sécurisés,
+# redirection SSL) automatiquement sur Render, ou explicitement ailleurs
+# (VPS Hostinger, etc.) une fois le certificat SSL en place — mettre
+# USE_HTTPS=True dans le .env seulement après avoir confirmé que le HTTPS
+# fonctionne, sinon la redirection forcée rendrait le site inaccessible.
+USE_HTTPS = ON_RENDER or os.getenv("USE_HTTPS", "False") == "True"
+
+if USE_HTTPS:
+    # Le reverse proxy (Render, ou Nginx sur un VPS) termine le TLS et
+    # transmet en HTTP, en indiquant le protocole d'origine via cet en-tête.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True

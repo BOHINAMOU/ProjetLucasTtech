@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Partner, PartnerCategory, PartnerApplication, Project, TeamMember, HeroSlide, NewsTickerItem
+from .models import Partner, PartnerCategory, PartnerApplication, Project, TeamMember, HeroSlide, NewsTickerItem, MAX_UPLOAD_SIZE_MB
 from .countries import COUNTRIES
 
 
@@ -79,7 +79,10 @@ def partner_apply(request):
         if not whatsapp: errors.append("Le numéro WhatsApp est requis.")
         if not country: errors.append("Le pays est requis.")
         if not phone_number: errors.append("Le numéro de téléphone est requis.")
-        if not logo: errors.append("Le logo est requis.")
+        if not logo:
+            errors.append("Le logo est requis.")
+        elif logo.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+            errors.append(f"Le logo est trop volumineux (max {MAX_UPLOAD_SIZE_MB} Mo).")
         if not description: errors.append("La description est requise.")
 
         if errors:

@@ -24,11 +24,5 @@ urlpatterns = [
 
     # Avis
     path('avis/<int:pk>/',                views.add_review,     name='add_review'),
-    path('paiement/succes/<int:pk>/', views.payment_success, name='payment_success'),
-    # Shop/urls.py
-# ...
-    # ...
-    path('historique-commandes/', views.order_history, name='order_history'),
-
-
+    path('paiement/succes/<int:pk>/',     views.payment_success, name='payment_success'),
 ]

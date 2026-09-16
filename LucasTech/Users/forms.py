@@ -1,8 +1,12 @@
 from datetime import date
 from django import forms
 from django.contrib.auth import authenticate
+from django.core.cache import cache
 from .models import User
 from core.countries import COUNTRY_CHOICES
+
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_LOCKOUT_SECONDS = 15 * 60  # 15 minutes
 
 
 # ─────────────────────────────
@@ -61,13 +65,25 @@ class LoginForm(forms.Form):
         password = cleaned.get('password')
 
         if email and password:
+            throttle_key = f"login_attempts:{email.strip().lower()}"
+            attempts = cache.get(throttle_key, 0)
+
+            if attempts >= MAX_LOGIN_ATTEMPTS:
+                raise forms.ValidationError(
+                    "Trop de tentatives échouées pour cet email. "
+                    "Réessayez dans quelques minutes."
+                )
+
             self._user = authenticate(username=email, password=password)
 
             if self._user is None:
+                cache.set(throttle_key, attempts + 1, LOGIN_LOCKOUT_SECONDS)
                 raise forms.ValidationError("Email ou mot de passe incorrect.")
 
             if not self._user.is_active:
                 raise forms.ValidationError("Ce compte est désactivé.")
+
+            cache.delete(throttle_key)
 
         return cleaned
 
