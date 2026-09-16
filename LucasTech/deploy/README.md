@@ -8,9 +8,11 @@ SSH sur le serveur (`ssh votre_utilisateur@votre_ip`).
 
 - Un VPS Hostinger sous Ubuntu/Debian avec accès SSH root ou sudo.
 - Nginx déjà installé (déjà le cas puisqu'un autre site y tourne).
-- Un nom de domaine (ou sous-domaine) pointé vers l'IP du serveur —
-  chez Hostinger, dans hPanel → Domaines → DNS, ajouter un enregistrement
-  `A` vers l'IP du VPS.
+- **Pas de domaine pour l'instant** : le site sera accessible via
+  `http://VOTRE_IP:8080` (voir l'explication à l'étape 8). Le jour où
+  vous pointez un domaine dessus (hPanel → Domaines → DNS → enregistrement
+  `A` vers l'IP du VPS), on repasse sur le port 80 standard et on active
+  le HTTPS.
 
 ## 1. Installer Python et les dépendances système
 
@@ -67,9 +69,9 @@ DATABASE_URL=postgres://lucastech:motdepasse@localhost:5432/lucastech
 # ou, pour rester en SQLite :
 # DATABASE_URL=sqlite:////home/lucastech/lucastech/LucasTech/db.sqlite3
 
-ALLOWED_HOSTS=lucastech.tg,www.lucastech.tg
-CSRF_TRUSTED_ORIGINS=https://lucastech.tg,https://www.lucastech.tg
-USE_HTTPS=False   # à repasser à True une fois le certificat SSL confirmé (étape 9)
+ALLOWED_HOSTS=VOTRE_IP_ICI
+CSRF_TRUSTED_ORIGINS=
+USE_HTTPS=False   # à repasser à True une fois un domaine + certificat SSL en place (étape 9)
 
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
@@ -109,28 +111,41 @@ sudo systemctl status lucastech
 
 ## 8. Nginx
 
+Le fichier `deploy/nginx.conf` fait tourner LucasTech sur le **port 8080**
+plutôt que le port 80 habituel. C'est volontaire : sans domaine, Nginx ne
+peut pas distinguer votre site déjà en ligne de LucasTech sur la même IP
+au port 80 (le routage se fait par nom de domaine dans l'en-tête `Host`,
+qu'on n'a pas encore). Le port 8080 évite tout conflit avec l'autre site.
+
 ```bash
 sudo cp ~lucastech/lucastech/LucasTech/deploy/nginx.conf /etc/nginx/sites-available/lucastech
-sudo nano /etc/nginx/sites-available/lucastech   # adapter domaine/chemins si besoin
 sudo ln -s /etc/nginx/sites-available/lucastech /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
+
+# Ouvrir le port si un pare-feu est actif :
+sudo ufw allow 8080/tcp   # si ufw est utilisé
+# Sinon, vérifier/ouvrir le port 8080 dans hPanel → VPS → Pare-feu.
 ```
 
-Le site doit maintenant répondre en HTTP sur votre domaine.
+Le site doit maintenant répondre sur `http://VOTRE_IP:8080`.
 
-## 9. HTTPS (certbot)
+## 9. Un domaine, puis le HTTPS (plus tard)
 
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d lucastech.tg -d www.lucastech.tg
-```
+Quand vous aurez un domaine pointé en DNS vers l'IP du serveur :
 
-Une fois confirmé que `https://lucastech.tg` fonctionne, repassez
-`USE_HTTPS=True` dans le `.env`, puis :
-```bash
-sudo systemctl restart lucastech
-```
+1. Dans `deploy/nginx.conf` : remplacez `listen 8080;` (et `[::]:8080`)
+   par `listen 80;`, et `server_name _;` par votre domaine
+   (`server_name lucastech.tg www.lucastech.tg;`).
+2. `sudo nginx -t && sudo systemctl reload nginx`
+3. Activez le HTTPS :
+   ```bash
+   sudo apt install -y certbot python3-certbot-nginx
+   sudo certbot --nginx -d lucastech.tg -d www.lucastech.tg
+   ```
+4. Mettez à jour le `.env` : `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` avec
+   le domaine, puis `USE_HTTPS=True`.
+5. `sudo systemctl restart lucastech`
 
 ## Mettre à jour le site après un nouveau commit
 
