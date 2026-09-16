@@ -16,13 +16,37 @@
 body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 .tm-hero {
-  background: #14100c; color: #f2ede6;
-  padding: 64px clamp(1.5rem,6vw,5rem) 56px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #3d1a0a, #b8420a 60%, #c9a84c);
+  color: #fff;
+  padding: 36px clamp(1.5rem,6vw,5rem) 0;
 }
-.tm-hero-eyebrow { color: var(--accent2); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
-.tm-hero-title { font-family: var(--serif); font-size: clamp(2rem,4vw,3rem); font-weight: 800; }
-.tm-hero-title em { color: var(--accent); font-style: italic; }
-.tm-hero-sub { margin-top: 14px; font-size: 1rem; color: #a89c8c; max-width: 640px; line-height: 1.7; }
+.tm-hero-eyebrow { color: #fff2d6; font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 12px; }
+.tm-hero-title { font-family: var(--serif); font-size: clamp(1.8rem,3.6vw,2.7rem); font-weight: 800; padding-bottom: 22px; }
+.tm-hero-title em { color: #14100c; font-style: italic; }
+
+/* ── Message en bandeau défilant (au lieu du sous-titre statique) ── */
+.tm-hero-ticker {
+  margin: 0 calc(-1 * clamp(1.5rem,6vw,5rem));
+  background: rgba(0,0,0,.2); overflow: hidden;
+  padding: 15px 0; border-top: 1px solid rgba(255,255,255,.14);
+}
+.tm-hero-ticker-track {
+  display: flex; gap: 0; width: max-content;
+  animation: tmHeroTicker 20s linear infinite;
+}
+.tm-hero-ticker-track:hover { animation-play-state: paused; }
+@keyframes tmHeroTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.tm-hero-ticker-item {
+  display: inline-flex; align-items: center; gap: 16px;
+  padding: 0 clamp(1.5rem,6vw,5rem);
+  font-family: var(--serif); font-style: italic; font-weight: 700;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem); white-space: nowrap; color: #fff;
+}
+.tm-hero-ticker-item i { color: #ffe9a8; font-size: .85rem; }
+@media (prefers-reduced-motion: reduce) {
+  .tm-hero-ticker-track { animation: none; }
+}
 
 .tm-wrap { position: relative; overflow: hidden; max-width: 1200px; margin: 0 auto; padding: 56px clamp(1.5rem,6vw,5rem) 96px; }
 
@@ -154,7 +178,17 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <div class="tm-hero">
   <p class="tm-hero-eyebrow">LucasTech</p>
   <h1 class="tm-hero-title">Notre <em>équipe</em></h1>
-  <p class="tm-hero-sub">Ceux qui font avancer LucasTech, qui construisent l'Afrique de demain, et qui font progresser la technologie et l'informatique.</p>
+  <div class="tm-hero-ticker" aria-label="À propos de notre équipe">
+    <div class="tm-hero-ticker-track">
+      {% for i in "12" %}
+      <span class="tm-hero-ticker-item" {% if not forloop.first %}aria-hidden="true"{% endif %}>
+        Ceux qui font avancer LucasTech <i class="fa fa-star"></i>
+        Ceux qui construisent l'Afrique de demain <i class="fa fa-star"></i>
+        Ceux qui font progresser la technologie et l'informatique <i class="fa fa-star"></i>
+      </span>
+      {% endfor %}
+    </div>
+  </div>
 </div>
 
 <div class="tm-wrap">
