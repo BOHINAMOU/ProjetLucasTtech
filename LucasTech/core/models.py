@@ -100,6 +100,8 @@ class Partner(models.Model):
 
     class Meta:
         ordering = ['order', 'name']
+        verbose_name = "Partenaire"
+        verbose_name_plural = "Partenaires"
 
     def __str__(self):
         return self.name
@@ -204,6 +206,8 @@ class Project(models.Model):
 
     class Meta:
         ordering = ['order', '-year']
+        verbose_name = "Projet réalisé"
+        verbose_name_plural = "Projets réalisés"
 
     def __str__(self):
         return self.title
@@ -235,6 +239,8 @@ class TeamMember(models.Model):
 
     class Meta:
         ordering = ['order', 'name']
+        verbose_name = "Membre de l'équipe"
+        verbose_name_plural = "Membres de l'équipe"
 
     def __str__(self):
         return f"{self.name} — {self.role}"

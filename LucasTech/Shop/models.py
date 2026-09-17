@@ -12,6 +12,8 @@ class Announcement(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Annonce"
+        verbose_name_plural = "Annonces"
 
     def __str__(self):
         return self.message[:60]
@@ -34,8 +36,8 @@ class CollabBanner(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Actif")
 
     class Meta:
-        verbose_name = "Bandeau collaboration"
-        verbose_name_plural = "Bandeau collaboration"
+        verbose_name = "Bannière de collaboration"
+        verbose_name_plural = "Bannières de collaboration"
 
     def __str__(self):
         return self.message[:60]
@@ -53,7 +55,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ['order', 'name']
-        verbose_name_plural = 'Categories'
+        verbose_name = 'Catégorie'
+        verbose_name_plural = 'Catégories'
 
     def __str__(self):
         return self.name
@@ -83,6 +86,8 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Produit"
+        verbose_name_plural = "Produits"
 
     def __str__(self):
         return self.name
@@ -112,6 +117,8 @@ class ProductImage(models.Model):
 
     class Meta:
         ordering = ['order']
+        verbose_name = "Image du produit"
+        verbose_name_plural = "Images du produit"
 
     def __str__(self):
         return f"Photo de {self.product.name}"
@@ -123,6 +130,10 @@ class ProductImage(models.Model):
 class ShopCart(models.Model):
     user       = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop_cart', verbose_name="Utilisateur")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+
+    class Meta:
+        verbose_name = "Panier"
+        verbose_name_plural = "Paniers"
 
     def total_price(self):
         return sum(item.total_price() for item in self.items.all())
@@ -138,6 +149,10 @@ class ShopCartItem(models.Model):
     cart     = models.ForeignKey(ShopCart, on_delete=models.CASCADE, related_name='items', verbose_name="Panier")
     product  = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produit")
     quantity = models.PositiveIntegerField(default=1, verbose_name="Quantité")
+
+    class Meta:
+        verbose_name = "Article du panier"
+        verbose_name_plural = "Articles du panier"
 
     def total_price(self):
         return self.quantity * self.product.price
@@ -187,6 +202,8 @@ class ShopOrder(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Commande boutique"
+        verbose_name_plural = "Commandes boutique"
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
@@ -204,6 +221,10 @@ class ShopOrderItem(models.Model):
     product  = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produit")
     quantity = models.PositiveIntegerField(verbose_name="Quantité")
     price    = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
+
+    class Meta:
+        verbose_name = "Article de la commande"
+        verbose_name_plural = "Articles de la commande"
 
     def total_price(self):
         return self.quantity * self.price
@@ -236,6 +257,10 @@ class Reservation(models.Model):
     status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
+    class Meta:
+        verbose_name = "Réservation"
+        verbose_name_plural = "Réservations"
+
     def __str__(self):
         return f"Réservation {self.first_name} {self.last_name} — {self.product.name}"
 
@@ -258,6 +283,8 @@ class Review(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Avis client"
+        verbose_name_plural = "Avis clients"
 
     def __str__(self):
         return f"Avis de {self.first_name} sur {self.product.name}"

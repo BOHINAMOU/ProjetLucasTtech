@@ -74,6 +74,8 @@ class Formation(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Formation"
+        verbose_name_plural = "Formations"
 
     def __str__(self):
         return self.title
@@ -100,6 +102,10 @@ class Cart(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
+    class Meta:
+        verbose_name = "Panier"
+        verbose_name_plural = "Paniers"
+
     def total_price(self):
         return sum(item.total_price() for item in self.items.all())
 
@@ -114,6 +120,10 @@ class CartItem(models.Model):
     cart      = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items", verbose_name="Panier")
     formation = models.ForeignKey(Formation, on_delete=models.CASCADE, verbose_name="Formation")
     quantity  = models.PositiveIntegerField(default=1, verbose_name="Quantité")
+
+    class Meta:
+        verbose_name = "Article du panier"
+        verbose_name_plural = "Articles du panier"
 
     def total_price(self):
         return self.quantity * self.formation.price
@@ -137,6 +147,10 @@ class Order(models.Model):
     status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
+    class Meta:
+        verbose_name = "Commande formation"
+        verbose_name_plural = "Commandes formation"
+
     def __str__(self):
         return f"Commande #{self.id} — {self.user.email}"
 
@@ -146,6 +160,10 @@ class OrderItem(models.Model):
     formation = models.ForeignKey(Formation, on_delete=models.CASCADE, verbose_name="Formation")
     quantity  = models.PositiveIntegerField(verbose_name="Quantité")
     price     = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
+
+    class Meta:
+        verbose_name = "Article de la commande"
+        verbose_name_plural = "Articles de la commande"
 
     def total_price(self):
         return self.quantity * self.price

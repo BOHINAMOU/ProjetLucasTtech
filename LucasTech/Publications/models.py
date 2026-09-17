@@ -131,6 +131,8 @@ class PublicationImage(models.Model):
 
     class Meta:
         ordering = ['order']
+        verbose_name = "Image de la publication"
+        verbose_name_plural = "Images de la publication"
 
     def __str__(self):
         return f"Image de {self.publication.title}"
@@ -147,6 +149,8 @@ class PublicationVideo(models.Model):
 
     class Meta:
         ordering = ['order']
+        verbose_name = "Vidéo de la publication"
+        verbose_name_plural = "Vidéos de la publication"
 
     def __str__(self):
         return f"Vidéo de {self.publication.title}"

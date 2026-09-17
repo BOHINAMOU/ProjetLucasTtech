@@ -48,6 +48,10 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    class Meta:
+        verbose_name = "Utilisateur"
+        verbose_name_plural = "Utilisateurs"
+
     def __str__(self):
         return self.email
 
@@ -68,6 +72,10 @@ class PasswordResetCode(models.Model):
     code       = models.CharField(max_length=6, verbose_name="Code")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     is_used    = models.BooleanField(default=False, verbose_name="Utilisé")
+
+    class Meta:
+        verbose_name = "Code de réinitialisation du mot de passe"
+        verbose_name_plural = "Codes de réinitialisation du mot de passe"
 
     def is_expired(self):
         return timezone.now() > self.created_at + timedelta(minutes=5)

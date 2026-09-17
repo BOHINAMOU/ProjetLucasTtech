@@ -15,7 +15,8 @@ class ServiceCategory(models.Model):
 
     class Meta:
         ordering = ['order', 'name']
-        verbose_name_plural = 'Service Categories'
+        verbose_name = 'Catégorie de service'
+        verbose_name_plural = 'Catégories de service'
 
     def __str__(self):
         return self.name
@@ -52,6 +53,8 @@ class Service(models.Model):
 
     class Meta:
         ordering = ['-is_featured', '-created_at']
+        verbose_name = "Service"
+        verbose_name_plural = "Services"
 
     def __str__(self):
         return self.title
@@ -74,6 +77,8 @@ class ServiceContact(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Demande de contact"
+        verbose_name_plural = "Demandes de contact"
 
     def __str__(self):
         return f"{self.name} → {self.service.title}"
