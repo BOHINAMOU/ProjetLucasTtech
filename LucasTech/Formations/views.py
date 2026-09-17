@@ -13,8 +13,7 @@ from .models import (
     Registration, user_has_purchased,
 )
 from core.countries import COUNTRIES
-
-WHATSAPP_NUMBER = "22891973334"
+from core.models import SiteSettings
 
 
 # ──────────────────────────────────────────
@@ -198,7 +197,7 @@ def cart(request):
             "Bonjour, je souhaite suivre les formations suivantes :\n"
             f"{lines}\n\nJe suis disponible pour suivre ces formations."
         )
-        whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={urllib.parse.quote(message)}"
+        whatsapp_url = f"https://wa.me/{SiteSettings.load().whatsapp_1}?text={urllib.parse.quote(message)}"
 
     return render(request, 'formations/cart.html', {
         'cart':  cart_obj,

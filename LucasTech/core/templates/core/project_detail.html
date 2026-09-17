@@ -143,7 +143,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </a>
       {% endif %}
 
-      <a href="https://wa.me/22891973334?text=Bonjour%2C%20j%27ai%20vu%20le%20projet%20%C2%AB%20{{ project.title|urlencode }}%20%C2%BB%20et%20j%27ai%20un%20projet%20similaire%20en%20t%C3%AAte." target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
+      <a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20j%27ai%20vu%20le%20projet%20%C2%AB%20{{ project.title|urlencode }}%20%C2%BB%20et%20j%27ai%20un%20projet%20similaire%20en%20t%C3%AAte." target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
         <i class="fab fa-whatsapp"></i> Discuter d'un projet similaire
       </a>
     </div>
