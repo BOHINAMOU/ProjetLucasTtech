@@ -11,6 +11,14 @@ def home(request):
     })
 
 
+def privacy_policy(request):
+    return render(request, 'core/privacy_policy.html')
+
+
+def terms_of_service(request):
+    return render(request, 'core/terms_of_service.html')
+
+
 def partners(request):
     return {
         'partners': Partner.objects.all()

@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+{% block title %}Conditions d'utilisation — Lantante Technologie{% endblock %}
+{% block meta_description %}Conditions d'utilisation du site Lantante Technologie.{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #ffffff;
+  --border: rgba(0,0,0,.1); --shadow: rgba(0,0,0,.08);
+  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
+  --accent: #b8420a; --accent2: #c9a84c;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+.legal-wrap { max-width: 780px; margin: 40px auto 96px; padding: 0 clamp(1.5rem,4vw,3rem); font-family: var(--font); color: var(--ink); }
+.legal-wrap h1 { font-family: var(--serif); font-size: clamp(2rem,4vw,2.6rem); font-weight: 800; margin-bottom: 8px; }
+.legal-wrap .legal-updated { color: var(--muted); font-size: .85rem; margin-bottom: 32px; }
+.legal-wrap h2 { font-family: var(--serif); font-size: 1.35rem; font-weight: 700; margin: 32px 0 12px; color: var(--ink); }
+.legal-wrap p, .legal-wrap li { font-size: .96rem; line-height: 1.75; color: var(--ink2); }
+.legal-wrap ul { margin: 8px 0 8px 20px; }
+.legal-wrap a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.legal-wrap a:hover { text-decoration: underline; }
+</style>
+
+<div class="legal-wrap">
+  <h1>Conditions d'utilisation</h1>
+  <p class="legal-updated">Dernière mise à jour : septembre 2026</p>
+
+  <p>En utilisant le site <strong>lantantetechnologie.com</strong>, exploité par
+  Lantante Technologie, vous acceptez les conditions décrites ci-dessous.</p>
+
+  <h2>Utilisation du site</h2>
+  <p>Le site présente les formations, services numériques, la boutique et les publications
+  de Lantante Technologie. Vous vous engagez à utiliser le site de manière licite et à ne pas
+  tenter d'en perturber le fonctionnement.</p>
+
+  <h2>Comptes utilisateurs</h2>
+  <p>La création d'un compte (par email ou via la connexion Google) vous engage à fournir des
+  informations exactes et à assurer la confidentialité de vos identifiants. Vous êtes
+  responsable de l'activité effectuée depuis votre compte.</p>
+
+  <h2>Formulaires et inscriptions</h2>
+  <p>Les inscriptions à des événements et les candidatures de partenariat sont soumises à
+  validation par notre équipe et ne constituent pas un engagement automatique de notre part.</p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>Les contenus du site (textes, images, logo) sont la propriété de Lantante Technologie
+  ou de ses partenaires et ne peuvent être réutilisés sans autorisation préalable.</p>
+
+  <h2>Limitation de responsabilité</h2>
+  <p>Le site est fourni « en l'état ». Nous mettons tout en œuvre pour assurer sa
+  disponibilité et l'exactitude des informations publiées, sans garantie absolue.</p>
+
+  <h2>Modifications</h2>
+  <p>Ces conditions peuvent être mises à jour à tout moment ; la date de dernière mise à
+  jour est indiquée en haut de cette page.</p>
+
+  <h2>Contact</h2>
+  <p>Pour toute question, écrivez-nous à
+  <a href="mailto:lucasbohinamou@gmail.com">lucasbohinamou@gmail.com</a>.</p>
+
+  <p style="margin-top:24px;">Voir aussi notre
+  <a href="{% url 'core:privacy_policy' %}">politique de confidentialité</a>.</p>
+</div>
+{% endblock %}

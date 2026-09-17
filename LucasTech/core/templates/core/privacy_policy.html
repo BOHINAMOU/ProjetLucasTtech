@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+{% block title %}Politique de confidentialité — Lantante Technologie{% endblock %}
+{% block meta_description %}Politique de confidentialité de Lantante Technologie : quelles données nous collectons et comment nous les utilisons.{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --bg: #f7f3ee; --surf: #ffffff;
+  --border: rgba(0,0,0,.1); --shadow: rgba(0,0,0,.08);
+  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
+  --accent: #b8420a; --accent2: #c9a84c;
+  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
+}
+.legal-wrap { max-width: 780px; margin: 40px auto 96px; padding: 0 clamp(1.5rem,4vw,3rem); font-family: var(--font); color: var(--ink); }
+.legal-wrap h1 { font-family: var(--serif); font-size: clamp(2rem,4vw,2.6rem); font-weight: 800; margin-bottom: 8px; }
+.legal-wrap .legal-updated { color: var(--muted); font-size: .85rem; margin-bottom: 32px; }
+.legal-wrap h2 { font-family: var(--serif); font-size: 1.35rem; font-weight: 700; margin: 32px 0 12px; color: var(--ink); }
+.legal-wrap p, .legal-wrap li { font-size: .96rem; line-height: 1.75; color: var(--ink2); }
+.legal-wrap ul { margin: 8px 0 8px 20px; }
+.legal-wrap a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.legal-wrap a:hover { text-decoration: underline; }
+</style>
+
+<div class="legal-wrap">
+  <h1>Politique de confidentialité</h1>
+  <p class="legal-updated">Dernière mise à jour : septembre 2026</p>
+
+  <p>Lantante Technologie (« nous ») exploite le site <strong>lantantetechnologie.com</strong>.
+  Cette page explique quelles données personnelles nous collectons auprès des visiteurs et
+  utilisateurs, et comment nous les utilisons.</p>
+
+  <h2>Données que nous collectons</h2>
+  <ul>
+    <li>Compte et connexion : nom, adresse email, et éventuellement photo de profil, si vous
+    créez un compte ou vous connectez via Google.</li>
+    <li>Profil : téléphone, pays, ville, date de naissance, si vous complétez ces champs
+    dans votre profil.</li>
+    <li>Inscriptions à des événements ou candidatures de partenariat : nom, email, téléphone,
+    pays, ville, transmis via nos formulaires.</li>
+    <li>Données techniques : adresse IP et journaux de connexion, pour la sécurité du site.</li>
+  </ul>
+
+  <h2>Utilisation des données</h2>
+  <p>Ces données servent uniquement à faire fonctionner le site : gérer votre compte,
+  traiter vos inscriptions ou candidatures, et vous contacter si nécessaire. Nous ne
+  vendons pas vos données à des tiers.</p>
+
+  <h2>Connexion avec Google</h2>
+  <p>Si vous choisissez de vous connecter avec Google, nous recevons de Google votre nom,
+  votre adresse email et votre photo de profil (selon les informations rendues publiques par
+  votre compte Google), uniquement pour créer ou retrouver votre compte sur le site.</p>
+
+  <h2>Conservation et sécurité</h2>
+  <p>Vos données sont conservées tant que votre compte est actif, ou aussi longtemps que
+  nécessaire pour répondre à votre demande. Nous mettons en œuvre des mesures raisonnables
+  (connexion chiffrée HTTPS, accès restreint) pour protéger vos informations.</p>
+
+  <h2>Vos droits</h2>
+  <p>Vous pouvez demander l'accès, la correction ou la suppression de vos données personnelles
+  à tout moment en nous contactant à
+  <a href="mailto:lucasbohinamou@gmail.com">lucasbohinamou@gmail.com</a>.</p>
+
+  <h2>Contact</h2>
+  <p>Pour toute question concernant cette politique de confidentialité, écrivez-nous à
+  <a href="mailto:lucasbohinamou@gmail.com">lucasbohinamou@gmail.com</a>.</p>
+</div>
+{% endblock %}
