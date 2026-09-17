@@ -106,6 +106,7 @@ class PublicationAdmin(admin.ModelAdmin):
     search_fields  = ['title', 'content']
     prepopulated_fields = {'slug': ('title',)}
     inlines        = [PublicationImageInline, PublicationVideoInline]
+    exclude        = ['author']
 
     # ── Utilise CKEditor si disponible, sinon Textarea large ──
     def formfield_for_dbfield(self, db_field, request, **kwargs):
@@ -125,10 +126,9 @@ class PublicationAdmin(admin.ModelAdmin):
         return super().get_queryset(request)
 
     def save_model(self, request, obj, form, change):
-        # Ne force l'auteur que si l'admin n'a pas explicitement choisi
-        # (et jamais pour un superuser, qui doit pouvoir publier au nom
-        # de n'importe quel auteur).
-        if not obj.pk and not request.user.is_superuser:
+        # L'auteur n'est jamais choisi dans le formulaire : c'est toujours
+        # la personne connectée qui publie.
+        if not obj.pk:
             obj.author = request.user
         super().save_model(request, obj, form, change)
 
@@ -171,7 +171,7 @@ class PublicationAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations principales', {
-            'fields': ('title', 'slug', 'category', 'author')
+            'fields': ('title', 'slug', 'category')
         }),
         ('Type de publication', {
             'fields': ('publication_type',),

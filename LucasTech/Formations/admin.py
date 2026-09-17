@@ -32,6 +32,14 @@ class FormationAdmin(admin.ModelAdmin):
     list_filter = ('category', 'formation_type', 'is_published', 'is_featured', 'level', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
+    exclude = ('author',)
+
+    def save_model(self, request, obj, form, change):
+        # L'auteur n'est jamais choisi dans le formulaire : c'est toujours
+        # la personne connectée qui publie.
+        if not obj.pk:
+            obj.author = request.user
+        super().save_model(request, obj, form, change)
 
     fieldsets = (
         ('Type de formation', {
@@ -46,7 +54,7 @@ class FormationAdmin(admin.ModelAdmin):
             ),
         }),
         ('Informations principales', {
-            'fields': ('title', 'category', 'author', 'image', 'description')
+            'fields': ('title', 'category', 'image', 'description')
         }),
         ('Contenu pédagogique', {
             'fields': ('what_you_learn',),

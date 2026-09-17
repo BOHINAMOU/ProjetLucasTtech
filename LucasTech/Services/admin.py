@@ -15,6 +15,7 @@ class ServiceAdmin(admin.ModelAdmin):
     list_filter   = ['is_active', 'is_featured', 'category']
     search_fields = ['title', 'description']
     list_editable = ['is_featured', 'is_active']
+    exclude       = ['admin']
 
     def get_queryset(self, request):
         # Tout admin ayant accès à ce module voit tous les services
@@ -22,8 +23,9 @@ class ServiceAdmin(admin.ModelAdmin):
         return super().get_queryset(request)
 
     def save_model(self, request, obj, form, change):
-        # Assigne automatiquement l'admin connecté si pas de superuser
-        if not obj.pk and not request.user.is_superuser:
+        # L'admin responsable n'est jamais choisi dans le formulaire :
+        # c'est toujours la personne connectée.
+        if not obj.pk:
             obj.admin = request.user
         super().save_model(request, obj, form, change)
 
