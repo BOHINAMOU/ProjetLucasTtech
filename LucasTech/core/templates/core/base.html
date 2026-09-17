@@ -13,7 +13,7 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="{% block og_title %}Lantante Technologie — Technologie & Formation{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Lantante Technologie – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
-  <meta property="og:image" content="{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta name="twitter:card" content="summary_large_image">
 
