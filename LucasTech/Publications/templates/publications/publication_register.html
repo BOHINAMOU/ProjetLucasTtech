@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
-{% block title %}Inscription — {{ publication.title }} — LucasTech{% endblock %}
+{% block title %}Inscription — {{ publication.title }} — Lantante Technologie{% endblock %}
 {% block meta_description %}Inscrivez-vous à l'événement {{ publication.title }}.{% endblock %}
-{% block og_title %}Inscription — {{ publication.title }} — LucasTech{% endblock %}
+{% block og_title %}Inscription — {{ publication.title }} — Lantante Technologie{% endblock %}
 {% block og_description %}Inscrivez-vous à l'événement {{ publication.title }}.{% endblock %}
 
 {% block content %}
@@ -110,30 +110,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         </div>
       </div>
 
-      <div class="rg-field">
-        <label class="rg-label">Pays</label>
-        <select class="rg-select" name="country">
-          <option value="">Sélectionnez votre pays</option>
-          {% for c in countries %}
-          <option value="{{ c }}" {% if form_data.country == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
       <div class="rg-row">
         <div class="rg-field">
-          <label class="rg-label">Email</label>
-          <input class="rg-input" type="email" name="email" value="{{ form_data.email|default:'' }}" required>
+          <label class="rg-label">Pays</label>
+          <select class="rg-select" name="country" required>
+            <option value="">Sélectionnez votre pays</option>
+            {% for c in countries %}
+            <option value="{{ c }}" {% if form_data.country == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="rg-field">
-          <label class="rg-label">Téléphone / WhatsApp</label>
-          <input class="rg-input" type="tel" name="phone" placeholder="+228 90 00 00 00" value="{{ form_data.phone|default:'' }}" required>
+          <label class="rg-label">Ville</label>
+          <input class="rg-input" type="text" name="city" value="{{ form_data.city|default:'' }}" required>
         </div>
       </div>
 
       <div class="rg-field">
-        <label class="rg-label">Message (optionnel)</label>
-        <textarea class="rg-textarea" name="message" placeholder="Une question, une précision...">{{ form_data.message|default:'' }}</textarea>
+        <label class="rg-label">Email</label>
+        <input class="rg-input" type="email" name="email" value="{{ form_data.email|default:'' }}" required>
+      </div>
+
+      <div class="rg-field">
+        <label class="rg-label">Numéro WhatsApp</label>
+        <div class="rg-row" style="grid-template-columns: 140px 1fr; margin-bottom: 0;">
+          <select class="rg-select" name="phone_code">
+            {% for code, label in dial_codes %}
+            <option value="{{ code }}" {% if form_data.phone_code == code or not form_data.phone_code and code == '+228' %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <input class="rg-input" type="tel" name="phone_number" placeholder="90 00 00 00" value="{{ form_data.phone_number|default:'' }}" required>
+        </div>
       </div>
 
       <button type="submit" class="rg-submit"><i class="fa fa-paper-plane"></i> Envoyer mon inscription</button>

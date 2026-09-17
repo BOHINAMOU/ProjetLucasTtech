@@ -1,12 +1,16 @@
 # Create your views here.
+import re
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
 
-from core.countries import COUNTRIES
+from core.countries import COUNTRIES, DIAL_CODE_CHOICES
 from .models import Publication, PublicationCategory, EventRegistration
+
+EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
 
 # ─────────────────────────────
@@ -85,23 +89,29 @@ def publication_register(request, slug):
         Publication, slug=slug, is_published=True, publication_type='evenement'
     )
 
-    if not publication.registration_open:
+    if not publication.registration_is_open:
         messages.error(request, "Les inscriptions pour cet événement sont fermées.")
         return redirect('publications:publication_detail', slug=slug)
 
     if request.method == 'POST':
-        first_name = request.POST.get('first_name', '').strip()
-        last_name  = request.POST.get('last_name', '').strip()
-        email      = request.POST.get('email', '').strip()
-        phone      = request.POST.get('phone', '').strip()
-        country    = request.POST.get('country', '').strip()
-        message    = request.POST.get('message', '').strip()
+        first_name   = request.POST.get('first_name', '').strip()
+        last_name    = request.POST.get('last_name', '').strip()
+        email        = request.POST.get('email', '').strip()
+        phone_code   = request.POST.get('phone_code', '+228').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        country      = request.POST.get('country', '').strip()
+        city         = request.POST.get('city', '').strip()
 
         errors = []
         if not first_name: errors.append("Le prénom est requis.")
         if not last_name: errors.append("Le nom est requis.")
-        if not email: errors.append("L'email est requis.")
-        if not phone: errors.append("Le téléphone est requis.")
+        if not email:
+            errors.append("L'email est requis.")
+        elif not EMAIL_RE.match(email):
+            errors.append("L'adresse email n'est pas valide.")
+        if not phone_number: errors.append("Le numéro WhatsApp est requis.")
+        if not country: errors.append("Le pays est requis.")
+        if not city: errors.append("La ville est requise.")
 
         if errors:
             for e in errors:
@@ -110,6 +120,7 @@ def publication_register(request, slug):
                 'publication': publication,
                 'form_data': request.POST,
                 'countries': COUNTRIES,
+                'dial_codes': DIAL_CODE_CHOICES,
             })
 
         EventRegistration.objects.create(
@@ -117,9 +128,10 @@ def publication_register(request, slug):
             first_name=first_name,
             last_name=last_name,
             email=email,
-            phone=phone,
+            phone_code=phone_code,
+            phone_number=phone_number,
             country=country,
-            message=message,
+            city=city,
         )
 
         try:
@@ -133,7 +145,7 @@ def publication_register(request, slug):
             if publication.event_location:
                 body += f"Lieu : {publication.event_location}\n"
             body += "\nNous vous recontacterons si des informations complémentaires sont nécessaires.\n\n"
-            body += "À très bientôt,\nL'équipe LucasTech"
+            body += "À très bientôt,\nL'équipe Lantante Technologie"
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=True)
         except Exception:
             pass
@@ -143,6 +155,7 @@ def publication_register(request, slug):
     return render(request, 'publications/publication_register.html', {
         'publication': publication,
         'countries': COUNTRIES,
+        'dial_codes': DIAL_CODE_CHOICES,
     })
 
 

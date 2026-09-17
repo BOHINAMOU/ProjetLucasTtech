@@ -1,7 +1,6 @@
-import csv
-
 from django.contrib import admin
 from django.http import HttpResponse
+from django.urls import path, reverse
 from django.utils.html import format_html
 
 from .models import (
@@ -36,23 +35,64 @@ class PublicationCategoryAdmin(admin.ModelAdmin):
 
 
 # ─────────────────────────────
-# 📤 Export CSV des inscriptions
+# 📤 Export Excel des inscriptions
 # ─────────────────────────────
-@admin.action(description="Exporter la sélection en CSV (Excel)")
-def export_registrations_csv(modeladmin, request, queryset):
-    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-    response['Content-Disposition'] = 'attachment; filename="inscriptions_evenements.csv"'
-    response.write('﻿')  # BOM pour qu'Excel affiche correctement les accents
+EXPORT_HEADERS = ['Événement', 'Prénom', 'Nom', 'Email', 'Indicatif', 'Numéro WhatsApp', 'Pays', 'Ville', 'Date d\'inscription']
 
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Événement', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Pays', 'Message', 'Date'])
+
+def _build_registrations_workbook(queryset, sheet_title="Inscriptions"):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = sheet_title[:31]  # limite Excel
+
+    ws.append(EXPORT_HEADERS)
+    header_fill = PatternFill(start_color="0D3B7A", end_color="0D3B7A", fill_type="solid")
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = header_fill
+
     for reg in queryset.select_related('publication'):
-        writer.writerow([
+        ws.append([
             reg.publication.title, reg.first_name, reg.last_name, reg.email,
-            reg.phone, reg.country, reg.message,
+            reg.phone_code, reg.phone_number, reg.country, reg.city,
             reg.created_at.strftime('%d/%m/%Y %H:%M'),
         ])
+
+    for col in ws.columns:
+        width = max(len(str(c.value)) if c.value else 0 for c in col) + 2
+        ws.column_dimensions[col[0].column_letter].width = min(max(width, 12), 45)
+
+    return wb
+
+
+def _xlsx_response(wb, filename):
+    # Les en-têtes HTTP n'acceptent que de l'ASCII : on fournit un nom de
+    # secours sans accents pour les vieux navigateurs, et le vrai nom
+    # (accents compris) via le paramètre filename* normalisé (RFC 6266).
+    from unicodedata import normalize, combining
+    from urllib.parse import quote
+
+    ascii_fallback = "".join(
+        c for c in normalize('NFKD', filename) if not combining(c)
+    ).encode('ascii', 'ignore').decode('ascii')
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = (
+        f"attachment; filename=\"{ascii_fallback}\"; filename*=UTF-8''{quote(filename)}"
+    )
+    wb.save(response)
     return response
+
+
+@admin.action(description="📊 Exporter la sélection en Excel (.xlsx)")
+def export_registrations_excel(modeladmin, request, queryset):
+    wb = _build_registrations_workbook(queryset)
+    return _xlsx_response(wb, "inscriptions_evenements.xlsx")
 
 
 # ─────────────────────────────
@@ -60,7 +100,7 @@ def export_registrations_csv(modeladmin, request, queryset):
 # ─────────────────────────────
 @admin.register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
-    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'is_featured', 'views_count', 'created_at']
+    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'is_featured', 'views_count', 'registrations_link', 'created_at']
     list_filter    = ['is_published', 'is_featured', 'publication_type', 'category']
     list_editable  = ['is_published', 'is_featured']
     search_fields  = ['title', 'content']
@@ -98,6 +138,37 @@ class PublicationAdmin(admin.ModelAdmin):
         return "—"
     cover_preview.short_description = "Couverture"
 
+    # ── Lien "fichier Excel" propre à chaque publication événement ──
+    def registrations_link(self, obj):
+        if obj.publication_type != 'evenement':
+            return "—"
+        count = obj.registrations.count()
+        if not count:
+            return "Aucune inscription"
+        url = reverse('admin:publications_publication_export_registrations', args=[obj.pk])
+        return format_html('<a href="{}">📊 Excel ({} inscrit{})</a>', url, count, "s" if count > 1 else "")
+    registrations_link.short_description = "Inscriptions"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path(
+                '<int:pk>/export-registrations/',
+                self.admin_site.admin_view(self.export_registrations_view),
+                name='publications_publication_export_registrations',
+            ),
+        ]
+        return custom + urls
+
+    def export_registrations_view(self, request, pk):
+        publication = self.get_object(request, pk)
+        wb = _build_registrations_workbook(
+            EventRegistration.objects.filter(publication=publication),
+            sheet_title=publication.title,
+        )
+        safe_title = "".join(c if c.isalnum() else "_" for c in publication.title)[:60]
+        return _xlsx_response(wb, f"inscriptions_{safe_title}.xlsx")
+
     fieldsets = (
         ('Informations principales', {
             'fields': ('title', 'slug', 'category', 'author')
@@ -107,12 +178,13 @@ class PublicationAdmin(admin.ModelAdmin):
             'description': (
                 "« Article / Actualité » : un article classique. "
                 "« Événement » : affiche les infos de date/lieu et permet aux visiteurs "
-                "de s'inscrire via un formulaire (les inscrits sont exportables en CSV/Excel "
-                "depuis l'onglet « Inscriptions aux événements »)."
+                "de s'inscrire via un formulaire intégré au site (les inscrits sont "
+                "exportables en Excel, individuellement par publication, depuis la liste "
+                "des publications ou l'onglet « Inscriptions aux événements »)."
             ),
         }),
         ('Détails de l\'événement (si type = Événement)', {
-            'fields': ('event_date', 'event_location', 'registration_open'),
+            'fields': ('event_date', 'event_location', 'registration_open', 'registration_deadline'),
             'classes': ('collapse',),
         }),
         ('Médias de couverture', {
@@ -133,8 +205,12 @@ class PublicationAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 @admin.register(EventRegistration)
 class EventRegistrationAdmin(admin.ModelAdmin):
-    list_display    = ['first_name', 'last_name', 'publication', 'email', 'phone', 'country', 'created_at']
+    list_display    = ['first_name', 'last_name', 'publication', 'email', 'full_phone', 'country', 'city', 'created_at']
     list_filter     = ['publication']
-    search_fields   = ['first_name', 'last_name', 'email', 'phone']
-    readonly_fields = ['first_name', 'last_name', 'email', 'phone', 'country', 'message', 'publication', 'created_at']
-    actions         = [export_registrations_csv]
+    search_fields   = ['first_name', 'last_name', 'email', 'phone_number']
+    readonly_fields = ['first_name', 'last_name', 'email', 'phone_code', 'phone_number', 'country', 'city', 'publication', 'created_at']
+    actions         = [export_registrations_excel]
+
+    def full_phone(self, obj):
+        return obj.full_phone
+    full_phone.short_description = "WhatsApp"

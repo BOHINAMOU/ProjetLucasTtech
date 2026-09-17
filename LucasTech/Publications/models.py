@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from django.utils.text import slugify
 
 
@@ -59,6 +60,11 @@ class Publication(models.Model):
                                              verbose_name="Formulaire d'inscription activé",
                                              help_text="Décochez si cet événement ne propose pas d'inscription "
                                                         "(ex : simple annonce) — le bouton d'inscription n'apparaîtra pas.")
+    registration_deadline = models.DateTimeField(
+        blank=True, null=True, verbose_name="Date limite d'inscription",
+        help_text="Passé cette date, le formulaire d'inscription n'est plus accessible "
+                   "(laisser vide pour ne pas fixer de limite).",
+    )
 
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
@@ -93,6 +99,16 @@ class Publication(models.Model):
     @property
     def is_event(self):
         return self.publication_type == 'evenement'
+
+    @property
+    def registration_is_open(self):
+        """Inscription réellement disponible : activée ET (pas de date
+        limite, ou date limite pas encore passée)."""
+        if not self.registration_open:
+            return False
+        if self.registration_deadline and timezone.now() > self.registration_deadline:
+            return False
+        return True
 
 
 # ─────────────────────────────
@@ -131,17 +147,18 @@ class PublicationVideo(models.Model):
 # 📝 INSCRIPTION À UN ÉVÉNEMENT
 # ─────────────────────────────
 class EventRegistration(models.Model):
-    publication = models.ForeignKey(
+    publication  = models.ForeignKey(
         Publication, on_delete=models.CASCADE, related_name='registrations',
         limit_choices_to={'publication_type': 'evenement'},
     )
-    first_name  = models.CharField(max_length=100, verbose_name="Prénom")
-    last_name   = models.CharField(max_length=100, verbose_name="Nom")
-    email       = models.EmailField(verbose_name="Email")
-    phone       = models.CharField(max_length=30, verbose_name="Téléphone / WhatsApp")
-    country     = models.CharField(max_length=100, blank=True, verbose_name="Pays")
-    message     = models.TextField(blank=True, verbose_name="Message (optionnel)")
-    created_at  = models.DateTimeField(auto_now_add=True)
+    first_name   = models.CharField(max_length=100, verbose_name="Prénom")
+    last_name    = models.CharField(max_length=100, verbose_name="Nom")
+    email        = models.EmailField(verbose_name="Email")
+    phone_code   = models.CharField(max_length=6, default='+228', verbose_name="Indicatif")
+    phone_number = models.CharField(max_length=30, default='', verbose_name="Numéro WhatsApp")
+    country      = models.CharField(max_length=100, blank=True, verbose_name="Pays")
+    city         = models.CharField(max_length=100, blank=True, verbose_name="Ville")
+    created_at   = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -151,5 +168,6 @@ class EventRegistration(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} → {self.publication.title}"
 
-    def __str__(self):
-        return f"Image de {self.publication.title}"
+    @property
+    def full_phone(self):
+        return f"{self.phone_code} {self.phone_number}".strip()

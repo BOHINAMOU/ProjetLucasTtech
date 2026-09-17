@@ -1,8 +1,8 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% block title %}{{ publication.title }} — LucasTech{% endblock %}
+{% block title %}{{ publication.title }} — Lantante Technologie{% endblock %}
 {% block meta_description %}{{ publication.content|striptags|truncatechars:155 }}{% endblock %}
-{% block og_title %}{{ publication.title }} — LucasTech{% endblock %}
+{% block og_title %}{{ publication.title }} — Lantante Technologie{% endblock %}
 {% block og_description %}{{ publication.content|striptags|truncatechars:155 }}{% endblock %}
 {% block og_image %}{% if publication.cover_image %}{{ publication.cover_image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
@@ -111,6 +111,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   box-shadow: 0 4px 16px rgba(184,66,10,.3);
 }
 .pd-event-btn:hover { background: #9c3708; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(184,66,10,.4); }
+.pd-event-closed {
+  display: inline-flex; align-items: center; gap: 9px; width: fit-content;
+  padding: 11px 20px; background: var(--surf2); color: var(--muted);
+  border: 1px solid var(--border); border-radius: 11px; font-weight: 600; font-size: .85rem;
+}
 
 /* ── Contenu article ── */
 .pd-content {
@@ -378,10 +383,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <span><i class="fa fa-map-marker"></i> {{ publication.event_location }}</span>
         {% endif %}
       </div>
-      {% if publication.registration_open %}
+      {% if publication.registration_is_open %}
       <a href="{% url 'publications:publication_register' publication.slug %}" class="pd-event-btn">
         <i class="fa fa-pencil"></i> S'inscrire à cet événement
       </a>
+      {% elif publication.registration_open and publication.registration_deadline %}
+      <p class="pd-event-closed"><i class="fa fa-clock"></i> Les inscriptions sont closes depuis le {{ publication.registration_deadline|date:"d/m/Y à H:i" }}.</p>
       {% endif %}
     </div>
     {% endif %}
