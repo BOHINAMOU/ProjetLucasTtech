@@ -241,3 +241,38 @@ class TeamMember(models.Model):
 
     def get_technologies(self):
         return [t.strip() for t in self.technologies.split(',') if t.strip()]
+
+
+class SiteSettings(models.Model):
+    """Réglages globaux du site (footer, contact, réseaux sociaux).
+    Singleton : une seule ligne existe, éditable depuis l'admin."""
+    email          = models.EmailField(blank=True, verbose_name="Email de contact")
+    whatsapp_1     = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp (1)",
+                                      help_text="Numéro complet ex : 22890000000")
+    whatsapp_2     = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp (2)",
+                                      help_text="Numéro complet ex : 22890000000 (laisser vide si un seul numéro)")
+    facebook_url   = models.URLField(blank=True, verbose_name="Lien Facebook")
+    instagram_url  = models.URLField(blank=True, verbose_name="Lien Instagram")
+    tiktok_url     = models.URLField(blank=True, verbose_name="Lien TikTok")
+    youtube_url    = models.URLField(blank=True, verbose_name="Lien YouTube")
+    telegram_url   = models.URLField(blank=True, verbose_name="Lien Telegram")
+    twitter_url    = models.URLField(blank=True, verbose_name="Lien X (Twitter)")
+
+    class Meta:
+        verbose_name = "Réglages du site"
+        verbose_name_plural = "Réglages du site"
+
+    def __str__(self):
+        return "Réglages du site"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

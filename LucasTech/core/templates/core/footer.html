@@ -44,24 +44,30 @@
         <div class="lt-footer__col" data-animate="fade-up" data-delay="200">
             <h3 class="lt-footer__col-title">Contact</h3>
             <ul class="lt-footer__contact">
+                {% if site_settings.email %}
                 <li>
                     <span class="lt-footer__contact-icon">
                         <i class="fas fa-envelope"></i>
                     </span>
-                    <a href="mailto:lucastech.tg@gmail.com">lucastech.tg@gmail.com</a>
+                    <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
                 </li>
+                {% endif %}
+                {% if site_settings.whatsapp_1 %}
                 <li>
                     <span class="lt-footer__contact-icon lt-footer__contact-icon--wa">
                         <i class="fab fa-whatsapp"></i>
                     </span>
-                    <a href="https://wa.me/22891973334" target="_blank" rel="noopener">+228 91 97 33 34</a>
+                    <a href="https://wa.me/{{ site_settings.whatsapp_1 }}" target="_blank" rel="noopener">+{{ site_settings.whatsapp_1 }}</a>
                 </li>
+                {% endif %}
+                {% if site_settings.whatsapp_2 %}
                 <li>
                     <span class="lt-footer__contact-icon lt-footer__contact-icon--wa">
                         <i class="fab fa-whatsapp"></i>
                     </span>
-                    <a href="https://wa.me/22899406554" target="_blank" rel="noopener">+228 99 40 65 54</a>
+                    <a href="https://wa.me/{{ site_settings.whatsapp_2 }}" target="_blank" rel="noopener">+{{ site_settings.whatsapp_2 }}</a>
                 </li>
+                {% endif %}
             </ul>
         </div>
 
@@ -72,13 +78,27 @@
         <h3 class="lt-footer__follow-title">Suivez-nous</h3>
         <p class="lt-footer__social-text">Rejoignez notre communauté et restez informés de nos dernières actualités.</p>
         <div class="lt-footer__socials">
-            <a href="https://wa.me/22891973334" target="_blank" rel="noopener" class="lt-social lt-social--wa"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
-            <a href="https://facebook.com"  target="_blank" rel="noopener" class="lt-social lt-social--fb"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
-            <a href="https://instagram.com" target="_blank" rel="noopener" class="lt-social lt-social--ig"><i class="fab fa-instagram"></i><span>Instagram</span></a>
-            <a href="https://tiktok.com"    target="_blank" rel="noopener" class="lt-social lt-social--tt"><i class="fab fa-tiktok"></i><span>TikTok</span></a>
-            <a href="https://youtube.com"   target="_blank" rel="noopener" class="lt-social lt-social--yt"><i class="fab fa-youtube"></i><span>YouTube</span></a>
-            <a href="https://t.me"          target="_blank" rel="noopener" class="lt-social lt-social--tg"><i class="fab fa-telegram"></i><span>Telegram</span></a>
-            <a href="https://twitter.com"   target="_blank" rel="noopener" class="lt-social lt-social--tw"><i class="fab fa-x-twitter"></i><span>X / Twitter</span></a>
+            {% if site_settings.whatsapp_1 %}
+            <a href="https://wa.me/{{ site_settings.whatsapp_1 }}" target="_blank" rel="noopener" class="lt-social lt-social--wa"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
+            {% endif %}
+            {% if site_settings.facebook_url %}
+            <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" class="lt-social lt-social--fb"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
+            {% endif %}
+            {% if site_settings.instagram_url %}
+            <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" class="lt-social lt-social--ig"><i class="fab fa-instagram"></i><span>Instagram</span></a>
+            {% endif %}
+            {% if site_settings.tiktok_url %}
+            <a href="{{ site_settings.tiktok_url }}" target="_blank" rel="noopener" class="lt-social lt-social--tt"><i class="fab fa-tiktok"></i><span>TikTok</span></a>
+            {% endif %}
+            {% if site_settings.youtube_url %}
+            <a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" class="lt-social lt-social--yt"><i class="fab fa-youtube"></i><span>YouTube</span></a>
+            {% endif %}
+            {% if site_settings.telegram_url %}
+            <a href="{{ site_settings.telegram_url }}" target="_blank" rel="noopener" class="lt-social lt-social--tg"><i class="fab fa-telegram"></i><span>Telegram</span></a>
+            {% endif %}
+            {% if site_settings.twitter_url %}
+            <a href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" class="lt-social lt-social--tw"><i class="fab fa-x-twitter"></i><span>X / Twitter</span></a>
+            {% endif %}
         </div>
     </div>
 

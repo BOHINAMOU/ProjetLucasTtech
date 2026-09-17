@@ -1,7 +1,37 @@
 from django.contrib import admin, messages
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from .models import Partner, PartnerCategory, PartnerApplication, Project, TeamMember, HeroSlide, NewsTickerItem
+from .models import (
+    Partner, PartnerCategory, PartnerApplication, Project, TeamMember,
+    HeroSlide, NewsTickerItem, SiteSettings,
+)
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    # Singleton : une seule ligne de réglages, pas d'ajout ni de suppression.
+    fieldsets = (
+        ('Contact', {
+            'fields': ('email', 'whatsapp_1', 'whatsapp_2'),
+        }),
+        ('Réseaux sociaux', {
+            'fields': ('facebook_url', 'instagram_url', 'tiktok_url',
+                       'youtube_url', 'telegram_url', 'twitter_url'),
+            'description': "Laissez un champ vide pour masquer ce réseau dans le pied de page.",
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # Redirige directement vers l'unique fiche de réglages.
+        obj = SiteSettings.load()
+        from django.shortcuts import redirect
+        return redirect('admin:core_sitesettings_change', obj.pk)
 
 
 @admin.register(PartnerCategory)

@@ -1,10 +1,16 @@
 import time
 from django.conf import settings
-from .models import Partner
+from .models import Partner, SiteSettings
 
 def partners(request):
     return {
         'partners': Partner.objects.all()
+    }
+
+
+def site_settings(request):
+    return {
+        'site_settings': SiteSettings.load()
     }
 
 
