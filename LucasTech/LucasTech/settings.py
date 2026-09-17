@@ -253,9 +253,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # JAZZMIN
 # ══════════════════════════════════════
 JAZZMIN_SETTINGS = {
-    "site_title": "LucasTech Admin",
-    "site_header": "LucasTech",
-    "site_brand": "LucasTech",
+    "site_title": "Lantante Technologie Admin",
+    "site_header": "Lantante Technologie",
+    "site_brand": "Lantante Technologie",
     "navigation_expanded": True,
 
     "usermenu_links": [

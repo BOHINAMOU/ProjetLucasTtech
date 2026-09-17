@@ -57,7 +57,7 @@ class User(AbstractUser):
         full = self.get_full_name().strip()
         if full:
             return full
-        return "Membre LucasTech"
+        return "Membre Lantante Technologie"
 
 
 # ─────────────────────────────

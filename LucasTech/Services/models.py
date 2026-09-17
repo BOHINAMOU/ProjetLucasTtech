@@ -88,7 +88,7 @@ class ServiceContact(models.Model):
             if admin_email:
                 try:
                     send_mail(
-                        subject=f"[LucasTech] Nouvelle demande : {self.service.title}",
+                        subject=f"[Lantante Technologie] Nouvelle demande : {self.service.title}",
                         message=(
                             f"Bonjour,\n\n"
                             f"Vous avez reçu une nouvelle demande de contact pour le service « {self.service.title} ».\n\n"
@@ -96,7 +96,7 @@ class ServiceContact(models.Model):
                             f"Téléphone : {self.phone}\n"
                             f"Message :\n{self.message}\n\n"
                             f"Connectez-vous à l'administration pour répondre.\n\n"
-                            f"— LucasTech"
+                            f"— Lantante Technologie"
                         ),
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[admin_email],

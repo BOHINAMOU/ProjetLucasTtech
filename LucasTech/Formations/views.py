@@ -130,7 +130,7 @@ def formation_register(request, pk):
                 body += f"Rejoignez dès maintenant le groupe WhatsApp de la formation :\n{formation.whatsapp_group_link}\n\n"
             else:
                 body += "Notre équipe vous enverra très bientôt le lien du groupe WhatsApp de la formation.\n\n"
-            body += "À très bientôt,\nL'équipe LucasTech"
+            body += "À très bientôt,\nL'équipe Lantante Technologie"
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=True)
         except Exception:
             pass

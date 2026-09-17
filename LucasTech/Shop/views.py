@@ -152,7 +152,7 @@ def checkout(request):
 
         # Rediriger selon le moyen de paiement
         if payment_method == 'whatsapp':
-            lines = [f"Commande #{order.receipt_number} — LucasTech"]
+            lines = [f"Commande #{order.receipt_number} — Lantante Technologie"]
             for oi in order.items.all():
                 lines.append(f"• {oi.product.name} ×{oi.quantity} = {oi.total_price()} FCFA")
             lines.append(f"\nTotal : {order.total_price} FCFA")

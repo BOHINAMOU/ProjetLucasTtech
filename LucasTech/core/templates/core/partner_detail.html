@@ -1,8 +1,8 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% block title %}{{ partner.name }} — LucasTech{% endblock %}
+{% block title %}{{ partner.name }} — Lantante Technologie{% endblock %}
 {% block meta_description %}{{ partner.description|default:partner.domain|striptags|truncatechars:155 }}{% endblock %}
-{% block og_title %}{{ partner.name }} — LucasTech{% endblock %}
+{% block og_title %}{{ partner.name }} — Lantante Technologie{% endblock %}
 {% block og_description %}{{ partner.description|default:partner.domain|striptags|truncatechars:155 }}{% endblock %}
 {% block og_image %}{% if partner.logo %}{{ partner.logo.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
@@ -150,7 +150,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% if partner.description %}<p class="pd-desc">{{ partner.description }}</p>{% endif %}
 
       {% if partner.achievements %}
-      <p class="pd-block-title">Réalisations avec LucasTech</p>
+      <p class="pd-block-title">Réalisations avec Lantante Technologie</p>
       <div class="pd-achievements">{{ partner.achievements }}</div>
       {% endif %}
     </div>
@@ -171,7 +171,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </a>
       {% endif %}
       {% if partner.whatsapp %}
-      <a href="https://wa.me/{{ partner.whatsapp }}?text=Bonjour%2C%20je%20vous%20contacte%20au%20sujet%20de%20votre%20partenariat%20avec%20LucasTech." target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
+      <a href="https://wa.me/{{ partner.whatsapp }}?text=Bonjour%2C%20je%20vous%20contacte%20au%20sujet%20de%20votre%20partenariat%20avec%20Lantante Technologie." target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
         <i class="fab fa-whatsapp"></i> Contacter sur WhatsApp
       </a>
       {% endif %}

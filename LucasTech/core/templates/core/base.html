@@ -4,15 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{% block meta_description %}LucasTech – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
-  <meta name="keywords" content="{% block meta_keywords %}LucasTech, Togo, formations, services numériques, boutique tech, Lomé{% endblock %}">
-  <title>{% block title %}LucasTech — Technologie & Formation{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Lantante Technologie – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}Lantante Technologie, Togo, formations, services numériques, boutique tech, Lomé{% endblock %}">
+  <title>{% block title %}Lantante Technologie — Technologie & Formation{% endblock %}</title>
 
   <!-- Open Graph / réseaux sociaux -->
-  <meta property="og:site_name" content="LucasTech">
+  <meta property="og:site_name" content="Lantante Technologie">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="{% block og_title %}LucasTech — Technologie & Formation{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}LucasTech – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}Lantante Technologie — Technologie & Formation{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Lantante Technologie – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
   <meta property="og:image" content="{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta name="twitter:card" content="summary_large_image">
@@ -38,12 +38,12 @@
     <a href="{% url 'core:home' %}" class="navbar__brand">
       <div class="brand-logo-wrap">
         <div class="brand-logo-bg"></div>
-        <img src="{% static 'images/logo.png' %}" alt="LucasTech" class="brand-logo-img"
+        <img src="{% static 'images/logo.png' %}" alt="Lantante Technologie" class="brand-logo-img"
              onerror="this.style.display='none';document.querySelector('.brand-logo-fallback').style.display='flex'">
         <div class="brand-logo-fallback" style="display:none;">LT</div>
       </div>
       <div class="brand-text">
-        <span class="brand-name">Lucas<em>Tech</em></span>
+        <span class="brand-name">Lantante <em>Technologie</em></span>
         <span class="brand-tagline">Technologie et  Formation</span>
       </div>
     </a>
@@ -103,7 +103,7 @@
 {% block content %}
 {% if news_items %}
 <!-- ── BARRE D'ACTUALITÉS (liens datés, gérable dans l'admin) ── -->
-<div class="news-ticker" aria-label="Actualités LucasTech">
+<div class="news-ticker" aria-label="Actualités Lantante Technologie">
   <div class="news-ticker__track">
     {% for item in news_items %}
     <a href="{{ item.link_url }}" class="news-chip"><span class="news-chip__date">{{ item.label }}</span> {{ item.message }}</a>
@@ -118,7 +118,7 @@
 
 {% if hero_slides %}
 <!-- ── HERO — carrousel plein écran (slides gérables dans l'admin) ── -->
-<section class="hero-slider" id="heroSlider" aria-label="Présentation LucasTech">
+<section class="hero-slider" id="heroSlider" aria-label="Présentation Lantante Technologie">
 
   {% for slide in hero_slides %}
   <a href="{{ slide.link_url }}" class="hs-slide{% if forloop.first %} is-active{% endif %}" style="background-image:url('{{ slide.image.url }}')">
@@ -188,7 +188,7 @@
     </div>
   </div>
   <div class="promo-media">
-    <img src="{% static 'core/images/image3.png' %}" alt="Boutique Tech LucasTech">
+    <img src="{% static 'core/images/image3.png' %}" alt="Boutique Tech Lantante Technologie">
   </div>
 </section>
 
@@ -203,7 +203,7 @@
     </div>
   </div>
   <div class="promo-media">
-    <img src="{% static 'core/images/image4.png' %}" alt="Publications LucasTech">
+    <img src="{% static 'core/images/image4.png' %}" alt="Publications Lantante Technologie">
   </div>
 </section>
 
@@ -217,7 +217,7 @@
     -->
     <img
       src="{% static 'core/images/image5.png' %}"
-      alt="Équipe LucasTech"
+      alt="Équipe Lantante Technologie"
       loading="lazy"
       onerror="this.src='https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&q=85&fit=crop'"
     >
@@ -234,7 +234,7 @@
       <em>accessible à tous.</em>
     </h2>
     <p class="about-text">
-      LucasTech est une plateforme Tech basée à Lomé, Togo. Nous croyons
+      Lantante Technologie est une plateforme Tech basée à Lomé, Togo. Nous croyons
       que la technologie doit être accessible, utile et humaine. Depuis 2026,
       nous accompagnons particuliers et entreprises dans leur transformation digitale.
     </p>
@@ -331,7 +331,7 @@
     <strong>votre projet</strong>
     <em>avec nous ?</em>
   </h2>
-  <p class="cta-sub">Contactez-nous dès aujourd'hui.LucasTech disponible pour vous accompagner dans vos projets.</p>
+  <p class="cta-sub">Contactez-nous dès aujourd'hui.Lantante Technologie disponible pour vous accompagner dans vos projets.</p>
   <div class="cta-btns">
     <a href="{% url 'services:services' %}" class="btn-cta-white">
       <i class="fa fa-rocket"></i> Démarrer maintenant

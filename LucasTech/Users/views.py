@@ -87,7 +87,7 @@ Ce code est valable 5 minutes.
 
             try:
                 send_mail(
-                    subject="Réinitialisation de mot de passe - LucasTech",
+                    subject="Réinitialisation de mot de passe - Lantante Technologie",
                     message=message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
