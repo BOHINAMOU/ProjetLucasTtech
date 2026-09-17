@@ -159,6 +159,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sv-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
 .sv-cats-track {
   display: flex; gap: 8px; padding: 16px 4px; width: max-content;
+}
+.sv-cats-track.sv-cats-scroll {
   animation: cats-loop 28s linear infinite;
 }
 .sv-cats-viewport:hover .sv-cats-track,
@@ -523,7 +525,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </a>
     <div class="sv-cats-viewport">
       <span class="sv-cats-fade left"></span>
-      <div class="sv-cats-track">
+      <div class="sv-cats-track {% if nav_categories|length > 4 %}sv-cats-scroll{% endif %}">
         {% for cat, color in nav_categories %}
         <a href="{% url 'services:services' %}?category={{ cat.slug }}"
            class="sv-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}">
@@ -531,6 +533,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {{ cat.name }}
         </a>
         {% endfor %}
+        {% if nav_categories|length > 4 %}
         {% for cat, color in nav_categories %}
         <a href="{% url 'services:services' %}?category={{ cat.slug }}"
            class="sv-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}"
@@ -539,6 +542,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {{ cat.name }}
         </a>
         {% endfor %}
+        {% endif %}
       </div>
       <span class="sv-cats-fade right"></span>
     </div>

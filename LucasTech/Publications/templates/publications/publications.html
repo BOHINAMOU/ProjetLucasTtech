@@ -162,6 +162,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pb-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
 .pb-cats-track {
   display: flex; gap: 8px; padding: 16px 4px; width: max-content;
+}
+.pb-cats-track.pb-cats-scroll {
   animation: pb-cats-loop 26s linear infinite;
 }
 .pb-cats-viewport:hover .pb-cats-track,
@@ -450,7 +452,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </a>
     <div class="pb-cats-viewport">
       <span class="pb-cats-fade left"></span>
-      <div class="pb-cats-track">
+      <div class="pb-cats-track {% if nav_categories|length > 4 %}pb-cats-scroll{% endif %}">
         {% for cat, color in nav_categories %}
         <a href="{% url 'publications:publications' %}?category={{ cat.slug }}"
            class="pb-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}">
@@ -458,6 +460,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {{ cat.name }}
         </a>
         {% endfor %}
+        {% if nav_categories|length > 4 %}
         {% for cat, color in nav_categories %}
         <a href="{% url 'publications:publications' %}?category={{ cat.slug }}"
            class="pb-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}"
@@ -466,6 +469,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {{ cat.name }}
         </a>
         {% endfor %}
+        {% endif %}
       </div>
       <span class="pb-cats-fade right"></span>
     </div>
