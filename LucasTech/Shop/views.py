@@ -13,8 +13,14 @@ from .models import (
 # ─────────────────────────────
 # 🏪 BOUTIQUE
 # ─────────────────────────────
+CAT_COLORS = ['c-1', 'c-2', 'c-3', 'c-4', 'c-5', 'c-6']
+
+
 def shop(request):
     categories    = Category.objects.all()
+    nav_categories = [
+        (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
+    ]
     announcement  = Announcement.objects.filter(is_active=True).first()
     collab_banner = CollabBanner.objects.filter(is_active=True).first()
     category_slug = request.GET.get('category')
@@ -38,6 +44,7 @@ def shop(request):
     return render(request, 'shop/shop.html', {
         'products':        products,
         'categories':      categories,
+        'nav_categories':  nav_categories,
         'announcement':    announcement,
         'collab_banner':   collab_banner,
         'search_query':    search_query,

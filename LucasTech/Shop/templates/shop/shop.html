@@ -139,6 +139,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 0 clamp(1.5rem,6vw,5rem);
   display: flex; align-items: center; gap: 0;
 }
+.sh-cat-pinned { flex-shrink: 0; position: relative; z-index: 2; }
+.sh-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
+.sh-cats-track {
+  display: flex; gap: 4px; width: max-content; padding: 14px 0;
+}
+.sh-cats-track.sh-cats-scroll-anim {
+  animation: sh-cats-loop 30s linear infinite;
+}
+.sh-cats-viewport:hover .sh-cats-track,
+.sh-cats-track:focus-within { animation-play-state: paused; }
+@keyframes sh-cats-loop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-cats-track { animation: none; }
+}
+.sh-cats-fade {
+  position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1;
+  pointer-events: none;
+}
+.sh-cats-fade.left  { left: 0; background: linear-gradient(90deg, var(--surf), transparent); }
+.sh-cats-fade.right { right: 0; background: linear-gradient(270deg, var(--surf), transparent); }
 .sh-cats-label {
   font-size: .72rem; font-weight: 700; letter-spacing: .12em;
   text-transform: uppercase; color: var(--muted);
@@ -146,12 +169,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   border-right: 1px solid var(--border); margin-right: 20px;
   flex-shrink: 0;
 }
-.sh-cats-scroll {
-  display: flex; gap: 4px; overflow-x: auto;
-  padding: 14px 0; scrollbar-width: none;
-}
-.sh-cats-scroll::-webkit-scrollbar { display: none; }
-
 .sh-cat-btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 24px; border-radius: 99px; white-space: nowrap;
@@ -502,21 +519,32 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <div class="sh-cats-outer">
   <div class="sh-cats-wrap">
     <span class="sh-cats-label">Catégories</span>
-    <div class="sh-cats-scroll">
-
-      <a href="{% url 'shop:shop' %}"
-         class="sh-cat-btn {% if not active_category %}active{% endif %}">
-        <i class="fa fa-th-large"></i> Tout voir
-      </a>
-
-      {% for cat in categories %}
-      <a href="{% url 'shop:shop' %}?category={{ cat.slug }}"
-         class="sh-cat-btn {% cycle 'c-1' 'c-2' 'c-3' 'c-4' 'c-5' 'c-6' %} {% if active_category.slug == cat.slug %}active{% endif %}">
-        {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
-        {{ cat.name }}
-      </a>
-      {% endfor %}
-
+    <a href="{% url 'shop:shop' %}"
+       class="sh-cat-btn sh-cat-pinned {% if not active_category %}active{% endif %}">
+      <i class="fa fa-th-large"></i> Tout voir
+    </a>
+    <div class="sh-cats-viewport">
+      <span class="sh-cats-fade left"></span>
+      <div class="sh-cats-track {% if nav_categories|length > 4 %}sh-cats-scroll-anim{% endif %}">
+        {% for cat, color in nav_categories %}
+        <a href="{% url 'shop:shop' %}?category={{ cat.slug }}"
+           class="sh-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}">
+          {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
+          {{ cat.name }}
+        </a>
+        {% endfor %}
+        {% if nav_categories|length > 4 %}
+        {% for cat, color in nav_categories %}
+        <a href="{% url 'shop:shop' %}?category={{ cat.slug }}"
+           class="sh-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}"
+           aria-hidden="true" tabindex="-1">
+          {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
+          {{ cat.name }}
+        </a>
+        {% endfor %}
+        {% endif %}
+      </div>
+      <span class="sh-cats-fade right"></span>
     </div>
   </div>
 </div>
