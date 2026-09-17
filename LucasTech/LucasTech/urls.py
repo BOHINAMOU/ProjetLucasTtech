@@ -1,7 +1,11 @@
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include, re_path
+from django.views.generic import TemplateView
 from django.views.static import serve as serve_static
+
+from .sitemaps import sitemaps
 
 urlpatterns = [
     path('users/',        include('Users.urls', namespace='users')),
@@ -12,6 +16,8 @@ urlpatterns = [
     path('services/',     include('Services.urls', namespace='services')),
     path('publications/', include('Publications.urls', namespace='publications')),
     path('social-auth/',  include('social_django.urls', namespace='social')),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 ]
 
 # Sert les fichiers médias (logos, photos produits, images d'équipe...)

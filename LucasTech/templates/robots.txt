@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /users/
+Disallow: /shop/panier/
+Disallow: /shop/commander/
+Disallow: /shop/historique/
+Allow: /
+
+Sitemap: https://lantantetechnologie.com/sitemap.xml
