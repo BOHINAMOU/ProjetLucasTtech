@@ -229,9 +229,14 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "LucasTech.storage.ForgivingManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# django-jazzmin (thème admin) embarque un bootstrap.bundle.min.js qui
+# référence un .map absent de son propre package. Sans ce réglage,
+# collectstatic échoue entièrement à cause d'un fichier qu'on ne contrôle pas.
+WHITENOISE_MANIFEST_STRICT = False
 
 
 # ══════════════════════════════════════
