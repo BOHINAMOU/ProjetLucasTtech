@@ -287,3 +287,8 @@ JAZZMIN_SETTINGS = {
         {"name": "Publications", "url": "/publications/", "new_window": True},
     ],
 }
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "darkly",
+    "default_theme_mode": "dark",
+}
