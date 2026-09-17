@@ -7,7 +7,7 @@ def seed(apps, schema_editor):
 
     HeroSlide.objects.create(
         tag="Technologie · Formation · Innovation",
-        title="LucasTech, <em>votre avenir</em> commence ici.",
+        title="Lantante Technologie, <em>votre avenir</em> commence ici.",
         subtitle="Des solutions digitales, des formations et une boutique Tech pensées pour vous, à Lomé et partout au Togo.",
         image="hero_slides/slide1-lucastech.jpeg",
         link_url="/services/",
@@ -38,7 +38,7 @@ def seed(apps, schema_editor):
         ("Boutique", "Nouveaux produits Tech disponibles", "/shop/"),
         ("Article", "L'Afrique et la révolution numérique en 2026", "/publications/"),
         ("Service", "Créez votre site vitrine en 2 semaines", "/services/"),
-        ("Équipe", "Découvrez qui est derrière LucasTech", "/equipe/"),
+        ("Équipe", "Découvrez qui est derrière Lantante Technologie", "/equipe/"),
     ]
     for i, (label, message, link) in enumerate(items, start=1):
         NewsTickerItem.objects.create(label=label, message=message, link_url=link, order=i)
