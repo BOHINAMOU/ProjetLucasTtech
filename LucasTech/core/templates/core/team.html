@@ -28,7 +28,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ── Message en bandeau défilant (au lieu du sous-titre statique) ── */
 .tm-hero-ticker {
   margin: 0 calc(-1 * clamp(1.5rem,6vw,5rem));
-  background: rgba(0,0,0,.2); overflow: hidden;
+  background: rgba(15,12,9,.62); overflow: hidden;
   padding: 15px 0; border-top: 1px solid rgba(255,255,255,.14);
 }
 .tm-hero-ticker-track {
@@ -42,6 +42,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 0 clamp(1.5rem,6vw,5rem);
   font-family: var(--serif); font-style: italic; font-weight: 700;
   font-size: clamp(1.1rem, 2.2vw, 1.5rem); white-space: nowrap; color: #fff;
+  text-shadow: 0 1px 5px rgba(0,0,0,.55);
 }
 .tm-hero-ticker-item i { color: #ffe9a8; font-size: .85rem; }
 @media (prefers-reduced-motion: reduce) {
