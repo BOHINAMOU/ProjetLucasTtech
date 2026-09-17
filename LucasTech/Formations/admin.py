@@ -2,7 +2,14 @@ import csv
 from django import forms
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import Formation, Order, OrderItem, Registration
+from .models import Formation, FormationCategory, Order, OrderItem, Registration
+
+
+@admin.register(FormationCategory)
+class FormationCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'icon', 'order']
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ['order', 'name']
 
 
 class FormationAdminForm(forms.ModelForm):
@@ -21,8 +28,8 @@ class FormationAdminForm(forms.ModelForm):
 @admin.register(Formation)
 class FormationAdmin(admin.ModelAdmin):
     form = FormationAdminForm
-    list_display = ('title', 'formation_type', 'level', 'price', 'old_price', 'is_featured', 'author', 'is_published', 'created_at')
-    list_filter = ('formation_type', 'is_published', 'is_featured', 'level', 'created_at')
+    list_display = ('title', 'category', 'formation_type', 'level', 'price', 'old_price', 'is_featured', 'author', 'is_published', 'created_at')
+    list_filter = ('category', 'formation_type', 'is_published', 'is_featured', 'level', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
 
@@ -39,7 +46,7 @@ class FormationAdmin(admin.ModelAdmin):
             ),
         }),
         ('Informations principales', {
-            'fields': ('title', 'author', 'image', 'description')
+            'fields': ('title', 'category', 'author', 'image', 'description')
         }),
         ('Contenu pédagogique', {
             'fields': ('what_you_learn',),

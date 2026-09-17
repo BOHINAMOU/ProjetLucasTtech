@@ -9,7 +9,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 
 from .models import (
-    Formation, Cart, CartItem, Order, OrderItem,
+    Formation, FormationCategory, Cart, CartItem, Order, OrderItem,
     Registration, user_has_purchased,
 )
 from core.countries import COUNTRIES
@@ -20,16 +20,35 @@ WHATSAPP_NUMBER = "22891973334"
 # ──────────────────────────────────────────
 # 📚 Liste de toutes les formations publiées
 # ──────────────────────────────────────────
+CAT_COLORS = ['c-1', 'c-2', 'c-3', 'c-4', 'c-5']
+
+
 def formations(request):
-    qs = Formation.objects.filter(is_published=True).select_related('author')
+    categories    = FormationCategory.objects.all()
+    category_slug = request.GET.get('category', '').strip()
+    nav_categories = [
+        (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
+    ]
+
+    qs = Formation.objects.filter(is_published=True).select_related('author', 'category')
+
+    active_category = None
+    if category_slug:
+        active_category = FormationCategory.objects.filter(slug=category_slug).first()
+        if active_category:
+            qs = qs.filter(category=active_category)
+
     search_query = request.GET.get('q', '').strip()
     if search_query:
         qs = qs.filter(
             Q(title__icontains=search_query) | Q(description__icontains=search_query)
         )
     return render(request, 'formations/formations.html', {
-        'formations': qs,
-        'search_query': search_query,
+        'formations':      qs,
+        'categories':      categories,
+        'nav_categories':  nav_categories,
+        'active_category': active_category,
+        'search_query':    search_query,
     })
 
 
