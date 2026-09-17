@@ -47,6 +47,15 @@ class Publication(models.Model):
                                     verbose_name="Image de couverture")
     cover_video = models.FileField(upload_to='publications/videos/', blank=True, null=True,
                                    verbose_name="Vidéo de couverture")
+    document = models.FileField(
+        upload_to='publications/documents/', blank=True, null=True,
+        verbose_name="Document à télécharger (PDF, Word...)",
+        help_text="Optionnel — affiche un bouton de téléchargement sur la publication."
+    )
+    document_label = models.CharField(
+        max_length=100, blank=True, verbose_name="Texte du bouton de téléchargement",
+        help_text="Ex : « Télécharger la liste des candidats admis ». Laisser vide pour un texte par défaut."
+    )
     is_published = models.BooleanField(default=False, verbose_name="Publié")
     is_featured  = models.BooleanField(default=False, verbose_name="À la une")
     views_count  = models.PositiveIntegerField(default=0, editable=False, verbose_name="Nombre de vues")

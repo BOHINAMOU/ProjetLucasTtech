@@ -165,6 +165,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pd-content-body video {
   width: 100%; border-radius: 12px; margin: 1.5em 0;
 }
+.pd-doc-download {
+  display: inline-flex; align-items: center; gap: 12px;
+  margin-top: 24px; padding: 16px 26px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; text-decoration: none; font-weight: 700; font-size: .96rem;
+  box-shadow: 0 8px 24px rgba(184,66,10,.25);
+  transition: transform .2s, box-shadow .2s;
+}
+.pd-doc-download:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(184,66,10,.35); }
+.pd-doc-download i { font-size: 1.15rem; }
 .pd-content-body table {
   width: 100%; border-collapse: collapse; margin: 1.5em 0;
   font-size: .9rem;
@@ -399,6 +409,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div class="pd-content-body">
       {{ publication.content|safe }}
     </div>
+
+    {% if publication.document %}
+    <a href="{{ publication.document.url }}" class="pd-doc-download" download>
+      <i class="fa fa-file-arrow-down"></i>
+      <span>{{ publication.document_label|default:"Télécharger le document" }}</span>
+    </a>
+    {% endif %}
   </div>
 
   <!-- ══ GALERIE D'IMAGES SUPPLÉMENTAIRES ══ -->

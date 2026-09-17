@@ -191,6 +191,11 @@ class PublicationAdmin(admin.ModelAdmin):
             'fields': ('cover_image', 'cover_video'),
             'classes': ('collapse',),
         }),
+        ('Document joint (optionnel)', {
+            'fields': ('document', 'document_label'),
+            'description': "Ajoutez un fichier (PDF, Word...) que les visiteurs pourront télécharger depuis la publication.",
+            'classes': ('collapse',),
+        }),
         ('Contenu', {
             'fields': ('content',),
         }),
