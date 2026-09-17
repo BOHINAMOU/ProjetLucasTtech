@@ -9,7 +9,7 @@ from .sitemaps import sitemaps
 
 urlpatterns = [
     path('users/',        include('Users.urls', namespace='users')),
-    path('admin/',        admin.site.urls),
+    path('lantanteAdminTech/', admin.site.urls),
     path('shop/',         include('Shop.urls')),
     path('',              include('core.urls')),
     path('formations/',   include('Formations.urls', namespace='formations')),

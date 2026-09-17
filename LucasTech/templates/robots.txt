@@ -1,5 +1,5 @@
 User-agent: *
-Disallow: /admin/
+Disallow: /lantanteAdminTech/
 Disallow: /users/
 Disallow: /shop/panier/
 Disallow: /shop/commander/
