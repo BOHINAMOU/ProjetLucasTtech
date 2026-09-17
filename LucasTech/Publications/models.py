@@ -8,11 +8,11 @@ from django.utils.text import slugify
 # 📂 CATÉGORIE
 # ─────────────────────────────
 class PublicationCategory(models.Model):
-    name        = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    icon        = models.CharField(max_length=60, blank=True, help_text="Classe Font Awesome ex: fa-heartbeat")
-    slug        = models.SlugField(unique=True)
-    order       = models.PositiveIntegerField(default=0)
+    name        = models.CharField(max_length=100, verbose_name="Nom")
+    description = models.TextField(blank=True, verbose_name="Description")
+    icon        = models.CharField(max_length=60, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-heartbeat")
+    slug        = models.SlugField(unique=True, verbose_name="Slug (URL)")
+    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         ordering = ['order', 'name']
@@ -38,10 +38,10 @@ class Publication(models.Model):
     )
     category    = models.ForeignKey(
         PublicationCategory, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name='publications'
+        null=True, blank=True, related_name='publications', verbose_name="Catégorie"
     )
     title       = models.CharField(max_length=255, verbose_name="Titre")
-    slug        = models.SlugField(unique=True, blank=True, max_length=300)
+    slug        = models.SlugField(unique=True, blank=True, max_length=300, verbose_name="Slug (URL)")
     content     = models.TextField(verbose_name="Contenu (HTML)")  # CKEditor injecte ici
     cover_image = models.ImageField(upload_to='publications/covers/', blank=True, null=True,
                                     verbose_name="Image de couverture")
@@ -49,7 +49,7 @@ class Publication(models.Model):
                                    verbose_name="Vidéo de couverture")
     is_published = models.BooleanField(default=False, verbose_name="Publié")
     is_featured  = models.BooleanField(default=False, verbose_name="À la une")
-    views_count  = models.PositiveIntegerField(default=0, editable=False)
+    views_count  = models.PositiveIntegerField(default=0, editable=False, verbose_name="Nombre de vues")
 
     # ── Événement (optionnel) ──
     publication_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='article',
@@ -66,8 +66,8 @@ class Publication(models.Model):
                    "(laisser vide pour ne pas fixer de limite).",
     )
 
-    created_at   = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
+    created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    updated_at   = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
 
     class Meta:
         ordering = ['-created_at']
@@ -115,10 +115,10 @@ class Publication(models.Model):
 # 🖼️ IMAGES SUPPLÉMENTAIRES
 # ─────────────────────────────
 class PublicationImage(models.Model):
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='images')
-    image       = models.ImageField(upload_to='publications/gallery/')
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='images', verbose_name="Publication")
+    image       = models.ImageField(upload_to='publications/gallery/', verbose_name="Image")
     caption     = models.CharField(max_length=200, blank=True, verbose_name="Légende")
-    order       = models.PositiveIntegerField(default=0)
+    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         ordering = ['order']
@@ -131,10 +131,10 @@ class PublicationImage(models.Model):
 # 🎬 VIDÉOS SUPPLÉMENTAIRES
 # ─────────────────────────────
 class PublicationVideo(models.Model):
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='videos')
-    video       = models.FileField(upload_to='publications/gallery-videos/')
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='videos', verbose_name="Publication")
+    video       = models.FileField(upload_to='publications/gallery-videos/', verbose_name="Vidéo")
     caption     = models.CharField(max_length=200, blank=True, verbose_name="Légende")
-    order       = models.PositiveIntegerField(default=0)
+    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         ordering = ['order']
@@ -149,7 +149,7 @@ class PublicationVideo(models.Model):
 class EventRegistration(models.Model):
     publication  = models.ForeignKey(
         Publication, on_delete=models.CASCADE, related_name='registrations',
-        limit_choices_to={'publication_type': 'evenement'},
+        limit_choices_to={'publication_type': 'evenement'}, verbose_name="Publication",
     )
     first_name   = models.CharField(max_length=100, verbose_name="Prénom")
     last_name    = models.CharField(max_length=100, verbose_name="Nom")

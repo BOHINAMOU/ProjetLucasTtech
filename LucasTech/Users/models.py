@@ -32,16 +32,16 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None   # On supprime le champ username
 
-    email         = models.EmailField(unique=True)
-    phone         = models.CharField(max_length=20, blank=True, null=True)
-    avatar        = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    date_of_birth = models.DateField(blank=True, null=True)
-    country       = models.CharField(max_length=100, blank=True, null=True)
-    city          = models.CharField(max_length=100, blank=True, null=True)
-    is_verified   = models.BooleanField(default=False)
-    is_premium    = models.BooleanField(default=False)
-    created_at    = models.DateTimeField(auto_now_add=True)
-    updated_at    = models.DateTimeField(auto_now=True)
+    email         = models.EmailField(unique=True, verbose_name="Email")
+    phone         = models.CharField(max_length=20, blank=True, null=True, verbose_name="Téléphone")
+    avatar        = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="Photo de profil")
+    date_of_birth = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
+    country       = models.CharField(max_length=100, blank=True, null=True, verbose_name="Pays")
+    city          = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ville")
+    is_verified   = models.BooleanField(default=False, verbose_name="Vérifié")
+    is_premium    = models.BooleanField(default=False, verbose_name="Premium")
+    created_at    = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    updated_at    = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
 
     USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = []
@@ -64,10 +64,10 @@ class User(AbstractUser):
 # 🔑 CODE RESET MOT DE PASSE (OTP)
 # ─────────────────────────────
 class PasswordResetCode(models.Model):
-    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reset_codes')
-    code       = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_used    = models.BooleanField(default=False)
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reset_codes', verbose_name="Utilisateur")
+    code       = models.CharField(max_length=6, verbose_name="Code")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    is_used    = models.BooleanField(default=False, verbose_name="Utilisé")
 
     def is_expired(self):
         return timezone.now() > self.created_at + timedelta(minutes=5)

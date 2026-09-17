@@ -6,9 +6,9 @@ from django.conf import settings
 # 📢 ANNONCE / BANDEAU
 # ─────────────────────────────
 class Announcement(models.Model):
-    message    = models.TextField()
-    is_active  = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    message    = models.TextField(verbose_name="Message")
+    is_active  = models.BooleanField(default=True, verbose_name="Actif")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     class Meta:
         ordering = ['-created_at']
@@ -45,11 +45,11 @@ class CollabBanner(models.Model):
 # 📂 CATÉGORIE
 # ─────────────────────────────
 class Category(models.Model):
-    name        = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    icon        = models.CharField(max_length=50, blank=True, help_text="Classe Font Awesome ex: fa-mobile")
-    slug        = models.SlugField(unique=True)
-    order       = models.PositiveIntegerField(default=0)
+    name        = models.CharField(max_length=100, verbose_name="Nom")
+    description = models.TextField(blank=True, verbose_name="Description")
+    icon        = models.CharField(max_length=50, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-mobile")
+    slug        = models.SlugField(unique=True, verbose_name="Slug (URL)")
+    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         ordering = ['order', 'name']
@@ -63,23 +63,23 @@ class Category(models.Model):
 # 📦 PRODUIT
 # ─────────────────────────────
 class Product(models.Model):
-    category     = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products')
-    name         = models.CharField(max_length=255, db_index=True)  # 🔥 index pour recherche rapide
-    description  = models.TextField()
-    price        = models.DecimalField(max_digits=10, decimal_places=2)
+    category     = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products', verbose_name="Catégorie")
+    name         = models.CharField(max_length=255, db_index=True, verbose_name="Nom")  # 🔥 index pour recherche rapide
+    description  = models.TextField(verbose_name="Description")
+    price        = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
     old_price    = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
+        max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Ancien prix",
         help_text="Ancien prix (avant réduction). Laisser vide si le produit n'est pas en promotion."
     )
-    bulk_price   = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Prix en gros")
-    bulk_min_qty = models.PositiveIntegerField(default=10, help_text="Quantité min pour prix en gros")
-    image        = models.ImageField(upload_to='shop/products/', blank=True, null=True)
-    video        = models.FileField(upload_to='shop/videos/', blank=True, null=True)
-    stock        = models.PositiveIntegerField(default=0)
-    is_available = models.BooleanField(default=True)
-    is_featured  = models.BooleanField(default=False)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
+    bulk_price   = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Prix en gros", help_text="Prix en gros")
+    bulk_min_qty = models.PositiveIntegerField(default=10, verbose_name="Quantité min. (prix en gros)", help_text="Quantité min pour prix en gros")
+    image        = models.ImageField(upload_to='shop/products/', blank=True, null=True, verbose_name="Image")
+    video        = models.FileField(upload_to='shop/videos/', blank=True, null=True, verbose_name="Vidéo")
+    stock        = models.PositiveIntegerField(default=0, verbose_name="Stock")
+    is_available = models.BooleanField(default=True, verbose_name="Disponible")
+    is_featured  = models.BooleanField(default=False, verbose_name="Mis en avant")
+    created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    updated_at   = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
 
     class Meta:
         ordering = ['-created_at']
@@ -106,9 +106,9 @@ class Product(models.Model):
 # 🖼️ PHOTOS SUPPLÉMENTAIRES (galerie produit)
 # ─────────────────────────────
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image   = models.ImageField(upload_to='shop/products/gallery/')
-    order   = models.PositiveIntegerField(default=0)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images', verbose_name="Produit")
+    image   = models.ImageField(upload_to='shop/products/gallery/', verbose_name="Image")
+    order   = models.PositiveIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         ordering = ['order']
@@ -121,8 +121,8 @@ class ProductImage(models.Model):
 # 🛒 PANIER
 # ─────────────────────────────
 class ShopCart(models.Model):
-    user       = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop_cart')
-    created_at = models.DateTimeField(auto_now_add=True)
+    user       = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop_cart', verbose_name="Utilisateur")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     def total_price(self):
         return sum(item.total_price() for item in self.items.all())
@@ -135,9 +135,9 @@ class ShopCart(models.Model):
 
 
 class ShopCartItem(models.Model):
-    cart     = models.ForeignKey(ShopCart, on_delete=models.CASCADE, related_name='items')
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
+    cart     = models.ForeignKey(ShopCart, on_delete=models.CASCADE, related_name='items', verbose_name="Panier")
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produit")
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantité")
 
     def total_price(self):
         return self.quantity * self.product.price
@@ -173,12 +173,12 @@ class ShopOrder(models.Model):
     ]
 
     # TOUS LES CHAMPS DU MODÈLE ENSEMBLE
-    user           = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop_orders')
-    total_price    = models.DecimalField(max_digits=10, decimal_places=2)
-    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cash')
-    receipt_number = models.CharField(max_length=20, blank=True)
-    created_at     = models.DateTimeField(auto_now_add=True)
+    user           = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop_orders', verbose_name="Utilisateur")
+    total_price    = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix total")
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cash', verbose_name="Moyen de paiement")
+    receipt_number = models.CharField(max_length=20, blank=True, verbose_name="Numéro de reçu")
+    created_at     = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     
     # NOUVEAUX CHAMPS POUR LE PAIEMENT EN ESPÈCES
     cash_delivery_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nom pour la livraison")
@@ -200,10 +200,10 @@ class ShopOrder(models.Model):
 
 # Le modèle ShopOrderItem reste le même
 class ShopOrderItem(models.Model):
-    order    = models.ForeignKey(ShopOrder, on_delete=models.CASCADE, related_name='items')
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    price    = models.DecimalField(max_digits=10, decimal_places=2)
+    order    = models.ForeignKey(ShopOrder, on_delete=models.CASCADE, related_name='items', verbose_name="Commande")
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produit")
+    quantity = models.PositiveIntegerField(verbose_name="Quantité")
+    price    = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
 
     def total_price(self):
         return self.quantity * self.price
@@ -224,17 +224,17 @@ class Reservation(models.Model):
         ('cancelled', 'Annulée'),
     ]
 
-    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reservations', null=True, blank=True)
-    product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reservations')
-    first_name = models.CharField(max_length=100)
-    last_name  = models.CharField(max_length=100)
-    phone      = models.CharField(max_length=20)
-    whatsapp   = models.CharField(max_length=20, blank=True)
-    email      = models.EmailField(blank=True)
-    quantity   = models.PositiveIntegerField(default=1)
-    notes      = models.TextField(blank=True)
-    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reservations', null=True, blank=True, verbose_name="Utilisateur")
+    product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reservations', verbose_name="Produit")
+    first_name = models.CharField(max_length=100, verbose_name="Prénom")
+    last_name  = models.CharField(max_length=100, verbose_name="Nom")
+    phone      = models.CharField(max_length=20, verbose_name="Téléphone")
+    whatsapp   = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp")
+    email      = models.EmailField(blank=True, verbose_name="Email")
+    quantity   = models.PositiveIntegerField(default=1, verbose_name="Quantité")
+    notes      = models.TextField(blank=True, verbose_name="Notes")
+    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     def __str__(self):
         return f"Réservation {self.first_name} {self.last_name} — {self.product.name}"
@@ -244,17 +244,17 @@ class Reservation(models.Model):
 # ⭐ AVIS / REVIEW
 # ─────────────────────────────
 class Review(models.Model):
-    product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
-    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-    first_name = models.CharField(max_length=100)
-    last_name  = models.CharField(max_length=100, blank=True)
-    email      = models.EmailField(blank=True)
+    product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews', verbose_name="Produit")
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Utilisateur")
+    first_name = models.CharField(max_length=100, verbose_name="Prénom")
+    last_name  = models.CharField(max_length=100, blank=True, verbose_name="Nom")
+    email      = models.EmailField(blank=True, verbose_name="Email")
     rating     = models.PositiveSmallIntegerField(
-        default=5,
+        default=5, verbose_name="Note",
         choices=[(i, i) for i in range(1, 6)]
     )
-    comment    = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    comment    = models.TextField(verbose_name="Commentaire")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     class Meta:
         ordering = ['-created_at']

@@ -26,7 +26,7 @@ class HeroSlide(models.Model):
     image    = models.ImageField(upload_to='hero_slides/', verbose_name="Image de fond")
     link_url  = models.CharField(max_length=255, verbose_name="Lien", help_text="Ex : /boutique/ ou https://...")
     link_text = models.CharField(max_length=80, default="En savoir plus", verbose_name="Texte du bouton")
-    order     = models.PositiveIntegerField(default=0)
+    order     = models.PositiveIntegerField(default=0, verbose_name="Ordre")
     is_active = models.BooleanField(default=True, verbose_name="Actif")
 
     class Meta:
@@ -45,7 +45,7 @@ class NewsTickerItem(models.Model):
     label    = models.CharField(max_length=40, verbose_name="Étiquette", help_text="Ex : Nouveau, Boutique, Article")
     message  = models.CharField(max_length=150, verbose_name="Message")
     link_url = models.CharField(max_length=255, verbose_name="Lien", help_text="Ex : /formations/ ou https://...")
-    order    = models.PositiveIntegerField(default=0)
+    order    = models.PositiveIntegerField(default=0, verbose_name="Ordre")
     is_active = models.BooleanField(default=True, verbose_name="Actif")
 
     class Meta:
@@ -62,9 +62,9 @@ class NewsTickerItem(models.Model):
 # ─────────────────────────────
 class PartnerCategory(models.Model):
     name  = models.CharField(max_length=100, verbose_name="Nom")
-    slug  = models.SlugField(unique=True)
-    icon  = models.CharField(max_length=60, blank=True, help_text="Classe Font Awesome ex: fa-handshake")
-    order = models.PositiveIntegerField(default=0)
+    slug  = models.SlugField(unique=True, verbose_name="Slug (URL)")
+    icon  = models.CharField(max_length=60, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-handshake")
+    order = models.PositiveIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         ordering = ['order', 'name']
@@ -95,8 +95,8 @@ class Partner(models.Model):
     whatsapp    = models.CharField(max_length=30, blank=True, verbose_name="WhatsApp",
                                    help_text="Numéro complet ex : 22890000000")
     is_active   = models.BooleanField(default=True, verbose_name="Actif")
-    order       = models.PositiveIntegerField(default=0)
-    created_at  = models.DateTimeField(auto_now_add=True, null=True)
+    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+    created_at  = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Créé le")
 
     class Meta:
         ordering = ['order', 'name']
@@ -169,8 +169,8 @@ class PartnerApplication(models.Model):
         Partner, null=True, blank=True, on_delete=models.SET_NULL,
         related_name='application', verbose_name="Partenaire publié"
     )
-    created_at   = models.DateTimeField(auto_now_add=True)
-    reviewed_at  = models.DateTimeField(null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    reviewed_at  = models.DateTimeField(null=True, blank=True, verbose_name="Examiné le")
 
     class Meta:
         ordering = ['-created_at']
@@ -192,15 +192,15 @@ class Project(models.Model):
     title       = models.CharField(max_length=200, verbose_name="Titre")
     client      = models.CharField(max_length=150, blank=True, verbose_name="Client")
     description = models.TextField(verbose_name="Description")
-    image       = models.ImageField(upload_to='projects/', blank=True, null=True)
+    image       = models.ImageField(upload_to='projects/', blank=True, null=True, verbose_name="Image")
     technologies = models.CharField(
-        max_length=255, blank=True,
+        max_length=255, blank=True, verbose_name="Technologies",
         help_text="Séparées par des virgules, ex : Django, React, PostgreSQL"
     )
     link       = models.URLField(blank=True, verbose_name="Lien vers le projet")
     year       = models.PositiveIntegerField(blank=True, null=True, verbose_name="Année")
-    order      = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    order      = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     class Meta:
         ordering = ['order', '-year']
@@ -219,18 +219,18 @@ class TeamMember(models.Model):
     name         = models.CharField(max_length=150, verbose_name="Nom")
     role         = models.CharField(max_length=150, verbose_name="Rôle")
     bio          = models.TextField(blank=True, verbose_name="À propos")
-    photo        = models.ImageField(upload_to='team/', blank=True, null=True)
+    photo        = models.ImageField(upload_to='team/', blank=True, null=True, verbose_name="Photo")
     technologies = models.CharField(
-        max_length=255, blank=True,
+        max_length=255, blank=True, verbose_name="Technologies",
         help_text="Séparées par des virgules, ex : Python, Django, Photoshop"
     )
-    phone      = models.CharField(max_length=20, blank=True)
-    email      = models.EmailField(blank=True)
-    facebook   = models.URLField(blank=True)
-    instagram  = models.URLField(blank=True)
-    linkedin   = models.URLField(blank=True)
-    whatsapp   = models.CharField(max_length=20, blank=True, help_text="Numéro ex: 22890000000")
-    order      = models.PositiveIntegerField(default=0)
+    phone      = models.CharField(max_length=20, blank=True, verbose_name="Téléphone")
+    email      = models.EmailField(blank=True, verbose_name="Email")
+    facebook   = models.URLField(blank=True, verbose_name="Facebook")
+    instagram  = models.URLField(blank=True, verbose_name="Instagram")
+    linkedin   = models.URLField(blank=True, verbose_name="LinkedIn")
+    whatsapp   = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp", help_text="Numéro ex: 22890000000")
+    order      = models.PositiveIntegerField(default=0, verbose_name="Ordre")
     is_founder = models.BooleanField(default=False, verbose_name="Fondateur")
 
     class Meta:

@@ -31,27 +31,27 @@ class Formation(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="formations"
+        related_name="formations", verbose_name="Auteur"
     )
-    title        = models.CharField(max_length=255)
-    description  = models.TextField()
+    title        = models.CharField(max_length=255, verbose_name="Titre")
+    description  = models.TextField(verbose_name="Description")
     what_you_learn = models.TextField(
         blank=True, verbose_name="Ce que vous allez apprendre",
         help_text="Un point par ligne."
     )
-    price        = models.DecimalField(max_digits=10, decimal_places=2)
+    price        = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
     old_price    = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
+        max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Ancien prix",
         help_text="Ancien prix (avant réduction). Laisser vide si pas de promotion."
     )
-    level        = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='debutant')
-    duration     = models.CharField(max_length=60, blank=True, help_text="Ex : 4 semaines, 12h de vidéo")
+    level        = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='debutant', verbose_name="Niveau")
+    duration     = models.CharField(max_length=60, blank=True, verbose_name="Durée", help_text="Ex : 4 semaines, 12h de vidéo")
     students_count = models.PositiveIntegerField(default=0, verbose_name="Nombre d'inscrits")
-    image        = models.ImageField(upload_to='formations/')
-    is_published = models.BooleanField(default=True)
-    is_featured  = models.BooleanField(default=False)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
+    image        = models.ImageField(upload_to='formations/', verbose_name="Image")
+    is_published = models.BooleanField(default=True, verbose_name="Publié")
+    is_featured  = models.BooleanField(default=False, verbose_name="Mis en avant")
+    created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    updated_at   = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
 
     class Meta:
         ordering = ['-created_at']
@@ -77,9 +77,9 @@ class Cart(models.Model):
     user       = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="cart"
+        related_name="cart", verbose_name="Utilisateur"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     def total_price(self):
         return sum(item.total_price() for item in self.items.all())
@@ -92,9 +92,9 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    cart      = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
-    formation = models.ForeignKey(Formation, on_delete=models.CASCADE)
-    quantity  = models.PositiveIntegerField(default=1)
+    cart      = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items", verbose_name="Panier")
+    formation = models.ForeignKey(Formation, on_delete=models.CASCADE, verbose_name="Formation")
+    quantity  = models.PositiveIntegerField(default=1, verbose_name="Quantité")
 
     def total_price(self):
         return self.quantity * self.formation.price
@@ -112,21 +112,21 @@ class Order(models.Model):
     user        = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="orders"
+        related_name="orders", verbose_name="Utilisateur"
     )
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    created_at  = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix total")
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")
+    created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
 
     def __str__(self):
         return f"Commande #{self.id} — {self.user.email}"
 
 
 class OrderItem(models.Model):
-    order     = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    formation = models.ForeignKey(Formation, on_delete=models.CASCADE)
-    quantity  = models.PositiveIntegerField()
-    price     = models.DecimalField(max_digits=10, decimal_places=2)
+    order     = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items", verbose_name="Commande")
+    formation = models.ForeignKey(Formation, on_delete=models.CASCADE, verbose_name="Formation")
+    quantity  = models.PositiveIntegerField(verbose_name="Quantité")
+    price     = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
 
     def total_price(self):
         return self.quantity * self.price
@@ -149,7 +149,7 @@ def user_has_purchased(user, formation):
 # 📝 INSCRIPTION PAR FORMULAIRE (formations type "inscription")
 # ─────────────────────────────
 class Registration(models.Model):
-    formation  = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name='registrations')
+    formation  = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name='registrations', verbose_name="Formation")
     country    = models.CharField(max_length=100, verbose_name="Pays")
     first_name = models.CharField(max_length=100, verbose_name="Prénom")
     last_name  = models.CharField(max_length=100, verbose_name="Nom")

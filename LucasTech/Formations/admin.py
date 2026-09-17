@@ -91,6 +91,10 @@ class RegistrationAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'email', 'whatsapp_number')
     actions = [export_registrations_csv]
 
+    def whatsapp_full_number(self, obj):
+        return obj.whatsapp_full_number
+    whatsapp_full_number.short_description = "WhatsApp"
+
 
 # ─────────────────────────────
 # 🧾 Commandes — confirmer le paiement manuellement
