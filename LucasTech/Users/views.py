@@ -67,13 +67,16 @@ def password_reset_request(request):
 
         user = User.objects.filter(email__iexact=email).first()
 
-        if user:
-            otp = PasswordResetCode.objects.create(
-                user=user,
-                code=PasswordResetCode.generate_code()
-            )
+        if not user:
+            messages.error(request, "Aucun compte n'est associé à cette adresse email.")
+            return redirect("users:password_reset")
 
-            message = f"""
+        otp = PasswordResetCode.objects.create(
+            user=user,
+            code=PasswordResetCode.generate_code()
+        )
+
+        message = f"""
 Bonjour {user.email},
 
 Vous avez demandé une réinitialisation de mot de passe.
@@ -85,28 +88,27 @@ Ce code est valable 5 minutes.
 ⚠️ Ne partagez jamais ce code.
 """
 
-            try:
-                send_mail(
-                    subject="Réinitialisation de mot de passe - Lantante Technologie",
-                    message=message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-            except Exception:
-                logger.exception("Échec d'envoi de l'email de réinitialisation")
-                messages.error(
-                    request,
-                    "Le service d'envoi d'email est momentanément indisponible. "
-                    "Réessayez plus tard ou contactez le support."
-                )
-                return redirect("users:password_reset")
+        try:
+            send_mail(
+                subject="Réinitialisation de mot de passe - Lantante Technologie",
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            logger.exception("Échec d'envoi de l'email de réinitialisation")
+            messages.error(
+                request,
+                "Le service d'envoi d'email est momentanément indisponible. "
+                "Réessayez plus tard ou contactez le support."
+            )
+            return redirect("users:password_reset")
 
-            # IMPORTANT : stocker session
-            request.session["reset_user_id"] = user.id
-            request.session["reset_attempts"] = 0
+        # IMPORTANT : stocker session
+        request.session["reset_user_id"] = user.id
+        request.session["reset_attempts"] = 0
 
-        messages.success(request, "Un email contenant un code vous a été envoyé.")
         return redirect("users:password_reset_email_sent")
 
     return render(request, "users/password_reset.html")
