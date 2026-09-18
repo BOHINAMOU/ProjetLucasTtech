@@ -1,27 +1,28 @@
 /* ═══════════════════════════════════════════
-   LUCASTECH ADMIN — Custom CSS
-   Compatible Jazzmin + Django Admin
+   LANTANTE TECHNOLOGIE ADMIN — Custom CSS
+   Thème clair aux couleurs de la marque.
+   Compatible Jazzmin 3.x (AdminLTE4 + Bootstrap 5)
 ═══════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:wght@700;900&display=swap');
 
 :root {
-  --bg:        #0d1117;
-  --bg2:       #161b22;
-  --bg3:       #1c2333;
-  --border:    rgba(255,255,255,.08);
-  --accent:    #c9440a;
-  --accent2:   #e8c84a;
-  --blue:      #58a6ff;
-  --green:     #3fb950;
-  --purple:    #bc8cff;
-  --red:       #f85149;
-  --text:      #e6edf3;
-  --muted:     #8b949e;
+  --bg:        #f7f3ee;
+  --bg2:       #ffffff;
+  --bg3:       #f2ede6;
+  --border:    rgba(20,15,10,.09);
+  --accent:    #b8420a;
+  --accent2:   #c9a84c;
+  --blue:      #2563eb;
+  --green:     #1f8a4c;
+  --purple:    #7c3aed;
+  --red:       #d33;
+  --text:      #1c1814;
+  --muted:     #8a8078;
   --font:      'Plus Jakarta Sans', sans-serif;
   --serif:     'Fraunces', serif;
   --r:         10px;
-  --shadow:    0 4px 24px rgba(0,0,0,.4);
+  --shadow:    0 4px 24px rgba(30,20,10,.06);
 }
 
 /* ── Base ── */
@@ -39,9 +40,9 @@ body,
 /* ── Brand / Logo ── */
 .brand-link,
 .main-header .navbar-brand,
-.navbar-dark {
-  background: linear-gradient(135deg, #1a0a05, #2d1206) !important;
-  border-bottom: 1px solid rgba(201,68,10,.3) !important;
+.navbar-light {
+  background: #fff !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
 .brand-text {
@@ -58,7 +59,7 @@ body,
 .main-header.navbar {
   background: var(--bg2) !important;
   border-bottom: 1px solid var(--border) !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,.3) !important;
+  box-shadow: 0 2px 12px rgba(30,20,10,.04) !important;
 }
 
 .main-header .nav-link,
@@ -66,7 +67,7 @@ body,
   color: var(--muted) !important;
   transition: color .2s !important;
 }
-.main-header .nav-link:hover { color: var(--text) !important; }
+.main-header .nav-link:hover { color: var(--accent) !important; }
 
 /* ── Sidebar ── */
 .main-sidebar,
@@ -77,7 +78,7 @@ body,
 
 /* Menu items */
 .nav-sidebar .nav-item .nav-link {
-  color: var(--muted) !important;
+  color: #4a4238 !important;
   border-radius: var(--r) !important;
   margin: 2px 8px !important;
   padding: 9px 14px !important;
@@ -86,14 +87,18 @@ body,
   font-weight: 500 !important;
 }
 .nav-sidebar .nav-item .nav-link:hover {
-  background: rgba(201,68,10,.12) !important;
+  background: rgba(184,66,10,.08) !important;
   color: var(--accent) !important;
 }
 .nav-sidebar .nav-item .nav-link.active,
 .nav-sidebar .nav-item.active > .nav-link {
-  background: rgba(201,68,10,.18) !important;
+  background: rgba(184,66,10,.12) !important;
   color: var(--accent) !important;
   font-weight: 700 !important;
+}
+.nav-sidebar .nav-item .nav-link.active i,
+.nav-sidebar .nav-item .nav-link i {
+  color: inherit !important;
 }
 
 /* Sidebar section headers */
@@ -162,8 +167,8 @@ body,
   transition: all .2s !important;
 }
 .app-list .model:hover {
-  border-color: rgba(201,68,10,.35) !important;
-  background: rgba(201,68,10,.06) !important;
+  border-color: rgba(184,66,10,.3) !important;
+  background: rgba(184,66,10,.05) !important;
   transform: translateX(4px) !important;
 }
 .app-list .model a {
@@ -198,7 +203,7 @@ thead th,
 table thead th,
 #changelist table thead th {
   background: var(--bg3) !important;
-  color: var(--muted) !important;
+  color: #5b5142 !important;
   font-size: .72rem !important;
   font-weight: 700 !important;
   letter-spacing: .1em !important;
@@ -206,13 +211,14 @@ table thead th,
   border-bottom: 1px solid var(--border) !important;
   padding: 12px 16px !important;
 }
+thead th a { color: #5b5142 !important; }
 
 tbody tr {
   border-bottom: 1px solid var(--border) !important;
   transition: background .15s !important;
 }
 tbody tr:hover {
-  background: rgba(201,68,10,.05) !important;
+  background: rgba(184,66,10,.04) !important;
 }
 tbody td {
   color: var(--text) !important;
@@ -221,6 +227,11 @@ tbody td {
   border: none !important;
   vertical-align: middle !important;
 }
+tbody td a {
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+tbody td a:hover { text-decoration: underline !important; }
 
 /* Checkbox */
 input[type=checkbox] {
@@ -238,7 +249,7 @@ input[type=number],
 input[type=url],
 select,
 textarea {
-  background: var(--bg3) !important;
+  background: #fff !important;
   border: 1.5px solid var(--border) !important;
   border-radius: 8px !important;
   color: var(--text) !important;
@@ -252,9 +263,9 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(201,68,10,.15) !important;
+  box-shadow: 0 0 0 3px rgba(184,66,10,.12) !important;
   outline: none !important;
-  background: var(--bg3) !important;
+  background: #fff !important;
   color: var(--text) !important;
 }
 
@@ -289,13 +300,13 @@ input[type=submit],
   padding: 10px 20px !important;
   cursor: pointer !important;
   transition: background .2s, transform .15s, box-shadow .2s !important;
-  box-shadow: 0 3px 12px rgba(201,68,10,.3) !important;
+  box-shadow: 0 3px 12px rgba(184,66,10,.25) !important;
 }
 .btn-primary:hover,
 input[type=submit]:hover {
-  background: #b53c09 !important;
+  background: #9c3708 !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 6px 18px rgba(201,68,10,.4) !important;
+  box-shadow: 0 6px 18px rgba(184,66,10,.35) !important;
 }
 
 .btn-secondary,
@@ -311,10 +322,25 @@ input[type=submit]:hover {
 }
 .btn-secondary:hover { border-color: var(--accent) !important; }
 
+.btn-success {
+  background: rgba(31,138,76,.1) !important;
+  border: 1px solid rgba(31,138,76,.3) !important;
+  border-radius: 8px !important;
+  color: var(--green) !important;
+  font-size: .8rem !important;
+  font-weight: 700 !important;
+  padding: 6px 14px !important;
+  transition: all .2s !important;
+}
+.btn-success:hover {
+  background: var(--green) !important;
+  color: #fff !important;
+}
+
 .btn-danger,
 .deletelink {
-  background: rgba(248,81,73,.15) !important;
-  border: 1px solid rgba(248,81,73,.3) !important;
+  background: rgba(211,51,51,.08) !important;
+  border: 1px solid rgba(211,51,51,.25) !important;
   border-radius: 8px !important;
   color: var(--red) !important;
   font-size: .85rem !important;
@@ -323,26 +349,40 @@ input[type=submit]:hover {
 }
 .btn-danger:hover,
 .deletelink:hover {
-  background: rgba(248,81,73,.25) !important;
+  background: rgba(211,51,51,.15) !important;
+}
+
+/* Boutons génériques utilisés dans les colonnes de listing (ex: export Excel) */
+.btn-sm.btn-pill,
+a.btn-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border-radius: 99px !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  padding: 5px 14px !important;
+  text-decoration: none !important;
+  transition: all .2s !important;
 }
 
 /* ── Messages / Alerts ── */
 .alert-success, .messagelist .success {
-  background: rgba(63,185,80,.12) !important;
-  border: 1px solid rgba(63,185,80,.3) !important;
+  background: rgba(31,138,76,.08) !important;
+  border: 1px solid rgba(31,138,76,.25) !important;
   color: var(--green) !important;
   border-radius: 8px !important;
   font-size: .85rem !important;
 }
 .alert-warning, .messagelist .warning {
-  background: rgba(232,200,74,.1) !important;
-  border: 1px solid rgba(232,200,74,.3) !important;
-  color: var(--accent2) !important;
+  background: rgba(201,168,76,.15) !important;
+  border: 1px solid rgba(201,168,76,.35) !important;
+  color: #8a6d1f !important;
   border-radius: 8px !important;
 }
 .alert-danger, .messagelist .error {
-  background: rgba(248,81,73,.1) !important;
-  border: 1px solid rgba(248,81,73,.3) !important;
+  background: rgba(211,51,51,.08) !important;
+  border: 1px solid rgba(211,51,51,.25) !important;
   color: var(--red) !important;
   border-radius: 8px !important;
 }
@@ -366,21 +406,21 @@ input[type=submit]:hover {
   border-color: var(--accent) !important;
 }
 
-/* ── Links ── */
-a { color: var(--blue) !important; text-decoration: none !important; }
-a:hover { color: var(--accent) !important; }
+/* ── Links (génériques, hors tableaux déjà stylés ci-dessus) ── */
+a { color: var(--accent); }
+a:hover { color: #9c3708; }
 
 /* ── Badges ── */
 .badge {
   font-size: .7rem !important;
   font-weight: 700 !important;
   border-radius: 99px !important;
-  padding: 3px 10px !important;
+  padding: 4px 11px !important;
 }
-.badge-success, .badge-green { background: rgba(63,185,80,.15) !important; color: var(--green) !important; }
-.badge-warning { background: rgba(232,200,74,.15) !important; color: var(--accent2) !important; }
-.badge-danger  { background: rgba(248,81,73,.15) !important;  color: var(--red) !important; }
-.badge-primary { background: rgba(201,68,10,.15) !important;  color: var(--accent) !important; }
+.badge-success, .badge-green { background: rgba(31,138,76,.12) !important; color: var(--green) !important; }
+.badge-warning { background: rgba(201,168,76,.18) !important; color: #8a6d1f !important; }
+.badge-danger  { background: rgba(211,51,51,.1) !important;  color: var(--red) !important; }
+.badge-primary { background: rgba(184,66,10,.1) !important;  color: var(--accent) !important; }
 
 /* ── Filtres sidebar admin ── */
 #changelist-filter {
@@ -397,7 +437,7 @@ a:hover { color: var(--accent) !important; }
   text-transform: uppercase !important;
   padding: 10px 14px !important;
 }
-#changelist-filter li a { color: var(--muted) !important; font-size: .82rem !important; }
+#changelist-filter li a { color: #4a4238 !important; font-size: .82rem !important; }
 #changelist-filter li.selected a { color: var(--accent) !important; font-weight: 700 !important; }
 
 /* ── Search ── */
@@ -406,7 +446,7 @@ a:hover { color: var(--accent) !important; }
   background: transparent !important;
 }
 #searchbar {
-  background: var(--bg2) !important;
+  background: #fff !important;
   border: 1.5px solid var(--border) !important;
   border-radius: 8px !important;
   color: var(--text) !important;
@@ -415,7 +455,7 @@ a:hover { color: var(--accent) !important; }
 }
 #searchbar:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(201,68,10,.15) !important;
+  box-shadow: 0 0 0 3px rgba(184,66,10,.12) !important;
 }
 
 /* ── Footer ── */
@@ -429,7 +469,7 @@ a:hover { color: var(--accent) !important; }
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #ddd3c5; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* ── Animations ── */

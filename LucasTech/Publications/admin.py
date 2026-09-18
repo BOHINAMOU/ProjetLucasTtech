@@ -153,7 +153,10 @@ class PublicationAdmin(admin.ModelAdmin):
         if not count:
             return "Aucune inscription"
         url = reverse('admin:publications_publication_export_registrations', args=[obj.pk])
-        return format_html('<a href="{}">📊 Excel ({} inscrit{})</a>', url, count, "s" if count > 1 else "")
+        return format_html(
+            '<a href="{}" class="btn-success"><i class="fas fa-file-excel"></i> Excel ({} inscrit{})</a>',
+            url, count, "s" if count > 1 else "",
+        )
     registrations_link.short_description = "Inscriptions"
 
     def get_urls(self):

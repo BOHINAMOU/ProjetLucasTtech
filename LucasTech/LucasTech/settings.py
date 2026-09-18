@@ -287,6 +287,8 @@ JAZZMIN_SETTINGS = {
         {"name": "Services", "url": "/services/", "new_window": True},
         {"name": "Publications", "url": "/publications/", "new_window": True},
     ],
+
+    "custom_css": "css/admin.css",
 }
 
 JAZZMIN_UI_TWEAKS = {
