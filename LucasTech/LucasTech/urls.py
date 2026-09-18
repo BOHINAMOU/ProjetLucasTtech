@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
+from django.http import HttpResponse
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve as serve_static
@@ -8,6 +9,10 @@ from django.views.static import serve as serve_static
 from .sitemaps import sitemaps
 
 urlpatterns = [
+    path(
+        'googlef89010971d315902.html',
+        lambda request: HttpResponse("google-site-verification: googlef89010971d315902.html", content_type="text/html"),
+    ),
     path('users/',        include('Users.urls', namespace='users')),
     path('lantanteAdminTech/', admin.site.urls),
     path('shop/',         include('Shop.urls')),
