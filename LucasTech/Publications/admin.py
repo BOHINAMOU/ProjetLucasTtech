@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, reverse
@@ -46,7 +48,12 @@ def _build_registrations_workbook(queryset, sheet_title="Inscriptions"):
 
     wb = Workbook()
     ws = wb.active
-    ws.title = sheet_title[:31]  # limite Excel
+    # Excel interdit certains caractères dans le nom d'un onglet (: \ / ? * [ ])
+    # et limite sa longueur à 31 caractères — un titre de publication contenant
+    # l'un de ces caractères (ex: "Formation complète : ...") ferait planter
+    # l'export sans ce nettoyage.
+    safe_sheet_title = re.sub(r'[:\\/?*\[\]]', '-', sheet_title)[:31] or "Inscriptions"
+    ws.title = safe_sheet_title
 
     ws.append(EXPORT_HEADERS)
     header_fill = PatternFill(start_color="0D3B7A", end_color="0D3B7A", fill_type="solid")
