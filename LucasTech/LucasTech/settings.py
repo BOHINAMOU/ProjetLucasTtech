@@ -270,6 +270,10 @@ JAZZMIN_SETTINGS = {
     "site_title": "Lantante Technologie Admin",
     "site_header": "Lantante Technologie",
     "site_brand": "Lantante Technologie",
+    "site_logo": "images/logo.png",
+    "login_logo": "images/logo.png",
+    "site_icon": "images/logo.png",
+    "site_logo_classes": "img-circle",
     "navigation_expanded": True,
 
     "usermenu_links": [
