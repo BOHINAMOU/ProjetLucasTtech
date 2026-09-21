@@ -81,6 +81,13 @@ class Product(models.Model):
     stock        = models.PositiveIntegerField(default=0, verbose_name="Stock")
     is_available = models.BooleanField(default=True, verbose_name="Disponible")
     is_featured  = models.BooleanField(default=False, verbose_name="Mis en avant")
+    contact_whatsapp = models.CharField(
+        max_length=30, blank=True, verbose_name="Numéro WhatsApp de contact (spécifique)",
+        help_text="Optionnel — utilisé à la place du numéro WhatsApp par défaut du site pour "
+                   "le bouton \"Commander via WhatsApp\" de ce produit. Utile quand le produit "
+                   "est revendu pour le compte d'un tiers (ex : un autre commerçant, un revendeur) "
+                   "et que les commandes doivent lui arriver directement. Format : 22890000000."
+    )
     created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     updated_at   = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
 
