@@ -28,6 +28,30 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{% static 'core/css/style.css' %}{% if cache_bust %}?v={{ cache_bust }}{% endif %}">
 
+  <!-- Données structurées (aide Google à comprendre le nom officiel du site,
+       utile pour bien ressortir en premier sur une recherche du nom de marque) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Lantante Technologie",
+    "alternateName": "LucasTech",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/",
+    "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}"{% if site_settings.youtube_url %},
+    "sameAs": ["{{ site_settings.youtube_url }}"]{% endif %}{% if site_settings.email %},
+    "email": "{{ site_settings.email }}"{% endif %}{% if site_settings.whatsapp_1 %},
+    "telephone": "+{{ site_settings.whatsapp_1 }}"{% endif %}
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Lantante Technologie",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/"
+  }
+  </script>
+
   {% block extra_head %}{% endblock %}
 </head>
 
