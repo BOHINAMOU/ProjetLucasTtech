@@ -263,7 +263,10 @@ header { position: sticky; top: 0; z-index: 400; }
 @media (max-width: 1150px) {
   .navbar__links { display: none; }
   .nav-auth      { display: none; }
-  .navbar__burger { display: flex; }
+  /* Le bouton menu perdait son alignement à droite : il ne se plaçait là
+     que grâce au margin-left:auto porté par .navbar__links, qui n'a plus
+     aucun effet une fois cet élément caché (display:none). */
+  .navbar__burger { display: flex; margin-left: auto; }
 }
 
 /* ══ HERO ══ */
