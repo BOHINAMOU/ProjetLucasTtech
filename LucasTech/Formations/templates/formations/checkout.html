@@ -113,9 +113,11 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 .co-row.total {
   padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07);
   margin-top: 8px; font-size: 1rem; font-weight: 600; color: var(--white);
+  flex-wrap: wrap; gap: 6px 10px;
 }
 .co-total-amount {
-  font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 800;
+  font-family: 'Cormorant Garamond', serif; font-size: clamp(1.15rem, 6vw, 1.6rem); font-weight: 800;
+  max-width: 100%; overflow-wrap: break-word;
 }
 .co-total-amount sub { font-family:'Outfit',sans-serif; font-size:.75rem; font-weight:400; color:var(--muted); vertical-align:baseline; }
 
@@ -212,7 +214,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
         <div class="co-item-title">{{ item.formation.title }}</div>
         <div class="co-item-sub">Qté : {{ item.quantity }}</div>
       </div>
-      <div class="co-item-price">{{ item.total_price }}<sub>FCFA</sub></div>
+      <div class="co-item-price">{{ item.total_price }} <sub>FCFA</sub></div>
     </div>
     {% endfor %}
   </div>
@@ -232,7 +234,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
       </div>
       <div class="co-row total">
         <span>Total à payer</span>
-        <div class="co-total-amount">{{ total }}<sub>FCFA</sub></div>
+        <div class="co-total-amount">{{ total }} <sub>FCFA</sub></div>
       </div>
 
       <!-- Garanties -->
@@ -255,7 +257,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
       <form method="post" action="{% url 'formations:checkout' %}">
         {% csrf_token %}
         <button type="submit" class="btn-confirm">
-          ✓ &nbsp;Valider la commande/veillez nous contacter via WhatsApp pour finaliser votre commande
+          ✓ &nbsp;Valider la commande
         </button>
       </form>
 

@@ -89,12 +89,14 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 }
 .ct-summary-total {
   display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 6px 10px;
   padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07);
   margin-top: 4px;
 }
 .ct-summary-total span:first-child { font-size: 1rem; font-weight: 500; color: var(--white); }
 .ct-total-price {
-  font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 800;
+  font-family: 'Cormorant Garamond', serif; font-size: clamp(1.3rem, 6vw, 1.8rem); font-weight: 800;
+  max-width: 100%; overflow-wrap: break-word;
 }
 .ct-total-price sub { font-family: 'Outfit', sans-serif; font-size: .8rem; font-weight: 400; color: var(--muted); vertical-align: baseline; }
 
@@ -183,7 +185,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
         </div>
 
         <div class="ct-item-right">
-          <div class="ct-item-price">{{ item.total_price }}<sub>FCFA</sub></div>
+          <div class="ct-item-price">{{ item.total_price }} <sub>FCFA</sub></div>
           <a href="{% url 'formations:cart_remove' item.id %}" class="btn-remove">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             Retirer
@@ -204,7 +206,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
       </div>
       <div class="ct-summary-total">
         <span>Total</span>
-        <div class="ct-total-price">{{ total }}<sub>FCFA</sub></div>
+        <div class="ct-total-price">{{ total }} <sub>FCFA</sub></div>
       </div>
       <a href="{% url 'formations:checkout' %}" class="btn-checkout">
         ✓ &nbsp;Passer la commande

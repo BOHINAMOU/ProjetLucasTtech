@@ -526,7 +526,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         {% if product.is_on_sale %}
           <div class="pd-price-old">{{ product.old_price }} FCFA</div>
         {% endif %}
-        <div class="pd-price">{{ product.price }}<small>FCFA</small>{% if product.is_on_sale %}<span class="pd-price-save">-{{ product.discount_percent }}%</span>{% endif %}</div>
+        <div class="pd-price">{{ product.price }} <small>FCFA</small>{% if product.is_on_sale %}<span class="pd-price-save">-{{ product.discount_percent }}%</span>{% endif %}</div>
         <p class="pd-price-note">Prix TTC · Livraison calculée à la commande</p>
       </div>
 

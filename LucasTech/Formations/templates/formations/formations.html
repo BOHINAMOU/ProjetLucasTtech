@@ -431,7 +431,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <div class="fl-footer">
           <div class="fl-price-wrap">
             {% if f.is_on_sale %}<span class="fl-price-old">{{ f.old_price }} FCFA</span>{% endif %}
-            <div class="fl-price">{{ f.price }}<small>FCFA</small></div>
+            <div class="fl-price">{{ f.price }} <small>FCFA</small></div>
           </div>
           <span class="fl-btn">
             Voir la formation <i class="fa fa-arrow-right"></i>

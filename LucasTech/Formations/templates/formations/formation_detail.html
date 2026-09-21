@@ -299,7 +299,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% endif %}
       {% if formation.is_on_sale %}<div class="fd-price-old">{{ formation.old_price }} FCFA</div>{% endif %}
       <div class="fd-price">
-        {{ formation.price }}<sub>FCFA</sub>
+        {{ formation.price }} <sub>FCFA</sub>
         {% if formation.is_on_sale %}<span class="fd-price-save">-{{ formation.discount_percent }}%</span>{% endif %}
       </div>
       <p class="fd-price-note">
