@@ -31,7 +31,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .co-wrap {
   max-width: 1000px; margin: 48px auto 96px;
   padding: 0 clamp(1.5rem,6vw,5rem);
-  display: grid; grid-template-columns: 1fr 340px;
+  display: grid; grid-template-columns: minmax(0,1fr) 340px;
   gap: 40px; align-items: start;
 }
 
@@ -206,7 +206,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 
 @media (max-width: 760px) {
-  .co-wrap { grid-template-columns: 1fr; }
+  .co-wrap { grid-template-columns: minmax(0,1fr); }
   .co-summary { position: static; }
   .co-wrap { padding: 0 18px; }
 }

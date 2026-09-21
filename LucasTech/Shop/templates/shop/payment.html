@@ -44,7 +44,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
 
 /* ── Layout 2 colonnes ── */
 .py-grid{
-  display:grid;grid-template-columns:1fr 320px;
+  display:grid;grid-template-columns:minmax(0,1fr) 320px;
   gap:28px;align-items:start;
 }
 
@@ -62,7 +62,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
 .py-recap-title i{color:var(--accent);}
 
 .py-order-info{
-  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;
   margin-bottom:20px;padding-bottom:20px;
   border-bottom:1px solid var(--border);
 }
@@ -213,9 +213,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
 @media(max-width:680px){
-  .py-grid{grid-template-columns:1fr;}
+  .py-grid{grid-template-columns:minmax(0,1fr);}
   .py-card{position:static;}
-  .py-order-info{grid-template-columns:1fr;}
+  .py-order-info{grid-template-columns:minmax(0,1fr);}
 }
 </style>
 

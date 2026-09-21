@@ -18,7 +18,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
 .co-wrap {
   max-width: 860px; margin: 48px auto 80px; padding: 0 24px;
-  display: grid; grid-template-columns: 1fr 340px; gap: 36px; align-items: start;
+  display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 36px; align-items: start;
 }
 
 /* ── HEADER ── */
@@ -166,7 +166,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
 @media (max-width: 760px) {
-  .co-wrap { grid-template-columns: 1fr; }
+  .co-wrap { grid-template-columns: minmax(0,1fr); }
   .co-summary { position: static; }
 }
 </style>

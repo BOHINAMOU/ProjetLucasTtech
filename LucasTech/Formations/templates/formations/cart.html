@@ -37,7 +37,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
 .ct-item {
   display: grid;
-  grid-template-columns: 90px 1fr auto;
+  grid-template-columns: 90px minmax(0,1fr) auto;
   gap: 20px; align-items: center;
   background: var(--navy2);
   border: 1px solid rgba(37,99,235,.15);
@@ -148,7 +148,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 @media (max-width: 600px) {
-  .ct-item { grid-template-columns: 70px 1fr; }
+  .ct-item { grid-template-columns: 70px minmax(0,1fr); }
   .ct-item-right { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; }
 }
 </style>
