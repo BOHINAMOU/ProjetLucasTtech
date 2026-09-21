@@ -512,7 +512,7 @@ header { position: sticky; top: 0; z-index: 400; }
   position: relative; z-index: 2; color: #fff;
   padding: 0 clamp(4.5rem, 9vw, 7.5rem) clamp(3.5rem, 8vw, 6rem);
   max-width: 720px;
-  box-sizing: content-box;
+  box-sizing: border-box;
 }
 .hs-tag {
   font-size: .78rem; font-weight: 700; letter-spacing: .14em;
