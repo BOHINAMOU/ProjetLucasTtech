@@ -88,7 +88,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .fl-search input::placeholder { color: rgba(245,242,238,.4); }
 .fl-search-btn {
-  flex-shrink: 0; white-space: nowrap;
   padding: 10px 22px; margin: 5px;
   background: var(--accent); color: #fff; border: none; border-radius: 9px;
   font-family: var(--font); font-size: .85rem; font-weight: 700; cursor: pointer;
@@ -266,15 +265,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   flex-shrink: 0;
   position: relative; z-index: 2;
 }
-.fl-cats-viewport {
-  position: relative; flex: 1; min-width: 0;
-  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
-}
-.fl-cats-viewport::-webkit-scrollbar { display: none; }
+.fl-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
 .fl-cats-track {
   display: flex; gap: 8px; padding: 16px 4px; width: max-content;
 }
-.fl-cats-track a[aria-hidden="true"] { display: none; }
+.fl-cats-track.fl-cats-scroll {
+  animation: fl-cats-loop 26s linear infinite;
+}
+.fl-cats-viewport:hover .fl-cats-track,
+.fl-cats-track:focus-within { animation-play-state: paused; }
+@keyframes fl-cats-loop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fl-cats-track { animation: none; }
+}
 .fl-cats-fade {
   position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1;
   pointer-events: none;

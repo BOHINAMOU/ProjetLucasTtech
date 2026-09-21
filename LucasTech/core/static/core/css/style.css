@@ -128,8 +128,8 @@ header { position: sticky; top: 0; z-index: 400; }
   gap: .2rem; list-style: none; margin-left: auto;
 }
 .navbar__links a {
-  padding: .6rem .8rem; font-size: 1rem; font-weight: 700;
-  color: var(--ink2); text-decoration: none;
+  padding: .6rem .8rem; font-size: .98rem; font-weight: 600;
+  color: var(--muted); text-decoration: none;
   position: relative; transition: color .2s;
   white-space: nowrap;
 }
@@ -225,7 +225,7 @@ header { position: sticky; top: 0; z-index: 400; }
 .navbar__drawer ul { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
 .navbar__drawer ul a {
   display: block; padding: .9rem 1rem;
-  font-size: 1.1rem; font-weight: 700; color: var(--ink2);
+  font-size: 1.1rem; font-weight: 500; color: var(--muted);
   text-decoration: none; transition: color .2s;
   border-bottom: 1px solid transparent;
 }
@@ -459,20 +459,17 @@ header { position: sticky; top: 0; z-index: 400; }
 }
 
 /* ══ BARRE D'ACTUALITÉS (liens datés) ══ */
-/* Barre figée : plus d'auto-défilement, juste un défilement manuel si le
-   contenu dépasse la largeur de l'écran (la page ne doit pas bouger seule). */
 .news-ticker {
-  background: var(--ink);
+  background: var(--ink); overflow: hidden;
   padding: 13px 0;
   border-bottom: 1px solid rgba(255,255,255,.06);
-  overflow-x: auto; overflow-y: hidden;
-  scrollbar-width: none;
 }
-.news-ticker::-webkit-scrollbar { display: none; }
 .news-ticker__track {
   display: flex; gap: 0; width: max-content;
+  animation: tickerScroll 55s linear infinite;
 }
-.news-ticker__track a[aria-hidden="true"] { display: none; }
+.news-ticker__track:hover { animation-play-state: paused; }
+@keyframes tickerScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .news-chip {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 6px 40px 6px 0; margin-right: 40px;

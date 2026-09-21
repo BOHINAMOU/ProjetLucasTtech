@@ -111,7 +111,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .sh-search input::placeholder { color: rgba(245,242,238,.35); }
 .sh-search-btn {
-  flex-shrink: 0;
   padding: 11px 24px; margin: 5px;
   background: var(--accent); color: #fff;
   border: none; border-radius: 10px;
@@ -141,15 +140,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   display: flex; align-items: center; gap: 0;
 }
 .sh-cat-pinned { flex-shrink: 0; position: relative; z-index: 2; }
-.sh-cats-viewport {
-  position: relative; flex: 1; min-width: 0;
-  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
-}
-.sh-cats-viewport::-webkit-scrollbar { display: none; }
+.sh-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
 .sh-cats-track {
   display: flex; gap: 4px; width: max-content; padding: 14px 0;
 }
-.sh-cats-track a[aria-hidden="true"] { display: none; }
+.sh-cats-track.sh-cats-scroll-anim {
+  animation: sh-cats-loop 30s linear infinite;
+}
+.sh-cats-viewport:hover .sh-cats-track,
+.sh-cats-track:focus-within { animation-play-state: paused; }
+@keyframes sh-cats-loop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-cats-track { animation: none; }
+}
 .sh-cats-fade {
   position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1;
   pointer-events: none;
