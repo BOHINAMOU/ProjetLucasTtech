@@ -118,11 +118,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
 }
 .ct-row span:last-child{font-weight:600;color:var(--text);}
 .ct-divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
-.ct-total{display:flex;justify-content:space-between;align-items:flex-end;}
+.ct-total{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:6px 10px;}
 .ct-total span:first-child{font-size:.88rem;font-weight:600;}
 .ct-total-price{
-  font-family:var(--head);font-size:2rem;font-weight:800;
-  letter-spacing:-.03em;line-height:1;
+  font-family:var(--head);font-size:clamp(1.4rem, 6vw, 2rem);font-weight:800;
+  letter-spacing:-.03em;line-height:1;max-width:100%;overflow-wrap:break-word;
 }
 .ct-total-price small{font-family:var(--font);font-size:.72rem;font-weight:400;color:var(--muted);}
 

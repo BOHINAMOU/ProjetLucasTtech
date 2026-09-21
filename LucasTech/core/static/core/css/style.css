@@ -128,8 +128,8 @@ header { position: sticky; top: 0; z-index: 400; }
   gap: .2rem; list-style: none; margin-left: auto;
 }
 .navbar__links a {
-  padding: .6rem .8rem; font-size: .98rem; font-weight: 600;
-  color: var(--muted); text-decoration: none;
+  padding: .6rem .8rem; font-size: 1rem; font-weight: 700;
+  color: var(--ink2); text-decoration: none;
   position: relative; transition: color .2s;
   white-space: nowrap;
 }
@@ -225,7 +225,7 @@ header { position: sticky; top: 0; z-index: 400; }
 .navbar__drawer ul { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
 .navbar__drawer ul a {
   display: block; padding: .9rem 1rem;
-  font-size: 1.1rem; font-weight: 500; color: var(--muted);
+  font-size: 1.1rem; font-weight: 700; color: var(--ink2);
   text-decoration: none; transition: color .2s;
   border-bottom: 1px solid transparent;
 }
