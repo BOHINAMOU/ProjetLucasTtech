@@ -35,7 +35,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .rg-msg { padding: 11px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
 .rg-msg.error { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: var(--rose); }
 
-.rg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.rg-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; margin-bottom: 16px; }
 .rg-field { margin-bottom: 16px; }
 .rg-label { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: var(--ink2); margin-bottom: 7px; }
 .rg-input, .rg-select, .rg-textarea {
@@ -48,7 +48,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .rg-textarea { resize: vertical; min-height: 90px; }
 
-.rg-whatsapp-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+.rg-whatsapp-row { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 10px; }
 
 .rg-submit {
   width: 100%; padding: 15px; margin-top: 8px;

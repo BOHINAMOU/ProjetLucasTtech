@@ -42,7 +42,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .rg-msg { padding: 11px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
 .rg-msg.error { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: var(--rose); }
 
-.rg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.rg-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; margin-bottom: 16px; }
 .rg-field { margin-bottom: 16px; }
 .rg-label { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: var(--ink2); margin-bottom: 7px; }
 .rg-input, .rg-select, .rg-textarea {
@@ -133,7 +133,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
       <div class="rg-field">
         <label class="rg-label">Numéro WhatsApp</label>
-        <div class="rg-row" style="grid-template-columns: 140px 1fr; margin-bottom: 0;">
+        <div class="rg-row" style="grid-template-columns: 140px minmax(0,1fr); margin-bottom: 0;">
           <select class="rg-select" name="phone_code">
             {% for code, label in dial_codes %}
             <option value="{{ code }}" {% if form_data.phone_code == code or not form_data.phone_code and code == '+228' %}selected{% endif %}>{{ label }}</option>

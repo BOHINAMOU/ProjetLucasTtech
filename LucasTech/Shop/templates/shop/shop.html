@@ -267,7 +267,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 ═══════════════════════════════════ */
 .sh-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, minmax(0,1fr)));
   gap: 24px;
 }
 
@@ -456,14 +456,14 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ─── Responsive ─── */
 @media (max-width: 640px) {
-  .sh-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sh-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
   .sh-hero { padding: 24px 18px; min-height: unset; }
   .sh-section { padding: 0 18px 60px; }
   .sh-cats-label { display: none; }
   .sh-btn-voir { padding: 10px 16px; font-size: .8rem; }
 }
 @media (max-width: 420px) {
-  .sh-grid { grid-template-columns: 1fr; }
+  .sh-grid { grid-template-columns: minmax(0,1fr); }
 }
 </style>
 

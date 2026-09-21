@@ -62,8 +62,8 @@ h1.rv-title {
 p.rv-sub { font-size: .9rem; color: var(--muted); margin-bottom: 28px; }
 
 .rv-form { display: flex; flex-direction: column; gap: 16px; }
-.rv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 560px) { .rv-row { grid-template-columns: 1fr; } }
+.rv-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+@media (max-width: 560px) { .rv-row { grid-template-columns: minmax(0,1fr); } }
 
 .rv-field { display: flex; flex-direction: column; gap: 7px; }
 .rv-label {

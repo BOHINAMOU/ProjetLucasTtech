@@ -44,7 +44,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   max-width: 1180px; margin: 24px auto 0;
   padding: 0 clamp(1.2rem,5vw,3rem);
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0,1fr) 360px;
   gap: 48px;
   align-items: start;
 }
@@ -91,7 +91,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   margin-top: 8px; padding-top: 28px; border-top: 1px solid var(--border);
 }
 .fd-learn-title { font-family: var(--serif); font-size: 1.25rem; font-weight: 800; margin-bottom: 16px; }
-.fd-learn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 12px; }
+.fd-learn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,minmax(0,1fr))); gap: 12px; }
 .fd-learn-item {
   display: flex; align-items: flex-start; gap: 10px;
   font-size: .88rem; color: var(--ink2); line-height: 1.5;
@@ -181,7 +181,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 .fd-related { max-width: 1180px; margin: 0 auto 96px; padding: 0 clamp(1.2rem,5vw,3rem); }
 .fd-related-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; }
-.fd-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 18px; }
+.fd-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,minmax(0,1fr))); gap: 18px; }
 .fd-related-card {
   display: block; text-decoration: none; color: inherit;
   background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
@@ -196,7 +196,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 860px) {
-  .fd-wrapper { grid-template-columns: 1fr; gap: 28px; }
+  .fd-wrapper { grid-template-columns: minmax(0,1fr); gap: 28px; }
   .fd-card { position: static; }
 }
 

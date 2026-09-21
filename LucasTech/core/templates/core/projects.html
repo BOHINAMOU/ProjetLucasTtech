@@ -113,7 +113,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .pj-section-title::after { content: ''; flex: 1; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--green), transparent); }
 
-.pj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 28px; }
+.pj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, minmax(0,1fr))); gap: 28px; }
 .pj-card {
   background: var(--surf); border: 1px solid var(--border); border-radius: 16px;
   overflow: hidden; box-shadow: 0 4px 16px var(--shadow);
@@ -185,7 +185,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .pj-cta-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(15,122,69,.55); background-position: 100% 0; }
 
 @media (max-width: 640px) {
-  .pj-grid { grid-template-columns: 1fr; }
+  .pj-grid { grid-template-columns: minmax(0,1fr); }
   .pj-stats { gap: 36px; }
   .pj-cta { padding: 48px 24px; border-radius: 18px; }
 }

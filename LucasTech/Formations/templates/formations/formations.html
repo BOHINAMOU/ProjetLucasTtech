@@ -132,7 +132,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .fl-card {
   background: var(--surf); border: 1px solid var(--border);
   border-radius: var(--r); overflow: hidden;
-  display: grid; grid-template-columns: 300px 1fr;
+  display: grid; grid-template-columns: 300px minmax(0,1fr);
   transition: transform .3s cubic-bezier(.22,.68,0,1.2),
               box-shadow .3s, border-color .25s;
   animation: fadeUp .5s ease both;
@@ -225,7 +225,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .fl-card:hover .fl-btn i { transform: translateX(3px); }
 
 @media (max-width: 640px) {
-  .fl-card { grid-template-columns: 1fr; }
+  .fl-card { grid-template-columns: minmax(0,1fr); }
   .fl-img { height: 180px; }
 }
 

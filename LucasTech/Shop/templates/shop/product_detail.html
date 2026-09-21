@@ -46,7 +46,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   max-width: 1200px; margin: 32px auto 96px;
   padding: 0 clamp(1.5rem,6vw,5rem);
   display: grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: minmax(0,1fr) 420px;
   gap: 56px; align-items: start;
 }
 
@@ -275,7 +275,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 
 @media (max-width: 860px) {
-  .pd-wrapper { grid-template-columns: 1fr; gap: 32px; }
+  .pd-wrapper { grid-template-columns: minmax(0,1fr); gap: 32px; }
   .pd-buy-card { position: static; }
 }
 @media (max-width: 600px) {
@@ -291,7 +291,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   margin-bottom: 24px;
 }
 .pd-related-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, minmax(0,1fr)));
   gap: 22px;
 }
 .pd-related-card {

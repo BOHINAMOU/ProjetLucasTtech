@@ -252,7 +252,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ══ GRID MAGAZINE ══ */
 .pb-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, minmax(0,1fr)));
   gap: 24px;
 }
 
@@ -359,7 +359,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-family: var(--serif); font-size: 1.3rem; font-weight: 700;
   margin-bottom: 20px; letter-spacing: -.01em;
 }
-.pb-explore-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.pb-explore-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
 .pb-explore-tile {
   position: relative; height: 140px; border-radius: 14px; overflow: hidden;
   text-decoration: none; display: flex; align-items: flex-end; padding: 16px;
@@ -375,17 +375,17 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @media (max-width: 900px) {
-  .pb-explore-row { grid-template-columns: repeat(2, 1fr); }
+  .pb-explore-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 @media (max-width: 640px) {
-  .pb-grid { grid-template-columns: 1fr; gap: 16px; }
+  .pb-grid { grid-template-columns: minmax(0,1fr); gap: 16px; }
   .pb-hero { padding: 22px 18px; min-height: 190px; }
   .pb-section { padding: 0 18px 60px; }
   .pb-featured { height: 280px; }
   .pb-featured-content { padding: 20px; }
   .pb-cats-label { display: none; }
   .pb-explore { padding: 0 18px 72px; }
-  .pb-explore-row { grid-template-columns: 1fr 1fr; }
+  .pb-explore-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
 }
 </style>
 

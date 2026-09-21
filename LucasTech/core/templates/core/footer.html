@@ -184,7 +184,7 @@
 /* ── Top grid ── */
 .lt-footer__top {
     display: grid;
-    grid-template-columns: 1.15fr 1.6fr 1fr;
+    grid-template-columns: 1.15fr 1.6fr minmax(0,1fr);
     gap: 3rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -192,10 +192,10 @@
 }
 
 @media (max-width: 960px) {
-    .lt-footer__top { grid-template-columns: 1fr 1fr; }
+    .lt-footer__top { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
 }
 @media (max-width: 560px) {
-    .lt-footer__top { grid-template-columns: 1fr; gap: 2.5rem; }
+    .lt-footer__top { grid-template-columns: minmax(0,1fr); gap: 2.5rem; }
 }
 
 /* ── Suivez-nous (rangée pleine largeur) ── */
@@ -304,12 +304,12 @@
 .lt-footer__links {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, minmax(0,1fr)));
     column-gap: 1.4rem;
     row-gap: .9rem;
 }
 @media (max-width: 960px) {
-    .lt-footer__links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lt-footer__links { grid-template-columns: repeat(2, minmax(0, minmax(0,1fr))); }
 }
 .lt-footer__links a {
     font-size: 1.05rem; /* était .9rem */

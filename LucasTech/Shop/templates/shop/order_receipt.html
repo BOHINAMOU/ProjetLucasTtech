@@ -85,7 +85,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* Infos commande */
 .rc-meta {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
   gap: 16px; margin-bottom: 28px;
   padding-bottom: 24px; border-bottom: 1px solid var(--border);
 }
@@ -213,7 +213,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 
 @media (max-width: 520px) {
-  .rc-meta { grid-template-columns: 1fr; }
+  .rc-meta { grid-template-columns: minmax(0,1fr); }
   .rc-card-header { flex-direction: column; }
   .rc-card-body { padding: 20px; }
   .rc-actions { flex-direction: column; }

@@ -258,7 +258,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ══ GRID ══ */
 .sv-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, minmax(0,1fr)));
   gap: 24px;
 }
 
@@ -415,7 +415,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-weight: 800; color: #f5f2ee; letter-spacing: -.02em; line-height: 1.2;
 }
 .sv-process-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 20px;
 }
 .sv-step {
   background: rgba(245,242,238,.04); border: 1px solid rgba(245,242,238,.1);
@@ -445,7 +445,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-family: var(--serif); font-size: 1.3rem; font-weight: 700;
   margin-bottom: 20px; letter-spacing: -.01em;
 }
-.sv-explore-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.sv-explore-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
 .sv-explore-tile {
   position: relative; height: 140px; border-radius: 14px; overflow: hidden;
   text-decoration: none; display: flex; align-items: flex-end; padding: 16px;
@@ -468,18 +468,18 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 
 @media (max-width: 900px) {
-  .sv-process-grid { grid-template-columns: repeat(2, 1fr); }
-  .sv-explore-row { grid-template-columns: repeat(2, 1fr); }
+  .sv-process-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .sv-explore-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 @media (max-width: 640px) {
-  .sv-grid { grid-template-columns: 1fr; gap: 16px; }
+  .sv-grid { grid-template-columns: minmax(0,1fr); gap: 16px; }
   .sv-hero { padding: 22px 18px; min-height: 190px; }
   .sv-section { padding: 0 18px; }
   .sv-cats-label { display: none; }
   .sv-process { padding: 56px 18px; }
-  .sv-process-grid { grid-template-columns: 1fr; }
+  .sv-process-grid { grid-template-columns: minmax(0,1fr); }
   .sv-explore { padding: 0 18px 72px; }
-  .sv-explore-row { grid-template-columns: 1fr 1fr; }
+  .sv-explore-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
 }
 </style>
 
