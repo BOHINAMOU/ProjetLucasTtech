@@ -8,6 +8,21 @@ from .models import (
     Product, Category, ShopCart, ShopCartItem,
     ShopOrder, ShopOrderItem, Reservation, Review, Announcement, CollabBanner
 )
+from core.models import SiteSettings
+
+
+def _cart_whatsapp_number(cart_items):
+    """Numéro WhatsApp à utiliser pour contacter au sujet de ce panier.
+
+    Si tous les articles du panier partagent le même numéro de contact
+    spécifique (produit revendu pour le compte d'un tiers), on l'utilise ;
+    sinon (panier mixte ou aucun override), on retombe sur le numéro par
+    défaut du site.
+    """
+    overrides = {item.product.contact_whatsapp for item in cart_items if item.product.contact_whatsapp}
+    if len(overrides) == 1:
+        return overrides.pop()
+    return SiteSettings.load().whatsapp_1
 
 
 # ─────────────────────────────
@@ -159,11 +174,12 @@ def checkout(request):
 
         # Rediriger selon le moyen de paiement
         if payment_method == 'whatsapp':
+            wa_number = _cart_whatsapp_number(order.items.select_related('product').all())
             lines = [f"Commande #{order.receipt_number} — Lantante Technologie"]
             for oi in order.items.all():
                 lines.append(f"• {oi.product.name} ×{oi.quantity} = {oi.total_price()} FCFA")
             lines.append(f"\nTotal : {order.total_price} FCFA")
-            wa_url = f"https://wa.me/22890000000?text={urllib.parse.quote(chr(10).join(lines))}"
+            wa_url = f"https://wa.me/{wa_number}?text={urllib.parse.quote(chr(10).join(lines))}"
             # Marquer comme payé (WhatsApp = accord direct)
             order.status = 'paid'
             order.save()
@@ -173,8 +189,9 @@ def checkout(request):
         return redirect('shop:payment', pk=order.pk)
 
     return render(request, 'shop/checkout.html', {
-        'cart_items':  cart_items,
-        'total_price': cart_obj.total_price(),
+        'cart_items':      cart_items,
+        'total_price':     cart_obj.total_price(),
+        'whatsapp_number': _cart_whatsapp_number(cart_items),
     })
 
 
@@ -212,7 +229,10 @@ def payment(request, pk):
             transaction_id = request.POST.get('transaction_id', '').strip()
             if not transaction_id:
                 messages.error(request, 'Veuillez entrer votre numéro de transaction.')
-                return render(request, 'shop/payment.html', {'order': order})
+                return render(request, 'shop/payment.html', {
+                    'order': order,
+                    'whatsapp_number': _cart_whatsapp_number(order.items.select_related('product').all()),
+                })
 
             order.status = 'paid'
             order.save()
@@ -223,7 +243,10 @@ def payment(request, pk):
             messages.error(request, "Veuillez sélectionner une méthode de paiement valide.")
             return redirect('shop:payment', pk=order.pk)
 
-    return render(request, 'shop/payment.html', {'order': order})
+    return render(request, 'shop/payment.html', {
+        'order': order,
+        'whatsapp_number': _cart_whatsapp_number(order.items.select_related('product').all()),
+    })
 
 
 # ─────────────────────────────
