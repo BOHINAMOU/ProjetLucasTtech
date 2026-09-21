@@ -82,6 +82,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .pb-search input::placeholder { color: rgba(245,242,238,.35); }
 .pb-search-btn {
+  flex-shrink: 0;
   padding: 9px 20px; margin: 4px;
   background: var(--accent); color: #fff;
   border: none; border-radius: 10px;
@@ -159,22 +160,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* Piste défilante en boucle infinie : le contenu est dupliqué une fois
    et on translate en continu de 0 à -50% (la 2ᵉ copie prend le relais
    exactement où la 1ʳᵉ s'arrête, donc la boucle est invisible). */
-.pb-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
+.pb-cats-viewport {
+  position: relative; flex: 1; min-width: 0;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.pb-cats-viewport::-webkit-scrollbar { display: none; }
 .pb-cats-track {
   display: flex; gap: 8px; padding: 16px 4px; width: max-content;
 }
-.pb-cats-track.pb-cats-scroll {
-  animation: pb-cats-loop 26s linear infinite;
-}
-.pb-cats-viewport:hover .pb-cats-track,
-.pb-cats-track:focus-within { animation-play-state: paused; }
-@keyframes pb-cats-loop {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pb-cats-track { animation: none; }
-}
+.pb-cats-track a[aria-hidden="true"] { display: none; }
 /* Fondus gauche/droite indiquant que le bandeau défile en continu */
 .pb-cats-fade {
   position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1;
