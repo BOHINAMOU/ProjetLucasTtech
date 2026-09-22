@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Connexion — Lantante Technologie{% endblock %}
 
 {% block content %}
@@ -38,10 +39,13 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
 .auth-logo {
   display: flex; align-items: center; justify-content: center;
-  width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 24px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  font-size: 1.4rem; color: #03050c;
+  width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 24px;
+  background: #fff;
+  border: 1px solid rgba(184,66,10,.2);
+  box-shadow: 0 8px 24px rgba(184,66,10,.15);
+  overflow: hidden;
 }
+.auth-logo img { width: 100%; height: 100%; object-fit: contain; }
 
 .auth-title {
   font-family: 'Cormorant Garamond', serif;
@@ -146,7 +150,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 <div class="auth-page">
   <div class="auth-card">
 
-    <div class="auth-logo">⚡</div>
+    <div class="auth-logo"><img src="{% static 'images/logo.png' %}" alt="Lantante Technologie"></div>
     <h1 class="auth-title">Connexion</h1>
     <p class="auth-subtitle">Bon retour sur Lantante Technologie</p>
 
