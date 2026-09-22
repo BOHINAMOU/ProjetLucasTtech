@@ -54,7 +54,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   animation: fadeUp .5s ease both;
 }
 .pd-cover img, .pd-cover video {
+  position: relative; z-index: 1;
   width: 100%; height: 100%; object-fit: contain;
+}
+/* Fond flouté (agrandi) de la même image, pour combler les bandes vides
+   quand la photo (ex: portrait) ne remplit pas le cadre 16:9 — sans jamais
+   recadrer/couper l'image principale au premier plan. */
+.pd-cover-blur {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  filter: blur(35px) brightness(.6); transform: scale(1.15);
 }
 .pd-cover::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 6px;
@@ -365,6 +374,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% if publication.cover_video %}
       <video src="{{ publication.cover_video.url }}" controls poster="{% if publication.cover_image %}{{ publication.cover_image.url }}{% endif %}"></video>
     {% elif publication.cover_image %}
+      <div class="pd-cover-blur" style="background-image:url('{{ publication.cover_image.url }}')"></div>
       <img src="{{ publication.cover_image.url }}" alt="{{ publication.title }}">
     {% else %}
       <div class="pd-cover-placeholder">📰</div>
