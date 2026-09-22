@@ -265,7 +265,11 @@ header { position: sticky; top: 0; z-index: 400; }
   font-weight: 700 !important;
 }
 
-@media (max-width: 1150px) {
+/* Seuil relevé de 1150px à 1400px : avec 8 liens + le logo + le bouton
+   "Se connecter", le menu desktop n'a plus assez de place en dessous de
+   ~1300px et le bouton se retrouvait poussé hors de l'écran (invisible,
+   inaccessible) au lieu de passer au menu mobile à temps. */
+@media (max-width: 1400px) {
   .navbar__links { display: none; }
   .nav-auth      { display: none; }
   /* Le bouton menu perdait son alignement à droite : il ne se plaçait là
