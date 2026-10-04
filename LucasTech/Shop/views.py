@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
 import urllib.parse
 
 from .models import (
@@ -41,7 +41,17 @@ def shop(request):
     category_slug = request.GET.get('category')
     search_query  = request.GET.get('q', '').strip()
 
-    products = Product.objects.filter(is_available=True).select_related('category')
+    # Les livres (catégorie « livres ») passent toujours en fin de liste ;
+    # le reste garde l'ordre habituel (du plus récent au plus ancien).
+    products = (
+        Product.objects.filter(is_available=True)
+        .select_related('category')
+        .annotate(is_book=Case(
+            When(category__slug='livres', then=Value(1)),
+            default=Value(0), output_field=IntegerField(),
+        ))
+        .order_by('is_book', '-created_at')
+    )
 
     if category_slug:
         products = products.filter(category__slug=category_slug)
