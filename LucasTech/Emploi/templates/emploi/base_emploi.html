@@ -96,7 +96,7 @@
     <div class="em-subnav__in">
       <a href="{% url 'emploi:home' %}" class="{% if request.resolver_match.url_name == 'home' %}is-on{% endif %}">Emploi</a>
       <a href="{% url 'emploi:offer_list' %}" class="{% if 'offer' in request.resolver_match.url_name %}is-on{% endif %}">Offres</a>
-      <a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate_list' in request.resolver_match.url_name or request.resolver_match.url_name == 'candidate_detail' %}is-on{% endif %}">Candidats</a>
+      {% if user.is_staff or user.employer_profile.is_approved %}<a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate_list' in request.resolver_match.url_name or request.resolver_match.url_name == 'candidate_detail' %}is-on{% endif %}">Candidats</a>{% endif %}
       <a href="{% url 'emploi:company_list' %}" class="{% if 'company' in request.resolver_match.url_name %}is-on{% endif %}">Entreprises</a>
       <a href="{% url 'emploi:feed' %}" class="{% if request.resolver_match.url_name == 'feed' %}is-on{% endif %}">Actualités</a>
       {% if user.is_authenticated %}

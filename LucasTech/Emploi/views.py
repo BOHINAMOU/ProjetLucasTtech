@@ -19,7 +19,7 @@ from .models import (
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
-from .services import can_see_private, is_staff, notify, notify_staff
+from .services import can_browse_candidates, can_see_private, is_staff, notify, notify_staff
 
 User = get_user_model()
 
@@ -140,9 +140,19 @@ def offer_apply(request, slug):
 
 
 # ─────────────────────────────
-# 👥 CANDIDATS (annuaire public)
+# 👥 CANDIDATS (annuaire réservé à Lantante et aux entreprises acceptées)
 # ─────────────────────────────
+def _directory_denied(request):
+    """Redirection si la personne n'a pas le droit de parcourir les candidats."""
+    if not request.user.is_authenticated:
+        return redirect(f"/users/connexion/?next={request.path}")
+    messages.info(request, "L'annuaire des candidats est réservé à Lantante et aux entreprises acceptées.")
+    return redirect('emploi:home')
+
+
 def candidate_list(request):
+    if not can_browse_candidates(request.user):
+        return _directory_denied(request)
     qs = CandidateProfile.objects.filter(is_published=True).select_related('user').prefetch_related('skills')
     q = request.GET.get('q', '').strip()
     domain = request.GET.get('domain', '')
@@ -164,6 +174,9 @@ def candidate_list(request):
 
 def candidate_detail(request, pk):
     candidate = get_object_or_404(CandidateProfile.objects.select_related('user'), pk=pk)
+    is_owner = request.user.is_authenticated and candidate.user_id == request.user.pk
+    if not is_owner and not can_browse_candidates(request.user):
+        return _directory_denied(request)
     if not candidate.is_published and not can_see_private(request.user, candidate):
         raise Http404
     return render(request, 'emploi/candidate_detail.html', {

@@ -23,7 +23,7 @@
         <span class="em-tag">{{ candidate.skills.count }} compétence{{ candidate.skills.count|pluralize }}</span></div></div></div>
     <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}">Modifier mon profil</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:documents' %}"><i class="fas fa-graduation-cap"></i> Mes diplômes ({{ candidate.documents.count }})</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Voir mon profil public</a></div>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Voir mon profil (tel que les recruteurs le voient)</a></div>
   </div>
   <h2 class="em-h2" style="margin-top:26px">Mes candidatures et propositions</h2>
   {% if applications %}
@@ -80,7 +80,7 @@
 {% endif %}
 
 {% if candidate and not employer %}
-<p class="em-muted" style="margin-top:28px">Vous recrutez aussi ? <a href="{% url 'emploi:employer_edit' %}">Inscrire une entreprise</a></p>
+<p class="em-muted" style="margin-top:28px">Vous représentez aussi une entreprise ? <a href="{% url 'emploi:employer_edit' %}">Demander un compte entreprise</a> (Lantante l'analyse avant de l'accepter).</p>
 {% elif employer and not candidate %}
 <p class="em-muted" style="margin-top:28px">Vous cherchez aussi un emploi ? <a href="{% url 'emploi:candidate_edit' %}">Créer un profil candidat</a></p>
 {% endif %}

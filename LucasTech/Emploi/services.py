@@ -117,6 +117,16 @@ def is_staff(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
 
+def can_browse_candidates(user):
+    """L'annuaire des candidats est réservé à Lantante et aux entreprises acceptées."""
+    if not user.is_authenticated:
+        return False
+    if is_staff(user):
+        return True
+    employer = getattr(user, 'employer_profile', None)
+    return bool(employer and employer.is_approved)
+
+
 def can_see_private(viewer, candidate):
     """Qui a le droit de voir le CV et les contacts d'un candidat ?
 
