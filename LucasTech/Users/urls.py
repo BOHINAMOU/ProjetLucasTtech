@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 from . import views
+from .forms import SiteAuthenticationForm
 
 app_name = 'users'
 
@@ -14,7 +15,7 @@ urlpatterns = [
     # ───────── AUTH ─────────
     path(
         'connexion/',
-        LoginView.as_view(template_name='users/login.html'),
+        LoginView.as_view(template_name='users/login.html', authentication_form=SiteAuthenticationForm),
         name='login'
     ),
 

@@ -39,18 +39,23 @@
 <section class="ed-hero">
   <div class="ed-hello">
     <div class="ed-avatar">{% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% else %}{{ user.public_name|slice:":1" }}{% endif %}</div>
-    <div style="min-width:0"><h1>Bonjour {{ user.first_name|default:user.public_name }} 👋</h1>
+    <div style="min-width:0"><h1>Bonjour {{ user.first_name|default:user.public_name }}</h1>
       <p>Gérez votre profil, vos candidatures et vos échanges avec Lantante.</p></div>
   </div>
   <a class="em-btn em-btn--green" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-headset"></i> Écrire à l'équipe Lantante</a>
 </section>
 
+{% if my_warnings %}
+<div class="em-status em-status--rejected" style="margin-top:22px"><b><i class="fas fa-triangle-exclamation"></i> Vous avez reçu {{ my_warnings|length }} avertissement{{ my_warnings|length|pluralize }} sur 3.</b>
+  {% for w in my_warnings %}<br>• {{ w.reason }} <span style="opacity:.7">({{ w.created_at|date:"d/m/Y" }})</span>{% endfor %}
+  <br>Au 3<sup>e</sup> avertissement, votre compte est suspendu. Merci de respecter les règles de la plateforme.</div>
+{% endif %}
 <div class="ed-tiles">
   {% if candidate %}<a class="ed-tile" href="#candidatures"><i class="fas fa-paper-plane"></i><div><b>{{ apps_count }}</b><span>candidature{{ apps_count|pluralize }}</span></div></a>{% endif %}
   {% if employer %}<a class="ed-tile" href="#entreprise"><i class="fas fa-bullhorn"></i><div><b>{{ employer.offers.count }}</b><span>offre{{ employer.offers.count|pluralize }}</span></div></a>{% endif %}
-  <a class="ed-tile" href="{% url 'emploi:appointments' %}"><i class="far fa-calendar-check"></i><div><b>{{ appointments|length }}</b><span>rendez-vous à venir</span></div></a>
-  <a class="ed-tile" href="{% url 'emploi:inbox' %}"><i class="far fa-comments"></i><div><b>{{ em_unread_msgs|default:0 }}</b><span>message{{ em_unread_msgs|pluralize }} non lu{{ em_unread_msgs|pluralize }}</span></div></a>
-  <a class="ed-tile" href="{% url 'emploi:notifications' %}"><i class="far fa-bell"></i><div><b>{{ em_unread_notifs|default:0 }}</b><span>notification{{ em_unread_notifs|pluralize }}</span></div></a>
+  <a class="ed-tile" href="{% url 'emploi:appointments' %}"><i class="fas fa-calendar-check"></i><div><b>{{ appointments|length }}</b><span>rendez-vous à venir</span></div></a>
+  <a class="ed-tile" href="{% url 'emploi:inbox' %}"><i class="fas fa-comments"></i><div><b>{{ em_unread_msgs|default:0 }}</b><span>message{{ em_unread_msgs|pluralize }} non lu{{ em_unread_msgs|pluralize }}</span></div></a>
+  <a class="ed-tile" href="{% url 'emploi:notifications' %}"><i class="fas fa-bell"></i><div><b>{{ em_unread_notifs|default:0 }}</b><span>notification{{ em_unread_notifs|pluralize }}</span></div></a>
   {% if candidate %}<a class="ed-tile" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-user-check"></i><div><b>{{ completion }}%</b><span>profil complété</span></div></a>{% endif %}
 </div>
 
@@ -111,7 +116,7 @@
   {% else %}<div class="em-empty">Aucune candidature pour le moment. <a href="{% url 'emploi:offer_list' %}">Parcourir les offres</a>.</div>{% endif %}
   {% if appointments %}
   <h2 class="em-h2" style="margin-top:26px">Prochains rendez-vous</h2>
-  <div class="em-grid">{% for ap in appointments %}<article class="em-card"><h3>{{ ap.title }}</h3><div class="em-muted"><i class="far fa-calendar"></i> {{ ap.scheduled_at|date:"d/m/Y H:i" }}{% if ap.place %} · {{ ap.place }}{% endif %}</div><span class="em-tag" style="align-self:flex-start">{{ ap.get_status_display }}</span></article>{% endfor %}</div>
+  <div class="em-grid">{% for ap in appointments %}<article class="em-card"><h3>{{ ap.title }}</h3><div class="em-muted"><i class="fas fa-calendar"></i> {{ ap.scheduled_at|date:"d/m/Y H:i" }}{% if ap.place %} · {{ ap.place }}{% endif %}</div><span class="em-tag" style="align-self:flex-start">{{ ap.get_status_display }}</span></article>{% endfor %}</div>
   <p style="margin-top:12px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:appointments' %}">Gérer mes rendez-vous</a></p>
   {% endif %}
 </section>

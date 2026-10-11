@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <p><a href="{{ back_url }}">← Retour</a></p>
+    {% if kind == 'warn' %}
+    <h4>⚠ Avertir {{ target.public_name }}</h4>
+    <p>Avertissements actuels : <b>{{ count }}/{{ max }}</b>. À {{ max }} avertissements, le compte est <b>banni automatiquement</b>{% if count == max|add:"-1" %} — <span class="text-danger">celui-ci sera le dernier : le compte sera banni</span>{% endif %}.</p>
+    {% else %}
+    <h4>🚫 Bannir {{ target.public_name }}</h4>
+    <p class="text-danger">Le compte sera bloqué immédiatement : connexion impossible, publications et profil masqués{% if target.employer_profile %}, offres fermées{% endif %}. Rien n'est supprimé et vous pourrez lever le bannissement.</p>
+    {% endif %}
+    {% if warnings %}<p class="text-muted">Derniers avertissements : {% for w in warnings %}« {{ w.reason|truncatechars:50 }} »{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+    <form method="post">{% csrf_token %}
+      <div class="form-group"><label>Motif (expliqué à la personne par notification et e-mail) *</label>
+        <textarea class="form-control" name="reason" rows="3" required placeholder="Ex : fausse offre d'emploi, propos injurieux, publicité non autorisée…"></textarea></div>
+      <button class="btn {% if kind == 'warn' %}btn-warning{% else %}btn-danger{% endif %}" type="submit">{% if kind == 'warn' %}Envoyer l'avertissement{% else %}Bannir ce compte{% endif %}</button>
+      <a class="btn btn-default" href="{{ back_url }}">Annuler</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

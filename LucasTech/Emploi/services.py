@@ -173,6 +173,88 @@ def assign_conversation(conversation, staff):
         notify(person, text, url)
 
 
+# ── Modération : avertissements (3 maximum) puis bannissement
+MAX_WARNINGS = 3
+
+
+def active_warning_count(user):
+    return user.moderation_warnings.filter(is_active=True).count()
+
+
+def can_sanction(user):
+    """L'équipe Lantante ne peut être ni avertie ni bannie depuis l'outil de modération."""
+    return not (user.is_staff or user.is_superuser)
+
+
+def apply_warning(warning):
+    """Prévient la personne et la bannit automatiquement au 3e avertissement."""
+    user = warning.user
+    count = active_warning_count(user)
+    if count >= MAX_WARNINGS:
+        ban_user(user, f"{MAX_WARNINGS} avertissements reçus. Dernier motif : {warning.reason}",
+                 by=warning.issued_by, automatic=True)
+        return
+    text = f"Avertissement {count}/{MAX_WARNINGS} de Lantante Technologie. Motif : {warning.reason}"
+    if count == MAX_WARNINGS - 1:
+        text += f"\n\nAttention : au prochain avertissement, votre compte sera suspendu."
+    else:
+        text += f"\n\nÀ {MAX_WARNINGS} avertissements, votre compte est suspendu."
+    notify(user, text, '/emploi/mon-espace/')
+
+
+def warn_user(user, reason, by=None):
+    from .models import ModerationWarning
+    if not can_sanction(user):
+        raise ValueError("Un membre de l'équipe ne peut pas être sanctionné ici.")
+    warning = ModerationWarning.objects.create(user=user, reason=reason, issued_by=by)
+    apply_warning(warning)
+    return warning
+
+
+def ban_user(user, reason, by=None, automatic=False):
+    """Bloque le compte (connexion impossible), masque ses contenus et prévient la personne par e-mail."""
+    from django.utils import timezone
+    from .models import AccountBan, FeedPost, JobOffer
+    if not can_sanction(user):
+        raise ValueError("Un membre de l'équipe ne peut pas être banni ici.")
+    ban, _ = AccountBan.objects.update_or_create(
+        user=user, defaults={'reason': reason, 'automatic': automatic, 'banned_by': by,
+                             'banned_at': timezone.now(), 'lifted_at': None})
+    if user.is_active:
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+    # Ses contenus disparaissent du site (rien n'est supprimé).
+    FeedPost.objects.filter(author=user).update(is_hidden=True)
+    candidate = getattr(user, 'candidate_profile', None)
+    if candidate:
+        candidate.is_published = False
+        candidate.save(update_fields=['is_published'])
+    employer = getattr(user, 'employer_profile', None)
+    if employer:
+        employer.status = 'rejected'
+        employer.decision_message = "Compte suspendu par Lantante Technologie."
+        employer.save(update_fields=['status', 'decision_message'])
+        JobOffer.objects.filter(employer=employer, status='published').update(status='closed')
+    notify(user, "Votre compte Lantante Technologie a été suspendu."
+                 f"\n\nMotif : {reason}"
+                 "\n\nSi vous pensez qu'il s'agit d'une erreur, répondez à cet e-mail pour contester la décision.",
+           '/users/connexion/')
+    return ban
+
+
+def unban_user(user, by=None):
+    from django.utils import timezone
+    ban = getattr(user, 'ban', None)
+    user.is_active = True
+    user.save(update_fields=['is_active'])
+    user.moderation_warnings.filter(is_active=True).update(is_active=False)  # le compteur repart de zéro
+    if ban and ban.lifted_at is None:
+        ban.lifted_at = timezone.now()
+        ban.save(update_fields=['lifted_at'])
+    notify(user, "Votre compte Lantante Technologie est de nouveau actif. Merci de respecter les règles de la plateforme.",
+           '/emploi/mon-espace/')
+
+
 def decide_employer(employer, status):
     """Applique la décision de Lantante (acceptée / refusée) et prévient l'entreprise."""
     from django.utils import timezone

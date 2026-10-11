@@ -594,6 +594,50 @@ class Message(models.Model):
 # ─────────────────────────────
 # 📅 RENDEZ-VOUS
 # ─────────────────────────────
+class ModerationWarning(models.Model):
+    """Avertissement donné par Lantante à un utilisateur. À 3 avertissements actifs, le compte est suspendu."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='moderation_warnings', verbose_name="Utilisateur")
+    reason = models.TextField(verbose_name="Motif", help_text="Expliqué à la personne dans l'avertissement.")
+    issued_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='+', verbose_name="Donné par")
+    is_active = models.BooleanField(default=True, verbose_name="Compte dans les 3 avertissements",
+                                    help_text="Décoché automatiquement quand un bannissement est levé : le compteur repart de zéro.")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Avertissement"
+        verbose_name_plural = "Avertissements"
+
+    def __str__(self):
+        return f"{self.user} — {self.reason[:40]}"
+
+
+class AccountBan(models.Model):
+    """Bannissement (compte bloqué). Jamais supprimé : on garde l'historique, même après réactivation."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name='ban', verbose_name="Utilisateur")
+    reason = models.TextField(verbose_name="Motif")
+    automatic = models.BooleanField(default=False, verbose_name="Automatique (3 avertissements)")
+    banned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='+', verbose_name="Décidé par")
+    banned_at = models.DateTimeField(default=timezone.now, verbose_name="Banni le")
+    lifted_at = models.DateTimeField(null=True, blank=True, verbose_name="Levé le")
+
+    class Meta:
+        ordering = ['-banned_at']
+        verbose_name = "Bannissement"
+        verbose_name_plural = "Bannissements"
+
+    def __str__(self):
+        return f"{self.user} — {'levé' if self.lifted_at else 'banni'}"
+
+    @property
+    def is_current(self):
+        return self.lifted_at is None
+
+
 class StaffProfile(models.Model):
     """Fonction d'un membre de l'équipe Lantante (affichée quand il se présente aux candidats)."""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

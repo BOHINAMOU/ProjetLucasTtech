@@ -6,13 +6,13 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import (
-    Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
+    AccountBan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
-    ProfileRevision, Skill, StaffProfile, StaffingRequest,
+    ModerationWarning, ProfileRevision, Skill, StaffProfile, StaffingRequest,
 )
 from .services import (
-    assign_conversation, decide_employer, notify, notify_application_status, share_application,
-    suggest_candidates,
+    MAX_WARNINGS, active_warning_count, apply_warning, assign_conversation, ban_user, can_sanction, decide_employer,
+    notify, notify_application_status, share_application, suggest_candidates, unban_user, warn_user,
 )
 
 
@@ -119,7 +119,7 @@ class CandidateApplicationInline(admin.TabularInline):
 @admin.register(CandidateProfile)
 class CandidateProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'headline', 'domain', 'city', 'experience_years', 'available',
-                    'share_with_recruiters', 'is_published', 'updated_at')
+                    'share_with_recruiters', 'is_published', 'moderation', 'updated_at')
     list_filter = ('domain', 'available', 'is_published', 'share_with_recruiters', 'city')
     search_fields = ('user__email', 'user__first_name', 'user__last_name', 'headline', 'city', 'skills__name')
     filter_horizontal = ('skills',)
@@ -140,6 +140,10 @@ class CandidateProfileAdmin(admin.ModelAdmin):
     def name(self, obj):
         return obj.name
 
+    @admin.display(description="Modération")
+    def moderation(self, obj):
+        return moderation_cell(obj.user)
+
     @admin.display(description="CV")
     def cv_link(self, obj):
         if obj.pk and obj.cv:
@@ -159,7 +163,8 @@ class CandidateProfileAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 @admin.register(EmployerProfile)
 class EmployerProfileAdmin(admin.ModelAdmin):
-    list_display = ('company_name', 'sector', 'city', 'employees_count', 'status', 'is_verified', 'partner', 'created_at')
+    list_display = ('company_name', 'sector', 'city', 'employees_count', 'status', 'is_verified', 'partner',
+                    'moderation', 'created_at')
     list_filter = ('status', 'is_verified', 'sector')
     list_editable = ('is_verified',)
     search_fields = ('company_name', 'user__email', 'city')
@@ -173,6 +178,10 @@ class EmployerProfileAdmin(admin.ModelAdmin):
         ("Décision de Lantante", {'fields': ('status', 'decision_message', 'decided_at', 'is_verified',
                                              'partner', 'admin_notes')}),
     )
+
+    @admin.display(description="Modération")
+    def moderation(self, obj):
+        return moderation_cell(obj.user)
 
     @admin.display(description="Document de l'entreprise")
     def document_link(self, obj):
@@ -669,7 +678,7 @@ class CommentInline(admin.TabularInline):
 
 @admin.register(FeedPost)
 class FeedPostAdmin(admin.ModelAdmin):
-    list_display = ('author_label', 'short_text', 'is_hidden', 'created_at')
+    list_display = ('author_label', 'short_text', 'is_hidden', 'moderation', 'created_at')
     list_filter = ('is_hidden',)
     list_editable = ('is_hidden',)
     search_fields = ('text', 'author__email', 'author__first_name', 'author__last_name')
@@ -678,6 +687,126 @@ class FeedPostAdmin(admin.ModelAdmin):
     @admin.display(description="Texte")
     def short_text(self, obj):
         return obj.text[:80]
+
+    @admin.display(description="Modération de l'auteur")
+    def moderation(self, obj):
+        return moderation_cell(obj.author)
+
+
+# ─────────────────────────────
+# 🚫 Modération : avertissements et bannissements
+# ─────────────────────────────
+def moderation_cell(user):
+    """Colonne « Modération » : compteur d'avertissements + boutons Avertir / Bannir."""
+    if not can_sanction(user):
+        return "—"
+    ban = getattr(user, 'ban', None)
+    if ban and ban.is_current:
+        return mark_safe('<span class="badge badge-danger">Banni</span>')
+    count = active_warning_count(user)
+    warn_url = reverse('admin:emploi_sanction', args=['warn', user.pk])
+    ban_url = reverse('admin:emploi_sanction', args=['ban', user.pk])
+    return format_html(
+        '<span class="badge {}">{}/{}</span> <a class="btn btn-xs btn-outline-warning" href="{}">Avertir</a> '
+        '<a class="btn btn-xs btn-outline-danger" href="{}">Bannir</a>',
+        'badge-warning' if count else 'badge-light', count, MAX_WARNINGS, warn_url, ban_url)
+
+
+class SanctionViewsMixin:
+    """Pages « Avertir » et « Bannir » (motif obligatoire, confirmation) accessibles depuis les listes."""
+
+    def get_urls(self):
+        return [
+            path('sanction/<str:kind>/<int:user_id>/', self.admin_site.admin_view(self.sanction_view),
+                 name='emploi_sanction'),
+        ] + super().get_urls()
+
+    def sanction_view(self, request, kind, user_id):
+        from django.contrib.auth import get_user_model
+        target = get_object_or_404(get_user_model(), pk=user_id)
+        if kind not in ('warn', 'ban') or not request.user.is_staff or not can_sanction(target):
+            raise PermissionDenied
+        back = request.GET.get('next') or reverse('admin:Emploi_moderationwarning_changelist')
+        if request.method == 'POST':
+            reason = request.POST.get('reason', '').strip()
+            if not reason:
+                messages.error(request, "Le motif est obligatoire : il est expliqué à la personne.")
+                return redirect(request.get_full_path())
+            if kind == 'warn':
+                warn_user(target, reason, by=request.user)
+                count = active_warning_count(target)
+                if count >= MAX_WARNINGS:
+                    messages.warning(request, f"{target.public_name} a atteint {MAX_WARNINGS} avertissements : son compte est banni automatiquement.")
+                else:
+                    messages.success(request, f"Avertissement {count}/{MAX_WARNINGS} envoyé à {target.public_name}.")
+            else:
+                ban_user(target, reason, by=request.user)
+                messages.success(request, f"{target.public_name} est banni : son compte est bloqué et ses contenus sont masqués.")
+            return redirect(back)
+        return render(request, 'admin/emploi/sanction.html', {
+            **self.admin_site.each_context(request), 'opts': self.model._meta,
+            'title': "Avertir" if kind == 'warn' else "Bannir", 'kind': kind, 'target': target,
+            'count': active_warning_count(target), 'max': MAX_WARNINGS, 'back_url': back,
+            'warnings': target.moderation_warnings.all()[:5],
+        })
+
+
+@admin.register(ModerationWarning)
+class ModerationWarningAdmin(SanctionViewsMixin, admin.ModelAdmin):
+    list_display = ('user', 'reason_short', 'issued_by', 'is_active', 'created_at')
+    list_filter = ('is_active',)
+    search_fields = ('user__email', 'user__first_name', 'user__last_name', 'reason')
+    autocomplete_fields = ('user',)
+    readonly_fields = ('issued_by',)
+    fields = ('user', 'reason', 'is_active', 'issued_by')
+
+    @admin.display(description="Motif")
+    def reason_short(self, obj):
+        return obj.reason[:70]
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            if not can_sanction(obj.user):
+                messages.error(request, "Un membre de l'équipe ne peut pas recevoir d'avertissement.")
+                return
+            obj.issued_by = request.user
+            super().save_model(request, obj, form, change)
+            apply_warning(obj)  # prévient la personne ; bannit automatiquement au 3e avertissement
+        else:
+            super().save_model(request, obj, form, change)
+
+
+@admin.register(AccountBan)
+class AccountBanAdmin(admin.ModelAdmin):
+    list_display = ('user', 'status_badge', 'automatic', 'banned_by', 'banned_at', 'lifted_at')
+    list_filter = ('automatic',)
+    search_fields = ('user__email', 'user__first_name', 'user__last_name', 'reason')
+    autocomplete_fields = ('user',)
+    readonly_fields = ('banned_by', 'lifted_at')
+    actions = ['lift_ban']
+
+    @admin.display(description="Statut")
+    def status_badge(self, obj):
+        if obj.is_current:
+            return mark_safe('<span class="badge badge-danger">Banni</span>')
+        return mark_safe('<span class="badge badge-success">Réactivé</span>')
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            if not can_sanction(obj.user):
+                messages.error(request, "Un membre de l'équipe ne peut pas être banni ici.")
+                return
+            ban_user(obj.user, obj.reason, by=request.user)  # crée/actualise le bannissement et bloque le compte
+            return
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="✓ Lever le bannissement (réactive le compte, remet les avertissements à zéro)")
+    def lift_ban(self, request, queryset):
+        count = 0
+        for ban in queryset.filter(lifted_at__isnull=True):
+            unban_user(ban.user, by=request.user)
+            count += 1
+        self.message_user(request, f"{count} compte(s) réactivé(s). Leurs contenus restent masqués jusqu'à votre décision.")
 
 
 # ─────────────────────────────

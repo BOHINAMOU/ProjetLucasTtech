@@ -1,6 +1,7 @@
 from datetime import date
 from django import forms
 from django.contrib.auth import authenticate
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.cache import cache
 from .models import User
 from core.countries import COUNTRY_CHOICES
@@ -62,6 +63,23 @@ class RegisterForm(forms.ModelForm):
 # ─────────────────────────────
 # 🔐 CONNEXION
 # ─────────────────────────────
+class SiteAuthenticationForm(AuthenticationForm):
+    """Formulaire de connexion : un compte banni voit le motif au lieu d'un message générique."""
+
+    def clean(self):
+        try:
+            return super().clean()
+        except forms.ValidationError:
+            email = (self.cleaned_data.get('username') or '').strip()
+            password = self.cleaned_data.get('password') or ''
+            user = User.objects.filter(email__iexact=email).first() if email else None
+            ban = getattr(user, 'ban', None) if user else None
+            if user and not user.is_active and ban and ban.is_current and user.check_password(password):
+                raise forms.ValidationError(
+                    f"Votre compte a été suspendu par Lantante Technologie. Motif : {ban.reason}")
+            raise
+
+
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)

@@ -7,7 +7,7 @@
   <article class="em-card">
     <h3>{{ ap.title }}</h3>
     <div class="em-meta"><span class="em-tag em-tag--green">{{ ap.get_status_display }}</span>
-      <span class="em-tag"><i class="far fa-calendar"></i> {{ ap.scheduled_at|date:"d/m/Y H:i" }}</span></div>
+      <span class="em-tag"><i class="fas fa-calendar"></i> {{ ap.scheduled_at|date:"d/m/Y H:i" }}</span></div>
     {% if ap.place %}<p><i class="fas fa-location-dot"></i> {{ ap.place }}</p>{% endif %}
     <div class="em-muted">Candidat : {{ ap.candidate.name }}{% if ap.employer %} · {{ ap.employer.company_name }}{% endif %}</div>
     {% if ap.notes %}<p>{{ ap.notes }}</p>{% endif %}

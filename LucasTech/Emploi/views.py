@@ -315,7 +315,8 @@ def dashboard(request):
     user = request.user
     candidate = getattr(user, 'candidate_profile', None)
     employer = getattr(user, 'employer_profile', None)
-    context = {'candidate': candidate, 'employer': employer}
+    context = {'candidate': candidate, 'employer': employer,
+               'my_warnings': list(user.moderation_warnings.filter(is_active=True)[:3])}
     if candidate:
         checks = [
             ("Photo de profil", bool(user.avatar), reverse('emploi:candidate_edit')),
