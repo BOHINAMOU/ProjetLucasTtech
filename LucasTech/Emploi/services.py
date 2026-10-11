@@ -1,11 +1,33 @@
+import logging
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.db.models import Q
 
 from .models import Application, CandidateProfile, Notification
 
 
-def notify(user, text, url=''):
-    return Notification.objects.create(recipient=user, text=text[:300], url=url)
+SITE_URL = 'https://lantantetechnologie.com'
+logger = logging.getLogger(__name__)
+
+
+def notify(user, text, url='', email=True):
+    """Crée la notification sur le site et envoie aussi un e-mail (sans jamais bloquer l'action)."""
+    notification = Notification.objects.create(recipient=user, text=text[:300], url=url)
+    if email and user.email and settings.EMAIL_HOST_USER:
+        link = url if url.startswith('http') else f"{SITE_URL}{url or '/emploi/notifications/'}"
+        try:
+            send_mail(
+                subject="Lantante Technologie — Emploi",
+                message=f"{text}\n\nOuvrir : {link}\n\n— Lantante Technologie",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            logger.exception("Échec d'envoi de l'e-mail de notification")
+    return notification
 
 
 def notify_staff(text, url=''):
