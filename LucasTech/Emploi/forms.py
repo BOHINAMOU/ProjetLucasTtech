@@ -158,7 +158,7 @@ class JobOfferForm(SkillsTextMixin, forms.ModelForm):
 
     class Meta:
         model = JobOffer
-        fields = ['title', 'domain', 'contract', 'city', 'description', 'requirements',
+        fields = ['title', 'cover_image', 'domain', 'contract', 'city', 'description', 'requirements',
                   'salary', 'duration', 'deadline', 'requires_cover_letter']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
@@ -170,6 +170,16 @@ class JobOfferForm(SkillsTextMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.init_skills()
         _style(self)
+
+    def clean_cover_image(self):
+        return _check_cover(self)
+
+
+def _check_cover(form):
+    image = form.cleaned_data.get('cover_image')
+    if image and hasattr(image, 'size') and image.size > CV_MAX_MB * 1024 * 1024:
+        raise forms.ValidationError(f"La photo ne doit pas dépasser {CV_MAX_MB} Mo.")
+    return image
 
 
 class StaffingRequestForm(SkillsTextMixin, forms.ModelForm):

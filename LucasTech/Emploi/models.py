@@ -273,6 +273,8 @@ class JobOffer(models.Model):
                                 help_text="Ex : 3 mois")
     deadline = models.DateField(null=True, blank=True, verbose_name="Date limite")
     status = models.CharField(max_length=10, choices=STATUS, default='pending', verbose_name="Statut")
+    cover_image = models.ImageField(upload_to='emploi/offers/', blank=True, verbose_name="Photo de couverture",
+                                    help_text="Illustre l'offre dans les listes. Sans photo, un visuel coloré est affiché.")
     requires_cover_letter = models.BooleanField(default=False, verbose_name="Lettre de motivation demandée",
                                                 help_text="Le candidat devra écrire une lettre de motivation pour postuler.")
     is_featured = models.BooleanField(default=False, verbose_name="À la une")
@@ -287,7 +289,43 @@ class JobOffer(models.Model):
     def __str__(self):
         return self.title
 
+    DOMAIN_ICONS = {
+        'informatique': 'fa-laptop-code', 'education': 'fa-graduation-cap', 'sante': 'fa-heart-pulse',
+        'commerce': 'fa-store', 'gestion': 'fa-chart-line', 'btp': 'fa-helmet-safety',
+        'industrie': 'fa-gears', 'agriculture': 'fa-seedling', 'transport': 'fa-truck',
+        'hotellerie': 'fa-utensils', 'communication': 'fa-bullhorn', 'droit': 'fa-scale-balanced',
+    }
+    DOMAIN_GRADIENTS = {
+        'informatique': '#0d3b7a,#1d6fe0', 'education': '#0f7a45,#34d399', 'sante': '#be185d,#f472b6',
+        'commerce': '#b8420a,#f59e0b', 'gestion': '#163a63,#0f7a45', 'btp': '#92400e,#f59e0b',
+        'industrie': '#334155,#64748b', 'agriculture': '#166534,#84cc16', 'transport': '#1e3a8a,#38bdf8',
+        'hotellerie': '#9a3412,#fb923c', 'communication': '#6d28d9,#c084fc', 'droit': '#1f2937,#6b7280',
+    }
+
+    @property
+    def domain_icon(self):
+        return self.DOMAIN_ICONS.get(self.domain, 'fa-briefcase')
+
+    @property
+    def cover_gradient(self):
+        return self.DOMAIN_GRADIENTS.get(self.domain, '#0d3b7a,#0f7a45')
+
     def save(self, *args, **kwargs):
+        # Photo trop lourde : on la réduit à l'envoi (1600 px max) pour garder un site rapide.
+        if self.cover_image and not self.cover_image._committed:
+            try:
+                import io
+                from django.core.files.base import ContentFile
+                from PIL import Image
+                img = Image.open(self.cover_image)
+                img = img.convert('RGB')
+                img.thumbnail((1600, 1000))
+                buf = io.BytesIO()
+                img.save(buf, 'JPEG', quality=85, optimize=True)
+                name = self.cover_image.name.rsplit('.', 1)[0] + '.jpg'
+                self.cover_image.save(name, ContentFile(buf.getvalue()), save=False)
+            except Exception:
+                pass
         if not self.slug:
             base = slugify(self.title)[:170] or 'offre'
             slug, n = base, 2

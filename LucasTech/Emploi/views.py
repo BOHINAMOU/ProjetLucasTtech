@@ -406,7 +406,7 @@ def offer_create(request):
     employer = _require_employer(request)
     if not employer:
         return redirect('emploi:dashboard' if hasattr(request.user, 'employer_profile') else 'emploi:employer_edit')
-    form = JobOfferForm(request.POST or None)
+    form = JobOfferForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
         offer = form.save(commit=False)
         offer.employer = employer

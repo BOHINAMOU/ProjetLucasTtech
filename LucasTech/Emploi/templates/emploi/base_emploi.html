@@ -82,6 +82,13 @@
 .em-status--approved { background:var(--em-green-bg); color:#14532d; }
 .em-status--rejected { background:#fee2e2; color:#991b1b; }
 
+/* photo de couverture des offres */
+.em-cover { display:block; margin:-20px -20px 4px; height:160px; border-radius:16px 16px 0 0; overflow:hidden; position:relative; text-decoration:none; }
+.em-cover img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s; }
+.em-card:hover .em-cover img { transform:scale(1.04); }
+.em-cover__ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.9); font-size:2.6rem; position:relative; }
+.em-cover__ph::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 80% 20%, rgba(255,255,255,.22), transparent 55%); }
+
 /* pagination */
 .em-pager { display:flex; justify-content:center; gap:10px; margin-top:28px; align-items:center; }
 

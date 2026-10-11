@@ -3,7 +3,7 @@
 {% block em_content %}
 <h1 class="em-h1" style="margin:34px 0 8px">Publier une offre d'emploi</h1>
 <p class="em-lead" style="margin-bottom:20px">{% if employer.is_verified %}Votre entreprise a le badge bleu : l'offre sera publiée immédiatement.{% else %}L'offre sera publiée après validation par Lantante (le badge bleu permet la publication directe).{% endif %}</p>
-<form class="em-form" method="post">
+<form class="em-form" method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
   <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer l'offre</button>

@@ -1,10 +1,13 @@
 {% extends 'emploi/base_emploi.html' %}
 {% block em_title %}{{ offer.title }}{% endblock %}
+{% block og_image %}{% if offer.cover_image %}{{ offer.cover_image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block em_description %}{{ offer.description|striptags|truncatechars:155 }}{% endblock %}
 {% block em_content %}
 <div style="margin-top:30px;display:grid;gap:22px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)" class="od-grid">
   <div style="min-width:0">
     {% if offer.status != 'published' %}<div class="em-flash em-flash--info" style="margin:0 0 16px">Cette offre n'est pas publique : statut « {{ offer.get_status_display }} ».</div>{% endif %}
+    {% if offer.cover_image %}<img src="{{ offer.cover_image.url }}" alt="" style="display:block;width:100%;height:auto;max-height:380px;object-fit:cover;border-radius:16px;margin-bottom:18px;box-shadow:var(--em-shadow)">
+    {% else %}<div style="height:150px;border-radius:16px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.92);font-size:3rem;background:linear-gradient(135deg,{{ offer.cover_gradient }})"><i class="fas {{ offer.domain_icon }}"></i></div>{% endif %}
     <h1 class="em-h1">{{ offer.title }}</h1>
     <div class="em-meta" style="margin:12px 0 20px">
       <span class="em-tag em-tag--green">{{ offer.get_contract_display }}</span>
