@@ -5,11 +5,13 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 
 from .models import (
-    Appointment, Application, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
+    Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
     ProfileRevision, Skill, StaffingRequest,
 )
-from .services import decide_employer, notify, share_application, suggest_candidates
+from .services import (
+    decide_employer, notify, notify_application_status, share_application, suggest_candidates,
+)
 
 
 # ─────────────────────────────
@@ -217,14 +219,28 @@ class EmployerProfileAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 @admin.register(JobOffer)
 class JobOfferAdmin(SuggestionsMixin, admin.ModelAdmin):
-    list_display = ('title', 'company_name', 'domain', 'contract', 'city', 'status', 'is_featured',
-                    'deadline', 'suggestions_link')
+    list_display = ('title', 'company_name', 'domain', 'contract', 'city', 'status', 'applications_total',
+                    'applications_pending', 'is_featured', 'deadline', 'suggestions_link')
     list_filter = ('status', 'domain', 'contract', 'is_featured')
     list_editable = ('status', 'is_featured')
     search_fields = ('title', 'description', 'employer__company_name', 'city')
     filter_horizontal = ('skills',)
     autocomplete_fields = ('employer',)
     actions = ['publish', 'close']
+
+    def get_queryset(self, request):
+        from django.db.models import Count, Q
+        return super().get_queryset(request).annotate(
+            _n_total=Count('applications', distinct=True),
+            _n_pending=Count('applications', filter=Q(applications__status='received'), distinct=True))
+
+    @admin.display(description="Candidatures", ordering='_n_total')
+    def applications_total(self, obj):
+        return obj._n_total
+
+    @admin.display(description="En attente", ordering='_n_pending')
+    def applications_pending(self, obj):
+        return obj._n_pending
 
     @admin.action(description="✓ Publier les offres sélectionnées")
     def publish(self, request, queryset):
@@ -253,6 +269,18 @@ class StaffingRequestAdmin(SuggestionsMixin, admin.ModelAdmin):
 # ─────────────────────────────
 # 🔗 Candidatures / correspondances / contrats
 # ─────────────────────────────
+class AvailabilityInline(admin.TabularInline):
+    model = AvailabilitySlot
+    extra = 0
+    fields = ('start', 'note')
+    readonly_fields = ('start', 'note')
+    can_delete = False
+    verbose_name_plural = "Disponibilités proposées par le candidat pour l'entretien"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 class PlacementInline(admin.StackedInline):
     model = Placement
     extra = 0
@@ -260,16 +288,32 @@ class PlacementInline(admin.StackedInline):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'offer', 'request', 'origin', 'status', 'shared_with_employer', 'share_link', 'created_at')
-    list_filter = ('status', 'origin', 'shared_with_employer')
+    list_display = ('candidate', 'company', 'offer', 'request', 'origin', 'status', 'shared_with_employer',
+                    'share_link', 'created_at')
+    list_filter = ('status', 'origin', 'shared_with_employer', 'offer__employer', 'offer__contract')
     list_editable = ('status',)
-    readonly_fields = ('shared_at', 'share_link')
-    actions = ['share_selected']
+    readonly_fields = ('shared_at', 'share_link', 'interview_link', 'company')
+    actions = ['share_selected', 'mark_shortlisted', 'mark_refused']
+    change_list_template = 'admin/emploi/application_change_list.html'
+
+    @admin.display(description="Entreprise (origine de l'offre)")
+    def company(self, obj):
+        employer = obj.employer
+        return employer.company_name if employer else "Lantante (offre directe)"
+
+    @admin.display(description="Entretien")
+    def interview_link(self, obj):
+        if not obj.pk:
+            return "—"
+        url = reverse('admin:emploi_application_interview', args=[obj.pk])
+        return format_html('<a class="btn btn-sm btn-info" href="{}"><i class="fas fa-calendar-plus"></i> Fixer l\'entretien</a>', url)
 
     def get_urls(self):
         return [
             path('<int:pk>/transmettre/', self.admin_site.admin_view(self.share_view),
                  name='emploi_application_share'),
+            path('<int:pk>/entretien/', self.admin_site.admin_view(self.interview_view),
+                 name='emploi_application_interview'),
         ] + super().get_urls()
 
     @admin.display(description="Transmission à l'entreprise")
@@ -313,14 +357,94 @@ class ApplicationAdmin(admin.ModelAdmin):
     search_fields = ('candidate__user__first_name', 'candidate__user__last_name', 'candidate__headline',
                      'offer__title', 'request__title')
     autocomplete_fields = ('candidate', 'offer', 'request')
-    inlines = [PlacementInline]
+    inlines = [AvailabilityInline, PlacementInline]
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
+        # Présélection, entretien, embauche, refus : le candidat est prévenu par e-mail avec le message saisi.
         if change and 'status' in form.changed_data:
-            notify(obj.candidate.user,
-                   f"Votre dossier « {obj.offer or obj.request} » est passé au statut : {obj.get_status_display()}",
-                   '/emploi/mon-espace/')
+            notify_application_status(obj)
+
+    def changelist_view(self, request, extra_context=None):
+        apps = list(Application.objects.select_related('offer__employer', 'request__employer'))
+        total = len(apps)
+        counts = {code: 0 for code, _ in Application.STATUS}
+        companies = {}
+        for app in apps:
+            counts[app.status] += 1
+            name = app.employer.company_name if app.employer else "Lantante (offres directes)"
+            row = companies.setdefault(name, {'name': name, 'total': 0, 'pending': 0, 'treated': 0})
+            row['total'] += 1
+            row['pending' if app.status == 'received' else 'treated'] += 1
+        extra_context = extra_context or {}
+        extra_context['stats'] = {
+            'total': total,
+            'pending': counts['received'],
+            'treated': total - counts['received'],
+            'by_status': [(label, counts[code]) for code, label in Application.STATUS],
+            'companies': sorted(companies.values(), key=lambda r: -r['total']),
+        }
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def interview_view(self, request, pk):
+        application = get_object_or_404(Application.objects.select_related('candidate__user', 'offer', 'request'), pk=pk)
+        if not self.has_change_permission(request, application):
+            raise PermissionDenied
+        back = reverse('admin:Emploi_application_change', args=[pk])
+        target = application.offer or application.request
+        if request.method == 'POST':
+            from django.utils.dateparse import parse_datetime
+            from django.utils import timezone
+            when = parse_datetime(request.POST.get('when', ''))
+            if not when:
+                messages.error(request, "Choisissez la date et l'heure de l'entretien.")
+                return redirect(request.path)
+            if timezone.is_naive(when):
+                when = timezone.make_aware(when)
+            employer = application.employer
+            Appointment.objects.create(
+                application=application, candidate=application.candidate, employer=employer,
+                title=f"Entretien — {target}", scheduled_at=when,
+                place=request.POST.get('place', '')[:200], notes=request.POST.get('notes', ''))
+            application.status = 'interview'
+            application.save(update_fields=['status', 'updated_at'])
+            local = timezone.localtime(when).strftime('%d/%m/%Y à %H:%M')
+            place = f" Lieu / lien : {request.POST.get('place')}." if request.POST.get('place') else ""
+            notify(application.candidate.user,
+                   f"Votre entretien pour « {target} » est fixé le {local}.{place} Confirmez votre présence dans « Rendez-vous ».",
+                   '/emploi/rendez-vous/')
+            if employer and application.shared_with_employer:
+                notify(employer.user, f"Entretien fixé avec {application.candidate.name} le {local} pour « {target} ».",
+                       '/emploi/rendez-vous/')
+            messages.success(request, f"Entretien fixé le {local} ; le candidat est prévenu.")
+            return redirect(back)
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta, 'title': "Fixer l'entretien",
+            'application': application, 'target': target, 'back_url': back,
+            'slots': application.slots.all(),
+        }
+        return render(request, 'admin/emploi/interview.html', context)
+
+    @admin.action(description="⭐ Présélectionner (e-mail + demande de disponibilités)")
+    def mark_shortlisted(self, request, queryset):
+        count = 0
+        for app in queryset.exclude(status='shortlisted'):
+            app.status = 'shortlisted'
+            app.save(update_fields=['status', 'updated_at'])
+            notify_application_status(app)
+            count += 1
+        self.message_user(request, f"{count} candidat(s) présélectionné(s) et prévenu(s) par e-mail.")
+
+    @admin.action(description="✗ Refuser (e-mail avec le motif saisi dans « Message au candidat »)")
+    def mark_refused(self, request, queryset):
+        count = 0
+        for app in queryset.exclude(status='refused'):
+            app.status = 'refused'
+            app.save(update_fields=['status', 'updated_at'])
+            notify_application_status(app)
+            count += 1
+        self.message_user(request, f"{count} candidature(s) refusée(s) ; les candidats sont prévenus par e-mail.")
 
 
 @admin.register(Placement)

@@ -1,0 +1,22 @@
+{% extends "admin/change_list.html" %}
+{% block date_hierarchy %}
+<div class="col-12 pb-3">
+  <div class="row">
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body text-center"><h3 class="mb-0">{{ stats.total }}</h3><small class="text-muted">Candidatures reçues</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body text-center"><h3 class="mb-0 text-warning">{{ stats.pending }}</h3><small class="text-muted">En attente de traitement</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body text-center"><h3 class="mb-0 text-success">{{ stats.treated }}</h3><small class="text-muted">Déjà traitées</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body">
+      {% for label, n in stats.by_status %}<div class="d-flex justify-content-between"><span>{{ label }}</span><b>{{ n }}</b></div>{% endfor %}
+    </div></div></div>
+  </div>
+  {% if stats.companies %}
+  <div class="card"><div class="card-body p-2">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Entreprise (origine des offres)</th><th class="text-center">Candidatures</th><th class="text-center">En attente</th><th class="text-center">Traitées</th></tr></thead>
+      <tbody>{% for row in stats.companies %}<tr><td>{{ row.name }}</td><td class="text-center">{{ row.total }}</td><td class="text-center">{{ row.pending }}</td><td class="text-center">{{ row.treated }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div></div>
+  {% endif %}
+</div>
+{{ block.super }}
+{% endblock %}

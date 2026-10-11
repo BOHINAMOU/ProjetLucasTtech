@@ -83,6 +83,10 @@ class CandidateProfile(models.Model):
     contract_wanted = models.CharField(max_length=120, blank=True, verbose_name="Types de contrat souhaités",
                                        help_text="Ex : CDI, Stage")
     available = models.BooleanField(default=True, verbose_name="Disponible")
+    seeking_internship = models.BooleanField(default=False, verbose_name="Je cherche un stage")
+    internship_duration = models.CharField(max_length=60, blank=True, verbose_name="Durée de stage souhaitée",
+                                           help_text="Ex : 3 mois, 6 mois")
+    available_from = models.DateField(null=True, blank=True, verbose_name="Disponible à partir du")
     phone = models.CharField(max_length=30, blank=True, verbose_name="Téléphone / WhatsApp")
     cv = models.FileField(upload_to='cv/', storage=private_storage, blank=True,
                           verbose_name="CV (PDF)")
@@ -265,6 +269,8 @@ class JobOffer(models.Model):
     requirements = models.TextField(blank=True, verbose_name="Profil recherché")
     skills = models.ManyToManyField(Skill, blank=True, related_name='offers', verbose_name="Compétences")
     salary = models.CharField(max_length=100, blank=True, verbose_name="Rémunération")
+    duration = models.CharField(max_length=60, blank=True, verbose_name="Durée (stage, CDD…)",
+                                help_text="Ex : 3 mois")
     deadline = models.DateField(null=True, blank=True, verbose_name="Date limite")
     status = models.CharField(max_length=10, choices=STATUS, default='pending', verbose_name="Statut")
     requires_cover_letter = models.BooleanField(default=False, verbose_name="Lettre de motivation demandée",
@@ -363,6 +369,11 @@ class Application(models.Model):
     origin = models.CharField(max_length=10, choices=ORIGIN, default='candidate', verbose_name="Origine")
     message = models.TextField(blank=True, verbose_name="Message du candidat")
     cover_letter = models.TextField(blank=True, verbose_name="Lettre de motivation")
+    internship_duration = models.CharField(max_length=60, blank=True, verbose_name="Durée de stage souhaitée")
+    available_from = models.DateField(null=True, blank=True, verbose_name="Disponible à partir du")
+    status_message = models.TextField(
+        blank=True, verbose_name="Message au candidat (motif du refus, précisions)",
+        help_text="Envoyé au candidat avec le changement de statut. Pour un refus, indiquez le motif.")
     shared_with_employer = models.BooleanField(
         default=False, verbose_name="Dossier transmis à l'entreprise",
         help_text="Tant que Lantante ne transmet pas le dossier, l'entreprise ne voit ni le CV ni les coordonnées.")
@@ -388,6 +399,23 @@ class Application(models.Model):
         if self.request_id:
             return self.request.employer
         return None
+
+
+class AvailabilitySlot(models.Model):
+    """Créneau proposé par un candidat présélectionné pour son entretien."""
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='slots',
+                                    verbose_name="Candidature")
+    start = models.DateTimeField(verbose_name="Disponible le")
+    note = models.CharField(max_length=200, blank=True, verbose_name="Précision")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['start']
+        verbose_name = "Disponibilité pour l'entretien"
+        verbose_name_plural = "Disponibilités pour l'entretien"
+
+    def __str__(self):
+        return f"{self.start:%d/%m/%Y %H:%M}"
 
 
 class Placement(models.Model):
@@ -547,7 +575,7 @@ class FeedComment(models.Model):
 class Notification(models.Model):
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                   related_name='emploi_notifications', verbose_name="Destinataire")
-    text = models.CharField(max_length=300, verbose_name="Message")
+    text = models.TextField(verbose_name="Message")
     url = models.CharField(max_length=300, blank=True, verbose_name="Lien")
     is_read = models.BooleanField(default=False, verbose_name="Lue")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date")

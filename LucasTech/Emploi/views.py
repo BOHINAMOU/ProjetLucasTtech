@@ -11,11 +11,11 @@ from django.views.decorators.http import require_POST
 from core.models import Partner
 
 from .forms import (
-    ApplicationForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
+    ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
     JobOfferForm, MessageForm, NewConversationForm, StaffingRequestForm,
 )
 from .models import (
-    Appointment, Application, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
+    Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
@@ -100,7 +100,7 @@ def offer_detail(request, slug, form=None):
         applied = Application.objects.filter(candidate=profile, offer=offer).exists()
     return render(request, 'emploi/offer_detail.html', {
         'offer': offer, 'applied': applied, 'profile': profile,
-        'form': form or ApplicationForm(offer=offer), 'owner': owner,
+        'form': form or ApplicationForm(offer=offer, profile=profile), 'owner': owner,
     })
 
 
@@ -115,7 +115,7 @@ def offer_apply(request, slug):
     if not offer.is_open:
         messages.error(request, "Cette offre n'accepte plus de candidatures.")
         return redirect(offer)
-    form = ApplicationForm(request.POST, offer=offer)
+    form = ApplicationForm(request.POST, offer=offer, profile=profile)
     if not form.is_valid():
         return offer_detail(request, slug, form=form)
     text = form.cleaned_data['text']
@@ -125,6 +125,8 @@ def offer_apply(request, slug):
             'origin': 'candidate',
             'cover_letter': text if offer.requires_cover_letter else '',
             'message': '' if offer.requires_cover_letter else text,
+            'internship_duration': form.cleaned_data.get('internship_duration', ''),
+            'available_from': form.cleaned_data.get('available_from'),
         },
     )
     if created:
@@ -145,6 +147,9 @@ def candidate_list(request):
     q = request.GET.get('q', '').strip()
     domain = request.GET.get('domain', '')
     city = request.GET.get('city', '').strip()
+    stage = request.GET.get('stage') == '1'
+    if stage:
+        qs = qs.filter(seeking_internship=True)
     if q:
         qs = qs.filter(Q(headline__icontains=q) | Q(skills__name__icontains=q)).distinct()
     if domain:
@@ -152,7 +157,8 @@ def candidate_list(request):
     if city:
         qs = qs.filter(city__icontains=city, show_city=True)
     return render(request, 'emploi/candidate_list.html', {
-        'page': _page(request, qs), 'qs': _qs(request), 'q': q, 'domain': domain, 'city': city, 'domains': DOMAIN_CHOICES,
+        'page': _page(request, qs), 'qs': _qs(request), 'q': q, 'domain': domain, 'city': city, 'stage': stage,
+        'domains': DOMAIN_CHOICES,
     })
 
 
@@ -165,6 +171,35 @@ def candidate_detail(request, pk):
         'private_ok': can_see_private(request.user, candidate),
         'is_me': request.user.is_authenticated and candidate.user_id == request.user.pk,
     })
+
+
+@login_required
+def availability(request, pk):
+    """Le candidat présélectionné indique quand il est disponible pour l'entretien."""
+    application = get_object_or_404(Application.objects.select_related('offer', 'request', 'candidate__user'),
+                                    pk=pk, candidate__user=request.user)
+    if application.status not in ('shortlisted', 'interview'):
+        messages.info(request, "Cette candidature n'est pas à l'étape de l'entretien.")
+        return redirect('emploi:dashboard')
+    existing = list(application.slots.all())
+    initial = {f'slot{i}': slot.start.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%dT%H:%M')
+               for i, slot in enumerate(existing[:3], start=1)}
+    if existing:
+        initial['note'] = existing[0].note
+    form = AvailabilityForm(request.POST or None, initial=initial)
+    if request.method == 'POST' and form.is_valid():
+        application.slots.all().delete()
+        note = form.cleaned_data.get('note', '')
+        slots = [AvailabilitySlot.objects.create(application=application, start=when, note=note)
+                 for when in form.slots()]
+        target = application.offer or application.request
+        when_txt = ", ".join(timezone.localtime(s.start).strftime('%d/%m %H:%M') for s in slots)
+        notify_staff(f"{application.candidate.name} est disponible pour l'entretien « {target} » : {when_txt}",
+                     f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
+        messages.success(request, "✓ Merci ! Lantante vous confirme la date de l'entretien très vite.")
+        return redirect('emploi:dashboard')
+    return render(request, 'emploi/availability.html', {'form': form, 'application': application,
+                                                       'target': application.offer or application.request})
 
 
 @login_required

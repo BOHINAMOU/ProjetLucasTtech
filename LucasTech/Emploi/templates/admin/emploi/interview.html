@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <p><a href="{{ back_url }}">← Retour à la candidature</a></p>
+    <h4>Fixer l'entretien de {{ application.candidate.name }}</h4>
+    <p>Poste : <b>{{ target }}</b>{% if application.employer %} · {{ application.employer.company_name }}{% endif %}</p>
+    <h6>Disponibilités proposées par le candidat</h6>
+    {% if slots %}
+    <ul>{% for s in slots %}<li>{{ s.start|date:"l d/m/Y à H:i" }}{% if s.note %} — {{ s.note }}{% endif %}
+      <button type="button" class="btn btn-xs btn-outline-primary ml-2" onclick="document.getElementById('when').value='{{ s.start|date:"Y-m-d\TH:i" }}'">Utiliser ce créneau</button></li>{% endfor %}</ul>
+    {% else %}
+    <p class="text-muted">Le candidat n'a pas encore indiqué ses disponibilités. Vous pouvez fixer une date quand même.</p>
+    {% endif %}
+    <form method="post">{% csrf_token %}
+      <div class="form-group"><label>Date et heure</label><input class="form-control" type="datetime-local" id="when" name="when" required></div>
+      <div class="form-group"><label>Lieu ou lien visio</label><input class="form-control" type="text" name="place" maxlength="200" placeholder="Ex : bureau de l'entreprise, ou lien Google Meet"></div>
+      <div class="form-group"><label>Notes pour le candidat</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
+      <button class="btn btn-success" type="submit"><i class="fas fa-calendar-check"></i> Fixer l'entretien et prévenir le candidat</button>
+      <a class="btn btn-default" href="{{ back_url }}">Annuler</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

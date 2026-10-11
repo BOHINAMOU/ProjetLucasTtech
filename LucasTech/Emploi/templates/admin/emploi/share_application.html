@@ -10,6 +10,7 @@
       <li>Coordonnées : {{ application.candidate.user.email }}{% if application.candidate.phone %} · {{ application.candidate.phone }}{% endif %}</li>
       <li>CV : {% if application.candidate.cv %}oui{% else %}<b>non fourni</b>{% endif %}</li>
       <li>Diplômes / documents : {{ application.candidate.documents.count }}</li>
+      {% if application.internship_duration %}<li>Stage : {{ application.internship_duration }}{% if application.available_from %} · à partir du {{ application.available_from|date:"d/m/Y" }}{% endif %}</li>{% endif %}
       <li>Lettre de motivation : {% if application.cover_letter %}oui{% elif application.offer.requires_cover_letter %}<b>demandée mais absente</b>{% else %}non demandée{% endif %}</li>
     </ul>
     {% if application.cover_letter %}<blockquote style="white-space:pre-line">{{ application.cover_letter }}</blockquote>{% endif %}

@@ -16,6 +16,7 @@
         {% if candidate.education_level %}<span class="em-tag">{{ candidate.get_education_level_display }}</span>{% endif %}
       {% endif %}
       {% if candidate.available %}<span class="em-tag em-tag--green">Disponible</span>{% endif %}
+      {% if candidate.seeking_internship %}<span class="em-tag em-tag--warn">Cherche un stage{% if candidate.internship_duration %} · {{ candidate.internship_duration }}{% endif %}{% if candidate.available_from %} · dès le {{ candidate.available_from|date:"d/m/Y" }}{% endif %}</span>{% endif %}
     </div>
     {% if candidate.show_bio and candidate.bio %}<div class="em-card" style="margin-bottom:16px"><h3>À propos</h3><p style="white-space:pre-line">{{ candidate.bio }}</p></div>{% endif %}
     {% if candidate.skills.exists %}<div class="em-card"><h3>Compétences</h3><div class="em-meta">{% for s in candidate.skills.all %}<span class="em-tag">{{ s.name }}</span>{% endfor %}</div></div>{% endif %}

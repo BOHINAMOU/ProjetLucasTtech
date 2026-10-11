@@ -11,6 +11,7 @@
       <span class="em-tag">{{ offer.get_domain_display }}</span>
       {% if offer.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ offer.city }}</span>{% endif %}
       {% if offer.salary %}<span class="em-tag">{{ offer.salary }}</span>{% endif %}
+      {% if offer.duration %}<span class="em-tag"><i class="far fa-clock"></i> Durée : {{ offer.duration }}</span>{% endif %}
       {% if offer.deadline %}<span class="em-tag em-tag--warn">Avant le {{ offer.deadline|date:"d/m/Y" }}</span>{% endif %}
     </div>
     <div class="em-card"><h3>Description du poste</h3><p style="white-space:pre-line">{{ offer.description }}</p>
@@ -53,6 +54,17 @@
           </div>
         </fieldset>
         <form method="post" action="{% url 'emploi:offer_apply' offer.slug %}">{% csrf_token %}
+          {% if form.internship_duration %}
+          <div class="em-field">
+            <label for="{{ form.internship_duration.id_for_label }}">{{ form.internship_duration.label }} *</label>
+            {{ form.internship_duration }}
+            {% for e in form.internship_duration.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="em-field">
+            <label for="{{ form.available_from.id_for_label }}">{{ form.available_from.label }}</label>
+            {{ form.available_from }}
+          </div>
+          {% endif %}
           <div class="em-field">
             <label for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
             {{ form.text }}

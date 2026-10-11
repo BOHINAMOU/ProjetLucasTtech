@@ -9,6 +9,7 @@
   <div class="em-meta">
     <span class="em-tag em-tag--green">{{ offer.get_contract_display }}</span>
     <span class="em-tag">{{ offer.get_domain_display }}</span>
+    {% if offer.duration %}<span class="em-tag">{{ offer.duration }}</span>{% endif %}
     {% if offer.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ offer.city }}</span>{% endif %}
     {% if offer.is_featured %}<span class="em-tag em-tag--warn">À la une</span>{% endif %}
   </div>

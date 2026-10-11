@@ -55,9 +55,11 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
     class Meta:
         model = CandidateProfile
         fields = ['headline', 'domain', 'city', 'bio', 'experience_years', 'education_level',
-                  'contract_wanted', 'available', 'phone', 'cv',
+                  'contract_wanted', 'available', 'seeking_internship', 'internship_duration', 'available_from',
+                  'phone', 'cv',
                   'show_photo', 'show_city', 'show_bio', 'show_experience', 'share_with_recruiters']
-        widgets = {'bio': forms.Textarea(attrs={'rows': 5})}
+        widgets = {'bio': forms.Textarea(attrs={'rows': 5}),
+                   'available_from': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')}
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -157,7 +159,7 @@ class JobOfferForm(SkillsTextMixin, forms.ModelForm):
     class Meta:
         model = JobOffer
         fields = ['title', 'domain', 'contract', 'city', 'description', 'requirements',
-                  'salary', 'deadline', 'requires_cover_letter']
+                  'salary', 'duration', 'deadline', 'requires_cover_letter']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
             'requirements': forms.Textarea(attrs={'rows': 4}),
@@ -191,9 +193,20 @@ class ApplicationForm(forms.Form):
     """Un seul champ : lettre de motivation (obligatoire si l'offre la demande) ou petit message."""
     text = forms.CharField(required=False, max_length=5000, widget=forms.Textarea(attrs={'rows': 6}))
 
-    def __init__(self, *args, offer=None, **kwargs):
+    def __init__(self, *args, offer=None, profile=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.needs_letter = bool(offer and offer.requires_cover_letter)
+        self.is_internship = bool(offer and offer.contract == 'stage')
+        if self.is_internship:
+            # Stage : le candidat précise la durée souhaitée et sa date de début.
+            self.fields['internship_duration'] = forms.CharField(
+                max_length=60, label="Durée de stage souhaitée",
+                initial=(profile.internship_duration if profile else '') or offer.duration,
+                widget=forms.TextInput(attrs={'placeholder': 'Ex : 3 mois'}))
+            self.fields['available_from'] = forms.DateField(
+                required=False, label="Disponible à partir du",
+                initial=profile.available_from if profile else None,
+                widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
         field = self.fields['text']
         if self.needs_letter:
             field.required = True
@@ -210,6 +223,34 @@ class ApplicationForm(forms.Form):
             raise forms.ValidationError(
                 f"La lettre de motivation est demandée : écrivez au moins {COVER_LETTER_MIN} caractères.")
         return text
+
+
+class AvailabilityForm(forms.Form):
+    """Disponibilités proposées par un candidat présélectionné pour son entretien."""
+    slot1 = forms.DateTimeField(label="Disponibilité 1", widget=forms.DateTimeInput(
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'))
+    slot2 = forms.DateTimeField(label="Disponibilité 2 (facultatif)", required=False, widget=forms.DateTimeInput(
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'))
+    slot3 = forms.DateTimeField(label="Disponibilité 3 (facultatif)", required=False, widget=forms.DateTimeInput(
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'))
+    note = forms.CharField(label="Précision (facultatif)", required=False, max_length=200,
+                           widget=forms.TextInput(attrs={'placeholder': "Ex : plutôt le matin, ou par appel / en visio"}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _style(self)
+
+    def clean(self):
+        from django.utils import timezone
+        cleaned = super().clean()
+        for name in ('slot1', 'slot2', 'slot3'):
+            value = cleaned.get(name)
+            if value and value < timezone.now():
+                self.add_error(name, "Choisissez une date à venir.")
+        return cleaned
+
+    def slots(self):
+        return [self.cleaned_data[n] for n in ('slot1', 'slot2', 'slot3') if self.cleaned_data.get(n)]
 
 
 class FeedPostForm(forms.ModelForm):

@@ -30,7 +30,11 @@
   <div class="em-grid">{% for a in applications %}
     <article class="em-card"><h3>{% if a.offer %}<a href="{{ a.offer.get_absolute_url }}" style="text-decoration:none">{{ a.offer.title }}</a>{% else %}{{ a.request.title }}{% endif %}</h3>
       <div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{{ a.get_origin_display }}</span></div>
-      <div class="em-muted">{{ a.created_at|date:"d/m/Y" }}</div></article>
+      <div class="em-muted">{% if a.employer %}{{ a.employer.company_name }}{% else %}Lantante Technologie{% endif %} · {{ a.created_at|date:"d/m/Y" }}</div>
+      {% if a.status == 'shortlisted' %}<div class="em-status em-status--approved" style="margin:0"><b>Vous êtes présélectionné(e) !</b> <a href="{% url 'emploi:availability' a.pk %}"><b>{% if a.slots.exists %}Modifier mes disponibilités{% else %}Indiquer mes disponibilités pour l'entretien{% endif %}</b></a>{% if a.status_message %}<br>{{ a.status_message|linebreaksbr }}{% endif %}</div>
+      {% elif a.status == 'interview' %}<div class="em-status em-status--approved" style="margin:0">Entretien en cours d'organisation. <a href="{% url 'emploi:appointments' %}"><b>Voir mes rendez-vous</b></a></div>
+      {% elif a.status == 'refused' %}<div class="em-status em-status--rejected" style="margin:0">Candidature non retenue.{% if a.status_message %}<br><b>Motif :</b> {{ a.status_message|linebreaksbr }}{% endif %}</div>
+      {% elif a.status == 'hired' %}<div class="em-status em-status--approved" style="margin:0"><b>Félicitations, vous êtes embauché(e) !</b></div>{% endif %}</article>
   {% endfor %}</div>
   {% else %}<div class="em-empty">Aucune candidature pour le moment. <a href="{% url 'emploi:offer_list' %}">Parcourir les offres</a>.</div>{% endif %}
   {% if appointments %}
@@ -70,7 +74,7 @@
   {% else %}<div class="em-empty">Aucune demande.</div>{% endif %}
   {% if offer_apps %}
   <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Dossiers transmis par Lantante</h3>
-  <div class="em-grid">{% for a in offer_apps %}<article class="em-card"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div><div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span></div>{% if a.cover_letter %}<details><summary style="cursor:pointer;font-weight:600;color:var(--em-navy)">Lettre de motivation</summary><p style="white-space:pre-line;margin-top:6px">{{ a.cover_letter }}</p></details>{% endif %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ a.candidate.get_absolute_url }}" style="align-self:flex-start">Voir le dossier (CV, contacts)</a></article>{% endfor %}</div>
+  <div class="em-grid">{% for a in offer_apps %}<article class="em-card"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div><div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span></div>{% if a.internship_duration %}<div class="em-muted">Stage souhaité : {{ a.internship_duration }}{% if a.available_from %} · à partir du {{ a.available_from|date:"d/m/Y" }}{% endif %}</div>{% endif %}{% if a.cover_letter %}<details><summary style="cursor:pointer;font-weight:600;color:var(--em-navy)">Lettre de motivation</summary><p style="white-space:pre-line;margin-top:6px">{{ a.cover_letter }}</p></details>{% endif %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ a.candidate.get_absolute_url }}" style="align-self:flex-start">Voir le dossier (CV, contacts)</a></article>{% endfor %}</div>
   {% endif %}
 </section>
 {% endif %}

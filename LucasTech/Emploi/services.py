@@ -46,9 +46,12 @@ def share_application(application):
     if not application.shared_with_employer:
         application.shared_with_employer = True
         application.shared_at = timezone.now()
-        if application.status == 'received':
+        newly_shortlisted = application.status == 'received'
+        if newly_shortlisted:
             application.status = 'shortlisted'
         application.save()
+        if newly_shortlisted:
+            notify_application_status(application)
     target = application.offer or application.request
     notify(employer.user,
            f"Lantante vous transmet le dossier de {application.candidate.name} pour « {target} » (CV, contacts"
@@ -58,6 +61,37 @@ def share_application(application):
            f"Votre dossier pour « {target} » a été transmis à {employer.company_name}. L'entreprise peut vous contacter.",
            '/emploi/mon-espace/')
     return True
+
+
+def notify_application_status(application):
+    """Prévient le candidat (site + e-mail) quand le statut de sa candidature change."""
+    target = application.offer or application.request
+    extra = application.status_message.strip()
+    status = application.status
+    url = '/emploi/mon-espace/'
+    if status == 'shortlisted':
+        text = (f"Bonne nouvelle : vous êtes présélectionné(e) pour « {target} ». "
+                "Connectez-vous et indiquez vos disponibilités pour l'entretien.")
+        if extra:
+            text += f"\n\n{extra}"
+        url = f'/emploi/candidatures/{application.pk}/disponibilites/'
+    elif status == 'interview':
+        text = f"Votre entretien pour « {target} » est en cours d'organisation."
+        if extra:
+            text += f"\n\n{extra}"
+        url = '/emploi/rendez-vous/'
+    elif status == 'hired':
+        text = f"Félicitations ! Votre candidature pour « {target} » est retenue : vous êtes embauché(e)."
+        if extra:
+            text += f"\n\n{extra}"
+    elif status == 'refused':
+        text = f"Votre candidature pour « {target} » n'a pas été retenue."
+        text += f"\n\nMotif : {extra}" if extra else ""
+        text += "\n\nMerci pour l'intérêt porté à ce poste : d'autres offres sont disponibles sur le site."
+        url = '/emploi/offres/'
+    else:
+        return None
+    return notify(application.candidate.user, text, url)
 
 
 def decide_employer(employer, status):

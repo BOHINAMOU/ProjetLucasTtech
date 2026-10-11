@@ -22,6 +22,11 @@
     {% include 'emploi/_field.html' with field=form.contract_wanted %}
     {% include 'emploi/_field.html' with field=form.available %}
   </fieldset>
+  <fieldset class="em-fieldset"><legend>Stage</legend>
+    {% include 'emploi/_field.html' with field=form.seeking_internship %}
+    {% include 'emploi/_field.html' with field=form.internship_duration %}
+    {% include 'emploi/_field.html' with field=form.available_from %}
+  </fieldset>
   <fieldset class="em-fieldset"><legend>CV et contact (privés)</legend>
     {% include 'emploi/_field.html' with field=form.phone %}
     {% include 'emploi/_field.html' with field=form.cv %}

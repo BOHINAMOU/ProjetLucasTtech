@@ -1,0 +1,12 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Mes disponibilités{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Quand êtes-vous disponible ?</h1>
+<p class="em-lead" style="margin-bottom:20px">Félicitations, vous êtes présélectionné(e) pour <b>{{ target }}</b>{% if application.employer %} ({{ application.employer.company_name }}){% endif %}. Proposez-nous jusqu'à trois créneaux pour l'entretien : Lantante confirmera la date avec vous.</p>
+<form class="em-form" method="post">
+  {% csrf_token %}
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-calendar-check"></i> Envoyer mes disponibilités</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}">Plus tard</a>
+</form>
+{% endblock %}
