@@ -1,52 +1,124 @@
 {% extends 'emploi/base_emploi.html' %}
 {% block em_title %}Mon espace{% endblock %}
 {% block em_content %}
-<h1 class="em-h1" style="margin-top:34px">Mon espace emploi</h1>
-<p class="em-lead" style="margin:8px 0 20px">Bonjour {{ user.public_name }} 👋 — gérez ici votre profil, vos candidatures et vos échanges avec Lantante.</p>
-<p><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-headset"></i> Écrire à l'équipe Lantante</a></p>
+<style>
+.ed-hero { margin:0 calc(-1 * clamp(1rem,4vw,2rem)); padding:clamp(28px,5vw,48px) clamp(1rem,4vw,2rem); background:linear-gradient(135deg,#0d3b7a,#163a63 60%,#0f5a4a); color:#fff; border-radius:0 0 28px 28px; display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; }
+.ed-hello { display:flex; align-items:center; gap:16px; min-width:0; }
+.ed-avatar { width:68px; height:68px; border-radius:50%; background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center; font-size:1.7rem; font-weight:700; overflow:hidden; flex:none; }
+.ed-avatar img { width:100%; height:100%; object-fit:cover; }
+.ed-hello h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.6rem,4vw,2.4rem); margin:0; line-height:1.15; color:#fff; overflow-wrap:anywhere; }
+.ed-hello p { margin:4px 0 0; color:#cfe0f3; font-size:.95rem; }
+.ed-tiles { display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:-26px; position:relative; }
+.ed-tile { background:#fff; border:1px solid var(--em-border); border-radius:16px; padding:16px; box-shadow:var(--em-shadow); text-decoration:none; color:inherit; display:flex; align-items:center; gap:12px; min-width:0; transition:transform .15s; }
+.ed-tile:hover { transform:translateY(-2px); }
+.ed-tile i { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--em-surf2); color:var(--em-navy); font-size:1.1rem; flex:none; }
+.ed-tile b { display:block; font-size:1.5rem; line-height:1; color:var(--em-navy); }
+.ed-tile span { font-size:.8rem; color:var(--em-muted); }
+.ed-two { display:grid; gap:18px; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); margin-top:26px; align-items:start; }
+.ed-bar { height:10px; background:var(--em-surf2); border-radius:99px; overflow:hidden; }
+.ed-bar > i { display:block; height:100%; background:linear-gradient(90deg,#0f7a45,#34d399); border-radius:99px; }
+.ed-check { list-style:none; padding:0; margin:10px 0 0; display:grid; gap:7px; }
+.ed-check li { display:flex; align-items:center; gap:9px; font-size:.9rem; color:var(--em-ink2); }
+.ed-check .ok { color:var(--em-green); }
+.ed-check .no { color:#cbd5e1; }
+.ed-check a { margin-left:auto; font-size:.8rem; font-weight:700; color:var(--em-navy); }
+.ed-app { gap:12px; }
+.ed-steps { display:flex; align-items:flex-start; margin:4px 0 2px; }
+.ed-step { flex:1; text-align:center; position:relative; font-size:.7rem; color:var(--em-muted); font-weight:600; }
+.ed-step::before { content:''; display:block; width:18px; height:18px; border-radius:50%; background:#e2e8f0; margin:0 auto 5px; position:relative; z-index:1; }
+.ed-step::after { content:''; position:absolute; top:8px; left:-50%; width:100%; height:2px; background:#e2e8f0; }
+.ed-step:first-child::after { display:none; }
+.ed-step.done::before { background:var(--em-green); }
+.ed-step.done::after { background:var(--em-green); }
+.ed-step.done { color:var(--em-green); }
+.ed-step.now::before { box-shadow:0 0 0 4px rgba(15,122,69,.2); }
+.ed-refused { background:#fee2e2; color:#991b1b; border-radius:10px; padding:8px 12px; font-size:.85rem; font-weight:600; }
+@media (max-width:900px) { .ed-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } .ed-two { grid-template-columns:minmax(0,1fr); } }
+</style>
+
+<section class="ed-hero">
+  <div class="ed-hello">
+    <div class="ed-avatar">{% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% else %}{{ user.public_name|slice:":1" }}{% endif %}</div>
+    <div style="min-width:0"><h1>Bonjour {{ user.first_name|default:user.public_name }} 👋</h1>
+      <p>Gérez votre profil, vos candidatures et vos échanges avec Lantante.</p></div>
+  </div>
+  <a class="em-btn em-btn--green" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-headset"></i> Écrire à l'équipe Lantante</a>
+</section>
+
+<div class="ed-tiles">
+  {% if candidate %}<a class="ed-tile" href="#candidatures"><i class="fas fa-paper-plane"></i><div><b>{{ apps_count }}</b><span>candidature{{ apps_count|pluralize }}</span></div></a>{% endif %}
+  {% if employer %}<a class="ed-tile" href="#entreprise"><i class="fas fa-bullhorn"></i><div><b>{{ employer.offers.count }}</b><span>offre{{ employer.offers.count|pluralize }}</span></div></a>{% endif %}
+  <a class="ed-tile" href="{% url 'emploi:appointments' %}"><i class="far fa-calendar-check"></i><div><b>{{ appointments|length }}</b><span>rendez-vous à venir</span></div></a>
+  <a class="ed-tile" href="{% url 'emploi:inbox' %}"><i class="far fa-comments"></i><div><b>{{ em_unread_msgs|default:0 }}</b><span>message{{ em_unread_msgs|pluralize }} non lu{{ em_unread_msgs|pluralize }}</span></div></a>
+  <a class="ed-tile" href="{% url 'emploi:notifications' %}"><i class="far fa-bell"></i><div><b>{{ em_unread_notifs|default:0 }}</b><span>notification{{ em_unread_notifs|pluralize }}</span></div></a>
+  {% if candidate %}<a class="ed-tile" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-user-check"></i><div><b>{{ completion }}%</b><span>profil complété</span></div></a>{% endif %}
+</div>
 
 {% if not candidate and not employer %}
-<div class="em-grid" style="margin-top:22px">
+<div class="em-grid" style="margin-top:26px">
   <div class="em-card"><h3><i class="fas fa-user-graduate"></i> Je cherche un emploi</h3><p>Créez votre profil candidat et déposez votre CV.</p><a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
   <div class="em-card"><h3><i class="fas fa-building"></i> Je recrute</h3><p>Inscrivez votre entreprise pour publier des offres et déposer des demandes.</p><a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a></div>
 </div>
 {% endif %}
 
 {% if candidate %}
-<section class="em-section">
-  <h2 class="em-h2">Mon profil candidat</h2>
-  <div class="em-card">
-    <div class="em-row"><div style="min-width:0"><h3>{{ candidate.name }} — {{ candidate.headline }}</h3>
-      <div class="em-meta" style="margin-top:6px">
-        <span class="em-tag {% if candidate.is_published %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if candidate.is_published %}Profil publié{% else %}Profil masqué{% endif %}</span>
-        <span class="em-tag">{% if candidate.cv %}CV ajouté{% else %}CV manquant{% endif %}</span>
-        <span class="em-tag">{{ candidate.skills.count }} compétence{{ candidate.skills.count|pluralize }}</span></div></div></div>
-    <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}">Modifier mon profil</a>
+<div class="ed-two">
+  <section class="em-card" style="gap:12px">
+    <div class="em-row"><div class="ed-avatar" style="background:var(--em-surf2);color:var(--em-navy);border-color:var(--em-border);width:52px;height:52px;font-size:1.2rem">{% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% else %}{{ candidate.name|slice:":1" }}{% endif %}</div>
+      <div style="min-width:0"><h3>{{ candidate.name }}</h3><div class="em-muted">{{ candidate.headline }}</div></div></div>
+    <div class="em-meta">
+      <span class="em-tag {% if candidate.is_published %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if candidate.is_published %}Profil publié{% else %}Profil masqué{% endif %}</span>
+      {% if candidate.seeking_internship %}<span class="em-tag em-tag--warn">Cherche un stage</span>{% endif %}
+    </div>
+    <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-pen"></i> Modifier mon profil</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:documents' %}"><i class="fas fa-graduation-cap"></i> Mes diplômes ({{ candidate.documents.count }})</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Voir mon profil (tel que les recruteurs le voient)</a></div>
-  </div>
-  <h2 class="em-h2" style="margin-top:26px">Mes candidatures et propositions</h2>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Aperçu recruteur</a></div>
+  </section>
+  <section class="em-card">
+    <h3>Complétez votre profil — {{ completion }}%</h3>
+    <div class="ed-bar"><i style="width:{{ completion }}%"></i></div>
+    <ul class="ed-check">
+      {% for label, done, url in checks %}
+      <li><i class="fas {% if done %}fa-circle-check ok{% else %}fa-circle no{% endif %}"></i> {{ label }}{% if not done %}<a href="{{ url }}">Ajouter</a>{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<section class="em-section" id="candidatures">
+  <h2 class="em-h2">Mes candidatures et propositions</h2>
   {% if applications %}
   <div class="em-grid">{% for a in applications %}
-    <article class="em-card"><h3>{% if a.offer %}<a href="{{ a.offer.get_absolute_url }}" style="text-decoration:none">{{ a.offer.title }}</a>{% else %}{{ a.request.title }}{% endif %}</h3>
-      <div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{{ a.get_origin_display }}</span></div>
+    <article class="em-card ed-app">
+      <h3>{% if a.offer %}<a href="{{ a.offer.get_absolute_url }}" style="text-decoration:none">{{ a.offer.title }}</a>{% else %}{{ a.request.title }}{% endif %}</h3>
       <div class="em-muted">{% if a.employer %}{{ a.employer.company_name }}{% else %}Lantante Technologie{% endif %} · {{ a.created_at|date:"d/m/Y" }}</div>
+      {% if a.status == 'refused' %}
+        <div class="ed-refused">Candidature non retenue{% if a.status_message %}<br><span style="font-weight:500">Motif : {{ a.status_message|linebreaksbr }}</span>{% endif %}</div>
+      {% else %}
+        <div class="ed-steps">
+          <div class="ed-step {% if a.step_index >= 0 %}done{% endif %}{% if a.step_index == 0 %} now{% endif %}">En attente</div>
+          <div class="ed-step {% if a.step_index >= 1 %}done{% endif %}{% if a.step_index == 1 %} now{% endif %}">Présélectionné</div>
+          <div class="ed-step {% if a.step_index >= 2 %}done{% endif %}{% if a.step_index == 2 %} now{% endif %}">Entretien</div>
+          <div class="ed-step {% if a.step_index >= 3 %}done{% endif %}{% if a.step_index == 3 %} now{% endif %}">Accepté</div>
+        </div>
+      {% endif %}
       {% if a.status == 'shortlisted' %}<div class="em-status em-status--approved" style="margin:0"><b>Vous êtes présélectionné(e) !</b> <a href="{% url 'emploi:availability' a.pk %}"><b>{% if a.slots.exists %}Modifier mes disponibilités{% else %}Indiquer mes disponibilités pour l'entretien{% endif %}</b></a>{% if a.status_message %}<br>{{ a.status_message|linebreaksbr }}{% endif %}</div>
       {% elif a.status == 'interview' %}<div class="em-status em-status--approved" style="margin:0">Entretien en cours d'organisation. <a href="{% url 'emploi:appointments' %}"><b>Voir mes rendez-vous</b></a></div>
-      {% elif a.status == 'refused' %}<div class="em-status em-status--rejected" style="margin:0">Candidature non retenue.{% if a.status_message %}<br><b>Motif :</b> {{ a.status_message|linebreaksbr }}{% endif %}</div>
-      {% elif a.status == 'hired' %}<div class="em-status em-status--approved" style="margin:0"><b>Félicitations, vous êtes embauché(e) !</b></div>{% endif %}</article>
+      {% elif a.status == 'hired' %}<div class="em-status em-status--approved" style="margin:0"><b>Félicitations, votre candidature est acceptée !</b></div>
+      {% elif a.is_incomplete and a.status == 'received' %}<div class="em-status em-status--pending" style="margin:0">Dossier incomplet : il manque {{ a.missing_items|join:", " }}. <a href="{% url 'emploi:candidate_edit' %}"><b>Compléter</b></a></div>{% endif %}
+    </article>
   {% endfor %}</div>
   {% else %}<div class="em-empty">Aucune candidature pour le moment. <a href="{% url 'emploi:offer_list' %}">Parcourir les offres</a>.</div>{% endif %}
   {% if appointments %}
   <h2 class="em-h2" style="margin-top:26px">Prochains rendez-vous</h2>
-  <div class="em-grid">{% for ap in appointments %}<article class="em-card"><h3>{{ ap.title }}</h3><div class="em-muted">{{ ap.scheduled_at|date:"d/m/Y H:i" }}{% if ap.place %} · {{ ap.place }}{% endif %}</div><span class="em-tag" style="align-self:flex-start">{{ ap.get_status_display }}</span></article>{% endfor %}</div>
+  <div class="em-grid">{% for ap in appointments %}<article class="em-card"><h3>{{ ap.title }}</h3><div class="em-muted"><i class="far fa-calendar"></i> {{ ap.scheduled_at|date:"d/m/Y H:i" }}{% if ap.place %} · {{ ap.place }}{% endif %}</div><span class="em-tag" style="align-self:flex-start">{{ ap.get_status_display }}</span></article>{% endfor %}</div>
   <p style="margin-top:12px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:appointments' %}">Gérer mes rendez-vous</a></p>
   {% endif %}
 </section>
 {% endif %}
 
 {% if employer %}
-<section class="em-section">
+<section class="em-section" id="entreprise">
   <h2 class="em-h2">Mon entreprise : {{ employer.company_name }}</h2>
   {% if employer.status == 'pending' %}<div class="em-status em-status--pending"><b>Votre fiche est en cours d'analyse par Lantante.</b> Vous pourrez déposer vos demandes de recrutement dès qu'elle sera acceptée.</div>
   {% elif employer.status == 'rejected' %}<div class="em-status em-status--rejected"><b>Votre demande n'a pas été retenue.</b>{% if employer.decision_message %}<br>{{ employer.decision_message|linebreaksbr }}{% endif %}<br>Corrigez votre fiche puis renvoyez-la : <a href="{% url 'emploi:employer_edit' %}"><b>modifier ma fiche</b></a>.</div>

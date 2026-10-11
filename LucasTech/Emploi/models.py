@@ -352,11 +352,12 @@ class StaffingRequest(models.Model):
 class Application(models.Model):
     """Lien entre un candidat et une offre (ou une demande) + suivi du recrutement."""
     STATUS = [
-        ('received', "Reçue"),
+        ('received', "En attente"),
         ('shortlisted', "Présélectionné"),
         ('interview', "Entretien"),
-        ('hired', "Embauché"),
-        ('refused', "Refusé"),
+        ('hired', "Accepté"),
+        ('refused', "Rejeté"),
+        ('treated', "Traité"),
     ]
     ORIGIN = [('candidate', "Le candidat a postulé"), ('lantante', "Proposé par Lantante")]
 
@@ -391,6 +392,29 @@ class Application(models.Model):
     def __str__(self):
         target = self.offer or self.request
         return f"{self.candidate.name} → {target}"
+
+    @property
+    def missing_items(self):
+        """Éléments manquants du dossier (indicateur « Dossier incomplet », sans statut à part)."""
+        missing = []
+        if not self.candidate.cv:
+            missing.append("CV")
+        if not (self.candidate.phone or self.candidate.user.phone):
+            missing.append("numéro de téléphone")
+        if self.offer_id and self.offer.requires_cover_letter and not self.cover_letter.strip():
+            missing.append("lettre de motivation")
+        if self.offer_id and self.offer.contract == 'stage' and not self.internship_duration:
+            missing.append("durée de stage souhaitée")
+        return missing
+
+    @property
+    def is_incomplete(self):
+        return bool(self.missing_items)
+
+    @property
+    def step_index(self):
+        """Position dans le parcours affiché au candidat : attente, présélection, entretien, accepté."""
+        return {'received': 0, 'shortlisted': 1, 'interview': 2, 'hired': 3, 'treated': 3}.get(self.status, -1)
 
     @property
     def employer(self):

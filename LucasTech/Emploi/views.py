@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -316,6 +317,17 @@ def dashboard(request):
     employer = getattr(user, 'employer_profile', None)
     context = {'candidate': candidate, 'employer': employer}
     if candidate:
+        checks = [
+            ("Photo de profil", bool(user.avatar), reverse('emploi:candidate_edit')),
+            ("À propos de vous", bool(candidate.bio.strip()), reverse('emploi:candidate_edit')),
+            ("Compétences", candidate.skills.exists(), reverse('emploi:candidate_edit')),
+            ("CV (PDF)", bool(candidate.cv), reverse('emploi:candidate_edit')),
+            ("Diplômes et documents", candidate.documents.exists(), reverse('emploi:documents')),
+            ("Téléphone", bool(candidate.phone or user.phone), reverse('emploi:candidate_edit')),
+        ]
+        context['checks'] = checks
+        context['completion'] = round(100 * sum(1 for _, done, _ in checks if done) / len(checks))
+        context['apps_count'] = candidate.applications.count()
         context['applications'] = candidate.applications.select_related('offer', 'request')[:10]
         context['appointments'] = candidate.appointments.filter(
             scheduled_at__gte=timezone.now()).exclude(status__in=['declined', 'cancelled'])[:5]

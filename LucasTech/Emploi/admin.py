@@ -3,6 +3,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path, reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .models import (
     Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
@@ -287,20 +288,88 @@ class PlacementInline(admin.StackedInline):
     extra = 0
 
 
+class TreatmentFilter(admin.SimpleListFilter):
+    """Onglets de gestion : par défaut seule la liste « En attente » est affichée."""
+    title = "Traitement"
+    parameter_name = 'traitement'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('pending', "En attente"),
+            ('progress', "Présélectionnés / entretien"),
+            ('hired', "Acceptés"),
+            ('refused', "Rejetés"),
+            ('treated', "Traités"),
+            ('all', "Toutes"),
+        ]
+
+    def queryset(self, request, queryset):
+        value = self.value() or 'pending'
+        if value == 'pending':
+            return queryset.filter(status='received')
+        if value == 'progress':
+            return queryset.filter(status__in=('shortlisted', 'interview'))
+        if value in ('hired', 'refused', 'treated'):
+            return queryset.filter(status=value)
+        return queryset
+
+    def choices(self, changelist):
+        current = self.value() or 'pending'
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': current == lookup,
+                'query_string': changelist.get_query_string({self.parameter_name: lookup}),
+                'display': title,
+            }
+
+
+class CompletenessFilter(admin.SimpleListFilter):
+    title = "Dossier"
+    parameter_name = 'dossier'
+
+    def lookups(self, request, model_admin):
+        return [('incomplete', "Dossier incomplet"), ('complete', "Dossier complet")]
+
+    def queryset(self, request, queryset):
+        if self.value() not in ('incomplete', 'complete'):
+            return queryset
+        wanted = self.value() == 'incomplete'
+        ids = [a.pk for a in queryset.select_related('candidate__user', 'offer') if a.is_incomplete == wanted]
+        return queryset.filter(pk__in=ids)
+
+
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'company', 'offer', 'request', 'origin', 'status', 'shared_with_employer',
-                    'share_link', 'created_at')
-    list_filter = ('status', 'origin', 'shared_with_employer', 'offer__employer', 'offer__contract')
+    list_display = ('candidate', 'company', 'offer', 'request', 'completeness', 'status', 'shared_with_employer',
+                    'share_link', 'treat_link', 'created_at')
+    list_filter = (TreatmentFilter, CompletenessFilter, 'status', 'origin', 'shared_with_employer', 'offer__employer',
+                   'offer__contract')
     list_editable = ('status',)
-    readonly_fields = ('shared_at', 'share_link', 'interview_link', 'company')
-    actions = ['share_selected', 'mark_shortlisted', 'mark_refused']
+    readonly_fields = ('shared_at', 'share_link', 'interview_link', 'company', 'completeness')
+    actions = ['mark_shortlisted', 'share_selected', 'mark_refused', 'mark_treated', 'request_missing']
     change_list_template = 'admin/emploi/application_change_list.html'
 
     @admin.display(description="Entreprise (origine de l'offre)")
     def company(self, obj):
         employer = obj.employer
         return employer.company_name if employer else "Lantante (offre directe)"
+
+    @admin.display(description="Dossier")
+    def completeness(self, obj):
+        missing = obj.missing_items
+        if not obj.pk:
+            return "—"
+        if missing:
+            return format_html('<span class="badge badge-danger" title="{}">Dossier incomplet</span><br><small class="text-muted">{}</small>',
+                               ", ".join(missing), "Manque : " + ", ".join(missing))
+        return mark_safe('<span class="badge badge-success">Complet</span>')
+
+    @admin.display(description="Traiter")
+    def treat_link(self, obj):
+        if not obj.pk or obj.status == 'treated':
+            return "—"
+        url = reverse('admin:emploi_application_treat', args=[obj.pk])
+        return format_html('<a class="btn btn-xs btn-outline-secondary" href="{}"><i class="fas fa-check"></i> Traiter</a>', url)
 
     @admin.display(description="Entretien")
     def interview_link(self, obj):
@@ -315,6 +384,8 @@ class ApplicationAdmin(admin.ModelAdmin):
                  name='emploi_application_share'),
             path('<int:pk>/entretien/', self.admin_site.admin_view(self.interview_view),
                  name='emploi_application_interview'),
+            path('<int:pk>/traiter/', self.admin_site.admin_view(self.treat_view),
+                 name='emploi_application_treat'),
         ] + super().get_urls()
 
     @admin.display(description="Transmission à l'entreprise")
@@ -367,25 +438,52 @@ class ApplicationAdmin(admin.ModelAdmin):
             notify_application_status(obj)
 
     def changelist_view(self, request, extra_context=None):
-        apps = list(Application.objects.select_related('offer__employer', 'request__employer'))
-        total = len(apps)
+        apps = list(Application.objects.select_related('offer__employer', 'request__employer', 'candidate__user'))
         counts = {code: 0 for code, _ in Application.STATUS}
         companies = {}
+        incomplete = 0
         for app in apps:
             counts[app.status] += 1
+            if app.status == 'received' and app.is_incomplete:
+                incomplete += 1
             name = app.employer.company_name if app.employer else "Lantante (offres directes)"
-            row = companies.setdefault(name, {'name': name, 'total': 0, 'pending': 0, 'treated': 0})
+            row = companies.setdefault(name, {'name': name, 'total': 0, 'pending': 0, 'progress': 0, 'treated': 0})
             row['total'] += 1
-            row['pending' if app.status == 'received' else 'treated'] += 1
+            if app.status == 'received':
+                row['pending'] += 1
+            elif app.status in ('shortlisted', 'interview'):
+                row['progress'] += 1
+            else:
+                row['treated'] += 1
         extra_context = extra_context or {}
+        extra_context['tab'] = request.GET.get('traitement') or 'pending'
         extra_context['stats'] = {
-            'total': total,
+            'total': len(apps),
             'pending': counts['received'],
-            'treated': total - counts['received'],
-            'by_status': [(label, counts[code]) for code, label in Application.STATUS],
+            'incomplete': incomplete,
+            'progress': counts['shortlisted'] + counts['interview'],
+            'hired': counts['hired'],
+            'refused': counts['refused'],
+            'treated': counts['treated'],
             'companies': sorted(companies.values(), key=lambda r: -r['total']),
         }
         return super().changelist_view(request, extra_context=extra_context)
+
+    def treat_view(self, request, pk):
+        application = get_object_or_404(Application.objects.select_related('candidate__user', 'offer', 'request'), pk=pk)
+        if not self.has_change_permission(request, application):
+            raise PermissionDenied
+        back = reverse('admin:Emploi_application_changelist')
+        if request.method == 'POST':
+            application.status = 'treated'
+            application.save(update_fields=['status', 'updated_at'])
+            messages.success(request, f"Candidature de {application.candidate.name} marquée « Traité » : "
+                                      "elle quitte la liste « En attente » et reste dans l'archive.")
+            return redirect(back)
+        return render(request, 'admin/emploi/treat.html', {
+            **self.admin_site.each_context(request), 'opts': self.model._meta,
+            'title': "Marquer la candidature comme traitée", 'application': application, 'back_url': back,
+        })
 
     def interview_view(self, request, pk):
         application = get_object_or_404(Application.objects.select_related('candidate__user', 'offer', 'request'), pk=pk)
@@ -426,6 +524,26 @@ class ApplicationAdmin(admin.ModelAdmin):
             'slots': application.slots.all(),
         }
         return render(request, 'admin/emploi/interview.html', context)
+
+    @admin.action(description="✓ Marquer comme traité (quitte la liste « En attente », reste dans l'archive)")
+    def mark_treated(self, request, queryset):
+        count = queryset.exclude(status='treated').update(status='treated')
+        self.message_user(request, f"{count} candidature(s) marquée(s) « Traité » : elles quittent la liste « En attente ».")
+
+    @admin.action(description="📎 Demander les éléments manquants au candidat")
+    def request_missing(self, request, queryset):
+        count = 0
+        for app in queryset.select_related('candidate__user', 'offer', 'request'):
+            missing = app.missing_items
+            if not missing:
+                continue
+            target = app.offer or app.request
+            notify(app.candidate.user,
+                   f"Votre dossier pour « {target} » est incomplet. Merci de nous fournir : {', '.join(missing)}. "
+                   "Vous pouvez compléter votre profil et vos documents depuis « Mon espace ».",
+                   '/emploi/mon-espace/')
+            count += 1
+        self.message_user(request, f"{count} candidat(s) invité(s) à compléter leur dossier.")
 
     @admin.action(description="⭐ Présélectionner (e-mail + demande de disponibilités)")
     def mark_shortlisted(self, request, queryset):

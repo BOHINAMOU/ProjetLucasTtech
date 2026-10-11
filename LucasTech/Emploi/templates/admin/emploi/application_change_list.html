@@ -1,21 +1,35 @@
 {% extends "admin/change_list.html" %}
 {% block date_hierarchy %}
+<style>
+.em-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; padding:0; list-style:none; }
+.em-tabs a { display:flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; background:#fff; border:1px solid #dfe3ea; color:#334155; font-weight:600; text-decoration:none; transition:all .15s; }
+.em-tabs a:hover { border-color:#0d3b7a; color:#0d3b7a; }
+.em-tabs a.on { background:#0d3b7a; color:#fff; border-color:#0d3b7a; box-shadow:0 4px 12px rgba(13,59,122,.25); }
+.em-tabs .n { min-width:24px; padding:1px 8px; border-radius:999px; background:#eef2f7; color:#334155; font-size:.78rem; text-align:center; }
+.em-tabs a.on .n { background:rgba(255,255,255,.2); color:#fff; }
+.em-tabs .n.warn { background:#fde68a; color:#92400e; }
+.em-hint { color:#64748b; font-size:.88rem; margin:0 0 12px; }
+</style>
 <div class="col-12 pb-3">
-  <div class="row">
-    <div class="col-6 col-md-3"><div class="card"><div class="card-body text-center"><h3 class="mb-0">{{ stats.total }}</h3><small class="text-muted">Candidatures reçues</small></div></div></div>
-    <div class="col-6 col-md-3"><div class="card"><div class="card-body text-center"><h3 class="mb-0 text-warning">{{ stats.pending }}</h3><small class="text-muted">En attente de traitement</small></div></div></div>
-    <div class="col-6 col-md-3"><div class="card"><div class="card-body text-center"><h3 class="mb-0 text-success">{{ stats.treated }}</h3><small class="text-muted">Déjà traitées</small></div></div></div>
-    <div class="col-6 col-md-3"><div class="card"><div class="card-body">
-      {% for label, n in stats.by_status %}<div class="d-flex justify-content-between"><span>{{ label }}</span><b>{{ n }}</b></div>{% endfor %}
-    </div></div></div>
-  </div>
+  <ul class="em-tabs">
+    <li><a class="{% if tab == 'pending' %}on{% endif %}" href="?traitement=pending"><i class="far fa-clock"></i> En attente <span class="n {% if stats.pending %}warn{% endif %}">{{ stats.pending }}</span></a></li>
+    <li><a class="{% if tab == 'progress' %}on{% endif %}" href="?traitement=progress"><i class="fas fa-star"></i> Présélectionnés <span class="n">{{ stats.progress }}</span></a></li>
+    <li><a class="{% if tab == 'hired' %}on{% endif %}" href="?traitement=hired"><i class="fas fa-check-circle"></i> Acceptés <span class="n">{{ stats.hired }}</span></a></li>
+    <li><a class="{% if tab == 'refused' %}on{% endif %}" href="?traitement=refused"><i class="fas fa-times-circle"></i> Rejetés <span class="n">{{ stats.refused }}</span></a></li>
+    <li><a class="{% if tab == 'treated' %}on{% endif %}" href="?traitement=treated"><i class="fas fa-archive"></i> Traités <span class="n">{{ stats.treated }}</span></a></li>
+    <li><a class="{% if tab == 'all' %}on{% endif %}" href="?traitement=all"><i class="fas fa-list"></i> Toutes <span class="n">{{ stats.total }}</span></a></li>
+  </ul>
+  {% if tab == 'pending' %}
+  <p class="em-hint"><i class="fas fa-info-circle"></i> Voici les candidatures à traiter. {% if stats.incomplete %}<b>{{ stats.incomplete }} dossier{{ stats.incomplete|pluralize }} incomplet{{ stats.incomplete|pluralize }}</b> (voir la colonne « Dossier » : vous pouvez demander les éléments manquants au candidat). {% endif %}Une candidature présélectionnée, acceptée, rejetée ou traitée quitte cette liste, sans jamais être supprimée.</p>
+  {% endif %}
   {% if stats.companies %}
-  <div class="card"><div class="card-body p-2">
+  <details class="mb-2"><summary style="cursor:pointer;font-weight:600;color:#0d3b7a">Suivi par entreprise (origine des offres)</summary>
+  <div class="card mt-2"><div class="card-body p-2">
     <table class="table table-sm mb-0">
-      <thead><tr><th>Entreprise (origine des offres)</th><th class="text-center">Candidatures</th><th class="text-center">En attente</th><th class="text-center">Traitées</th></tr></thead>
-      <tbody>{% for row in stats.companies %}<tr><td>{{ row.name }}</td><td class="text-center">{{ row.total }}</td><td class="text-center">{{ row.pending }}</td><td class="text-center">{{ row.treated }}</td></tr>{% endfor %}</tbody>
+      <thead><tr><th>Entreprise</th><th class="text-center">Total</th><th class="text-center">En attente</th><th class="text-center">Présélectionnés</th><th class="text-center">Terminées</th></tr></thead>
+      <tbody>{% for row in stats.companies %}<tr><td>{{ row.name }}</td><td class="text-center">{{ row.total }}</td><td class="text-center">{{ row.pending }}</td><td class="text-center">{{ row.progress }}</td><td class="text-center">{{ row.treated }}</td></tr>{% endfor %}</tbody>
     </table>
-  </div></div>
+  </div></div></details>
   {% endif %}
 </div>
 {{ block.super }}
