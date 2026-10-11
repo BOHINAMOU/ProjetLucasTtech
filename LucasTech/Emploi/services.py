@@ -32,8 +32,7 @@ def notify(user, text, url='', email=True):
 
 def notify_staff(text, url=''):
     """Prévient toute l'équipe Lantante (comptes administrateurs actifs)."""
-    User = get_user_model()
-    for staff in User.objects.filter(is_active=True).filter(Q(is_staff=True) | Q(is_superuser=True)):
+    for staff in staff_users():
         notify(staff, text, url)
 
 
@@ -94,6 +93,86 @@ def notify_application_status(application):
     return notify(application.candidate.user, text, url)
 
 
+# ── Service client : accusé de réception, présentation et changement d'interlocuteur
+AUTO_ACK = (
+    "Bonjour, nous vous remercions d'avoir contacté Lantante Technologie.\n\n"
+    "Nous avons bien reçu votre message. Un membre de notre équipe vous répondra dès que possible.\n\n"
+    "Merci pour votre confiance."
+)
+
+
+def staff_full_name(user):
+    return user.get_full_name().strip() or "un membre de l'équipe"
+
+
+def staff_title(user):
+    return getattr(getattr(user, 'staff_profile', None), 'job_title', '')
+
+
+def intro_text(staff):
+    """Présentation du collaborateur : son identité vient de son propre compte, jamais d'un autre."""
+    name, title = staff_full_name(staff), staff_title(staff)
+    who = f"{name}, {title}" if title else name
+    return (
+        "Bonjour Monsieur/Madame,\n\n"
+        f"Je me présente, {who}, membre de l'équipe de Lantante Technologie. Je prends en charge votre demande "
+        "et serai votre interlocuteur pour la suite de nos échanges.\n\n"
+        "Merci pour votre confiance.\n\n"
+        f"Cordialement,\n{name}\nLantante Technologie"
+    )
+
+
+def post_auto_message(conversation, body):
+    from .models import Message
+    return Message.objects.create(conversation=conversation, sender=None, body=body, is_automatic=True)
+
+
+def send_auto_ack(conversation):
+    """Accusé de réception : une seule fois par conversation."""
+    if conversation.auto_reply_sent:
+        return None
+    msg = post_auto_message(conversation, AUTO_ACK)
+    conversation.auto_reply_sent = True
+    conversation.save(update_fields=['auto_reply_sent'])
+    return msg
+
+
+def send_intro(conversation, staff):
+    """Premier message humain : le collaborateur est présenté automatiquement, sous son identité réelle."""
+    from .models import Message
+    if conversation.intro_sent:
+        return None
+    msg = Message.objects.create(conversation=conversation, sender=staff, body=intro_text(staff), is_intro=True)
+    msg.read_by.add(staff)
+    conversation.intro_sent = True
+    conversation.save(update_fields=['intro_sent'])
+    return msg
+
+
+def assign_conversation(conversation, staff):
+    """Attribue la conversation à un collaborateur ; informe le candidat si l'interlocuteur change."""
+    previous = conversation.assigned_to
+    if previous and previous.pk == staff.pk:
+        return
+    conversation.assigned_to = staff
+    conversation.status = 'assigned'
+    conversation.intro_sent = False  # le nouveau collaborateur se présentera à sa première réponse
+    conversation.save(update_fields=['assigned_to', 'status', 'intro_sent'])
+    name, title = staff_full_name(staff), staff_title(staff)
+    who = f"{name} ({title})" if title else name
+    url = f"/emploi/messages/{conversation.pk}/"
+    if previous:
+        post_auto_message(
+            conversation,
+            f"Votre interlocuteur change : {who} reprend votre demande à la place de {staff_full_name(previous)}. "
+            "Il se présentera dans son prochain message.")
+        text = f"Changement d'interlocuteur : {who} reprend votre demande."
+    else:
+        text = f"{who} prend en charge votre demande."
+    for person in conversation.requesters():
+        notify(person, text, url)
+
+
 def decide_employer(employer, status):
     """Applique la décision de Lantante (acceptée / refusée) et prévient l'entreprise."""
     from django.utils import timezone
@@ -111,6 +190,12 @@ def decide_employer(employer, status):
         notify(employer.user, "Votre demande d'inscription pour « %s » n'a pas été retenue.%s "
                "Vous pouvez corriger votre fiche et la renvoyer." % (employer.company_name, extra),
                '/emploi/mon-espace/')
+
+
+def staff_users():
+    """Tous les comptes de l'équipe Lantante actifs."""
+    User = get_user_model()
+    return User.objects.filter(is_active=True).filter(Q(is_staff=True) | Q(is_superuser=True))
 
 
 def is_staff(user):

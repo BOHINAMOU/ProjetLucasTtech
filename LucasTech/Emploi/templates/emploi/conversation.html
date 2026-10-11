@@ -5,19 +5,50 @@
 .ec-chat { display:flex; flex-direction:column; gap:10px; margin:18px 0; max-width:760px; }
 .ec-msg { max-width:85%; padding:10px 14px; border-radius:14px; background:#fff; border:1px solid var(--em-border); overflow-wrap:anywhere; white-space:pre-line; }
 .ec-msg--me { align-self:flex-end; background:var(--em-green-bg); border-color:transparent; }
+.ec-msg--auto { background:#f1f5f9; border:1px dashed #94a3b8; }
 .ec-msg small { display:block; color:var(--em-muted); font-size:.72rem; margin-top:4px; }
+.ec-who { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:4px; white-space:normal; }
+.ec-role { font-size:.72rem; color:var(--em-muted); font-weight:600; }
+.ec-head { max-width:760px; background:#fff; border:1px solid var(--em-border); border-radius:14px; padding:14px 16px; margin-top:12px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
 </style>
 <p style="margin-top:28px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:inbox' %}">← Messagerie</a></p>
-<h1 class="em-h1" style="font-size:clamp(1.6rem,4vw,2.2rem);margin-top:12px">{{ others|join:", " }}{% if conv.subject %} — {{ conv.subject }}{% endif %}</h1>
+<h1 class="em-h1" style="font-size:clamp(1.6rem,4vw,2.2rem);margin-top:12px">{{ title }}{% if conv.subject %} — {{ conv.subject }}{% endif %}</h1>
+
+{% if support %}
+<div class="ec-head">
+  {% if me_staff %}
+    <div>
+      <b>Service client</b> · <span class="em-tag {% if conv.status == 'new' %}em-tag--warn{% elif conv.status == 'assigned' %}em-tag--green{% endif %}">{{ conv.get_status_display }}</span><br>
+      <span class="em-muted">{% if assignee %}Pris en charge par <b>{{ assignee.name }}</b>{% if assignee.title %} — {{ assignee.title }}{% endif %}{% else %}Pas encore attribuée{% endif %}</span>
+    </div>
+    {% if can_take %}
+    <form method="post" action="{% url 'emploi:conversation_take' conv.pk %}">{% csrf_token %}
+      <button class="em-btn em-btn--navy em-btn--sm" type="submit">{% if assignee %}Reprendre la conversation{% else %}Prendre en charge{% endif %}</button>
+    </form>
+    {% endif %}
+  {% else %}
+    <div>
+      {% if assignee %}<span class="em-muted">Votre interlocuteur</span><br><b>{{ assignee.name }}</b>{% if assignee.title %} — {{ assignee.title }}{% endif %} · <span class="em-muted">Équipe Lantante Technologie</span>
+      {% else %}<b>Lantante Technologie</b><br><span class="em-muted">Un membre de l'équipe va prendre en charge votre demande.</span>{% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endif %}
+
 <div class="ec-chat">
   {% for m in chat %}
-  <div class="ec-msg {% if m.sender_id == user.pk %}ec-msg--me{% endif %}">
-    {% if m.sender_id != user.pk %}<b>{{ m.sender.public_name }}</b><br>{% endif %}{{ m.body }}<small>{{ m.created_at|date:"d/m/Y H:i" }}</small>
+  <div class="ec-msg {% if m.sender_id == user.pk %}ec-msg--me{% endif %}{% if m.is_automatic %} ec-msg--auto{% endif %}">
+    {% if m.sender_id != user.pk %}
+    <div class="ec-who"><b>{{ m.author_name }}</b>{% if m.is_automatic %}<span class="em-tag">Automatique</span>{% endif %}{% if m.author_role %}<span class="ec-role">{{ m.author_role }}</span>{% endif %}</div>
+    {% elif support and me_staff %}
+    <div class="ec-who"><span class="ec-role">Vous ({{ m.author_name }}){% if m.is_intro %} · présentation automatique{% endif %}</span></div>
+    {% endif %}{{ m.body }}<small>{{ m.created_at|date:"d/m/Y H:i" }}</small>
   </div>
   {% endfor %}
 </div>
 <form class="em-form" method="post" style="max-width:760px">{% csrf_token %}
   {% include 'emploi/_field.html' with field=form.body %}
+  {% if support and me_staff and not assignee %}<div class="em-help" style="margin:-8px 0 12px">En répondant, vous prenez en charge cette conversation et votre présentation (nom, fonction) est envoyée automatiquement.</div>{% endif %}
   <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
 </form>
 {% endblock %}

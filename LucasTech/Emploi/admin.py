@@ -7,10 +7,11 @@ from django.utils.html import format_html
 from .models import (
     Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
-    ProfileRevision, Skill, StaffingRequest,
+    ProfileRevision, Skill, StaffProfile, StaffingRequest,
 )
 from .services import (
-    decide_employer, notify, notify_application_status, share_application, suggest_candidates,
+    assign_conversation, decide_employer, notify, notify_application_status, share_application,
+    suggest_candidates,
 )
 
 
@@ -474,8 +475,16 @@ class AppointmentAdmin(admin.ModelAdmin):
 class MessageInline(admin.TabularInline):
     model = Message
     extra = 0
-    fields = ('sender', 'body', 'created_at')
-    readonly_fields = ('sender', 'body', 'created_at')
+    fields = ('author_name', 'author_role', 'body', 'created_at')
+    readonly_fields = ('author_name', 'author_role', 'body', 'created_at')
+
+    @admin.display(description="Auteur")
+    def author_name(self, obj):
+        return obj.author_name
+
+    @admin.display(description="Rôle")
+    def author_role(self, obj):
+        return obj.author_role
     can_delete = True
 
     def has_add_permission(self, request, obj=None):
@@ -484,13 +493,51 @@ class MessageInline(admin.TabularInline):
 
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'participant_names', 'updated_at')
+    list_display = ('__str__', 'kind', 'participant_names', 'assigned_to', 'status', 'updated_at')
+    list_filter = ('kind', 'status', 'assigned_to')
     inlines = [MessageInline]
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'reply_link', 'auto_reply_sent', 'intro_sent')
+    fields = ('subject', 'kind', 'status', 'assigned_to', 'reply_link', 'auto_reply_sent', 'intro_sent',
+              'created_at', 'updated_at')
+    actions = ['take_charge', 'close_conversations']
 
     @admin.display(description="Participants")
     def participant_names(self, obj):
         return ", ".join(u.public_name for u in obj.participants.all())
+
+    @admin.display(description="Répondre")
+    def reply_link(self, obj):
+        if obj.pk:
+            return format_html('<a class="btn btn-sm btn-primary" href="{}" target="_blank">Ouvrir et répondre sur le site</a>',
+                               reverse('emploi:conversation', args=[obj.pk]))
+        return "—"
+
+    def save_model(self, request, obj, form, change):
+        # Attribuer / réattribuer à un collaborateur : le candidat est informé du changement d'interlocuteur.
+        new = obj.assigned_to
+        if change and 'assigned_to' in form.changed_data and new:
+            obj.assigned_to_id = form.initial.get('assigned_to')
+            super().save_model(request, obj, form, change)
+            obj.refresh_from_db()
+            assign_conversation(obj, new)
+        else:
+            super().save_model(request, obj, form, change)
+
+    @admin.action(description="Me l'attribuer (prendre en charge)")
+    def take_charge(self, request, queryset):
+        for conv in queryset:
+            assign_conversation(conv, request.user)
+        self.message_user(request, "Conversations prises en charge. Vous vous présenterez avec votre première réponse.")
+
+    @admin.action(description="Clôturer les conversations")
+    def close_conversations(self, request, queryset):
+        queryset.update(status='closed')
+
+
+@admin.register(StaffProfile)
+class StaffProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'job_title')
+    autocomplete_fields = ('user',)
 
 
 # ─────────────────────────────

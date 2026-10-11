@@ -8,7 +8,8 @@
   {% for it in items %}
   <a class="em-card" href="{% url 'emploi:conversation' it.conv.pk %}" style="text-decoration:none">
     <div class="em-row" style="justify-content:space-between">
-      <b style="color:var(--em-navy)">{{ it.others|join:", "|default:"Conversation" }}{% if it.conv.subject %} — {{ it.conv.subject }}{% endif %}</b>
+      <b style="color:var(--em-navy)">{{ it.title|default:"Conversation" }}{% if it.conv.subject %} — {{ it.conv.subject }}{% endif %}</b>
+      {% if it.conv.kind == 'support' and user.is_staff %}<span class="em-tag {% if it.conv.assigned_to %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if it.conv.assigned_to %}{{ it.conv.assigned_to.get_full_name|default:"Pris en charge" }}{% else %}À prendre en charge{% endif %}</span>{% endif %}
       {% if it.unread %}<span class="em-badge">{{ it.unread }}</span>{% endif %}
     </div>
     {% if it.last %}<p>{{ it.last.body|truncatechars:110 }}</p><div class="em-muted">{{ it.last.created_at|date:"d/m/Y H:i" }}</div>{% endif %}

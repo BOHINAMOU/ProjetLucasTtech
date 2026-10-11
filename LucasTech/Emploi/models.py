@@ -450,6 +450,16 @@ class Conversation(models.Model):
     subject = models.CharField(max_length=160, blank=True, verbose_name="Sujet")
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversations',
                                           verbose_name="Participants")
+    KIND = [('direct', "Conversation directe"), ('support', "Service client Lantante")]
+    STATUS = [('new', "Reçue"), ('assigned', "Prise en charge"), ('closed', "Clôturée")]
+    kind = models.CharField(max_length=8, choices=KIND, default='direct', verbose_name="Type")
+    status = models.CharField(max_length=8, choices=STATUS, default='new', verbose_name="Statut")
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='assigned_conversations', verbose_name="Collaborateur responsable",
+        limit_choices_to=models.Q(is_staff=True) | models.Q(is_superuser=True))
+    auto_reply_sent = models.BooleanField(default=False, verbose_name="Accusé de réception envoyé")
+    intro_sent = models.BooleanField(default=False, verbose_name="Présentation du collaborateur envoyée")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créée le")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernier message")
 
@@ -464,12 +474,26 @@ class Conversation(models.Model):
     def other_participants(self, user):
         return self.participants.exclude(pk=user.pk)
 
+    def requesters(self):
+        """Les personnes extérieures à l'équipe qui ont écrit à Lantante."""
+        return self.participants.filter(is_staff=False, is_superuser=False)
+
+    def title_for(self, user):
+        """Titre affiché selon qui regarde la conversation."""
+        if self.kind == 'support':
+            if user.is_staff or user.is_superuser:
+                return ", ".join(u.public_name for u in self.requesters()) or "Demande"
+            return "Lantante Technologie"
+        return ", ".join(u.public_name for u in self.participants.all() if u.pk != user.pk)
+
 
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE,
                                      related_name='messages', verbose_name="Conversation")
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                                related_name='sent_messages', verbose_name="Expéditeur")
+    is_automatic = models.BooleanField(default=False, verbose_name="Message automatique")
+    is_intro = models.BooleanField(default=False, verbose_name="Présentation automatique du collaborateur")
     body = models.TextField(verbose_name="Message")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Envoyé le")
     read_by = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
@@ -481,12 +505,49 @@ class Message(models.Model):
         verbose_name_plural = "Messages"
 
     def __str__(self):
-        return f"{self.sender} : {self.body[:40]}"
+        return f"{self.author_name} : {self.body[:40]}"
+
+    @property
+    def is_from_staff(self):
+        return bool(self.sender_id and (self.sender.is_staff or self.sender.is_superuser))
+
+    @property
+    def author_name(self):
+        if self.is_automatic or not self.sender_id:
+            return "Lantante Technologie"
+        if self.is_from_staff:
+            return self.sender.get_full_name().strip() or "Membre de l'équipe"
+        return self.sender.public_name
+
+    @property
+    def author_role(self):
+        if self.is_automatic or not self.sender_id:
+            return "Message automatique"
+        if self.is_from_staff:
+            title = getattr(getattr(self.sender, 'staff_profile', None), 'job_title', '')
+            return "Équipe Lantante Technologie" + (f" · {title}" if title else "")
+        return ""
 
 
 # ─────────────────────────────
 # 📅 RENDEZ-VOUS
 # ─────────────────────────────
+class StaffProfile(models.Model):
+    """Fonction d'un membre de l'équipe Lantante (affichée quand il se présente aux candidats)."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name='staff_profile', verbose_name="Collaborateur",
+                                limit_choices_to=models.Q(is_staff=True) | models.Q(is_superuser=True))
+    job_title = models.CharField(max_length=100, verbose_name="Fonction",
+                                 help_text="Ex : Responsable recrutement, Chargé de clientèle")
+
+    class Meta:
+        verbose_name = "Fonction d'un collaborateur"
+        verbose_name_plural = "Fonctions des collaborateurs"
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.email} — {self.job_title}"
+
+
 class Appointment(models.Model):
     STATUS = [('proposed', "Proposé"), ('confirmed', "Confirmé"),
               ('declined', "Refusé"), ('done', "Effectué"), ('cancelled', "Annulé")]

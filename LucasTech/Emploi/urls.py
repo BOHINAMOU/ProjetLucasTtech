@@ -42,6 +42,7 @@ urlpatterns = [
     path('messages/lantante/', views.contact_lantante, name='contact_lantante'),
     path('messages/nouveau/<int:user_id>/', views.new_conversation, name='new_conversation'),
     path('messages/<int:pk>/', views.conversation, name='conversation'),
+    path('messages/<int:pk>/reprendre/', views.conversation_take, name='conversation_take'),
     path('candidatures/<int:pk>/disponibilites/', views.availability, name='availability'),
     path('rendez-vous/', views.appointments, name='appointments'),
     path('rendez-vous/<int:pk>/repondre/', views.appointment_respond, name='appointment_respond'),

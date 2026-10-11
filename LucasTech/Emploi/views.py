@@ -19,7 +19,10 @@ from .models import (
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
-from .services import can_browse_candidates, can_see_private, is_staff, notify, notify_staff
+from .services import (
+    assign_conversation, can_browse_candidates, can_see_private, is_staff, notify, notify_staff,
+    send_auto_ack, send_intro, staff_full_name, staff_users,
+)
 
 User = get_user_model()
 
@@ -484,47 +487,100 @@ def post_delete(request, pk):
 # ─────────────────────────────
 # 💬 MESSAGERIE
 # ─────────────────────────────
+def _conversation_access(user):
+    """Une personne voit ses conversations ; l'équipe voit en plus toutes les demandes du service client."""
+    if is_staff(user):
+        return Q(participants=user) | Q(kind='support')
+    return Q(participants=user)
+
+
 @login_required
 def inbox(request):
-    convs = request.user.conversations.prefetch_related('participants', 'messages')
+    convs = Conversation.objects.filter(_conversation_access(request.user)).distinct() \
+        .prefetch_related('participants', 'messages')
     items = []
     for conv in convs:
         last = conv.messages.last()
         unread = conv.messages.exclude(sender=request.user).exclude(read_by=request.user).count()
-        items.append({'conv': conv, 'last': last, 'unread': unread,
-                      'others': [u.public_name for u in conv.participants.all() if u.pk != request.user.pk]})
+        items.append({'conv': conv, 'last': last, 'unread': unread, 'title': conv.title_for(request.user)})
     return render(request, 'emploi/inbox.html', {'items': items})
 
 
 @login_required
 def conversation(request, pk):
-    conv = get_object_or_404(Conversation, pk=pk, participants=request.user)
+    conv = get_object_or_404(Conversation.objects.select_related('assigned_to').filter(
+        _conversation_access(request.user)).distinct(), pk=pk)
+    me_staff = is_staff(request.user)
+    support = conv.kind == 'support'
     form = MessageForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
+        if support and me_staff:
+            if conv.assigned_to_id and conv.assigned_to_id != request.user.pk:
+                messages.error(request, f"Cette conversation est prise en charge par {staff_full_name(conv.assigned_to)}. "
+                                        "Cliquez sur « Reprendre la conversation » pour la reprendre.")
+                return redirect('emploi:conversation', pk=conv.pk)
+            if not conv.assigned_to_id:
+                assign_conversation(conv, request.user)
+            # Première réponse humaine : le collaborateur est présenté automatiquement (sous sa propre identité).
+            send_intro(conv, request.user)
         msg = Message.objects.create(conversation=conv, sender=request.user, body=form.cleaned_data['body'])
         msg.read_by.add(request.user)
+        if support and not me_staff and conv.status == 'closed':
+            conv.status = 'assigned' if conv.assigned_to_id else 'new'
         conv.save()  # met à jour « dernier message »
-        for other in conv.other_participants(request.user):
-            notify(other, f"Nouveau message de {request.user.public_name}", f"/emploi/messages/{conv.pk}/")
+        url = f"/emploi/messages/{conv.pk}/"
+        if support and me_staff:
+            for person in conv.requesters():
+                notify(person, f"Nouveau message de {staff_full_name(request.user)} (équipe Lantante)", url)
+        elif support:
+            targets = [conv.assigned_to] if conv.assigned_to_id else list(staff_users())
+            for person in targets:
+                notify(person, f"Nouveau message de {request.user.public_name} (service client)", url)
+        else:
+            for other in conv.other_participants(request.user):
+                notify(other, f"Nouveau message de {request.user.public_name}", url)
         return redirect('emploi:conversation', pk=conv.pk)
     for msg in conv.messages.exclude(sender=request.user).exclude(read_by=request.user):
         msg.read_by.add(request.user)
+    assignee = None
+    if support and conv.assigned_to_id:
+        from .services import staff_title
+        assignee = {'name': staff_full_name(conv.assigned_to), 'title': staff_title(conv.assigned_to)}
     return render(request, 'emploi/conversation.html', {
-        'conv': conv, 'form': form,
-        'others': [u.public_name for u in conv.participants.all() if u.pk != request.user.pk],
-        'chat': conv.messages.select_related('sender'),
+        'conv': conv, 'form': form, 'title': conv.title_for(request.user),
+        'support': support, 'me_staff': me_staff, 'assignee': assignee,
+        'can_take': support and me_staff and conv.assigned_to_id != request.user.pk,
+        'chat': conv.messages.select_related('sender', 'sender__staff_profile'),
     })
 
 
-def _start_conversation(request, others, title):
+@login_required
+@require_POST
+def conversation_take(request, pk):
+    """Un collaborateur reprend (ou prend en charge) une conversation du service client."""
+    if not is_staff(request.user):
+        return HttpResponseForbidden("Réservé à l'équipe Lantante.")
+    conv = get_object_or_404(Conversation, pk=pk, kind='support')
+    if conv.assigned_to_id != request.user.pk:
+        assign_conversation(conv, request.user)
+        messages.success(request, "Vous avez pris en charge cette conversation. Vous vous présenterez avec votre prochain message.")
+    return redirect('emploi:conversation', pk=conv.pk)
+
+
+def _start_conversation(request, others, title, kind='direct', notify_users=None):
     form = NewConversationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        conv = Conversation.objects.create(subject=form.cleaned_data['subject'])
+        conv = Conversation.objects.create(subject=form.cleaned_data['subject'], kind=kind)
         conv.participants.add(request.user, *others)
         msg = Message.objects.create(conversation=conv, sender=request.user, body=form.cleaned_data['body'])
         msg.read_by.add(request.user)
-        for other in others:
-            notify(other, f"Nouveau message de {request.user.public_name}", f"/emploi/messages/{conv.pk}/")
+        if kind == 'support':
+            send_auto_ack(conv)  # une seule fois, au début de la conversation
+            label = f"Nouveau message de {request.user.public_name} (service client) — à prendre en charge"
+        else:
+            label = f"Nouveau message de {request.user.public_name}"
+        for other in (notify_users if notify_users is not None else others):
+            notify(other, label, f"/emploi/messages/{conv.pk}/")
         messages.success(request, "✓ Message envoyé.")
         return redirect('emploi:conversation', pk=conv.pk)
     return render(request, 'emploi/new_conversation.html', {'form': form, 'title': title})
@@ -545,12 +601,18 @@ def new_conversation(request, user_id):
 
 @login_required
 def contact_lantante(request):
-    staff = list(User.objects.filter(is_active=True).filter(Q(is_staff=True) | Q(is_superuser=True))
-                 .exclude(pk=request.user.pk))
+    if is_staff(request.user):
+        return redirect('emploi:inbox')
+    # Une demande déjà ouverte est reprise : pas de nouvel accusé de réception.
+    existing = Conversation.objects.filter(participants=request.user, kind='support').exclude(status='closed').first()
+    if existing:
+        return redirect('emploi:conversation', pk=existing.pk)
+    staff = list(staff_users())
     if not staff:
         messages.error(request, "La messagerie Lantante n'est pas disponible pour le moment.")
         return redirect('emploi:home')
-    return _start_conversation(request, staff, "Écrire à l'équipe Lantante")
+    # Seul le demandeur est participant : toute l'équipe a accès aux demandes du service client.
+    return _start_conversation(request, [], "Écrire à l'équipe Lantante", kind='support', notify_users=staff)
 
 
 # ─────────────────────────────
