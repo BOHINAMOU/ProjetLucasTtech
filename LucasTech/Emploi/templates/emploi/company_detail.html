@@ -12,9 +12,11 @@
     </div>
     {% if company.description %}<div class="em-card" style="margin-bottom:16px"><h3>Présentation</h3><p style="white-space:pre-line">{{ company.description }}</p></div>{% endif %}
     {% if company.product_list %}<div class="em-card" style="margin-bottom:16px"><h3>Produits et services</h3><div class="em-meta">{% for p in company.product_list %}<span class="em-tag">{{ p }}</span>{% endfor %}</div></div>{% endif %}
+    {% if not hide_offers %}
     <h2 class="em-h2" style="margin-top:26px">Offres en cours</h2>
     {% if offers %}<div class="em-grid">{% for offer in offers %}{% include 'emploi/_offer_card.html' %}{% endfor %}</div>
     {% else %}<div class="em-empty">Aucune offre ouverte pour le moment.</div>{% endif %}
+    {% endif %}
     {% if posts %}
     <h2 class="em-h2" style="margin-top:26px">Publications</h2>
     <div class="em-grid">{% for post in posts %}<article class="em-card"><div class="em-muted">{{ post.created_at|date:"d/m/Y" }}</div><p>{{ post.text|truncatechars:200 }}</p></article>{% endfor %}</div>

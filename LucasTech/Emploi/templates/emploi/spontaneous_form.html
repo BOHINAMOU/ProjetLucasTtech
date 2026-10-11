@@ -1,0 +1,12 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Demande spontanée{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">{% if editing %}Modifier ma demande{% else %}Déposer une demande spontanée{% endif %}</h1>
+<p class="em-lead" style="margin-bottom:20px">Même sans offre publiée, dites-nous ce que vous cherchez. Votre CV et vos diplômes de profil sont joints automatiquement{% if not profile.cv %} — <b>pensez à ajouter votre CV dans votre profil</b>{% endif %}. Une demande spontanée n'est pas une candidature à une offre précise : elle reste dans le vivier de Lantante jusqu'à ce qu'une opportunité se présente, et votre dossier n'est transmis à une entreprise qu'avec votre accord.</p>
+<form class="em-form" method="post">
+  {% csrf_token %}
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> {% if editing %}Enregistrer{% else %}Envoyer ma demande{% endif %}</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:spontaneous_list' %}">Annuler</a>
+</form>
+{% endblock %}

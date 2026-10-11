@@ -40,8 +40,8 @@ def share_application(application):
     """Transmet le dossier du candidat à l'entreprise concernée. Retourne False s'il n'y a pas d'entreprise."""
     from django.utils import timezone
     employer = application.employer
-    if not employer:
-        return False
+    if not employer or application.consent != 'accepted':
+        return False  # pas d'entreprise, ou le candidat n'a pas (encore) donné son accord
     if not application.shared_with_employer:
         application.shared_with_employer = True
         application.shared_at = timezone.now()
@@ -51,6 +51,10 @@ def share_application(application):
         application.save()
         if newly_shortlisted:
             notify_application_status(application)
+    if application.spontaneous_id:
+        spontaneous = application.spontaneous
+        spontaneous.status = 'transmitted'
+        spontaneous.save(update_fields=['status', 'updated_at'])
     target = application.offer or application.request
     notify(employer.user,
            f"Lantante vous transmet le dossier de {application.candidate.name} pour « {target} » (CV, contacts"
@@ -280,6 +284,20 @@ def staff_users():
     return User.objects.filter(is_active=True).filter(Q(is_staff=True) | Q(is_superuser=True))
 
 
+def account_kind(user):
+    """'candidate', 'employer', 'member' (pas encore choisi) ou 'anonymous'. Deux espaces séparés : jamais les deux."""
+    if not user.is_authenticated:
+        return 'anonymous'
+    kind = getattr(user, 'account_type', '')
+    if kind in ('candidate', 'employer'):
+        return kind
+    if hasattr(user, 'employer_profile') and not hasattr(user, 'candidate_profile'):
+        return 'employer'
+    if hasattr(user, 'candidate_profile'):
+        return 'candidate'
+    return 'member'
+
+
 def is_staff(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
@@ -347,6 +365,8 @@ def suggest_candidates(target, limit=30):
         score, reasons = score_candidate(cand, target.domain, skill_ids, target.city)
         # La ville seule ne suffit pas : il faut au moins le domaine ou une compétence.
         if score > 0 and reasons != ["même ville"]:
-            results.append({'candidate': cand, 'score': score, 'reasons': ", ".join(reasons)})
-    results.sort(key=lambda r: r['score'], reverse=True)
+            results.append({'candidate': cand, 'score': score, 'reasons': ", ".join(reasons),
+                            'boosted': cand.is_boosted})
+    # Le boost est un simple départage à score égal : il ne fait jamais passer devant un meilleur profil.
+    results.sort(key=lambda r: (r['score'], r['boosted']), reverse=True)
     return results[:limit]

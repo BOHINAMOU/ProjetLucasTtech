@@ -15,7 +15,7 @@
       <tbody>
       {% for r in results %}
         <tr>
-          <td><a href="{% url 'admin:Emploi_candidateprofile_change' r.candidate.pk %}">{{ r.candidate.name }}</a></td>
+          <td><a href="{% url 'admin:Emploi_candidateprofile_change' r.candidate.pk %}">{{ r.candidate.name }}</a>{% if r.boosted %} <span class="badge badge-info">Profil boosté</span>{% endif %}</td>
           <td>{{ r.candidate.headline }}</td>
           <td>{{ r.candidate.city|default:"—" }}</td>
           <td>{{ r.candidate.experience_years }} an(s)</td>

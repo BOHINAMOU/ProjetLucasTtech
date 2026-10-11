@@ -38,6 +38,15 @@ class User(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
     country       = models.CharField(max_length=100, blank=True, null=True, verbose_name="Pays")
     city          = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ville")
+    ACCOUNT_TYPES = [
+        ('', "Non défini"),
+        ('candidate', "Candidat (cherche un emploi ou un stage)"),
+        ('employer', "Entreprise (recrute, publie)"),
+        ('member', "Membre (boutique, formations)"),
+    ]
+    account_type  = models.CharField(max_length=10, choices=ACCOUNT_TYPES, blank=True, default='',
+                                     verbose_name="Type de compte",
+                                     help_text="Un compte candidat et un compte entreprise sont deux espaces séparés.")
     is_verified   = models.BooleanField(default=False, verbose_name="Vérifié")
     is_premium    = models.BooleanField(default=False, verbose_name="Premium")
     created_at    = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")

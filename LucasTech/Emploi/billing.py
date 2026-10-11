@@ -15,7 +15,7 @@ ADMIN_ORDER_URL = "/lantanteAdminTech/Emploi/publicationorder/{}/change/"
 
 def employer_is_exempt(employer):
     """Partenaire dont le contrat inclut les publications : rien à payer."""
-    return bool(employer.publishing_free)
+    return bool(employer.publishing_free or employer.partner_id)
 
 
 def _staff_alert(order, text):

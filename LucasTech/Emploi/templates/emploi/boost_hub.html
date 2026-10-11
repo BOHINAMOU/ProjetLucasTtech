@@ -1,0 +1,43 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Booster mon profil{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Booster ma visibilité</h1>
+<p class="em-lead" style="margin-bottom:14px">Participez au développement de la plateforme tout en étant mieux vu des recruteurs. L'accès aux offres et la candidature restent <b>gratuits</b> : le boost est facultatif.</p>
+<div class="em-status em-status--pending" style="max-width:820px"><i class="fas fa-circle-info"></i> {{ transparency }}</div>
+
+{% if live %}
+<div class="em-status em-status--approved" style="max-width:820px"><b><i class="fas fa-rocket"></i> Votre profil est boosté jusqu'au {{ live.expires_at|date:"d/m/Y" }}</b> ({{ live.days_left }} jour{{ live.days_left|pluralize }} restant{{ live.days_left|pluralize }}) — formule {{ live.plan.name }}.</div>
+{% endif %}
+
+<h2 class="em-h2" style="margin-top:22px">Booster mon profil</h2>
+<div class="em-grid">
+  {% for plan in profile_plans %}
+  <article class="em-card" {% if plan.duration_days == 30 %}style="border:2px solid var(--em-gold)"{% endif %}>
+    <h3>{{ plan.name }}</h3>
+    <div class="em-meta"><span class="em-tag em-tag--green" style="font-size:.95rem">{{ plan.price_label }}</span><span class="em-tag">{{ plan.duration_days }} jours</span>{% if plan.duration_days == 30 %}<span class="em-tag em-tag--warn">Populaire</span>{% endif %}</div>
+    <details><summary style="cursor:pointer;font-weight:700;color:var(--em-navy);font-size:.88rem">Voir les avantages</summary>
+      <ul style="margin:8px 0 0 18px;line-height:1.7;color:var(--em-ink2);font-size:.9rem">{% for adv in plan.advantages %}<li>{{ adv }}</li>{% endfor %}<li>Ne garantit ni présélection, ni entretien, ni recrutement</li></ul></details>
+    <form method="post" action="{% url 'emploi:boost_new' plan.code %}">{% csrf_token %}<button class="em-btn em-btn--navy em-btn--sm" type="submit"><i class="fas fa-rocket"></i> Choisir</button></form>
+  </article>
+  {% empty %}<div class="em-empty" style="grid-column:1/-1">Les formules de boost seront bientôt disponibles.</div>{% endfor %}
+</div>
+
+{% if app_plan and applications %}
+<h2 class="em-h2" style="margin-top:26px">Booster une candidature précise</h2>
+<p class="em-muted" style="margin-bottom:10px">{{ app_plan.name }} : {{ app_plan.price_label }} pour {{ app_plan.duration_days }} jours. {{ app_plan.description }}</p>
+<div class="em-grid">
+  {% for a in applications %}
+  <article class="em-card"><h3>{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</h3><div class="em-muted">{{ a.get_status_display }}</div>
+    <form method="post" action="{% url 'emploi:boost_new' app_plan.code %}">{% csrf_token %}<input type="hidden" name="application" value="{{ a.pk }}"><button class="em-btn em-btn--ghost em-btn--sm" type="submit">Booster cette candidature</button></form></article>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if boosts %}
+<h2 class="em-h2" style="margin-top:26px">Mes boosts</h2>
+<div class="em-grid">{% for b in boosts %}
+  <article class="em-card"><h3>{{ b.plan.name }}</h3><div class="em-meta"><span class="em-tag {% if b.is_live %}em-tag--green{% endif %}">{{ b.state_label }}</span><span class="em-tag">{{ b.amount_label }}</span>{% if b.expires_at %}<span class="em-tag">jusqu'au {{ b.expires_at|date:"d/m/Y" }}</span>{% endif %}</div>
+    <a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:boost_detail' b.pk %}">{% if b.can_pay %}Payer{% else %}Voir{% endif %}</a></article>
+{% endfor %}</div>
+{% endif %}
+{% endblock %}

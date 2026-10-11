@@ -15,6 +15,7 @@
         <span class="em-tag">{{ candidate.experience_years }} an{{ candidate.experience_years|pluralize }} d'expérience</span>
         {% if candidate.education_level %}<span class="em-tag">{{ candidate.get_education_level_display }}</span>{% endif %}
       {% endif %}
+      {% if candidate.is_boosted %}<span class="em-tag" style="background:#e0e7ff;color:#3730a3"><i class="fas fa-rocket"></i> Profil boosté</span>{% endif %}
       {% if candidate.available %}<span class="em-tag em-tag--green">Disponible</span>{% endif %}
       {% if candidate.seeking_internship %}<span class="em-tag em-tag--warn">Cherche un stage{% if candidate.internship_duration %} · {{ candidate.internship_duration }}{% endif %}{% if candidate.available_from %} · dès le {{ candidate.available_from|date:"d/m/Y" }}{% endif %}</span>{% endif %}
     </div>

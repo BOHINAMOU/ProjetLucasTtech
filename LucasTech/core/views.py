@@ -81,6 +81,10 @@ def partner_detail(request, pk):
 # 🤝 Devenir partenaire (candidature)
 # ──────────────────────────────────────────
 def partner_apply(request):
+    from .context_processors import partner_cta
+    if partner_cta(request)['hide_partner_cta']:
+        messages.info(request, "Vous êtes déjà inscrit chez nous : le partenariat se discute directement avec Lantante (messagerie).")
+        return redirect('core:partners')
     if request.method == 'POST':
         full_name    = request.POST.get('full_name', '').strip()
         email        = request.POST.get('email', '').strip()

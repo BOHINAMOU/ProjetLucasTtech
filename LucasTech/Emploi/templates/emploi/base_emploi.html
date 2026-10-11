@@ -120,14 +120,20 @@
 <div class="em-page">
   <div class="em-subnav">
     <div class="em-subnav__in">
-      <a href="{% url 'emploi:home' %}" class="{% if request.resolver_match.url_name == 'home' %}is-on{% endif %}">Emploi</a>
-      <a href="{% url 'emploi:offer_list' %}" class="{% if 'offer' in request.resolver_match.url_name %}is-on{% endif %}">Offres</a>
-      {% if user.is_staff or user.employer_profile.is_approved %}<a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate_list' in request.resolver_match.url_name or request.resolver_match.url_name == 'candidate_detail' %}is-on{% endif %}">Candidats</a>{% endif %}
+      {% if em_kind == 'employer' %}
+        <a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>
+        <a href="{% url 'emploi:applications_received' %}" class="{% if 'application' in request.resolver_match.url_name %}is-on{% endif %}">Candidatures{% if em_new_apps %}<span class="em-badge">{{ em_new_apps }}</span>{% endif %}</a>
+        <a href="{% url 'emploi:publish_hub' %}" class="{% if 'order' in request.resolver_match.url_name or request.resolver_match.url_name == 'publish_hub' %}is-on{% endif %}">Publier</a>
+        {% if user.employer_profile.is_approved %}<a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate' in request.resolver_match.url_name %}is-on{% endif %}">Candidats</a>{% endif %}
+      {% else %}
+        <a href="{% url 'emploi:home' %}" class="{% if request.resolver_match.url_name == 'home' %}is-on{% endif %}">Emploi</a>
+        <a href="{% url 'emploi:offer_list' %}" class="{% if 'offer' in request.resolver_match.url_name %}is-on{% endif %}">Offres</a>
+        {% if user.is_staff %}<a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate' in request.resolver_match.url_name %}is-on{% endif %}">Candidats</a>{% endif %}
+      {% endif %}
       <a href="{% url 'emploi:company_list' %}" class="{% if 'company' in request.resolver_match.url_name %}is-on{% endif %}">Entreprises</a>
       <a href="{% url 'emploi:feed' %}" class="{% if request.resolver_match.url_name == 'feed' %}is-on{% endif %}">Actualités</a>
-      <a href="{% url 'emploi:pricing' %}" class="{% if request.resolver_match.url_name == 'pricing' %}is-on{% endif %}">Tarifs</a>
       {% if user.is_authenticated %}
-        <a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>
+        {% if em_kind != 'employer' %}<a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>{% endif %}
         <a href="{% url 'emploi:inbox' %}">Messages{% if em_unread_msgs %}<span class="em-badge">{{ em_unread_msgs }}</span>{% endif %}</a>
         <a href="{% url 'emploi:appointments' %}">Rendez-vous</a>
         <a href="{% url 'emploi:notifications' %}">Notifications{% if em_unread_notifs %}<span class="em-badge">{{ em_unread_notifs }}</span>{% endif %}</a>

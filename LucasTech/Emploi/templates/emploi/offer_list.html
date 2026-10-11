@@ -2,6 +2,10 @@
 {% block em_title %}Offres d'emploi{% endblock %}
 {% block em_content %}
 <h1 class="em-h1" style="margin-top:34px">Offres d'emploi</h1>
+<div class="em-card" style="margin-top:14px;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-left:4px solid var(--em-green)">
+  <div style="min-width:0"><b style="color:var(--em-navy)">Vous ne trouvez pas l'offre idéale ?</b><div class="em-muted">Déposez une demande spontanée (emploi, stage, alternance) : Lantante la garde et vous contacte quand une opportunité correspond.</div></div>
+  <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:spontaneous_new' %}"><i class="fas fa-paper-plane"></i> Déposer une demande spontanée</a>
+</div>
 <form class="em-filters" method="get">
   <input class="em-input" name="q" value="{{ q }}" placeholder="Poste, compétence…">
   <select class="em-input" name="domain"><option value="">Tous les domaines</option>{% for k,v in domains %}<option value="{{ k }}" {% if k == domain %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
@@ -13,6 +17,6 @@
   <div class="em-grid">{% for offer in page %}{% include 'emploi/_offer_card.html' %}{% endfor %}</div>
   {% include 'emploi/_pager.html' with qs=qs %}
 {% else %}
-  <div class="em-empty">Aucune offre ne correspond à votre recherche.</div>
+  <div class="em-empty">Aucune offre ne correspond à votre recherche. <a href="{% url 'emploi:spontaneous_new' %}"><b>Déposez une demande spontanée</b></a>.</div>
 {% endif %}
 {% endblock %}

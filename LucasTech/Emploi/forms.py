@@ -1,7 +1,7 @@
 from django import forms
 
 from .models import (
-    CONTRACT_CHOICES, INTERNSHIP_DURATION_CHOICES, OFFER_DURATION_CHOICES, PublicationOrder,
+    CONTRACT_CHOICES, INTERNSHIP_DURATION_CHOICES, OFFER_DURATION_CHOICES, PublicationOrder, SpontaneousRequest,
     CandidateDocument, CandidateProfile, EmployerProfile, JobOffer, StaffingRequest, Skill,
     FeedPost, FeedComment, Application,
 )
@@ -402,3 +402,36 @@ class PaymentForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _style(self)
+
+
+class SpontaneousRequestForm(SkillsTextMixin, forms.ModelForm):
+    """Demande spontanée : se faire connaître même sans offre publiée."""
+    skills_text = SkillsTextMixin.skills_text
+    duration = forms.ChoiceField(choices=[('', "— Sans objet —")] + INTERNSHIP_DURATION_CHOICES, required=False,
+                                 label="Durée souhaitée (stage, alternance)")
+
+    class Meta:
+        model = SpontaneousRequest
+        fields = ['request_type', 'domain', 'city', 'available_from', 'duration', 'message']
+        widgets = {'message': forms.Textarea(attrs={'rows': 5, 'placeholder': "Décrivez ce que vous recherchez, votre parcours, vos atouts…"}),
+                   'available_from': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')}
+
+    def __init__(self, *args, candidate=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.candidate = candidate
+        if candidate and not self.instance.pk:
+            self.fields['domain'].initial = candidate.domain
+            self.fields['city'].initial = candidate.city
+            self.fields['skills_text'].initial = ", ".join(candidate.skills.values_list('name', flat=True))
+            self.fields['available_from'].initial = candidate.available_from
+        self.init_skills()
+        _style(self)
+
+    def save(self, commit=True):
+        req = super().save(commit=False)
+        if self.candidate:
+            req.candidate = self.candidate
+        if commit:
+            req.save()
+            self.save_skills(req)
+        return req

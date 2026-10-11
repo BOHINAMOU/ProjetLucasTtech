@@ -175,6 +175,7 @@ TEMPLATES = [
                 'core.context_processors.partners',
                 'core.context_processors.cache_bust',
                 'core.context_processors.site_settings',
+                'core.context_processors.partner_cta',
                 'Emploi.context_processors.emploi_counters',
 
                 'social_django.context_processors.backends',

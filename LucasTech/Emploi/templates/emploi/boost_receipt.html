@@ -1,0 +1,17 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Reçu {{ boost.receipt_number }}{% endblock %}
+{% block em_content %}
+<style>@media print { .em-subnav, header, footer, .no-print { display:none !important; } }</style>
+<div class="em-card" style="max-width:640px;margin:34px auto 0;gap:14px">
+  <div class="em-row" style="justify-content:space-between"><h1 class="em-h1" style="font-size:2rem;margin:0">Reçu de paiement</h1><b>{{ boost.receipt_number }}</b></div>
+  <div class="em-muted">Lantante Technologie — {{ boost.paid_at|date:"d/m/Y" }}</div>
+  <table style="width:100%;border-collapse:collapse;font-size:.95rem">
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Candidat</td><td style="text-align:right"><b>{{ boost.candidate.name }}</b></td></tr>
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Service</td><td style="text-align:right">{{ boost.plan.name }}{% if boost.expires_at %} — jusqu'au {{ boost.expires_at|date:"d/m/Y" }}{% endif %}</td></tr>
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Référence</td><td style="text-align:right">{{ boost.reference }} · {{ boost.get_payment_method_display|default:"—" }} {{ boost.payment_reference }}</td></tr>
+    <tr style="border-top:2px solid var(--em-border)"><td style="padding:12px 0"><b>Montant payé</b></td><td style="text-align:right;font-size:1.3rem"><b>{{ boost.amount_label }}</b></td></tr>
+  </table>
+  <p class="em-muted" style="font-size:.82rem">Le boost augmente la visibilité ; il ne garantit ni présélection, ni entretien, ni recrutement.</p>
+  <div class="no-print"><button class="em-btn em-btn--navy em-btn--sm" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button> <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:boost_detail' boost.pk %}">Retour</a></div>
+</div>
+{% endblock %}

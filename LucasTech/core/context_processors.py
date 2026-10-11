@@ -14,6 +14,20 @@ def site_settings(request):
     }
 
 
+def partner_cta(request):
+    """Le bouton « Devenir partenaire » disparaît pour un partenaire, une entreprise ou une demande déjà déposée."""
+    user = getattr(request, 'user', None)
+    hide = False
+    if user is not None and user.is_authenticated:
+        from .models import PartnerApplication
+        hide = (
+            getattr(user, 'account_type', '') == 'employer'
+            or hasattr(user, 'employer_profile')
+            or PartnerApplication.objects.filter(email__iexact=user.email).exists()
+        )
+    return {'hide_partner_cta': hide}
+
+
 def cache_bust(request):
     """
     En dev (DEBUG=True), force le navigateur à toujours recharger les

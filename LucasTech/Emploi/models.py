@@ -132,6 +132,15 @@ class CandidateProfile(models.Model):
     def get_absolute_url(self):
         return reverse('emploi:candidate_detail', args=[self.pk])
 
+    def live_profile_boost(self):
+        """Boost de profil actif (jamais un facteur de sélection : seulement de visibilité)."""
+        return self.boosts.filter(application__isnull=True, status='active', expires_at__gt=timezone.now()) \
+            .order_by('-expires_at').first()
+
+    @property
+    def is_boosted(self):
+        return self.live_profile_boost() is not None
+
     @property
     def contract_wanted_codes(self):
         valid = dict(CONTRACT_CHOICES)
@@ -445,6 +454,12 @@ class Application(models.Model):
     status_message = models.TextField(
         blank=True, verbose_name="Message au candidat (motif du refus, précisions)",
         help_text="Envoyé au candidat avec le changement de statut. Pour un refus, indiquez le motif.")
+    CONSENT = [('accepted', "Accord du candidat"), ('pending', "En attente de l'accord du candidat"),
+               ('declined', "Refusé par le candidat")]
+    consent = models.CharField(max_length=10, choices=CONSENT, default='accepted', verbose_name="Accord pour la transmission",
+                               help_text="Une opportunité proposée par Lantante n'est transmise à l'entreprise qu'avec l'accord du candidat.")
+    spontaneous = models.ForeignKey('SpontaneousRequest', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='applications', verbose_name="Demande spontanée d'origine")
     shared_with_employer = models.BooleanField(
         default=False, verbose_name="Dossier transmis à l'entreprise",
         help_text="Tant que Lantante ne transmet pas le dossier, l'entreprise ne voit ni le CV ni les coordonnées.")
@@ -678,7 +693,11 @@ class ServicePlan(models.Model):
         ('job', "Offre d'emploi"),
         ('ad', "Publicité avec visuels"),
         ('recruit', "Accompagnement au recrutement"),
+        ('cand_boost', "Boost de profil (candidat)"),
+        ('cand_app', "Boost d'une candidature (candidat)"),
     ]
+    EMPLOYER_KINDS = ('news', 'news_boost', 'job', 'ad', 'recruit')
+    CANDIDATE_KINDS = ('cand_boost', 'cand_app')
     code = models.SlugField(max_length=30, unique=True, verbose_name="Code")
     kind = models.CharField(max_length=12, choices=KIND, verbose_name="Type de service")
     name = models.CharField(max_length=100, verbose_name="Nom affiché")
@@ -701,6 +720,12 @@ class ServicePlan(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.price_label}"
+
+    @property
+    def advantages(self):
+        """Avantages affichés un par un (la description les sépare par « · » ou par un retour à la ligne)."""
+        import re
+        return [p.strip(' .') for p in re.split(r'\s*(?:·|\n)\s*', self.description) if p.strip(' .')]
 
     @property
     def price_label(self):
@@ -794,6 +819,127 @@ class PublicationOrder(models.Model):
         """Étape affichée : 0 soumise, 1 paiement, 2 validation, 3 publiée."""
         return {'quote': 0, 'awaiting_payment': 1, 'payment_declared': 1, 'in_review': 2, 'changes_requested': 2,
                 'published': 3}.get(self.status, -1)
+
+
+class SpontaneousRequest(models.Model):
+    """Demande spontanée : le candidat se fait connaître même sans offre ; Lantante garde la demande dans son vivier."""
+    TYPES = [
+        ('job', "Emploi"),
+        ('intern_academic', "Stage académique"),
+        ('intern_pro', "Stage professionnel"),
+        ('alternance', "Alternance"),
+        ('other', "Autre opportunité"),
+    ]
+    STATUS = [
+        ('pending', "En attente"),
+        ('in_progress', "En cours de traitement"),
+        ('matched', "Profil correspondant à une opportunité"),
+        ('transmitted', "Transmise à une entreprise"),
+        ('interview', "Entretien proposé"),
+        ('closed', "Clôturée"),
+        ('rejected', "Rejetée"),
+    ]
+    OPEN_STATUSES = ('pending', 'in_progress', 'matched', 'transmitted', 'interview')
+    candidate = models.ForeignKey(CandidateProfile, on_delete=models.CASCADE, related_name='spontaneous_requests',
+                                  verbose_name="Candidat")
+    request_type = models.CharField(max_length=16, choices=TYPES, default='job', verbose_name="Type de demande")
+    domain = models.CharField(max_length=20, choices=DOMAIN_CHOICES, default='autre', verbose_name="Domaine recherché")
+    skills = models.ManyToManyField(Skill, blank=True, related_name='spontaneous_requests', verbose_name="Compétences")
+    city = models.CharField(max_length=100, blank=True, verbose_name="Ville souhaitée")
+    available_from = models.DateField(null=True, blank=True, verbose_name="Disponible à partir du")
+    duration = models.CharField(max_length=60, blank=True, verbose_name="Durée souhaitée (stage, alternance)")
+    message = models.TextField(blank=True, verbose_name="Ce que vous recherchez")
+    status = models.CharField(max_length=12, choices=STATUS, default='pending', verbose_name="Statut")
+    status_message = models.TextField(blank=True, verbose_name="Message au candidat",
+                                      help_text="Envoyé au candidat avec le changement de statut.")
+    withdrawn = models.BooleanField(default=False, verbose_name="Retirée par le candidat")
+    admin_notes = models.TextField(blank=True, verbose_name="Notes internes Lantante")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Déposée le")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Mise à jour")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Demande spontanée"
+        verbose_name_plural = "Demandes spontanées"
+
+    def __str__(self):
+        return f"{self.candidate.name} — {self.get_request_type_display()}"
+
+    @property
+    def is_open(self):
+        return self.status in self.OPEN_STATUSES
+
+    @property
+    def can_edit(self):
+        return self.status in ('pending', 'in_progress', 'matched')
+
+
+class BoostOrder(models.Model):
+    """Boost de visibilité d'un candidat (profil ou candidature précise). Il ne garantit ni présélection ni entretien."""
+    STATUS = [
+        ('awaiting_payment', "À payer"),
+        ('payment_declared', "Paiement à vérifier"),
+        ('active', "Actif"),
+        ('refunded', "Remboursé"),
+        ('cancelled', "Annulé"),
+    ]
+    METHODS = [('flooz', "Flooz"), ('tmoney', "T-Money"), ('other', "Autre moyen")]
+    candidate = models.ForeignKey(CandidateProfile, on_delete=models.CASCADE, related_name='boosts',
+                                  verbose_name="Candidat")
+    plan = models.ForeignKey(ServicePlan, on_delete=models.PROTECT, related_name='boosts', verbose_name="Formule")
+    application = models.ForeignKey(Application, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='boosts', verbose_name="Candidature boostée",
+                                    help_text="Vide = boost du profil entier.")
+    status = models.CharField(max_length=20, choices=STATUS, default='awaiting_payment', verbose_name="Statut")
+    amount = models.PositiveIntegerField(default=0, verbose_name="Montant (FCFA)")
+    provider = models.CharField(max_length=10, default='manual', verbose_name="Mode d'encaissement")
+    payment_method = models.CharField(max_length=10, choices=METHODS, blank=True, verbose_name="Moyen de paiement")
+    payer_phone = models.CharField(max_length=30, blank=True, verbose_name="Numéro ayant payé")
+    payment_reference = models.CharField(max_length=80, blank=True, verbose_name="Référence de la transaction")
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="Paiement confirmé le")
+    receipt_number = models.CharField(max_length=20, blank=True, verbose_name="N° de reçu")
+    starts_at = models.DateTimeField(null=True, blank=True, verbose_name="Actif depuis le")
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name="Expire le")
+    internal_note = models.TextField(blank=True, verbose_name="Note interne")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Demandé le")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Boost de candidat"
+        verbose_name_plural = "Boosts des candidats"
+
+    def __str__(self):
+        return f"#{self.pk} {self.plan.name} — {self.candidate.name}"
+
+    @property
+    def reference(self):
+        return f"BO-{self.created_at:%y}{self.pk:05d}" if self.pk else ""
+
+    @property
+    def amount_label(self):
+        return f"{self.amount:,}".replace(",", " ") + " FCFA"
+
+    @property
+    def is_live(self):
+        return self.status == 'active' and bool(self.expires_at) and self.expires_at > timezone.now()
+
+    @property
+    def is_expired(self):
+        return self.status == 'active' and bool(self.expires_at) and self.expires_at <= timezone.now()
+
+    @property
+    def days_left(self):
+        return max((self.expires_at - timezone.now()).days, 0) if self.is_live else 0
+
+    @property
+    def can_pay(self):
+        return self.status == 'awaiting_payment'
+
+    @property
+    def state_label(self):
+        if self.is_expired:
+            return "Expiré"
+        return self.get_status_display()
 
 
 class StaffProfile(models.Model):

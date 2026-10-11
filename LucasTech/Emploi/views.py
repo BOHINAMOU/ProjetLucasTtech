@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Case, Count, IntegerField, Q, Value, When
+from django.db.models import Case, Count, Exists, IntegerField, OuterRef, Q, Value, When
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -11,22 +11,45 @@ from django.views.decorators.http import require_POST
 
 from core.models import Partner
 
+from . import boost as boosting
+from . import spontaneous as spont
 from .forms import (
-    OrderContentForm, PaymentForm, ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
+    SpontaneousRequestForm, OrderContentForm, PaymentForm, ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
     JobOfferForm, MessageForm, NewConversationForm, StaffingRequestForm,
 )
 from .models import (
-    PublicationOrder, ServicePlan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
+    BoostOrder, SpontaneousRequest, PublicationOrder, ServicePlan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
+from functools import wraps
+
 from . import billing
 from .services import (
-    assign_conversation, can_browse_candidates, can_see_private, is_staff, notify, notify_staff,
+    account_kind, assign_conversation, can_browse_candidates, notify_application_status, share_application, can_see_private, is_staff, notify, notify_staff,
     send_auto_ack, send_intro, staff_full_name, staff_users,
 )
 
 User = get_user_model()
+
+
+def _space(allowed, label):
+    """Réserve une page à un type de compte. Chaque compte a son propre espace, ses menus et ses droits."""
+    def decorator(view):
+        @login_required
+        @wraps(view)
+        def wrapper(request, *args, **kwargs):
+            if account_kind(request.user) not in allowed:
+                messages.info(request, f"Cette page est réservée aux comptes {label}. "
+                                       "Un compte candidat et un compte entreprise sont deux espaces distincts.")
+                return redirect('emploi:dashboard')
+            return view(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+candidate_space = _space(('candidate', 'member'), "candidats")
+employer_space = _space(('employer', 'member'), "entreprises")
 
 
 def _qs(request):
@@ -52,7 +75,14 @@ def _open_offers():
 # ─────────────────────────────
 # 🏠 ACCUEIL
 # ─────────────────────────────
+def _employer_redirect(request, text="Les offres d'emploi sont réservées aux candidats : votre espace entreprise est ici."):
+    messages.info(request, text)
+    return redirect('emploi:dashboard')
+
+
 def home(request):
+    if account_kind(request.user) == 'employer':
+        return redirect('emploi:dashboard')  # une entreprise arrive directement dans son tableau de bord
     offers = _open_offers()
     context = {
         'partner_list': Partner.objects.filter(is_active=True),
@@ -76,6 +106,8 @@ def home(request):
 # 💼 OFFRES
 # ─────────────────────────────
 def offer_list(request):
+    if account_kind(request.user) == 'employer':
+        return _employer_redirect(request)
     qs = _open_offers()
     q = request.GET.get('q', '').strip()
     domain = request.GET.get('domain', '')
@@ -100,6 +132,8 @@ def offer_detail(request, slug, form=None):
     owner = request.user.is_authenticated and offer.employer_id and offer.employer.user_id == request.user.pk
     if offer.status != 'published' and not (owner or is_staff(request.user)):
         raise Http404
+    if account_kind(request.user) == 'employer' and not (owner or is_staff(request.user)):
+        return _employer_redirect(request)
     applied = False
     profile = getattr(request.user, 'candidate_profile', None) if request.user.is_authenticated else None
     if profile:
@@ -110,7 +144,7 @@ def offer_detail(request, slug, form=None):
     })
 
 
-@login_required
+@candidate_space
 @require_POST
 def offer_apply(request, slug):
     offer = get_object_or_404(JobOffer, slug=slug, status='published')
@@ -138,8 +172,15 @@ def offer_apply(request, slug):
     if created:
         notify_staff(f"Nouvelle candidature : {profile.name} → {offer.title}", f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
         if offer.employer_id:
-            notify(offer.employer.user, f"Nouvelle candidature pour « {offer.title} ». Lantante vous transmettra les profils retenus.", "")
-        messages.success(request, "✓ Candidature envoyée à Lantante, qui étudie votre dossier et le transmet à l'entreprise. Vous serez prévenu.")
+            # La candidature arrive directement chez l'entreprise : elle la traite elle-même (Lantante peut la suivre).
+            application.shared_with_employer = True
+            application.shared_at = timezone.now()
+            application.save(update_fields=['shared_with_employer', 'shared_at'])
+            notify(offer.employer.user, f"Nouvelle candidature de {profile.name} pour « {offer.title} ». Consultez-la et répondez-lui.",
+                   "/emploi/candidatures-recues/")
+            messages.success(request, "✓ Candidature envoyée directement à l'entreprise. Vous serez prévenu de sa réponse.")
+        else:
+            messages.success(request, "✓ Candidature envoyée à Lantante, qui étudie votre dossier. Vous serez prévenu.")
     else:
         messages.info(request, "Vous avez déjà postulé à cette offre.")
     return redirect(offer)
@@ -159,7 +200,10 @@ def _directory_denied(request):
 def candidate_list(request):
     if not can_browse_candidates(request.user):
         return _directory_denied(request)
-    qs = CandidateProfile.objects.filter(is_published=True).select_related('user').prefetch_related('skills')
+    now = timezone.now()
+    qs = CandidateProfile.objects.filter(is_published=True).select_related('user').prefetch_related('skills').annotate(
+        boosted=Exists(BoostOrder.objects.filter(candidate=OuterRef('pk'), application__isnull=True, status='active',
+                                                 expires_at__gt=now))).order_by('-boosted', '-updated_at')
     q = request.GET.get('q', '').strip()
     domain = request.GET.get('domain', '')
     city = request.GET.get('city', '').strip()
@@ -192,7 +236,7 @@ def candidate_detail(request, pk):
     })
 
 
-@login_required
+@candidate_space
 def availability(request, pk):
     """Le candidat présélectionné indique quand il est disponible pour l'entretien."""
     application = get_object_or_404(Application.objects.select_related('offer', 'request', 'candidate__user'),
@@ -213,15 +257,19 @@ def availability(request, pk):
                  for when in form.slots()]
         target = application.offer or application.request
         when_txt = ", ".join(timezone.localtime(s.start).strftime('%d/%m %H:%M') for s in slots)
-        notify_staff(f"{application.candidate.name} est disponible pour l'entretien « {target} » : {when_txt}",
-                     f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
+        text = f"{application.candidate.name} est disponible pour l'entretien « {target} » : {when_txt}"
+        employer = application.employer
+        if employer and application.shared_with_employer:
+            notify(employer.user, text, "/emploi/candidatures-recues/")  # c'est l'entreprise qui fixe l'entretien
+        else:
+            notify_staff(text, f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
         messages.success(request, "✓ Merci ! Lantante vous confirme la date de l'entretien très vite.")
         return redirect('emploi:dashboard')
     return render(request, 'emploi/availability.html', {'form': form, 'application': application,
                                                        'target': application.offer or application.request})
 
 
-@login_required
+@candidate_space
 def documents(request):
     """Diplômes et pièces du candidat : déposés une fois, joints à toutes ses candidatures."""
     profile = getattr(request.user, 'candidate_profile', None)
@@ -242,7 +290,7 @@ def documents(request):
     })
 
 
-@login_required
+@candidate_space
 @require_POST
 def document_delete(request, pk):
     doc = get_object_or_404(CandidateDocument, pk=pk, candidate__user=request.user)
@@ -294,6 +342,7 @@ def company_detail(request, pk):
     posts = FeedPost.objects.filter(author=company.user, is_hidden=False)[:5]
     return render(request, 'emploi/company_detail.html', {
         'company': company, 'offers': offers, 'posts': posts, 'is_me': me,
+        'hide_offers': account_kind(request.user) == 'employer' and not me,
     })
 
 
@@ -317,7 +366,7 @@ def dashboard(request):
     user = request.user
     candidate = getattr(user, 'candidate_profile', None)
     employer = getattr(user, 'employer_profile', None)
-    context = {'candidate': candidate, 'employer': employer,
+    context = {'kind': account_kind(user), 'candidate': candidate, 'employer': employer,
                'my_warnings': list(user.moderation_warnings.filter(is_active=True)[:3])}
     if candidate:
         checks = [
@@ -331,6 +380,8 @@ def dashboard(request):
         context['checks'] = checks
         context['completion'] = round(100 * sum(1 for _, done, _ in checks if done) / len(checks))
         context['apps_count'] = candidate.applications.count()
+        context['live_boost'] = candidate.live_profile_boost()
+        context['spontaneous'] = candidate.spontaneous_requests.exclude(status__in=('closed', 'rejected')).filter(withdrawn=False)[:5]
         context['applications'] = candidate.applications.select_related('offer', 'request')[:10]
         context['appointments'] = candidate.appointments.filter(
             scheduled_at__gte=timezone.now()).exclude(status__in=['declined', 'cancelled'])[:5]
@@ -346,7 +397,7 @@ def dashboard(request):
     return render(request, 'emploi/dashboard.html', context)
 
 
-@login_required
+@candidate_space
 def candidate_edit(request):
     profile = getattr(request.user, 'candidate_profile', None)
     creating = profile is None
@@ -354,6 +405,9 @@ def candidate_edit(request):
     form = CandidateForm(request.POST or None, request.FILES or None, instance=profile, user=request.user)
     if request.method == 'POST' and form.is_valid():
         profile = form.save()
+        if request.user.account_type != 'candidate':
+            request.user.account_type = 'candidate'
+            request.user.save(update_fields=['account_type'])
         admin_url = f"/lantanteAdminTech/Emploi/candidateprofile/{profile.pk}/change/"
         if creating:
             notify_staff(f"Nouveau candidat inscrit : {profile.name} ({profile.headline})", admin_url)
@@ -370,7 +424,7 @@ def candidate_edit(request):
     return render(request, 'emploi/candidate_form.html', {'form': form, 'creating': creating, 'profile': profile})
 
 
-@login_required
+@employer_space
 def employer_edit(request):
     profile = getattr(request.user, 'employer_profile', None)
     creating = profile is None
@@ -382,6 +436,9 @@ def employer_edit(request):
         if resubmitted:
             employer.status = 'pending'
         employer.save()
+        if request.user.account_type != 'employer':
+            request.user.account_type = 'employer'
+            request.user.save(update_fields=['account_type'])
         if resubmitted:
             notify_staff(f"Entreprise corrigée et renvoyée pour analyse : {employer.company_name}",
                          f"/lantanteAdminTech/Emploi/employerprofile/{employer.pk}/change/")
@@ -407,7 +464,7 @@ def _require_employer(request):
     return employer
 
 
-@login_required
+@employer_space
 def offer_create(request):
     employer = _require_employer(request)
     if not employer:
@@ -455,7 +512,7 @@ def offer_filled(request, slug):
     return redirect('emploi:dashboard')
 
 
-@login_required
+@employer_space
 def request_create(request):
     employer = _require_employer(request)
     if not employer:
@@ -484,7 +541,7 @@ def request_create(request):
 def _company_must_order(user):
     """Une entreprise (non exonérée / sans badge bleu) publie via le service payant « Publier »."""
     employer = getattr(user, 'employer_profile', None) if user.is_authenticated else None
-    if not employer or (employer.publishing_free and employer.is_verified):
+    if not employer or ((employer.publishing_free or employer.partner_id) and employer.is_verified):
         return False
     return ServicePlan.objects.filter(kind='news', is_active=True).exists()
 
@@ -492,9 +549,15 @@ def _company_must_order(user):
 def feed(request):
     form = FeedPostForm()
     must_order = _company_must_order(request.user)
+    kind = account_kind(request.user)
+    can_post = request.user.is_authenticated and (is_staff(request.user) or (kind == 'employer' and not must_order))
     if request.method == 'POST':
         if not request.user.is_authenticated:
             return redirect(f"/users/connexion/?next={request.path}")
+        if not (can_post or must_order):
+            messages.info(request, "Les actualités sont publiées par les entreprises et par Lantante. "
+                                   "Vous pouvez aimer et commenter.")
+            return redirect('emploi:feed')
         if must_order:
             messages.info(request, "Les entreprises publient une actualité depuis « Publier » (tarifs et validation par Lantante).")
             return redirect('emploi:publish_hub')
@@ -513,6 +576,7 @@ def feed(request):
             default=Value(0), output_field=IntegerField())).order_by('-pinned', '-created_at')
     return render(request, 'emploi/feed.html', {
         'page': _page(request, posts, 10), 'form': form, 'comment_form': CommentForm(), 'must_order': must_order,
+        'can_post': can_post,
         'news_plan': ServicePlan.objects.filter(kind='news', is_active=True).first(),
     })
 
@@ -731,7 +795,9 @@ def pricing(request):
     """Les deux formules : publication ponctuelle (payante) et partenariat officiel (sur validation)."""
     from core.models import SiteSettings
     return render(request, 'emploi/pricing.html', {
-        'plans': ServicePlan.objects.filter(is_active=True), 'site': SiteSettings.load(),
+        'plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.EMPLOYER_KINDS),
+        'boost_plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.CANDIDATE_KINDS),
+        'site': SiteSettings.load(), 'kind': account_kind(request.user),
     })
 
 
@@ -746,23 +812,23 @@ def _approved_employer(request):
     return employer
 
 
-@login_required
+@employer_space
 def publish_hub(request):
     employer = _approved_employer(request)
     if not employer:
         return redirect('emploi:dashboard' if hasattr(request.user, 'employer_profile') else 'emploi:employer_edit')
     return render(request, 'emploi/publish_hub.html', {
-        'plans': ServicePlan.objects.filter(is_active=True), 'employer': employer,
+        'plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.EMPLOYER_KINDS), 'employer': employer,
         'exempt': billing.employer_is_exempt(employer),
     })
 
 
-@login_required
+@employer_space
 def order_new(request, code):
     employer = _approved_employer(request)
     if not employer:
         return redirect('emploi:dashboard')
-    plan = get_object_or_404(ServicePlan, code=code, is_active=True)
+    plan = get_object_or_404(ServicePlan, code=code, is_active=True, kind__in=ServicePlan.EMPLOYER_KINDS)
     if plan.kind == 'job':
         return redirect('emploi:offer_create')
     if plan.kind == 'recruit':
@@ -781,7 +847,7 @@ def _my_order(request, pk):
                              employer__user=request.user)
 
 
-@login_required
+@employer_space
 def order_detail(request, pk):
     from core.models import SiteSettings
     order = _my_order(request, pk)
@@ -791,7 +857,7 @@ def order_detail(request, pk):
     })
 
 
-@login_required
+@employer_space
 @require_POST
 def order_pay(request, pk):
     order = _my_order(request, pk)
@@ -809,7 +875,7 @@ def order_pay(request, pk):
         'order': order, 'site': SiteSettings.load(), 'form': form, 'steps': ["Soumise", "Paiement", "Validation", "Publiée"]})
 
 
-@login_required
+@employer_space
 def order_edit(request, pk):
     """Modifier le contenu (correction demandée, ou avant paiement) puis renvoyer."""
     from .forms import JobOfferForm, StaffingRequestForm
@@ -838,7 +904,7 @@ def order_edit(request, pk):
                                                       'editing': True, 'order': order})
 
 
-@login_required
+@employer_space
 def order_receipt(request, pk):
     order = _my_order(request, pk)
     if not order.paid_at:
@@ -847,10 +913,270 @@ def order_receipt(request, pk):
     return render(request, 'emploi/order_receipt.html', {'order': order})
 
 
-@login_required
+@employer_space
 @require_POST
 def order_cancel(request, pk):
     order = _my_order(request, pk)
     billing.cancel_order(order)
     messages.success(request, "Commande annulée.")
     return redirect('emploi:dashboard')
+
+
+# ─────────────────────────────
+# 📨 DEMANDES SPONTANÉES
+# ─────────────────────────────
+def _candidate_or_redirect(request):
+    profile = getattr(request.user, 'candidate_profile', None)
+    if not profile:
+        messages.info(request, "Créez d'abord votre profil candidat pour déposer une demande.")
+    return profile
+
+
+@candidate_space
+def spontaneous_list(request):
+    profile = _candidate_or_redirect(request)
+    if not profile:
+        return redirect('emploi:candidate_edit')
+    return render(request, 'emploi/spontaneous_list.html', {
+        'requests': profile.spontaneous_requests.all(), 'profile': profile,
+    })
+
+
+@candidate_space
+def spontaneous_new(request):
+    profile = _candidate_or_redirect(request)
+    if not profile:
+        return redirect('emploi:candidate_edit')
+    form = SpontaneousRequestForm(request.POST or None, candidate=profile)
+    if request.method == 'POST' and form.is_valid():
+        req = form.save()
+        notify_staff(f"Nouvelle demande spontanée : {profile.name} ({req.get_request_type_display()}, {req.get_domain_display()})",
+                     f"/lantanteAdminTech/Emploi/spontaneousrequest/{req.pk}/change/")
+        messages.success(request, "✓ Demande enregistrée. Lantante la garde dans son vivier et vous contacte dès qu'une opportunité correspond.")
+        return redirect('emploi:spontaneous_list')
+    return render(request, 'emploi/spontaneous_form.html', {'form': form, 'profile': profile})
+
+
+@candidate_space
+def spontaneous_edit(request, pk):
+    req = get_object_or_404(SpontaneousRequest, pk=pk, candidate__user=request.user)
+    if not req.can_edit:
+        messages.info(request, "Cette demande ne peut plus être modifiée.")
+        return redirect('emploi:spontaneous_list')
+    form = SpontaneousRequestForm(request.POST or None, instance=req, candidate=req.candidate)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        notify_staff(f"Demande spontanée mise à jour : {req.candidate.name}",
+                     f"/lantanteAdminTech/Emploi/spontaneousrequest/{req.pk}/change/")
+        messages.success(request, "✓ Demande mise à jour.")
+        return redirect('emploi:spontaneous_list')
+    return render(request, 'emploi/spontaneous_form.html', {'form': form, 'profile': req.candidate, 'editing': True})
+
+
+@candidate_space
+@require_POST
+def spontaneous_withdraw(request, pk):
+    req = get_object_or_404(SpontaneousRequest, pk=pk, candidate__user=request.user)
+    if req.is_open:
+        req.status = 'closed'
+        req.withdrawn = True
+        req.save(update_fields=['status', 'withdrawn', 'updated_at'])
+        notify_staff(f"{req.candidate.name} a retiré sa demande spontanée.",
+                     f"/lantanteAdminTech/Emploi/spontaneousrequest/{req.pk}/change/")
+        messages.success(request, "Demande retirée.")
+    return redirect('emploi:spontaneous_list')
+
+
+@candidate_space
+@require_POST
+def consent_respond(request, pk):
+    """Le candidat accepte ou refuse qu'une opportunité proposée par Lantante soit transmise à l'entreprise."""
+    application = get_object_or_404(Application, pk=pk, candidate__user=request.user, consent='pending')
+    accept = request.POST.get('answer') == 'accept'
+    spont.respond_consent(application, accept)
+    if accept:
+        share_application(application)  # transmission immédiate à l'entreprise
+    messages.success(request, "✓ Merci, Lantante transmet votre dossier." if accept else "C'est noté : votre dossier ne sera pas transmis.")
+    return redirect('emploi:dashboard')
+
+
+# ─────────────────────────────
+# 🚀 BOOST DES CANDIDATS
+# ─────────────────────────────
+def _boost_plans():
+    return ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.CANDIDATE_KINDS)
+
+
+@candidate_space
+def boost_hub(request):
+    profile = _candidate_or_redirect(request)
+    if not profile:
+        return redirect('emploi:candidate_edit')
+    live = profile.live_profile_boost()
+    return render(request, 'emploi/boost_hub.html', {
+        'profile': profile, 'live': live, 'transparency': boosting.TRANSPARENCY,
+        'profile_plans': _boost_plans().filter(kind='cand_boost'),
+        'app_plan': _boost_plans().filter(kind='cand_app').first(),
+        'applications': profile.applications.filter(status__in=('received', 'shortlisted', 'interview')).select_related('offer', 'request'),
+        'boosts': profile.boosts.all()[:6],
+    })
+
+
+@candidate_space
+@require_POST
+def boost_new(request, code):
+    profile = _candidate_or_redirect(request)
+    if not profile:
+        return redirect('emploi:candidate_edit')
+    plan = get_object_or_404(ServicePlan, code=code, is_active=True, kind__in=ServicePlan.CANDIDATE_KINDS)
+    application = None
+    if plan.kind == 'cand_app':
+        application = get_object_or_404(Application, pk=request.POST.get('application'), candidate=profile)
+    boost = boosting.create_boost(profile, plan, application)
+    return redirect('emploi:boost_detail', pk=boost.pk)
+
+
+def _my_boost(request, pk):
+    return get_object_or_404(BoostOrder.objects.select_related('plan', 'candidate', 'application'), pk=pk,
+                             candidate__user=request.user)
+
+
+@candidate_space
+def boost_detail(request, pk):
+    from core.models import SiteSettings
+    boost = _my_boost(request, pk)
+    return render(request, 'emploi/boost_detail.html', {
+        'boost': boost, 'site': SiteSettings.load(), 'form': PaymentForm(initial={'payment_method': 'flooz'}),
+        'transparency': boosting.TRANSPARENCY,
+    })
+
+
+@candidate_space
+@require_POST
+def boost_pay(request, pk):
+    boost = _my_boost(request, pk)
+    if not boost.can_pay:
+        messages.info(request, "Ce boost n'attend pas de paiement.")
+        return redirect('emploi:boost_detail', pk=boost.pk)
+    form = PaymentForm(request.POST)
+    if form.is_valid():
+        boosting.declare_boost_payment(boost, form.cleaned_data['payment_method'], form.cleaned_data['payer_phone'],
+                                       form.cleaned_data['payment_reference'])
+        messages.success(request, "✓ Merci ! Nous vérifions votre paiement : votre boost démarre dès sa confirmation.")
+        return redirect('emploi:boost_detail', pk=boost.pk)
+    from core.models import SiteSettings
+    return render(request, 'emploi/boost_detail.html', {'boost': boost, 'site': SiteSettings.load(), 'form': form,
+                                                       'transparency': boosting.TRANSPARENCY})
+
+
+@candidate_space
+def boost_receipt(request, pk):
+    boost = _my_boost(request, pk)
+    if not boost.paid_at:
+        messages.info(request, "Le reçu est disponible après confirmation du paiement.")
+        return redirect('emploi:boost_detail', pk=boost.pk)
+    return render(request, 'emploi/boost_receipt.html', {'boost': boost})
+
+
+@candidate_space
+@require_POST
+def boost_cancel(request, pk):
+    boosting.cancel_boost(_my_boost(request, pk))
+    messages.success(request, "Boost annulé.")
+    return redirect('emploi:boost_hub')
+
+
+# ─────────────────────────────
+# 📥 CANDIDATURES REÇUES (espace entreprise)
+# ─────────────────────────────
+def _employer_applications(employer):
+    return Application.objects.filter(
+        Q(offer__employer=employer) | Q(request__employer=employer), shared_with_employer=True
+    ).select_related('candidate__user', 'offer', 'request').prefetch_related('slots', 'appointments')
+
+
+def _my_application(request, pk):
+    employer = getattr(request.user, 'employer_profile', None)
+    application = get_object_or_404(Application.objects.select_related('candidate__user', 'offer', 'request'), pk=pk,
+                                    shared_with_employer=True)
+    if not employer or application.employer != employer:
+        raise Http404
+    return application
+
+
+@employer_space
+def applications_received(request):
+    employer = _approved_employer(request)
+    if not employer:
+        return redirect('emploi:dashboard')
+    JobOffer.close_expired()
+    base = _employer_applications(employer)
+    offer_id = request.GET.get('offer')
+    if offer_id and offer_id.isdigit():
+        base = base.filter(offer_id=int(offer_id))
+    tab = request.GET.get('tab') or 'new'
+    groups = {
+        'new': base.filter(status='received'),
+        'progress': base.filter(status__in=('shortlisted', 'interview')),
+        'hired': base.filter(status='hired'),
+        'refused': base.filter(status='refused'),
+        'all': base,
+    }
+    items = groups.get(tab, groups['new'])
+    return render(request, 'emploi/applications_received.html', {
+        'tab': tab, 'items': items,
+        'counts': {k: v.count() for k, v in groups.items()},
+        'offers': employer.offers.exclude(status='rejected'), 'offer_id': offer_id or '',
+    })
+
+
+@employer_space
+@require_POST
+def application_decide(request, pk):
+    """L'entreprise présélectionne, accepte ou refuse : le candidat est prévenu (site + e-mail)."""
+    application = _my_application(request, pk)
+    action = request.POST.get('action')
+    mapping = {'shortlist': 'shortlisted', 'accept': 'hired', 'refuse': 'refused'}
+    if action not in mapping:
+        return redirect('emploi:applications_received')
+    application.status = mapping[action]
+    application.status_message = request.POST.get('message', '').strip()[:1000] if action != 'accept' or request.POST.get('message') else ''
+    application.save()
+    notify_application_status(application)
+    messages.success(request, {
+        'shortlist': f"✓ {application.candidate.name} est présélectionné(e) : il/elle va indiquer ses disponibilités.",
+        'accept': f"✓ {application.candidate.name} est accepté(e). Prenez contact pour la suite.",
+        'refuse': f"{application.candidate.name} est informé(e) que sa candidature n'est pas retenue.",
+    }[action])
+    return redirect(request.META.get('HTTP_REFERER') or 'emploi:applications_received')
+
+
+@employer_space
+@require_POST
+def application_schedule(request, pk):
+    """L'entreprise fixe l'entretien : rendez-vous créé, candidat prévenu (il confirme ou décline)."""
+    from django.utils.dateparse import parse_datetime
+    application = _my_application(request, pk)
+    when = parse_datetime(request.POST.get('when', ''))
+    if not when:
+        messages.error(request, "Choisissez la date et l'heure de l'entretien.")
+        return redirect('emploi:applications_received')
+    if timezone.is_naive(when):
+        when = timezone.make_aware(when)
+    if when < timezone.now():
+        messages.error(request, "Choisissez une date à venir.")
+        return redirect('emploi:applications_received')
+    target = application.offer or application.request
+    place = request.POST.get('place', '').strip()[:200]
+    Appointment.objects.create(application=application, candidate=application.candidate, employer=application.employer,
+                               title=f"Entretien — {target}", scheduled_at=when, place=place,
+                               notes=request.POST.get('notes', '').strip())
+    application.status = 'interview'
+    application.save(update_fields=['status', 'updated_at'])
+    local = timezone.localtime(when).strftime('%d/%m/%Y à %H:%M')
+    notify(application.candidate.user,
+           f"{application.employer.company_name} vous propose un entretien pour « {target} » le {local}."
+           + (f" Lieu / lien : {place}." if place else "") + " Confirmez votre présence dans « Rendez-vous ».",
+           '/emploi/rendez-vous/')
+    messages.success(request, f"✓ Entretien fixé le {local} ; {application.candidate.name} est prévenu(e).")
+    return redirect(request.META.get('HTTP_REFERER') or 'emploi:applications_received')

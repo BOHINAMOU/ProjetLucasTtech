@@ -60,9 +60,10 @@
 </div>
 
 {% if not candidate and not employer %}
-<div class="em-grid" style="margin-top:26px">
-  <div class="em-card"><h3><i class="fas fa-user-graduate"></i> Je cherche un emploi</h3><p>Créez votre profil candidat et déposez votre CV.</p><a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
-  <div class="em-card"><h3><i class="fas fa-building"></i> Je recrute</h3><p>Inscrivez votre entreprise pour publier des offres et déposer des demandes.</p><a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a></div>
+<div class="em-status em-status--pending" style="margin-top:26px"><b>Choisissez votre espace.</b> Un compte candidat et un compte entreprise sont deux espaces distincts, avec leurs propres menus et leurs propres droits : ce choix est définitif pour ce compte (une entreprise qui cherche aussi un emploi utilise une autre adresse e-mail).</div>
+<div class="em-grid" style="margin-top:14px">
+  <div class="em-card"><h3><i class="fas fa-user-graduate"></i> Je cherche un emploi</h3><p>Espace candidat : profil et CV, offres, candidatures, demandes spontanées.</p><a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
+  <div class="em-card"><h3><i class="fas fa-building"></i> Je représente une entreprise</h3><p>Espace entreprise : page professionnelle, offres, actualités, demandes de recrutement.</p><a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a></div>
 </div>
 {% endif %}
 
@@ -77,7 +78,8 @@
     </div>
     <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-pen"></i> Modifier mon profil</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:documents' %}"><i class="fas fa-graduation-cap"></i> Mes diplômes ({{ candidate.documents.count }})</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Aperçu recruteur</a></div>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Aperçu recruteur</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:boost_hub' %}"><i class="fas fa-rocket"></i> {% if live_boost %}Boost actif · {{ live_boost.expires_at|date:"d/m" }}{% else %}Booster mon profil{% endif %}</a></div>
   </section>
   <section class="em-card">
     <h3>Complétez votre profil — {{ completion }}%</h3>
@@ -90,6 +92,17 @@
   </section>
 </div>
 
+<section class="em-section" id="demandes">
+  <div class="em-row" style="justify-content:space-between;flex-wrap:wrap"><h2 class="em-h2" style="margin:0">Mes demandes spontanées</h2>
+    <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:spontaneous_new' %}"><i class="fas fa-plus"></i> Déposer une demande spontanée</a></div>
+  {% if spontaneous %}
+  <div class="em-grid" style="margin-top:14px">{% for r in spontaneous %}
+    <article class="em-card"><h3>{{ r.get_request_type_display }} — {{ r.get_domain_display }}</h3><div class="em-meta"><span class="em-tag em-tag--warn">{{ r.get_status_display }}</span>{% if r.city %}<span class="em-tag">{{ r.city }}</span>{% endif %}</div><div class="em-muted">Déposée le {{ r.created_at|date:"d/m/Y" }}</div></article>
+  {% endfor %}</div>
+  <p style="margin-top:10px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:spontaneous_list' %}">Gérer mes demandes</a></p>
+  {% else %}<p class="em-muted" style="margin-top:8px">Pas d'offre pour vous ? Déposez une demande : Lantante la garde et vous contacte dès qu'une opportunité correspond.</p>{% endif %}
+</section>
+
 <section class="em-section" id="candidatures">
   <h2 class="em-h2">Mes candidatures et propositions</h2>
   {% if applications %}
@@ -97,7 +110,13 @@
     <article class="em-card ed-app">
       <h3>{% if a.offer.is_open %}<a href="{{ a.offer.get_absolute_url }}" style="text-decoration:none">{{ a.offer.title }}</a>{% elif a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</h3>
       <div class="em-muted">{% if a.employer %}{{ a.employer.company_name }}{% else %}Lantante Technologie{% endif %} · {{ a.created_at|date:"d/m/Y" }}</div>
-      {% if a.status == 'refused' %}
+      {% if a.status == 'received' and a.consent == 'accepted' %}<a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:boost_hub' %}"><i class="fas fa-rocket"></i> Booster</a>{% endif %}
+      {% if a.consent == 'pending' %}
+        <div class="em-status em-status--pending" style="margin:0"><b>Lantante vous propose cette opportunité.</b> Acceptez-vous que votre dossier soit transmis à l'entreprise ?
+          <form method="post" action="{% url 'emploi:consent_respond' a.pk %}" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">{% csrf_token %}
+            <button class="em-btn em-btn--green em-btn--sm" name="answer" value="accept">Oui, transmettre</button>
+            <button class="em-btn em-btn--ghost em-btn--sm" name="answer" value="decline">Non merci</button></form></div>
+      {% elif a.status == 'refused' %}
         <div class="ed-refused">Candidature non retenue{% if a.status_message %}<br><span style="font-weight:500">Motif : {{ a.status_message|linebreaksbr }}</span>{% endif %}</div>
       {% else %}
         <div class="ed-steps">
@@ -136,7 +155,6 @@
     <div>
       {% if employer.is_approved %}
       <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}"><i class="fas fa-paper-plane"></i> Publier (offre, actualité, publicité…)</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:pricing' %}"><i class="fas fa-tags"></i> Tarifs et partenariat</a>
       {% endif %}
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:employer_edit' %}">Modifier la fiche</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{{ employer.get_absolute_url }}">Voir la fiche publique</a>
@@ -158,16 +176,12 @@
   <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes demandes de recrutement</h3>
   {% if staffing %}<div class="em-grid">{% for r in staffing %}<article class="em-card"><h3>{{ r.title }}</h3><div class="em-meta"><span class="em-tag em-tag--green">{{ r.get_status_display }}</span><span class="em-tag">{{ r.positions }} poste{{ r.positions|pluralize }}</span></div><div class="em-muted">{{ r.created_at|date:"d/m/Y" }}</div></article>{% endfor %}</div>
   {% else %}<div class="em-empty">Aucune demande en cours.</div>{% endif %}
-  {% if offer_apps %}
-  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Dossiers transmis par Lantante</h3>
-  <div class="em-grid">{% for a in offer_apps %}<article class="em-card"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div><div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span></div>{% if a.internship_duration %}<div class="em-muted">Stage souhaité : {{ a.internship_duration }}{% if a.available_from %} · à partir du {{ a.available_from|date:"d/m/Y" }}{% endif %}</div>{% endif %}{% if a.cover_letter %}<details><summary style="cursor:pointer;font-weight:600;color:var(--em-navy)">Lettre de motivation</summary><p style="white-space:pre-line;margin-top:6px">{{ a.cover_letter }}</p></details>{% endif %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ a.candidate.get_absolute_url }}" style="align-self:flex-start">Voir le dossier (CV, contacts)</a></article>{% endfor %}</div>
-  {% endif %}
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Candidatures reçues</h3>
+  <div class="em-card" style="flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div><b style="color:var(--em-navy);font-size:1.4rem">{{ em_new_apps|default:0 }}</b> nouvelle{{ em_new_apps|pluralize }} candidature{{ em_new_apps|pluralize }} à traiter<div class="em-muted">Les candidats postulent directement chez vous : vous les consultez, discutez, fixez les entretiens, acceptez ou refusez.</div></div>
+    <a class="em-btn em-btn--green" href="{% url 'emploi:applications_received' %}"><i class="fas fa-inbox"></i> Voir les candidatures</a>
+  </div>
 </section>
 {% endif %}
 
-{% if candidate and not employer %}
-<p class="em-muted" style="margin-top:28px">Vous représentez aussi une entreprise ? <a href="{% url 'emploi:employer_edit' %}">Demander un compte entreprise</a> (Lantante l'analyse avant de l'accepter).</p>
-{% elif employer and not candidate %}
-<p class="em-muted" style="margin-top:28px">Vous cherchez aussi un emploi ? <a href="{% url 'emploi:candidate_edit' %}">Créer un profil candidat</a></p>
-{% endif %}
 {% endblock %}

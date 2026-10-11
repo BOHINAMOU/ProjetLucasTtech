@@ -2,15 +2,18 @@ from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import (
-    AccountBan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
+    AccountBan, Appointment, Application, AvailabilitySlot, BoostOrder, SpontaneousRequest, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
     ModerationWarning, ProfileRevision, PublicationOrder, ServicePlan, Skill, StaffProfile, StaffingRequest,
 )
 from . import billing
+from . import boost as boosting
+from . import spontaneous as spont
 from .services import (
     MAX_WARNINGS, active_warning_count, apply_warning, assign_conversation, ban_user, can_sanction, decide_employer,
     notify, notify_application_status, share_application, suggest_candidates, unban_user, warn_user,
@@ -40,11 +43,12 @@ class SuggestionsMixin:
             application, created = Application.objects.get_or_create(
                 candidate=cand,
                 **({'offer': target} if is_offer else {'request': target}),
-                defaults={'origin': 'lantante', 'status': 'shortlisted'},
+                defaults={'origin': 'lantante', 'status': 'shortlisted', 'consent': 'pending'},
             )
             if created:
-                notify(cand.user, f"Lantante vous propose une opportunité : {target.title}",
-                       target.get_absolute_url() if is_offer else '/emploi/mon-espace/')
+                notify(cand.user, f"Lantante vous propose une opportunité : {target.title}. "
+                                  "Acceptez-vous que votre dossier soit transmis à l'entreprise ? Répondez depuis « Mon espace ».",
+                       '/emploi/mon-espace/#candidatures')
                 if not is_offer and target.status == 'new':
                     target.status = 'proposed'
                     target.save(update_fields=['status'])
@@ -120,7 +124,7 @@ class CandidateApplicationInline(admin.TabularInline):
 @admin.register(CandidateProfile)
 class CandidateProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'headline', 'domain', 'city', 'experience_years', 'available',
-                    'share_with_recruiters', 'is_published', 'moderation', 'updated_at')
+                    'share_with_recruiters', 'is_published', 'boost_badge', 'moderation', 'updated_at')
     list_filter = ('domain', 'available', 'is_published', 'share_with_recruiters', 'city')
     search_fields = ('user__email', 'user__first_name', 'user__last_name', 'headline', 'city', 'skills__name')
     filter_horizontal = ('skills',)
@@ -144,6 +148,11 @@ class CandidateProfileAdmin(admin.ModelAdmin):
     @admin.display(description="Modération")
     def moderation(self, obj):
         return moderation_cell(obj.user)
+
+    @admin.display(description="Boost")
+    def boost_badge(self, obj):
+        live = obj.live_profile_boost()
+        return format_html('<span class="badge badge-info">Boosté · {}</span>', live.expires_at.strftime('%d/%m')) if live else "—"
 
     @admin.display(description="CV")
     def cv_link(self, obj):
@@ -355,10 +364,10 @@ class CompletenessFilter(admin.SimpleListFilter):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'company', 'offer', 'request', 'completeness', 'status', 'shared_with_employer',
-                    'share_link', 'treat_link', 'created_at')
-    list_filter = (TreatmentFilter, CompletenessFilter, 'status', 'origin', 'shared_with_employer', 'offer__employer',
-                   'offer__contract')
+    list_display = ('candidate', 'company', 'offer', 'request', 'completeness', 'boost_flag', 'consent', 'status',
+                    'shared_with_employer', 'share_link', 'treat_link', 'created_at')
+    list_filter = (TreatmentFilter, CompletenessFilter, 'status', 'origin', 'consent', 'shared_with_employer',
+                   'offer__employer', 'offer__contract')
     list_editable = ('status',)
     readonly_fields = ('shared_at', 'share_link', 'interview_link', 'company', 'completeness')
     actions = ['mark_shortlisted', 'share_selected', 'mark_refused', 'mark_treated', 'request_missing']
@@ -368,6 +377,26 @@ class ApplicationAdmin(admin.ModelAdmin):
     def company(self, obj):
         employer = obj.employer
         return employer.company_name if employer else "Lantante (offre directe)"
+
+    def get_queryset(self, request):
+        from django.db.models import Exists, OuterRef
+        now = timezone.now()
+        # (on n'appelle pas super() : il appliquerait le tri avant que l'annotation « _boosted » existe)
+        qs = self.model._default_manager.get_queryset().annotate(_boosted=Exists(
+            BoostOrder.objects.filter(application=OuterRef('pk'), status='active', expires_at__gt=now)))
+        return qs.order_by(*self.get_ordering(request))
+
+    def get_ordering(self, request):
+        # Candidatures boostées d'abord dans la LISTE seulement (visibilité, pas sélection) ; ailleurs, tri normal
+        # (les menus déroulants d'autres écrans ne connaissent pas l'annotation « _boosted »).
+        match = getattr(request, 'resolver_match', None)
+        if match and match.url_name == 'Emploi_application_changelist':
+            return ('-_boosted', '-created_at')
+        return ('-created_at',)
+
+    @admin.display(description="Boost")
+    def boost_flag(self, obj):
+        return mark_safe('<span class="badge badge-info">Boostée</span>') if getattr(obj, '_boosted', False) else "—"
 
     @admin.display(description="Dossier")
     def completeness(self, obj):
@@ -421,6 +450,9 @@ class ApplicationAdmin(admin.ModelAdmin):
             raise PermissionDenied
         back = reverse('admin:Emploi_application_change', args=[pk])
         if request.method == 'POST':
+            if application.consent != 'accepted':
+                messages.error(request, "Le candidat n'a pas encore donné son accord pour la transmission de son dossier.")
+                return redirect(back)
             if share_application(application):
                 messages.success(request, f"Dossier transmis à {application.employer.company_name} ; le candidat est prévenu.")
             else:
@@ -799,6 +831,136 @@ class PublicationOrderAdmin(admin.ModelAdmin):
         self.message_user(request, f"{done} devis envoyé(s)." if done else
                           "Aucun devis envoyé : saisissez d'abord le montant dans la fiche (commande « En attente de devis »).",
                           level=messages.SUCCESS if done else messages.WARNING)
+
+
+# ─────────────────────────────
+# 📨 Demandes spontanées (vivier de talents)
+# ─────────────────────────────
+@admin.register(SpontaneousRequest)
+class SpontaneousRequestAdmin(admin.ModelAdmin):
+    list_display = ('candidate', 'request_type', 'domain', 'city', 'status', 'boost_badge', 'cv_link', 'opportunities_link',
+                    'created_at')
+    list_filter = ('status', 'request_type', 'domain', 'withdrawn')
+    search_fields = ('candidate__user__first_name', 'candidate__user__last_name', 'candidate__headline', 'city',
+                     'message', 'skills__name', 'candidate__skills__name')
+    filter_horizontal = ('skills',)
+    autocomplete_fields = ('candidate',)
+    readonly_fields = ('cv_link', 'opportunities_link', 'created_at', 'updated_at')
+    actions = ['set_in_progress', 'set_closed', 'set_rejected']
+    fieldsets = (
+        ("Demande", {'fields': ('candidate', 'cv_link', 'request_type', 'domain', 'skills', 'city', 'available_from',
+                                'duration', 'message', 'withdrawn')}),
+        ("Suivi par Lantante", {'fields': ('status', 'status_message', 'opportunities_link', 'admin_notes',
+                                           'created_at', 'updated_at')}),
+    )
+
+    def get_urls(self):
+        return [path('<int:pk>/opportunites/', self.admin_site.admin_view(self.opportunities_view),
+                     name='emploi_spontaneous_opportunities')] + super().get_urls()
+
+    @admin.display(description="Boost")
+    def boost_badge(self, obj):
+        return mark_safe('<span class="badge badge-info">Boosté</span>') if obj.candidate.is_boosted else "—"
+
+    @admin.display(description="CV")
+    def cv_link(self, obj):
+        if obj.pk and obj.candidate.cv:
+            return format_html('<a href="{}" target="_blank">Ouvrir le CV</a>',
+                               reverse('emploi:cv_download', args=[obj.candidate.pk]))
+        return "—"
+
+    @admin.display(description="Opportunités")
+    def opportunities_link(self, obj):
+        if not obj.pk:
+            return "—"
+        return format_html('<a class="btn btn-sm btn-primary" href="{}"><i class="fas fa-magic"></i> Chercher</a>',
+                           reverse('admin:emploi_spontaneous_opportunities', args=[obj.pk]))
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if change and 'status' in form.changed_data:
+            spont.notify_spontaneous_status(obj)
+
+    def opportunities_view(self, request, pk):
+        req = get_object_or_404(SpontaneousRequest.objects.select_related('candidate__user'), pk=pk)
+        if not self.has_change_permission(request, req):
+            raise PermissionDenied
+        back = reverse('admin:Emploi_spontaneousrequest_change', args=[pk])
+        if request.method == 'POST':
+            from .models import JobOffer
+            offer = get_object_or_404(JobOffer, pk=request.POST.get('offer'))
+            _, created = spont.propose_offer_to_candidate(req, offer)
+            if created:
+                messages.success(request, f"« {offer.title} » proposé à {req.candidate.name} : transmission après son accord.")
+            else:
+                messages.info(request, "Cette offre a déjà été proposée à ce candidat.")
+            return redirect(request.path)
+        return render(request, 'admin/emploi/opportunities.html', {
+            **self.admin_site.each_context(request), 'opts': self.model._meta, 'title': f"Opportunités pour {req.candidate.name}",
+            'req': req, 'results': spont.match_offers_for_request(req), 'back_url': back,
+        })
+
+    def _set_status(self, request, queryset, status, label):
+        count = 0
+        for req in queryset.exclude(status=status):
+            req.status = status
+            req.save(update_fields=['status', 'updated_at'])
+            spont.notify_spontaneous_status(req)
+            count += 1
+        self.message_user(request, f"{count} demande(s) : {label}. Les candidats sont prévenus.")
+
+    @admin.action(description="En cours de traitement")
+    def set_in_progress(self, request, queryset):
+        self._set_status(request, queryset, 'in_progress', "en cours de traitement")
+
+    @admin.action(description="Clôturer")
+    def set_closed(self, request, queryset):
+        self._set_status(request, queryset, 'closed', "clôturées")
+
+    @admin.action(description="Rejeter (message au candidat dans la fiche)")
+    def set_rejected(self, request, queryset):
+        self._set_status(request, queryset, 'rejected', "rejetées")
+
+
+# ─────────────────────────────
+# 🚀 Boosts des candidats
+# ─────────────────────────────
+@admin.register(BoostOrder)
+class BoostOrderAdmin(admin.ModelAdmin):
+    list_display = ('reference', 'candidate', 'plan', 'amount_label', 'state', 'payment_reference', 'expires_at', 'created_at')
+    list_filter = ('status', 'plan')
+    search_fields = ('candidate__user__first_name', 'candidate__user__last_name', 'payment_reference', 'receipt_number')
+    readonly_fields = ('reference', 'candidate', 'plan', 'application', 'status', 'amount', 'provider', 'payment_method',
+                       'payer_phone', 'payment_reference', 'paid_at', 'receipt_number', 'starts_at', 'expires_at', 'created_at')
+    actions = ['confirm_payment', 'payment_not_received', 'refund']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="Statut")
+    def state(self, obj):
+        cls = 'badge-success' if obj.is_live else ('badge-danger' if obj.status == 'payment_declared' else 'badge-secondary')
+        return format_html('<span class="badge {}">{}</span>', cls, obj.state_label)
+
+    @admin.action(description="✓ Confirmer le paiement (active le boost, envoie le reçu)")
+    def confirm_payment(self, request, queryset):
+        done = 0
+        for boost in queryset.filter(status__in=('payment_declared', 'awaiting_payment')):
+            boosting.confirm_boost_payment(boost, request.user)
+            done += 1
+        self.message_user(request, f"{done} boost(s) activé(s), candidats prévenus.")
+
+    @admin.action(description="✗ Paiement non retrouvé")
+    def payment_not_received(self, request, queryset):
+        for boost in queryset.filter(status='payment_declared'):
+            boosting.boost_payment_not_received(boost)
+        self.message_user(request, "Candidats invités à vérifier leur paiement.")
+
+    @admin.action(description="💸 Rembourser (arrête le boost)")
+    def refund(self, request, queryset):
+        for boost in queryset.exclude(status__in=('refunded', 'cancelled')):
+            boosting.refund_boost(boost, f"Remboursé par {request.user}")
+        self.message_user(request, "Boosts remboursés et arrêtés.")
 
 
 # ─────────────────────────────

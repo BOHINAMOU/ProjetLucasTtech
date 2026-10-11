@@ -15,7 +15,7 @@ urlpatterns = [
     # ───────── AUTH ─────────
     path(
         'connexion/',
-        LoginView.as_view(template_name='users/login.html', authentication_form=SiteAuthenticationForm),
+        views.SiteLoginView.as_view(template_name='users/login.html', authentication_form=SiteAuthenticationForm),
         name='login'
     ),
 

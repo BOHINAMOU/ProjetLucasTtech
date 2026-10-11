@@ -1,0 +1,30 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Mes demandes spontanées{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Mes demandes spontanées</h1>
+<p class="em-lead" style="margin-bottom:18px">Pas d'offre pour vous ? Déposez quand même votre demande : Lantante la garde dans son vivier de talents et vous contacte dès qu'une opportunité correspond, avec votre accord avant toute transmission.</p>
+<p><a class="em-btn em-btn--green" href="{% url 'emploi:spontaneous_new' %}"><i class="fas fa-plus"></i> Déposer une demande spontanée</a></p>
+<div class="em-grid" style="margin-top:22px">
+  {% for r in requests %}
+  <article class="em-card">
+    <h3>{{ r.get_request_type_display }} — {{ r.get_domain_display }}</h3>
+    <div class="em-meta">
+      <span class="em-tag {% if r.status == 'matched' or r.status == 'interview' or r.status == 'transmitted' %}em-tag--green{% elif r.status == 'closed' or r.status == 'rejected' %}{% else %}em-tag--warn{% endif %}">{{ r.get_status_display }}</span>
+      {% if r.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ r.city }}</span>{% endif %}
+      {% if r.duration %}<span class="em-tag">{{ r.duration }}</span>{% endif %}
+      {% if r.available_from %}<span class="em-tag">Dès le {{ r.available_from|date:"d/m/Y" }}</span>{% endif %}
+    </div>
+    {% if r.message %}<p>{{ r.message|truncatechars:160 }}</p>{% endif %}
+    <div class="em-meta">{% for s in r.skills.all %}<span class="em-tag">{{ s.name }}</span>{% endfor %}</div>
+    {% if r.status_message %}<div class="em-status em-status--approved" style="margin:0">{{ r.status_message|linebreaksbr }}</div>{% endif %}
+    <div class="em-muted">Déposée le {{ r.created_at|date:"d/m/Y" }}{% if r.withdrawn %} · retirée par vous{% endif %}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      {% if r.can_edit %}<a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:spontaneous_edit' r.pk %}"><i class="fas fa-pen"></i> Modifier</a>{% endif %}
+      {% if r.is_open %}<form method="post" action="{% url 'emploi:spontaneous_withdraw' r.pk %}" onsubmit="return confirm('Retirer cette demande ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Retirer</button></form>{% endif %}
+    </div>
+  </article>
+  {% empty %}
+  <div class="em-empty" style="grid-column:1/-1">Aucune demande pour le moment.</div>
+  {% endfor %}
+</div>
+{% endblock %}

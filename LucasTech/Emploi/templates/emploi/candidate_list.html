@@ -21,6 +21,7 @@
     <div class="em-meta">
       <span class="em-tag">{{ c.get_domain_display }}</span>
       {% if c.show_city and c.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ c.city }}</span>{% endif %}
+      {% if c.boosted %}<span class="em-tag" style="background:#e0e7ff;color:#3730a3"><i class="fas fa-rocket"></i> Profil boosté</span>{% endif %}
       {% if c.available %}<span class="em-tag em-tag--green">Disponible</span>{% endif %}
       {% if c.seeking_internship %}<span class="em-tag em-tag--warn">Cherche un stage{% if c.internship_duration %} · {{ c.internship_duration }}{% endif %}</span>{% endif %}
     </div>

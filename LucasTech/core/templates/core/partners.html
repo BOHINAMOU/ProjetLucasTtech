@@ -390,6 +390,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 </section>
 
 <!-- ══ CTA ══ -->
+{% if not hide_partner_cta %}
 <div class="pt-cta-wrap">
   <section class="pt-cta">
     <div class="pt-cta-blob pt-cta-blob-1"></div>
@@ -403,6 +404,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </div>
   </section>
 </div>
+{% endif %}
 
 <script>
 (function() {

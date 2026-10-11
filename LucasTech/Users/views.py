@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth.views import LoginView
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import PasswordResetCode
@@ -27,16 +29,27 @@ def _safe_next(request):
     return ''
 
 
+class SiteLoginView(LoginView):
+    """Après connexion, un candidat ou une entreprise arrive directement dans son propre espace."""
+
+    def get_default_redirect_url(self):
+        if getattr(self.request.user, 'account_type', '') in ('candidate', 'employer'):
+            return reverse('emploi:dashboard')
+        return super().get_default_redirect_url()
+
+
 def register(request):
     next_url = _safe_next(request)
     if request.user.is_authenticated:
         return redirect(next_url or 'core:home')
 
-    initial = {'account_type': request.GET.get('role') if request.GET.get('role') in ('candidate', 'employer') else 'other'}
+    initial = {'account_type': request.GET.get('role') if request.GET.get('role') in ('candidate', 'employer') else 'member'}
     form = RegisterForm(request.POST or None, initial=initial)
 
     if request.method == 'POST' and form.is_valid():
-        user = form.save()
+        user = form.save(commit=False)
+        user.account_type = form.cleaned_data.get('account_type') or 'member'
+        user.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f'Bienvenue {user.email} !')
         # Selon ce que la personne cherche, on l'envoie compléter le bon profil.

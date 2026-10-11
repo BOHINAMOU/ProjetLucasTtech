@@ -14,14 +14,16 @@
   {% if user.is_authenticated and must_order %}
   <div class="em-card"><h3><i class="fas fa-bullhorn"></i> Publier une actualité ou une publicité</h3>
     <p>Les publications des entreprises sont vérifiées par Lantante avant leur mise en ligne{% if news_plan %} — à partir de <b>{{ news_plan.price_label }}</b>{% endif %}.</p>
-    <div><a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}">Publier</a> <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:pricing' %}">Tarifs et partenariat</a></div></div>
-  {% elif user.is_authenticated %}
+    <div><a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}">Publier</a></div></div>
+  {% elif can_post %}
   <form class="em-card" method="post" enctype="multipart/form-data">{% csrf_token %}
     <div class="em-field" style="margin:0 0 8px">{{ form.kind }}</div>
     <div class="em-field" style="margin:0">{{ form.text }}</div>
     {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
     <div class="ef-actions">{{ form.image }}<button class="em-btn em-btn--green em-btn--sm" type="submit" style="margin-left:auto"><i class="fas fa-paper-plane"></i> Publier</button></div>
   </form>
+  {% elif user.is_authenticated %}
+  <div class="em-card"><p>Les actualités sont publiées par les entreprises et par Lantante. Vous pouvez aimer et commenter.</p></div>
   {% else %}
   <div class="em-card"><p>Connectez-vous pour publier, aimer et commenter.</p><a class="em-btn em-btn--green em-btn--sm" href="{% url 'users:login' %}?next={{ request.path }}" style="align-self:flex-start">Se connecter</a></div>
   {% endif %}

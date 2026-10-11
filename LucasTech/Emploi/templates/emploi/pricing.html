@@ -34,6 +34,7 @@
   <p>Deux façons de travailler avec Lantante Technologie : publier ponctuellement, ou devenir partenaire officiel pour une collaboration durable.</p>
 </section>
 
+{% if kind != 'candidate' %}
 <div class="ep-two">
   <section class="ep-formula">
     <span class="ep-tag">Formule 1 · Payante</span>
@@ -65,10 +66,29 @@
       <li><i class="fas fa-circle-check"></i> L'accès aux services de recrutement prévus dans le contrat</li>
     </ul>
     <div class="ep-note"><b>Comment ça se passe ?</b> Vous envoyez une demande (coordonnées, domaine d'activité, objectifs). L'équipe Lantante vous contacte pour discuter des conditions et des engagements, puis un contrat est signé si les deux parties sont d'accord. <b>Le partenariat peut être gratuit</b> si les deux parties conviennent d'une collaboration sans frais avec des engagements précis.</div>
-    <a class="em-btn em-btn--navy" href="{% url 'core:partner_apply' %}"><i class="fas fa-handshake"></i> Faire une demande de partenariat</a>
+    {% if hide_partner_cta %}
+      {% if user.employer_profile.partner %}<span class="em-tag em-tag--green" style="align-self:flex-start"><i class="fas fa-circle-check"></i> Vous êtes partenaire officiel</span>
+      {% else %}<a class="em-btn em-btn--navy" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-comments"></i> En parler avec Lantante</a>{% endif %}
+    {% else %}<a class="em-btn em-btn--navy" href="{% url 'core:partner_apply' %}"><i class="fas fa-handshake"></i> Faire une demande de partenariat</a>{% endif %}
   </section>
 </div>
 
+{% endif %}
+
+{% if boost_plans and kind != 'employer' %}
+<section class="em-section">
+  <h2 class="em-h2">Pour les candidats : booster sa visibilité (facultatif)</h2>
+  <p class="em-muted" style="margin-bottom:12px">Chercher un emploi, consulter les offres et postuler restent gratuits. Le boost met votre profil ou une candidature en avant auprès des recruteurs et participe au développement de la plateforme.</p>
+  <div class="em-grid">
+    {% for plan in boost_plans %}
+    <article class="em-card"><h3>{{ plan.name }}</h3><div class="em-meta"><span class="em-tag em-tag--green">{{ plan.price_label }}</span><span class="em-tag">{{ plan.duration_days }} jours</span></div><p>{{ plan.description }}</p></article>
+    {% endfor %}
+  </div>
+  <div class="ep-note">Le boost augmente la visibilité de votre profil ou de votre candidature. <b>Il ne garantit ni une présélection, ni un entretien, ni un recrutement</b> : les entreprises examinent toujours les compétences, l'expérience et les critères du poste. <a href="{% url 'emploi:boost_hub' %}"><b>Booster mon profil</b></a></div>
+</section>
+{% endif %}
+
+{% if kind != 'candidate' %}
 <section class="em-section">
   <h2 class="em-h2">Comment publier une seule fois</h2>
   <div class="ep-flow">
@@ -84,4 +104,5 @@
   </div>
   <p class="em-muted" style="margin-top:10px">Bientôt : des forfaits mensuels pour publier plusieurs fois à tarif réduit.</p>
 </section>
+{% endif %}
 {% endblock %}

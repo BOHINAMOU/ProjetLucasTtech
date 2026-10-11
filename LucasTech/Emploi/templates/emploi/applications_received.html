@@ -1,0 +1,67 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Candidatures reçues{% endblock %}
+{% block em_content %}
+<style>
+.ar-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0; }
+.ar-tabs a { display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; background:#fff; border:1px solid var(--em-border); color:var(--em-ink2); font-weight:600; text-decoration:none; font-size:.9rem; }
+.ar-tabs a.on { background:var(--em-navy); color:#fff; border-color:var(--em-navy); }
+.ar-tabs .n { min-width:22px; padding:0 7px; border-radius:999px; background:#eef2f7; color:var(--em-ink2); font-size:.76rem; text-align:center; line-height:20px; }
+.ar-tabs a.on .n { background:rgba(255,255,255,.2); color:#fff; }
+.ar-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.ar-actions details { width:100%; }
+.ar-actions summary { cursor:pointer; font-weight:700; color:var(--em-navy); font-size:.85rem; }
+.ar-actions form.inline { display:inline; }
+</style>
+<h1 class="em-h1" style="margin:34px 0 6px">Candidatures reçues</h1>
+<p class="em-lead">Les candidats postulent directement à vos offres. Consultez leur dossier, échangez avec eux, fixez les entretiens, acceptez ou refusez : c'est vous qui décidez.</p>
+<form method="get" style="margin-top:14px"><input type="hidden" name="tab" value="{{ tab }}">
+  <select class="em-input" name="offer" onchange="this.form.submit()" style="max-width:420px"><option value="">Toutes mes offres</option>{% for o in offers %}<option value="{{ o.pk }}" {% if offer_id == o.pk|stringformat:"s" %}selected{% endif %}>{{ o.title }}</option>{% endfor %}</select></form>
+<div class="ar-tabs">
+  <a class="{% if tab == 'new' %}on{% endif %}" href="?tab=new&offer={{ offer_id }}">Nouvelles <span class="n">{{ counts.new }}</span></a>
+  <a class="{% if tab == 'progress' %}on{% endif %}" href="?tab=progress&offer={{ offer_id }}">Présélectionnés / entretien <span class="n">{{ counts.progress }}</span></a>
+  <a class="{% if tab == 'hired' %}on{% endif %}" href="?tab=hired&offer={{ offer_id }}">Acceptés <span class="n">{{ counts.hired }}</span></a>
+  <a class="{% if tab == 'refused' %}on{% endif %}" href="?tab=refused&offer={{ offer_id }}">Refusés <span class="n">{{ counts.refused }}</span></a>
+  <a class="{% if tab == 'all' %}on{% endif %}" href="?tab=all&offer={{ offer_id }}">Toutes <span class="n">{{ counts.all }}</span></a>
+</div>
+
+<div class="em-grid">
+  {% for a in items %}
+  <article class="em-card">
+    <div class="em-row">
+      {% if a.candidate.show_photo and a.candidate.user.avatar %}<img class="em-avatar" src="{{ a.candidate.user.avatar.url }}" alt="">{% else %}<div class="em-avatar">{{ a.candidate.name|slice:":1" }}</div>{% endif %}
+      <div style="min-width:0"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div></div>
+    </div>
+    <div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span>
+      {% if a.candidate.is_boosted %}<span class="em-tag" style="background:#e0e7ff;color:#3730a3"><i class="fas fa-rocket"></i> Boosté</span>{% endif %}
+      {% if a.candidate.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ a.candidate.city }}</span>{% endif %}</div>
+    <div class="em-muted">Reçue le {{ a.created_at|date:"d/m/Y" }}{% if a.internship_duration %} · stage {{ a.internship_duration }}{% if a.available_from %} dès le {{ a.available_from|date:"d/m/Y" }}{% endif %}{% endif %}</div>
+    {% if a.cover_letter %}<details><summary style="cursor:pointer;font-weight:600;color:var(--em-navy)">Lettre de motivation</summary><p style="white-space:pre-line;margin-top:6px">{{ a.cover_letter }}</p></details>{% endif %}
+    {% if a.message %}<p style="white-space:pre-line"><i class="fas fa-quote-left" style="color:var(--em-muted)"></i> {{ a.message }}</p>{% endif %}
+    {% if a.slots.all %}<div class="em-status em-status--approved" style="margin:0"><b>Disponibilités proposées :</b>{% for s in a.slots.all %}<br>• {{ s.start|date:"l d/m/Y à H:i" }}{% if s.note %} — {{ s.note }}{% endif %}{% endfor %}</div>{% endif %}
+    {% for ap in a.appointments.all %}<div class="em-muted"><i class="fas fa-calendar-check"></i> Entretien le {{ ap.scheduled_at|date:"d/m/Y H:i" }}{% if ap.place %} · {{ ap.place }}{% endif %} — {{ ap.get_status_display }}</div>{% endfor %}
+    {% if a.status == 'refused' and a.status_message %}<div class="em-muted">Motif communiqué : {{ a.status_message }}</div>{% endif %}
+
+    <div class="ar-actions">
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ a.candidate.get_absolute_url }}"><i class="fas fa-folder-open"></i> Dossier (CV, contacts)</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:new_conversation' a.candidate.user_id %}"><i class="fas fa-comment"></i> Discuter</a>
+      {% if a.status != 'hired' and a.status != 'refused' %}
+        {% if a.status == 'received' %}<form class="inline" method="post" action="{% url 'emploi:application_decide' a.pk %}">{% csrf_token %}<button class="em-btn em-btn--navy em-btn--sm" name="action" value="shortlist"><i class="fas fa-star"></i> Présélectionner</button></form>{% endif %}
+        <form class="inline" method="post" action="{% url 'emploi:application_decide' a.pk %}">{% csrf_token %}<button class="em-btn em-btn--green em-btn--sm" name="action" value="accept"><i class="fas fa-check"></i> Accepter</button></form>
+        <details><summary><i class="fas fa-calendar-plus"></i> Fixer un entretien</summary>
+          <form method="post" action="{% url 'emploi:application_schedule' a.pk %}" style="display:grid;gap:8px;margin-top:8px">{% csrf_token %}
+            <input class="em-input" type="datetime-local" name="when" required>
+            <input class="em-input" type="text" name="place" maxlength="200" placeholder="Lieu ou lien visio">
+            <input class="em-input" type="text" name="notes" placeholder="Précisions pour le candidat (facultatif)">
+            <button class="em-btn em-btn--navy em-btn--sm" type="submit">Proposer cet entretien</button></form></details>
+        <details><summary style="color:#b91c1c"><i class="fas fa-xmark"></i> Refuser</summary>
+          <form method="post" action="{% url 'emploi:application_decide' a.pk %}" style="display:grid;gap:8px;margin-top:8px">{% csrf_token %}
+            <textarea class="em-input" name="message" rows="2" placeholder="Motif (expliqué au candidat, facultatif mais apprécié)"></textarea>
+            <button class="em-btn em-btn--danger em-btn--sm" name="action" value="refuse" type="submit">Refuser la candidature</button></form></details>
+      {% endif %}
+    </div>
+  </article>
+  {% empty %}
+  <div class="em-empty" style="grid-column:1/-1">Aucune candidature dans cet onglet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

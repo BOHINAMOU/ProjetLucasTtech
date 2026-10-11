@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <p><a href="{{ back_url }}">← Retour à la demande</a></p>
+    <p><b>{{ req.candidate.name }}</b> · {{ req.get_request_type_display }} · {{ req.get_domain_display }} · {{ req.city|default:req.candidate.city|default:"ville non précisée" }}
+      {% if req.candidate.is_boosted %}<span class="badge badge-info">Profil boosté</span>{% endif %}</p>
+    <p class="text-muted">Offres ouvertes qui correspondent (domaine 40 + compétences 40 + ville 20 ; type de contrat compatible). « Proposer » demande l'accord du candidat : son dossier n'est transmis à l'entreprise qu'après sa réponse.</p>
+    <table class="table table-striped">
+      <thead><tr><th>Offre</th><th>Entreprise</th><th>Contrat</th><th>Ville</th><th>Score</th><th>Pourquoi</th><th></th></tr></thead>
+      <tbody>
+      {% for r in results %}
+        <tr><td><a href="{% url 'admin:Emploi_joboffer_change' r.offer.pk %}">{{ r.offer.title }}</a></td><td>{{ r.offer.company_name }}</td><td>{{ r.offer.get_contract_display }}</td><td>{{ r.offer.city|default:"—" }}</td>
+          <td><b>{{ r.score }}</b>/100</td><td>{{ r.reasons }}</td>
+          <td><form method="post">{% csrf_token %}<input type="hidden" name="offer" value="{{ r.offer.pk }}"><button class="btn btn-sm btn-success" type="submit">Proposer</button></form></td></tr>
+      {% empty %}<tr><td colspan="7">Aucune offre ouverte ne correspond pour l'instant. La demande reste dans le vivier : vous serez alerté quand une offre correspondante sera publiée.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

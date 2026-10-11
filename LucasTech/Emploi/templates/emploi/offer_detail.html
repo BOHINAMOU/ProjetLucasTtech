@@ -43,6 +43,7 @@
         <a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a>
       {% elif applied %}
         <div class="em-tag em-tag--green" style="align-self:flex-start"><i class="fas fa-check"></i> Candidature envoyée</div>
+        <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:boost_hub' %}"><i class="fas fa-rocket"></i> Booster ma candidature ou mon profil</a>
       {% else %}
         <fieldset class="em-fieldset" style="margin:0 0 12px">
           <legend style="font-weight:700;color:var(--em-navy);font-size:.88rem">Envoyé avec votre candidature</legend>
@@ -74,7 +75,7 @@
             {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
           </div>
           <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Candidater</button>
-          <p class="em-help" style="margin-top:8px">Votre dossier est envoyé à Lantante, qui le transmet à l'entreprise si votre profil correspond.</p>
+          <p class="em-help" style="margin-top:8px">{% if offer.employer %}Votre dossier est envoyé <b>directement à l'entreprise</b> ({{ offer.employer.company_name }}), qui vous répond elle-même.{% else %}Votre dossier est envoyé à Lantante, qui vous répond.{% endif %}</p>
         </form>
       {% endif %}
     </div>
