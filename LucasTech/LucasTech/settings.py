@@ -90,9 +90,27 @@ INSTALLED_APPS = [
     'core',
 
     'social_django',
+
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 AUTH_USER_MODEL = 'Users.User'
+
+# ══════════════════════════════════════
+# API MOBILE (/api/v1/)
+# ══════════════════════════════════════
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication'],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+    'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser', 'rest_framework.parsers.MultiPartParser',
+                               'rest_framework.parsers.FormParser'],
+    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.AnonRateThrottle', 'rest_framework.throttling.UserRateThrottle'],
+    'DEFAULT_THROTTLE_RATES': {'anon': '120/min', 'user': '600/min', 'auth': '10/min'},
+}
+# Notifications push (Expo) : actives en production seulement.
+PUSH_ENABLED = os.getenv("PUSH_ENABLED", "True" if not DEBUG else "False") == "True"
 
 
 # ══════════════════════════════════════

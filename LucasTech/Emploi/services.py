@@ -14,7 +14,12 @@ logger = logging.getLogger(__name__)
 
 def notify(user, text, url='', email=True):
     """Crée la notification sur le site et envoie aussi un e-mail (sans jamais bloquer l'action)."""
-    notification = Notification.objects.create(recipient=user, text=text[:300], url=url)
+    notification = Notification.objects.create(recipient=user, text=text, url=url)
+    try:
+        from .push import send_push
+        send_push(user, "Lantante Technologie", text.split('\n')[0], url)
+    except Exception:
+        logger.warning("Notification push impossible", exc_info=True)
     if email and user.email and settings.EMAIL_HOST_USER:
         link = url if url.startswith('http') else f"{SITE_URL}{url or '/emploi/notifications/'}"
         try:

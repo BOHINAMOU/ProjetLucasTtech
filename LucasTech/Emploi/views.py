@@ -23,7 +23,7 @@ from .models import (
 )
 from functools import wraps
 
-from . import billing
+from . import actions, billing
 from .services import (
     account_kind, assign_conversation, can_browse_candidates, notify_application_status, share_application, can_see_private, is_staff, notify, notify_staff,
     send_auto_ack, send_intro, staff_full_name, staff_users,
@@ -163,25 +163,10 @@ def offer_apply(request, slug):
     if not form.is_valid():
         return offer_detail(request, slug, form=form)
     text = form.cleaned_data['text']
-    application, created = Application.objects.get_or_create(
-        candidate=profile, offer=offer,
-        defaults={
-            'origin': 'candidate',
-            'cover_letter': text,
-            'message': '',
-            'internship_duration': form.cleaned_data.get('internship_duration', ''),
-            'available_from': form.cleaned_data.get('available_from'),
-        },
-    )
+    application, created = actions.apply_to_offer(
+        profile, offer, text, form.cleaned_data.get('internship_duration', ''), form.cleaned_data.get('available_from'))
     if created:
-        notify_staff(f"Nouvelle candidature : {profile.name} → {offer.title}", f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
         if offer.employer_id:
-            # La candidature arrive directement chez l'entreprise : elle la traite elle-même (Lantante peut la suivre).
-            application.shared_with_employer = True
-            application.shared_at = timezone.now()
-            application.save(update_fields=['shared_with_employer', 'shared_at'])
-            notify(offer.employer.user, f"Nouvelle candidature de {profile.name} pour « {offer.title} ». Consultez-la et répondez-lui.",
-                   "/emploi/candidatures-recues/")
             messages.success(request, "✓ Candidature envoyée directement à l'entreprise. Vous serez prévenu de sa réponse.")
         else:
             messages.success(request, "✓ Candidature envoyée à Lantante, qui étudie votre dossier. Vous serez prévenu.")
@@ -252,18 +237,7 @@ def availability(request, pk):
         initial['note'] = existing[0].note
     form = AvailabilityForm(request.POST or None, initial=initial)
     if request.method == 'POST' and form.is_valid():
-        application.slots.all().delete()
-        note = form.cleaned_data.get('note', '')
-        slots = [AvailabilitySlot.objects.create(application=application, start=when, note=note)
-                 for when in form.slots()]
-        target = application.offer or application.request
-        when_txt = ", ".join(timezone.localtime(s.start).strftime('%d/%m %H:%M') for s in slots)
-        text = f"{application.candidate.name} est disponible pour l'entretien « {target} » : {when_txt}"
-        employer = application.employer
-        if employer and application.shared_with_employer:
-            notify(employer.user, text, "/emploi/candidatures-recues/")  # c'est l'entreprise qui fixe l'entretien
-        else:
-            notify_staff(text, f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
+        actions.submit_availability(application, form.slots(), form.cleaned_data.get('note', ''))
         messages.success(request, "✓ Merci ! Lantante vous confirme la date de l'entretien très vite.")
         return redirect('emploi:dashboard')
     return render(request, 'emploi/availability.html', {'form': form, 'application': application,
@@ -1084,10 +1058,7 @@ def application_decide(request, pk):
     mapping = {'shortlist': 'shortlisted', 'accept': 'hired', 'refuse': 'refused'}
     if action not in mapping:
         return redirect('emploi:applications_received')
-    application.status = mapping[action]
-    application.status_message = request.POST.get('message', '').strip()[:1000] if action != 'accept' or request.POST.get('message') else ''
-    application.save()
-    notify_application_status(application)
+    actions.decide_application(application, action, request.POST.get('message', ''))
     messages.success(request, {
         'shortlist': f"✓ {application.candidate.name} est présélectionné(e) : il/elle va indiquer ses disponibilités.",
         'accept': f"✓ {application.candidate.name} est accepté(e). Prenez contact pour la suite.",
@@ -1111,17 +1082,7 @@ def application_schedule(request, pk):
     if when < timezone.now():
         messages.error(request, "Choisissez une date à venir.")
         return redirect('emploi:applications_received')
-    target = application.offer or application.request
-    place = request.POST.get('place', '').strip()[:200]
-    Appointment.objects.create(application=application, candidate=application.candidate, employer=application.employer,
-                               title=f"Entretien — {target}", scheduled_at=when, place=place,
-                               notes=request.POST.get('notes', '').strip())
-    application.status = 'interview'
-    application.save(update_fields=['status', 'updated_at'])
+    actions.schedule_interview(application, when, request.POST.get('place', ''), request.POST.get('notes', ''))
     local = timezone.localtime(when).strftime('%d/%m/%Y à %H:%M')
-    notify(application.candidate.user,
-           f"{application.employer.company_name} vous propose un entretien pour « {target} » le {local}."
-           + (f" Lieu / lien : {place}." if place else "") + " Confirmez votre présence dans « Rendez-vous ».",
-           '/emploi/rendez-vous/')
     messages.success(request, f"✓ Entretien fixé le {local} ; {application.candidate.name} est prévenu(e).")
     return redirect(request.META.get('HTTP_REFERER') or 'emploi:applications_received')

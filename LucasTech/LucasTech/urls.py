@@ -21,6 +21,7 @@ urlpatterns = [
     path('services/',     include('Services.urls', namespace='services')),
     path('publications/', include('Publications.urls', namespace='publications')),
     path('emploi/',       include('Emploi.urls', namespace='emploi')),
+    path('api/v1/',       include('Emploi.api.urls')),
     path('social-auth/',  include('social_django.urls', namespace='social')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
