@@ -1,0 +1,18 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Offres d'emploi{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin-top:34px">Offres d'emploi</h1>
+<form class="em-filters" method="get">
+  <input class="em-input" name="q" value="{{ q }}" placeholder="Poste, compétence…">
+  <select class="em-input" name="domain"><option value="">Tous les domaines</option>{% for k,v in domains %}<option value="{{ k }}" {% if k == domain %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+  <select class="em-input" name="contract"><option value="">Tous les contrats</option>{% for k,v in contracts %}<option value="{{ k }}" {% if k == contract %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+  <input class="em-input" name="city" value="{{ city }}" placeholder="Ville (ex : Lomé)">
+  <button class="em-btn em-btn--navy" type="submit"><i class="fas fa-search"></i> Filtrer</button>
+</form>
+{% if page.object_list %}
+  <div class="em-grid">{% for offer in page %}{% include 'emploi/_offer_card.html' %}{% endfor %}</div>
+  {% include 'emploi/_pager.html' with qs=qs %}
+{% else %}
+  <div class="em-empty">Aucune offre ne correspond à votre recherche.</div>
+{% endif %}
+{% endblock %}

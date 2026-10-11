@@ -1,0 +1,73 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Mon espace{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin-top:34px">Mon espace emploi</h1>
+<p class="em-lead" style="margin:8px 0 20px">Bonjour {{ user.public_name }} 👋 — gérez ici votre profil, vos candidatures et vos échanges avec Lantante.</p>
+<p><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-headset"></i> Écrire à l'équipe Lantante</a></p>
+
+{% if not candidate and not employer %}
+<div class="em-grid" style="margin-top:22px">
+  <div class="em-card"><h3><i class="fas fa-user-graduate"></i> Je cherche un emploi</h3><p>Créez votre profil candidat et déposez votre CV.</p><a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
+  <div class="em-card"><h3><i class="fas fa-building"></i> Je recrute</h3><p>Inscrivez votre entreprise pour publier des offres et déposer des demandes.</p><a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a></div>
+</div>
+{% endif %}
+
+{% if candidate %}
+<section class="em-section">
+  <h2 class="em-h2">Mon profil candidat</h2>
+  <div class="em-card">
+    <div class="em-row"><div style="min-width:0"><h3>{{ candidate.name }} — {{ candidate.headline }}</h3>
+      <div class="em-meta" style="margin-top:6px">
+        <span class="em-tag {% if candidate.is_published %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if candidate.is_published %}Profil publié{% else %}Profil masqué{% endif %}</span>
+        <span class="em-tag">{% if candidate.cv %}CV ajouté{% else %}CV manquant{% endif %}</span>
+        <span class="em-tag">{{ candidate.skills.count }} compétence{{ candidate.skills.count|pluralize }}</span></div></div></div>
+    <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}">Modifier mon profil</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Voir mon profil public</a></div>
+  </div>
+  <h2 class="em-h2" style="margin-top:26px">Mes candidatures et propositions</h2>
+  {% if applications %}
+  <div class="em-grid">{% for a in applications %}
+    <article class="em-card"><h3>{% if a.offer %}<a href="{{ a.offer.get_absolute_url }}" style="text-decoration:none">{{ a.offer.title }}</a>{% else %}{{ a.request.title }}{% endif %}</h3>
+      <div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{{ a.get_origin_display }}</span></div>
+      <div class="em-muted">{{ a.created_at|date:"d/m/Y" }}</div></article>
+  {% endfor %}</div>
+  {% else %}<div class="em-empty">Aucune candidature pour le moment. <a href="{% url 'emploi:offer_list' %}">Parcourir les offres</a>.</div>{% endif %}
+  {% if appointments %}
+  <h2 class="em-h2" style="margin-top:26px">Prochains rendez-vous</h2>
+  <div class="em-grid">{% for ap in appointments %}<article class="em-card"><h3>{{ ap.title }}</h3><div class="em-muted">{{ ap.scheduled_at|date:"d/m/Y H:i" }}{% if ap.place %} · {{ ap.place }}{% endif %}</div><span class="em-tag" style="align-self:flex-start">{{ ap.get_status_display }}</span></article>{% endfor %}</div>
+  <p style="margin-top:12px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:appointments' %}">Gérer mes rendez-vous</a></p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if employer %}
+<section class="em-section">
+  <h2 class="em-h2">Mon entreprise : {{ employer.company_name }}</h2>
+  <div class="em-card">
+    <div class="em-meta"><span class="em-tag {% if employer.is_verified %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if employer.is_verified %}Entreprise vérifiée{% else %}En attente de vérification{% endif %}</span></div>
+    <div>
+      <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:offer_create' %}"><i class="fas fa-plus"></i> Publier une offre</a>
+      <a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:request_create' %}"><i class="fas fa-clipboard-list"></i> Demande de recrutement</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:employer_edit' %}">Modifier la fiche</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ employer.get_absolute_url }}">Voir la fiche publique</a>
+    </div>
+  </div>
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes offres</h3>
+  {% if offers %}<div class="em-grid">{% for o in offers %}<article class="em-card"><h3><a href="{{ o.get_absolute_url }}" style="text-decoration:none">{{ o.title }}</a></h3><div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.applications.count }} candidature{{ o.applications.count|pluralize }}</span></div></article>{% endfor %}</div>
+  {% else %}<div class="em-empty">Aucune offre.</div>{% endif %}
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes demandes de recrutement</h3>
+  {% if staffing %}<div class="em-grid">{% for r in staffing %}<article class="em-card"><h3>{{ r.title }}</h3><div class="em-meta"><span class="em-tag em-tag--green">{{ r.get_status_display }}</span><span class="em-tag">{{ r.positions }} poste{{ r.positions|pluralize }}</span></div><div class="em-muted">{{ r.created_at|date:"d/m/Y" }}</div></article>{% endfor %}</div>
+  {% else %}<div class="em-empty">Aucune demande.</div>{% endif %}
+  {% if offer_apps %}
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Candidats retenus pour vous</h3>
+  <div class="em-grid">{% for a in offer_apps %}<article class="em-card"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div><div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span></div></article>{% endfor %}</div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if candidate and not employer %}
+<p class="em-muted" style="margin-top:28px">Vous recrutez aussi ? <a href="{% url 'emploi:employer_edit' %}">Inscrire une entreprise</a></p>
+{% elif employer and not candidate %}
+<p class="em-muted" style="margin-top:28px">Vous cherchez aussi un emploi ? <a href="{% url 'emploi:candidate_edit' %}">Créer un profil candidat</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Demande de recrutement{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Confier un recrutement à Lantante</h1>
+<p class="em-lead" style="margin-bottom:20px">Décrivez le poste : nous sélectionnons les candidats, organisons les entretiens et vous accompagnons jusqu'à l'embauche.</p>
+<form class="em-form" method="post">
+  {% csrf_token %}
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer la demande</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}">Annuler</a>
+</form>
+{% endblock %}

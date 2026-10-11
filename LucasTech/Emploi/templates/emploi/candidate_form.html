@@ -1,0 +1,40 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}{% if creating %}Créer mon profil{% else %}Modifier mon profil{% endif %}{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">{% if creating %}Créer mon profil candidat{% else %}Modifier mon profil{% endif %}</h1>
+<p class="em-lead" style="margin-bottom:20px">Votre CV et vos contacts ne sont jamais publics. Lantante est prévenu à chaque modification pour garder votre dossier à jour.</p>
+<form class="em-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="em-err">{{ form.non_field_errors }}</div>{% endif %}
+  <fieldset class="em-fieldset"><legend>Identité</legend>
+    {% include 'emploi/_field.html' with field=form.first_name %}
+    {% include 'emploi/_field.html' with field=form.last_name %}
+    {% include 'emploi/_field.html' with field=form.avatar %}
+  </fieldset>
+  <fieldset class="em-fieldset"><legend>Profil professionnel</legend>
+    {% include 'emploi/_field.html' with field=form.headline %}
+    {% include 'emploi/_field.html' with field=form.domain %}
+    {% include 'emploi/_field.html' with field=form.skills_text %}
+    {% include 'emploi/_field.html' with field=form.city %}
+    {% include 'emploi/_field.html' with field=form.bio %}
+    {% include 'emploi/_field.html' with field=form.experience_years %}
+    {% include 'emploi/_field.html' with field=form.education_level %}
+    {% include 'emploi/_field.html' with field=form.contract_wanted %}
+    {% include 'emploi/_field.html' with field=form.available %}
+  </fieldset>
+  <fieldset class="em-fieldset"><legend>CV et contact (privés)</legend>
+    {% include 'emploi/_field.html' with field=form.phone %}
+    {% include 'emploi/_field.html' with field=form.cv %}
+    {% if profile and profile.cv %}<div class="em-help" style="margin-top:-8px;margin-bottom:12px">CV actuel enregistré. Envoyez un nouveau PDF pour le remplacer.</div>{% endif %}
+  </fieldset>
+  <fieldset class="em-fieldset"><legend>Ce que je rends public</legend>
+    {% include 'emploi/_field.html' with field=form.show_photo %}
+    {% include 'emploi/_field.html' with field=form.show_city %}
+    {% include 'emploi/_field.html' with field=form.show_bio %}
+    {% include 'emploi/_field.html' with field=form.show_experience %}
+    {% include 'emploi/_field.html' with field=form.share_with_recruiters %}
+  </fieldset>
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-check"></i> Enregistrer</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}">Annuler</a>
+</form>
+{% endblock %}

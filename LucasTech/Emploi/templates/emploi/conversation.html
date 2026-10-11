@@ -1,0 +1,23 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Conversation{% endblock %}
+{% block em_content %}
+<style>
+.ec-chat { display:flex; flex-direction:column; gap:10px; margin:18px 0; max-width:760px; }
+.ec-msg { max-width:85%; padding:10px 14px; border-radius:14px; background:#fff; border:1px solid var(--em-border); overflow-wrap:anywhere; white-space:pre-line; }
+.ec-msg--me { align-self:flex-end; background:var(--em-green-bg); border-color:transparent; }
+.ec-msg small { display:block; color:var(--em-muted); font-size:.72rem; margin-top:4px; }
+</style>
+<p style="margin-top:28px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:inbox' %}">← Messagerie</a></p>
+<h1 class="em-h1" style="font-size:clamp(1.6rem,4vw,2.2rem);margin-top:12px">{{ others|join:", " }}{% if conv.subject %} — {{ conv.subject }}{% endif %}</h1>
+<div class="ec-chat">
+  {% for m in chat %}
+  <div class="ec-msg {% if m.sender_id == user.pk %}ec-msg--me{% endif %}">
+    {% if m.sender_id != user.pk %}<b>{{ m.sender.public_name }}</b><br>{% endif %}{{ m.body }}<small>{{ m.created_at|date:"d/m/Y H:i" }}</small>
+  </div>
+  {% endfor %}
+</div>
+<form class="em-form" method="post" style="max-width:760px">{% csrf_token %}
+  {% include 'emploi/_field.html' with field=form.body %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
+</form>
+{% endblock %}

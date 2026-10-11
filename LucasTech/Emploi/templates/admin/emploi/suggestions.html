@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <p><a href="{{ back_url }}">← Retour à « {{ target.title }} »</a></p>
+    <p>
+      <b>Domaine :</b> {{ target.get_domain_display }} ·
+      <b>Ville :</b> {{ target.city|default:"—" }} ·
+      <b>Compétences :</b>
+      {% for s in target.skills.all %}<span class="badge badge-info">{{ s.name }}</span> {% empty %}—{% endfor %}
+    </p>
+    <p class="text-muted">Score = domaine (40) + compétences (40) + ville (20). « Proposer » crée la mise en relation et prévient le candidat.</p>
+    <table class="table table-striped">
+      <thead><tr><th>Candidat</th><th>Titre</th><th>Ville</th><th>Expérience</th><th>Score</th><th>Pourquoi</th><th></th></tr></thead>
+      <tbody>
+      {% for r in results %}
+        <tr>
+          <td><a href="{% url 'admin:Emploi_candidateprofile_change' r.candidate.pk %}">{{ r.candidate.name }}</a></td>
+          <td>{{ r.candidate.headline }}</td>
+          <td>{{ r.candidate.city|default:"—" }}</td>
+          <td>{{ r.candidate.experience_years }} an(s)</td>
+          <td><b>{{ r.score }}</b>/100</td>
+          <td>{{ r.reasons }}</td>
+          <td>
+            <form method="post">{% csrf_token %}
+              <input type="hidden" name="candidate" value="{{ r.candidate.pk }}">
+              <button class="btn btn-sm btn-success" type="submit">Proposer</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7">Aucun candidat ne correspond pour l'instant.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

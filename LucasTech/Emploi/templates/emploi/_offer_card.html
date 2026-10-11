@@ -1,0 +1,17 @@
+<article class="em-card">
+  <div class="em-row">
+    {% if offer.employer and offer.employer.logo_url %}<img class="em-logo" src="{{ offer.employer.logo_url }}" alt="">{% else %}<div class="em-logo em-avatar"><i class="fas fa-briefcase"></i></div>{% endif %}
+    <div style="min-width:0">
+      <h3><a href="{{ offer.get_absolute_url }}" style="text-decoration:none">{{ offer.title }}</a></h3>
+      <div class="em-muted">{{ offer.company_name }}</div>
+    </div>
+  </div>
+  <div class="em-meta">
+    <span class="em-tag em-tag--green">{{ offer.get_contract_display }}</span>
+    <span class="em-tag">{{ offer.get_domain_display }}</span>
+    {% if offer.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ offer.city }}</span>{% endif %}
+    {% if offer.is_featured %}<span class="em-tag em-tag--warn">À la une</span>{% endif %}
+  </div>
+  <p>{{ offer.description|truncatechars:140 }}</p>
+  <a class="em-btn em-btn--navy em-btn--sm" href="{{ offer.get_absolute_url }}" style="align-self:flex-start">Voir l'offre</a>
+</article>

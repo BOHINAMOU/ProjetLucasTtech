@@ -1,0 +1,44 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}{{ candidate.name }}{% endblock %}
+{% block em_content %}
+<div style="margin-top:30px;display:grid;gap:22px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)" class="cd-grid">
+  <div style="min-width:0">
+    {% if not candidate.is_published %}<div class="em-flash em-flash--info" style="margin:0 0 16px">Profil masqué du public par Lantante.</div>{% endif %}
+    <div class="em-row" style="margin-bottom:18px">
+      {% if candidate.show_photo and candidate.user.avatar %}<img class="em-avatar" style="width:84px;height:84px" src="{{ candidate.user.avatar.url }}" alt="">{% else %}<div class="em-avatar" style="width:84px;height:84px;font-size:1.8rem">{{ candidate.name|slice:":1" }}</div>{% endif %}
+      <div style="min-width:0"><h1 class="em-h1" style="font-size:clamp(1.7rem,4vw,2.4rem)">{{ candidate.name }}</h1><div class="em-lead" style="font-size:1rem">{{ candidate.headline }}</div></div>
+    </div>
+    <div class="em-meta" style="margin-bottom:18px">
+      <span class="em-tag">{{ candidate.get_domain_display }}</span>
+      {% if candidate.show_city and candidate.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ candidate.city }}</span>{% endif %}
+      {% if candidate.show_experience %}
+        <span class="em-tag">{{ candidate.experience_years }} an{{ candidate.experience_years|pluralize }} d'expérience</span>
+        {% if candidate.education_level %}<span class="em-tag">{{ candidate.get_education_level_display }}</span>{% endif %}
+      {% endif %}
+      {% if candidate.available %}<span class="em-tag em-tag--green">Disponible</span>{% endif %}
+    </div>
+    {% if candidate.show_bio and candidate.bio %}<div class="em-card" style="margin-bottom:16px"><h3>À propos</h3><p style="white-space:pre-line">{{ candidate.bio }}</p></div>{% endif %}
+    {% if candidate.skills.exists %}<div class="em-card"><h3>Compétences</h3><div class="em-meta">{% for s in candidate.skills.all %}<span class="em-tag">{{ s.name }}</span>{% endfor %}</div></div>{% endif %}
+  </div>
+  <aside style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="em-card">
+      <h3>Contact et CV</h3>
+      {% if private_ok %}
+        <p><i class="fas fa-envelope"></i> {{ candidate.user.email }}</p>
+        {% if candidate.phone or candidate.user.phone %}<p><i class="fas fa-phone"></i> {{ candidate.phone|default:candidate.user.phone }}</p>{% endif %}
+        {% if candidate.cv %}<a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:cv_download' candidate.pk %}" target="_blank"><i class="fas fa-file-pdf"></i> Ouvrir le CV</a>{% endif %}
+      {% else %}
+        <p><i class="fas fa-lock"></i> Coordonnées et CV privés. Ils sont communiqués aux recruteurs par Lantante.</p>
+      {% endif %}
+      {% if is_me %}
+        <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:candidate_edit' %}">Modifier mon profil</a>
+      {% elif user.is_authenticated %}
+        <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:new_conversation' candidate.user_id %}"><i class="fas fa-comment"></i> Envoyer un message</a>
+      {% else %}
+        <a class="em-btn em-btn--green em-btn--sm" href="{% url 'users:login' %}?next={{ request.path }}">Se connecter pour écrire</a>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+<style>@media (max-width:820px){ .cd-grid{ grid-template-columns:minmax(0,1fr) !important; } }</style>
+{% endblock %}

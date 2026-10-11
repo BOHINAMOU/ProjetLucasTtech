@@ -1,0 +1,15 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Notifications{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 18px">Notifications</h1>
+<div style="display:flex;flex-direction:column;gap:10px;max-width:760px">
+  {% for n in items %}
+  <div class="em-card" style="flex-direction:row;align-items:center;justify-content:space-between;gap:12px">
+    <div style="min-width:0"><p style="color:var(--em-ink)">{{ n.text }}</p><div class="em-muted">{{ n.created_at|date:"d/m/Y H:i" }}</div></div>
+    {% if n.url %}<a class="em-btn em-btn--ghost em-btn--sm" style="flex:none" href="{{ n.url }}">Ouvrir</a>{% endif %}
+  </div>
+  {% empty %}
+  <div class="em-empty">Aucune notification.</div>
+  {% endfor %}
+</div>
+{% endblock %}

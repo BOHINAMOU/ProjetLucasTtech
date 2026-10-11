@@ -1,0 +1,12 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Publier une offre{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Publier une offre d'emploi</h1>
+<p class="em-lead" style="margin-bottom:20px">{% if employer.is_verified %}Votre entreprise est vérifiée : l'offre sera publiée immédiatement.{% else %}Votre entreprise n'est pas encore vérifiée : l'offre sera publiée après validation par Lantante.{% endif %}</p>
+<form class="em-form" method="post">
+  {% csrf_token %}
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer l'offre</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}">Annuler</a>
+</form>
+{% endblock %}

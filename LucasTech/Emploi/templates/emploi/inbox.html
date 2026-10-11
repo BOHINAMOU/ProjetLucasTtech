@@ -1,0 +1,20 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Messages{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin-top:34px">Messagerie</h1>
+<p class="em-lead" style="margin:8px 0 18px">Échangez avec les candidats, les entreprises et l'équipe Lantante. Lantante veille au bon usage de la messagerie.</p>
+<p><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-headset"></i> Écrire à Lantante</a></p>
+<div style="margin-top:20px;display:flex;flex-direction:column;gap:12px;max-width:760px">
+  {% for it in items %}
+  <a class="em-card" href="{% url 'emploi:conversation' it.conv.pk %}" style="text-decoration:none">
+    <div class="em-row" style="justify-content:space-between">
+      <b style="color:var(--em-navy)">{{ it.others|join:", "|default:"Conversation" }}{% if it.conv.subject %} — {{ it.conv.subject }}{% endif %}</b>
+      {% if it.unread %}<span class="em-badge">{{ it.unread }}</span>{% endif %}
+    </div>
+    {% if it.last %}<p>{{ it.last.body|truncatechars:110 }}</p><div class="em-muted">{{ it.last.created_at|date:"d/m/Y H:i" }}</div>{% endif %}
+  </a>
+  {% empty %}
+  <div class="em-empty">Aucune conversation. Ouvrez un profil ou une entreprise pour envoyer un message.</div>
+  {% endfor %}
+</div>
+{% endblock %}

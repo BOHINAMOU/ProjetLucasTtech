@@ -1,0 +1,53 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}{{ offer.title }}{% endblock %}
+{% block em_description %}{{ offer.description|striptags|truncatechars:155 }}{% endblock %}
+{% block em_content %}
+<div style="margin-top:30px;display:grid;gap:22px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)" class="od-grid">
+  <div style="min-width:0">
+    {% if offer.status != 'published' %}<div class="em-flash em-flash--info" style="margin:0 0 16px">Cette offre n'est pas publique : statut « {{ offer.get_status_display }} ».</div>{% endif %}
+    <h1 class="em-h1">{{ offer.title }}</h1>
+    <div class="em-meta" style="margin:12px 0 20px">
+      <span class="em-tag em-tag--green">{{ offer.get_contract_display }}</span>
+      <span class="em-tag">{{ offer.get_domain_display }}</span>
+      {% if offer.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ offer.city }}</span>{% endif %}
+      {% if offer.salary %}<span class="em-tag">{{ offer.salary }}</span>{% endif %}
+      {% if offer.deadline %}<span class="em-tag em-tag--warn">Avant le {{ offer.deadline|date:"d/m/Y" }}</span>{% endif %}
+    </div>
+    <div class="em-card"><h3>Description du poste</h3><p style="white-space:pre-line">{{ offer.description }}</p>
+      {% if offer.requirements %}<h3 style="margin-top:10px">Profil recherché</h3><p style="white-space:pre-line">{{ offer.requirements }}</p>{% endif %}
+      {% if offer.skills.exists %}<div class="em-meta">{% for s in offer.skills.all %}<span class="em-tag">{{ s.name }}</span>{% endfor %}</div>{% endif %}
+    </div>
+  </div>
+  <aside style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="em-card">
+      <div class="em-row">
+        {% if offer.employer and offer.employer.logo_url %}<img class="em-logo" src="{{ offer.employer.logo_url }}" alt="">{% endif %}
+        <div style="min-width:0"><b>{{ offer.company_name }}</b>
+          {% if offer.employer and offer.employer.is_verified %}<div class="em-muted"><i class="fas fa-circle-check" style="color:var(--em-green)"></i> Entreprise vérifiée</div>{% endif %}</div>
+      </div>
+      {% if offer.employer %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ offer.employer.get_absolute_url }}">Voir l'entreprise</a>{% endif %}
+    </div>
+    {% if offer.is_open %}
+    <div class="em-card">
+      <h3>Postuler</h3>
+      {% if not user.is_authenticated %}
+        <p>Connectez-vous pour postuler à cette offre.</p>
+        <a class="em-btn em-btn--green" href="{% url 'users:login' %}?next={{ request.path }}">Se connecter</a>
+        <a class="em-btn em-btn--ghost" href="{% url 'users:register' %}?next={{ request.path }}">Créer un compte</a>
+      {% elif not profile %}
+        <p>Créez d'abord votre profil candidat.</p>
+        <a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a>
+      {% elif applied %}
+        <div class="em-tag em-tag--green" style="align-self:flex-start"><i class="fas fa-check"></i> Candidature envoyée</div>
+      {% else %}
+        <form method="post" action="{% url 'emploi:offer_apply' offer.slug %}">{% csrf_token %}
+          <div class="em-field">{{ form.message }}</div>
+          <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer ma candidature</button>
+        </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </aside>
+</div>
+<style>@media (max-width:820px){ .od-grid{ grid-template-columns:minmax(0,1fr) !important; } }</style>
+{% endblock %}

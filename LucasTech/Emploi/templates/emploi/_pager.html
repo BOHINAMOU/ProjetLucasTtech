@@ -1,0 +1,7 @@
+{% if page.has_other_pages %}
+<div class="em-pager">
+  {% if page.has_previous %}<a class="em-btn em-btn--ghost em-btn--sm" href="?{{ qs }}page={{ page.previous_page_number }}">← Précédent</a>{% endif %}
+  <span class="em-muted">Page {{ page.number }} / {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="em-btn em-btn--ghost em-btn--sm" href="?{{ qs }}page={{ page.next_page_number }}">Suivant →</a>{% endif %}
+</div>
+{% endif %}

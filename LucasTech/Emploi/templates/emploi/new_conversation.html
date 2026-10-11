@@ -1,0 +1,10 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}{{ title }}{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 18px">{{ title }}</h1>
+<form class="em-form" method="post">{% csrf_token %}
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:inbox' %}">Annuler</a>
+</form>
+{% endblock %}

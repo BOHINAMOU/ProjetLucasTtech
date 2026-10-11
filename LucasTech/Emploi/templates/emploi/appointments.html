@@ -1,0 +1,25 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Rendez-vous{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 18px">Mes rendez-vous</h1>
+<div class="em-grid">
+  {% for ap in appointments %}
+  <article class="em-card">
+    <h3>{{ ap.title }}</h3>
+    <div class="em-meta"><span class="em-tag em-tag--green">{{ ap.get_status_display }}</span>
+      <span class="em-tag"><i class="far fa-calendar"></i> {{ ap.scheduled_at|date:"d/m/Y H:i" }}</span></div>
+    {% if ap.place %}<p><i class="fas fa-location-dot"></i> {{ ap.place }}</p>{% endif %}
+    <div class="em-muted">Candidat : {{ ap.candidate.name }}{% if ap.employer %} · {{ ap.employer.company_name }}{% endif %}</div>
+    {% if ap.notes %}<p>{{ ap.notes }}</p>{% endif %}
+    {% if ap.candidate.user_id == user.pk and ap.status == 'proposed' or ap.candidate.user_id == user.pk and ap.status == 'confirmed' %}
+    <form method="post" action="{% url 'emploi:appointment_respond' ap.pk %}" style="display:flex;gap:8px;flex-wrap:wrap">{% csrf_token %}
+      {% if ap.status == 'proposed' %}<button class="em-btn em-btn--green em-btn--sm" name="action" value="confirm">Confirmer</button>{% endif %}
+      <button class="em-btn em-btn--danger em-btn--sm" name="action" value="decline">Décliner</button>
+    </form>
+    {% endif %}
+  </article>
+  {% empty %}
+  <div class="em-empty" style="grid-column:1/-1">Aucun rendez-vous pour le moment. Lantante vous en proposera dès qu'une opportunité se présente.</div>
+  {% endfor %}
+</div>
+{% endblock %}

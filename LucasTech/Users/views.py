@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import PasswordResetCode
 from .forms import RegisterForm, LoginForm, SetNewPasswordForm, ProfileUpdateForm
@@ -17,9 +18,19 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────
 #  REGISTER
 # ─────────────────────────────
+def _safe_next(request):
+    """Adresse « next » (retour après inscription), uniquement si elle reste sur ce site."""
+    target = request.POST.get('next') or request.GET.get('next') or ''
+    if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()},
+                                                  require_https=request.is_secure()):
+        return target
+    return ''
+
+
 def register(request):
+    next_url = _safe_next(request)
     if request.user.is_authenticated:
-        return redirect('core:home')
+        return redirect(next_url or 'core:home')
 
     form = RegisterForm(request.POST or None)
 
@@ -27,9 +38,9 @@ def register(request):
         user = form.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f'Bienvenue {user.email} !')
-        return redirect('core:home')
+        return redirect(next_url or 'core:home')
 
-    return render(request, 'users/register.html', {'form': form})
+    return render(request, 'users/register.html', {'form': form, 'next': next_url})
 
 
 # ─────────────────────────────

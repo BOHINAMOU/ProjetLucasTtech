@@ -153,6 +153,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <p class="pd-block-title">Réalisations avec Lantante Technologie</p>
       <div class="pd-achievements">{{ partner.achievements }}</div>
       {% endif %}
+
+      {% if partner.employer %}
+      <p class="pd-block-title">Offres d'emploi</p>
+      <p><a href="{{ partner.employer.get_absolute_url }}" class="btn-site-link" style="display:inline-flex"><i class="fa fa-briefcase"></i>&nbsp; Voir les offres de {{ partner.name }}</a></p>
+      {% endif %}
     </div>
   </div>
 

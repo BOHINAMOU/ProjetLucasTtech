@@ -156,6 +156,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
     <form method="post" class="auth-form">
       {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
       <div class="auth-field">
         <label class="auth-label">Email</label>

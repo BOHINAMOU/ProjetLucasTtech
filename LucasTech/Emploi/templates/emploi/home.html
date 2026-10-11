@@ -1,0 +1,116 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Emploi & recrutement{% endblock %}
+{% block em_content %}
+<style>
+.eh-hero { margin:0 calc(-1 * clamp(1rem,4vw,2rem)); padding:clamp(36px,7vw,72px) clamp(1rem,4vw,2rem); background:linear-gradient(135deg,#0d3b7a,#163a63); color:#fff; border-radius:0 0 28px 28px; }
+.eh-hero .em-h1 { color:#fff; max-width:760px; }
+.eh-hero .em-lead { color:#dbe7f5; margin:14px 0 24px; }
+.eh-cta { display:flex; flex-wrap:wrap; gap:12px; }
+.eh-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:32px; max-width:560px; }
+.eh-stat { background:rgba(255,255,255,.1); border-radius:14px; padding:14px; text-align:center; }
+.eh-stat b { display:block; font-size:1.7rem; }
+.eh-stat span { font-size:.8rem; color:#cfe0f3; }
+
+.eh-partners { margin-top:34px; }
+.eh-partners__title { font-weight:700; color:var(--em-muted); font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+.eh-track-wrap { overflow:hidden; background:#fff; border:1px solid var(--em-border); border-radius:16px; padding:14px 0; }
+.eh-track { display:flex; width:max-content; gap:18px; animation:eh-scroll 40s linear infinite; }
+.eh-track-wrap:hover .eh-track { animation-play-state:paused; }
+.eh-partner { flex:none; width:150px; height:76px; display:flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:12px; background:var(--em-surf2); text-decoration:none; }
+.eh-partner img { max-width:100%; max-height:100%; object-fit:contain; }
+.eh-partner span { font-weight:700; font-size:.8rem; color:var(--em-navy); text-align:center; }
+@keyframes eh-scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+@media (prefers-reduced-motion:reduce) { .eh-track { animation:none; } .eh-track-wrap { overflow-x:auto; } }
+
+.eh-two { display:grid; gap:18px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.eh-big { background:#fff; border:1px solid var(--em-border); border-radius:18px; padding:26px; box-shadow:var(--em-shadow); }
+.eh-big i { font-size:1.6rem; color:var(--em-green); }
+.eh-big h3 { font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:var(--em-navy); margin:8px 0; }
+.eh-big p { color:var(--em-ink2); line-height:1.55; margin-bottom:16px; }
+.eh-steps { display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr)); counter-reset:s; }
+.eh-step { background:#fff; border:1px solid var(--em-border); border-radius:14px; padding:18px; }
+.eh-step::before { counter-increment:s; content:counter(s); display:flex; width:30px; height:30px; border-radius:50%; background:var(--em-green); color:#fff; font-weight:700; align-items:center; justify-content:center; margin-bottom:8px; }
+.eh-step b { color:var(--em-navy); }
+.eh-step p { font-size:.88rem; color:var(--em-ink2); margin-top:4px; line-height:1.5; }
+@media (max-width:900px) { .eh-steps { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:640px) { .eh-two, .eh-steps { grid-template-columns:minmax(0,1fr); } }
+</style>
+
+<section class="eh-hero">
+  <h1 class="em-h1">Trouvez le bon emploi. Recrutez le bon talent.</h1>
+  <p class="em-lead">Lantante Technologie met en relation candidats et entreprises au Togo : nous présélectionnons les profils, organisons les entretiens et suivons chaque recrutement jusqu'au contrat.</p>
+  <div class="eh-cta">
+    <a class="em-btn em-btn--green" href="{% url 'emploi:offer_list' %}"><i class="fas fa-search"></i> Voir les offres</a>
+    <a class="em-btn em-btn--ghost" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-user-plus"></i> Mon profil candidat</a>
+    <a class="em-btn em-btn--ghost" href="{% url 'emploi:employer_edit' %}"><i class="fas fa-building"></i> Je recrute</a>
+  </div>
+  <div class="eh-stats">
+    <div class="eh-stat"><b>{{ offers_count }}</b><span>offres ouvertes</span></div>
+    <div class="eh-stat"><b>{{ candidates_count }}</b><span>candidats</span></div>
+    <div class="eh-stat"><b>{{ companies_count }}</b><span>entreprises</span></div>
+  </div>
+</section>
+
+{% if partner_list %}
+<section class="eh-partners">
+  <div class="eh-partners__title">Nos partenaires</div>
+  <div class="eh-track-wrap">
+    <div class="eh-track">
+      {% for p in partner_list %}
+        <a class="eh-partner" href="{% url 'core:partner_detail' p.pk %}" title="{{ p.name }}">
+          {% if p.logo %}<img src="{{ p.logo.url }}" alt="{{ p.name }}" loading="lazy">{% else %}<span>{{ p.name }}</span>{% endif %}
+        </a>
+      {% endfor %}
+      {% for p in partner_list %}
+        <a class="eh-partner" href="{% url 'core:partner_detail' p.pk %}" title="{{ p.name }}" aria-hidden="true" tabindex="-1">
+          {% if p.logo %}<img src="{{ p.logo.url }}" alt="" loading="lazy">{% else %}<span>{{ p.name }}</span>{% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="em-section">
+  <div class="eh-two">
+    <div class="eh-big"><i class="fas fa-user-graduate"></i><h3>Vous cherchez un emploi ?</h3>
+      <p>Créez votre profil, ajoutez votre CV (visible seulement par Lantante et les recruteurs autorisés) et laissez-nous vous proposer les opportunités qui vous correspondent.</p>
+      <a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
+    <div class="eh-big"><i class="fas fa-building"></i><h3>Vous recrutez ?</h3>
+      <p>Publiez vos offres ou confiez-nous votre besoin : nous sélectionnons les candidats, organisons les entretiens et vous accompagnons jusqu'à l'embauche.</p>
+      <a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Déposer une demande</a></div>
+  </div>
+</section>
+
+<section class="em-section">
+  <h2 class="em-h2">Dernières offres</h2>
+  {% if latest_offers %}
+    <div class="em-grid">{% for offer in latest_offers %}{% include 'emploi/_offer_card.html' %}{% endfor %}</div>
+    <p style="margin-top:18px"><a class="em-btn em-btn--ghost" href="{% url 'emploi:offer_list' %}">Toutes les offres →</a></p>
+  {% else %}
+    <div class="em-empty">Aucune offre pour le moment — revenez bientôt, ou <a href="{% url 'emploi:candidate_edit' %}">créez votre profil</a> pour être contacté.</div>
+  {% endif %}
+</section>
+
+<section class="em-section">
+  <h2 class="em-h2">Comment ça marche</h2>
+  <div class="eh-steps">
+    <div class="eh-step"><b>Inscription</b><p>Le candidat crée son profil, l'entreprise sa fiche.</p></div>
+    <div class="eh-step"><b>Besoin ou offre</b><p>L'entreprise publie une offre ou dépose une demande de recrutement.</p></div>
+    <div class="eh-step"><b>Sélection Lantante</b><p>Nous proposons les meilleurs profils et organisons les entretiens.</p></div>
+    <div class="eh-step"><b>Embauche</b><p>Contrat signé, suivi du placement par Lantante.</p></div>
+  </div>
+</section>
+
+{% if posts %}
+<section class="em-section">
+  <h2 class="em-h2">Actualités</h2>
+  <div class="em-grid">
+    {% for post in posts %}
+    <article class="em-card"><div class="em-muted">{{ post.author_label }} · {{ post.created_at|date:"d/m/Y" }}</div><p>{{ post.text|truncatechars:160 }}</p></article>
+    {% endfor %}
+  </div>
+  <p style="margin-top:18px"><a class="em-btn em-btn--ghost" href="{% url 'emploi:feed' %}">Voir le fil d'actualités →</a></p>
+</section>
+{% endif %}
+{% endblock %}

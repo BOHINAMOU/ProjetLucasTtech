@@ -1,0 +1,34 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Candidats{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin-top:34px">Candidats</h1>
+<p class="em-lead" style="margin-top:8px">Profils publics. Les CV et coordonnées restent privés : ils ne sont visibles que par Lantante et les recruteurs autorisés.</p>
+<form class="em-filters" method="get">
+  <input class="em-input" name="q" value="{{ q }}" placeholder="Métier, compétence…">
+  <select class="em-input" name="domain"><option value="">Tous les domaines</option>{% for k,v in domains %}<option value="{{ k }}" {% if k == domain %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+  <input class="em-input" name="city" value="{{ city }}" placeholder="Ville (ex : Lomé)">
+  <button class="em-btn em-btn--navy" type="submit"><i class="fas fa-search"></i> Filtrer</button>
+</form>
+{% if page.object_list %}
+<div class="em-grid">
+  {% for c in page %}
+  <article class="em-card">
+    <div class="em-row">
+      {% if c.show_photo and c.user.avatar %}<img class="em-avatar" src="{{ c.user.avatar.url }}" alt="">{% else %}<div class="em-avatar">{{ c.name|slice:":1" }}</div>{% endif %}
+      <div style="min-width:0"><h3><a href="{{ c.get_absolute_url }}" style="text-decoration:none">{{ c.name }}</a></h3><div class="em-muted">{{ c.headline }}</div></div>
+    </div>
+    <div class="em-meta">
+      <span class="em-tag">{{ c.get_domain_display }}</span>
+      {% if c.show_city and c.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ c.city }}</span>{% endif %}
+      {% if c.available %}<span class="em-tag em-tag--green">Disponible</span>{% endif %}
+    </div>
+    <div class="em-meta">{% for s in c.skills.all|slice:":5" %}<span class="em-tag">{{ s.name }}</span>{% endfor %}</div>
+    <a class="em-btn em-btn--ghost em-btn--sm" href="{{ c.get_absolute_url }}" style="align-self:flex-start">Voir le profil</a>
+  </article>
+  {% endfor %}
+</div>
+{% include 'emploi/_pager.html' with qs=qs %}
+{% else %}
+<div class="em-empty">Aucun candidat ne correspond à votre recherche.</div>
+{% endif %}
+{% endblock %}

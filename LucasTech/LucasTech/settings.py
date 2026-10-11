@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'Formations',
     'Services',
     'Publications',
+    'Emploi',
     'core',
 
     'social_django',
@@ -174,6 +175,7 @@ TEMPLATES = [
                 'core.context_processors.partners',
                 'core.context_processors.cache_bust',
                 'core.context_processors.site_settings',
+                'Emploi.context_processors.emploi_counters',
 
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
@@ -225,6 +227,10 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Fichiers privés (CV des candidats) : hors du dossier public media,
+# servis uniquement par une vue qui contrôle les droits d acces.
+PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
 
 STORAGES = {
     "default": {
@@ -293,6 +299,27 @@ JAZZMIN_SETTINGS = {
     ],
 
     "custom_css": "css/admin.css",
+
+    # Menu « Emploi » regroupé et ordonné dans la barre latérale
+    "order_with_respect_to": [
+        "Emploi", "Emploi.candidateprofile", "Emploi.employerprofile",
+        "Emploi.staffingrequest", "Emploi.joboffer", "Emploi.application", "Emploi.conversation",
+        "Emploi.appointment", "Emploi.placement", "Emploi.feedpost", "Emploi.notification",
+    ],
+    "icons": {
+        "Emploi": "fas fa-briefcase",
+        "Emploi.candidateprofile": "fas fa-user-graduate",
+        "Emploi.employerprofile": "fas fa-building",
+        "Emploi.joboffer": "fas fa-bullhorn",
+        "Emploi.staffingrequest": "fas fa-clipboard-list",
+        "Emploi.application": "fas fa-handshake",
+        "Emploi.placement": "fas fa-file-signature",
+        "Emploi.conversation": "fas fa-comments",
+        "Emploi.appointment": "fas fa-calendar-check",
+        "Emploi.feedpost": "fas fa-newspaper",
+        "Emploi.notification": "fas fa-bell",
+        "Emploi.skill": "fas fa-tags",
+    },
 }
 
 JAZZMIN_UI_TWEAKS = {

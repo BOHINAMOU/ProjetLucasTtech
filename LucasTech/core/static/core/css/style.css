@@ -269,7 +269,7 @@ header { position: sticky; top: 0; z-index: 400; }
    "Se connecter", le menu desktop n'a plus assez de place en dessous de
    ~1300px et le bouton se retrouvait poussé hors de l'écran (invisible,
    inaccessible) au lieu de passer au menu mobile à temps. */
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
   .navbar__links { display: none; }
   .nav-auth      { display: none; }
   /* Le bouton menu perdait son alignement à droite : il ne se plaçait là

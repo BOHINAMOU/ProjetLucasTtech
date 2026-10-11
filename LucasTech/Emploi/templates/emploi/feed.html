@@ -1,0 +1,48 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Actualités{% endblock %}
+{% block em_content %}
+<style>
+.ef-col { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+.ef-post img.ef-img { width:100%; height:auto; max-height:480px; object-fit:cover; border-radius:12px; }
+.ef-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.ef-comments { border-top:1px solid var(--em-border); padding-top:10px; display:flex; flex-direction:column; gap:8px; }
+.ef-comment { font-size:.88rem; background:var(--em-surf2); padding:8px 12px; border-radius:10px; overflow-wrap:anywhere; }
+.ef-inline { display:inline; }
+</style>
+<h1 class="em-h1" style="margin:34px 0 18px;text-align:center">Fil d'actualités</h1>
+<div class="ef-col">
+  {% if user.is_authenticated %}
+  <form class="em-card" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="em-field" style="margin:0">{{ form.text }}</div>
+    {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
+    <div class="ef-actions">{{ form.image }}<button class="em-btn em-btn--green em-btn--sm" type="submit" style="margin-left:auto"><i class="fas fa-paper-plane"></i> Publier</button></div>
+  </form>
+  {% else %}
+  <div class="em-card"><p>Connectez-vous pour publier, aimer et commenter.</p><a class="em-btn em-btn--green em-btn--sm" href="{% url 'users:login' %}?next={{ request.path }}" style="align-self:flex-start">Se connecter</a></div>
+  {% endif %}
+
+  {% for post in page %}
+  <article class="em-card ef-post">
+    <div class="em-row"><div class="em-avatar">{{ post.author_label|slice:":1" }}</div>
+      <div style="min-width:0"><b>{{ post.author_label }}</b><div class="em-muted">{{ post.created_at|date:"d/m/Y H:i" }}</div></div></div>
+    <p style="white-space:pre-line">{{ post.text }}</p>
+    {% if post.image %}<img class="ef-img" src="{{ post.image.url }}" alt="" loading="lazy">{% endif %}
+    <div class="ef-actions">
+      {% if user.is_authenticated %}
+      <form class="ef-inline" method="post" action="{% url 'emploi:post_like' post.pk %}">{% csrf_token %}<button class="em-btn em-btn--ghost em-btn--sm" type="submit"><i class="fas fa-thumbs-up"></i> J'aime ({{ post.likes.count }})</button></form>
+      {% if post.author_id == user.pk or user.is_staff %}<form class="ef-inline" method="post" action="{% url 'emploi:post_delete' post.pk %}" onsubmit="return confirm('Supprimer cette publication ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Supprimer</button></form>{% endif %}
+      {% else %}<span class="em-muted"><i class="fas fa-thumbs-up"></i> {{ post.likes.count }}</span>{% endif %}
+    </div>
+    <div class="ef-comments">
+      {% for c in post.comments.all %}{% if not c.is_hidden %}<div class="ef-comment"><b>{{ c.author.public_name }}</b> · {{ c.text }}</div>{% endif %}{% endfor %}
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'emploi:post_comment' post.pk %}" style="display:flex;gap:8px">{% csrf_token %}{{ comment_form.text }}<button class="em-btn em-btn--navy em-btn--sm" type="submit" style="width:auto">Envoyer</button></form>
+      {% endif %}
+    </div>
+  </article>
+  {% empty %}
+  <div class="em-empty">Aucune publication pour le moment. Soyez le premier à partager !</div>
+  {% endfor %}
+  {% include 'emploi/_pager.html' with qs="" %}
+</div>
+{% endblock %}
