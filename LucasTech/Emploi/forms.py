@@ -1,7 +1,7 @@
 from django import forms
 
 from .models import (
-    CONTRACT_CHOICES, INTERNSHIP_DURATION_CHOICES, OFFER_DURATION_CHOICES,
+    CONTRACT_CHOICES, INTERNSHIP_DURATION_CHOICES, OFFER_DURATION_CHOICES, PublicationOrder,
     CandidateDocument, CandidateProfile, EmployerProfile, JobOffer, StaffingRequest, Skill,
     FeedPost, FeedComment, Application,
 )
@@ -13,8 +13,8 @@ def _style(form):
     """Ajoute la classe CSS commune aux champs."""
     for name, field in form.fields.items():
         widget = field.widget
-        if getattr(widget, 'allow_multiple_selected', False) and isinstance(widget, forms.CheckboxSelectMultiple):
-            continue  # liste de cases à cocher : mise en forme par le gabarit
+        if isinstance(widget, (forms.CheckboxSelectMultiple, forms.RadioSelect)):
+            continue  # listes de cases / boutons radio : mise en forme par le gabarit
         if isinstance(widget, forms.CheckboxInput):
             widget.attrs.setdefault('class', 'em-check')
         elif isinstance(widget, forms.FileInput):
@@ -354,3 +354,51 @@ class CandidateDocumentForm(forms.ModelForm):
         if not any(head.startswith(sig) for sig in DIPLOMA_SIGNATURES[ext]):
             raise forms.ValidationError("Ce fichier ne semble pas être un vrai document de ce format.")
         return f
+
+
+class OrderContentForm(forms.ModelForm):
+    """Contenu d'une actualité, d'une mise en avant ou d'une publicité."""
+
+    class Meta:
+        model = PublicationOrder
+        fields = ['title', 'post_kind', 'text', 'image', 'link_url']
+        widgets = {'text': forms.Textarea(attrs={'rows': 6})}
+        labels = {'title': "Titre (facultatif)", 'post_kind': "Type de publication", 'text': "Texte de la publication",
+                  'image': "Image (facultative)", 'link_url': "Lien (site, page Facebook, WhatsApp…)"}
+
+    def __init__(self, *args, plan=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.plan = plan or self.instance.plan
+        self.fields['text'].required = True
+        if self.plan.kind != 'ad':
+            del self.fields['link_url']
+        else:
+            self.fields['image'].label = "Visuel de la publicité"
+            self.fields['link_url'].required = False
+        _style(self)
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image and hasattr(image, 'size') and image.size > CV_MAX_MB * 1024 * 1024:
+            raise forms.ValidationError(f"L'image ne doit pas dépasser {CV_MAX_MB} Mo.")
+        return image
+
+    def clean(self):
+        cleaned = super().clean()
+        has_image = cleaned.get('image') or (self.instance.pk and self.instance.image)
+        if self.plan.kind == 'ad' and not has_image:
+            self.add_error('image', "Une publicité a besoin d'un visuel.")
+        return cleaned
+
+
+class PaymentForm(forms.Form):
+    payment_method = forms.ChoiceField(choices=[('flooz', "Flooz"), ('tmoney', "T-Money")],
+                                       widget=forms.RadioSelect, label="Moyen de paiement")
+    payer_phone = forms.CharField(max_length=30, label="Numéro avec lequel vous avez payé",
+                                  widget=forms.TextInput(attrs={'placeholder': '+228 90 00 00 00'}))
+    payment_reference = forms.CharField(max_length=80, label="Référence (numéro) de la transaction",
+                                        help_text="Reçue par SMS après l'envoi de l'argent.")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _style(self)

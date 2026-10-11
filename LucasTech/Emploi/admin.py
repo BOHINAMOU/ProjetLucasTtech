@@ -8,8 +8,9 @@ from django.utils.safestring import mark_safe
 from .models import (
     AccountBan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
-    ModerationWarning, ProfileRevision, Skill, StaffProfile, StaffingRequest,
+    ModerationWarning, ProfileRevision, PublicationOrder, ServicePlan, Skill, StaffProfile, StaffingRequest,
 )
+from . import billing
 from .services import (
     MAX_WARNINGS, active_warning_count, apply_warning, assign_conversation, ban_user, can_sanction, decide_employer,
     notify, notify_application_status, share_application, suggest_candidates, unban_user, warn_user,
@@ -165,7 +166,7 @@ class CandidateProfileAdmin(admin.ModelAdmin):
 class EmployerProfileAdmin(admin.ModelAdmin):
     list_display = ('company_name', 'sector', 'city', 'employees_count', 'status', 'is_verified', 'partner',
                     'moderation', 'created_at')
-    list_filter = ('status', 'is_verified', 'sector')
+    list_filter = ('status', 'is_verified', 'publishing_free', 'sector')
     list_editable = ('is_verified',)
     search_fields = ('company_name', 'user__email', 'city')
     autocomplete_fields = ('user', 'partner')
@@ -176,7 +177,7 @@ class EmployerProfileAdmin(admin.ModelAdmin):
                                    'description', 'products', 'website', 'whatsapp', 'contact_email')}),
         ("Document fourni", {'fields': ('document', 'document_link')}),
         ("Décision de Lantante", {'fields': ('status', 'decision_message', 'decided_at', 'is_verified',
-                                             'partner', 'admin_notes')}),
+                                             'publishing_free', 'partner', 'admin_notes')}),
     )
 
     @admin.display(description="Modération")
@@ -696,6 +697,108 @@ class FeedPostAdmin(admin.ModelAdmin):
     @admin.display(description="Modération de l'auteur")
     def moderation(self, obj):
         return moderation_cell(obj.author)
+
+
+# ─────────────────────────────
+# 💳 Tarifs, commandes et paiements
+# ─────────────────────────────
+@admin.register(ServicePlan)
+class ServicePlanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'kind', 'price', 'price_from', 'quote_only', 'duration_days', 'is_active', 'order')
+    list_editable = ('price', 'price_from', 'quote_only', 'duration_days', 'is_active', 'order')
+    list_filter = ('kind', 'is_active')
+    prepopulated_fields = {'code': ('name',)}
+
+
+STATUS_BADGES = {
+    'quote': 'badge-info', 'awaiting_payment': 'badge-warning', 'payment_declared': 'badge-danger',
+    'in_review': 'badge-primary', 'changes_requested': 'badge-warning', 'published': 'badge-success',
+    'refused': 'badge-secondary', 'refunded': 'badge-secondary', 'cancelled': 'badge-light',
+}
+
+
+@admin.register(PublicationOrder)
+class PublicationOrderAdmin(admin.ModelAdmin):
+    list_display = ('reference', 'employer', 'plan', 'amount_label', 'status_badge', 'payment_reference', 'created_at')
+    list_filter = ('status', 'plan__kind', 'payment_method')
+    search_fields = ('employer__company_name', 'title', 'payment_reference', 'receipt_number')
+    readonly_fields = ('reference', 'employer', 'plan', 'status', 'payer_phone', 'payment_method', 'payment_reference',
+                       'paid_at', 'receipt_number', 'job_offer', 'staffing_request', 'feed_post', 'published_at',
+                       'visible_until', 'created_at', 'updated_at', 'provider')
+    fieldsets = (
+        ("Commande", {'fields': ('reference', 'employer', 'plan', 'status', 'amount')}),
+        ("Contenu", {'fields': ('title', 'post_kind', 'text', 'image', 'link_url', 'job_offer', 'staffing_request',
+                                'feed_post')}),
+        ("Paiement", {'fields': ('provider', 'payment_method', 'payer_phone', 'payment_reference', 'paid_at',
+                                 'receipt_number')}),
+        ("Décision de Lantante", {'fields': ('review_message', 'internal_note', 'published_at', 'visible_until',
+                                             'created_at', 'updated_at'),
+                                  'description': "Écrivez le message à l'entreprise (correction, refus, devis) AVANT de lancer l'action."}),
+    )
+    actions = ['confirm_payment', 'payment_not_received', 'approve', 'ask_changes', 'refuse', 'mark_refunded', 'send_quote']
+
+    def has_add_permission(self, request):
+        return False  # les commandes sont créées par les entreprises depuis le site
+
+    @admin.display(description="Statut", ordering='status')
+    def status_badge(self, obj):
+        return format_html('<span class="badge {}">{}</span>', STATUS_BADGES.get(obj.status, 'badge-light'), obj.get_status_display())
+
+    def _apply(self, request, queryset, allowed, func, done_text, need_message=False):
+        done = skipped = 0
+        for order in queryset.select_related('plan', 'employer__user'):
+            if order.status not in allowed:
+                skipped += 1
+                continue
+            if need_message and not order.review_message.strip():
+                skipped += 1
+                continue
+            func(order)
+            done += 1
+        if done:
+            self.message_user(request, f"{done} commande(s) : {done_text}.")
+        if skipped:
+            hint = " (écrivez d'abord le message à l'entreprise dans la fiche)" if need_message else ""
+            self.message_user(request, f"{skipped} commande(s) ignorée(s), statut inadapté{hint}.", level=messages.WARNING)
+
+    @admin.action(description="✓ Confirmer le paiement reçu (envoie le reçu, passe en validation)")
+    def confirm_payment(self, request, queryset):
+        self._apply(request, queryset, ('payment_declared', 'awaiting_payment'),
+                    lambda o: billing.confirm_payment(o, request.user), "paiement confirmé, entreprise prévenue")
+
+    @admin.action(description="✗ Paiement non retrouvé (demande de renvoyer la référence)")
+    def payment_not_received(self, request, queryset):
+        self._apply(request, queryset, ('payment_declared',),
+                    lambda o: billing.payment_not_received(o, o.review_message), "entreprise invitée à vérifier son paiement")
+
+    @admin.action(description="🌐 Valider et mettre en ligne")
+    def approve(self, request, queryset):
+        self._apply(request, queryset, ('in_review',), lambda o: billing.approve_order(o, request.user), "publiées")
+
+    @admin.action(description="✏ Demander une correction (message à l'entreprise obligatoire)")
+    def ask_changes(self, request, queryset):
+        self._apply(request, queryset, ('in_review',), lambda o: billing.request_changes(o, o.review_message),
+                    "correction demandée", need_message=True)
+
+    @admin.action(description="⛔ Refuser (message obligatoire ; remboursement à faire si déjà payée)")
+    def refuse(self, request, queryset):
+        self._apply(request, queryset, ('in_review', 'changes_requested'), lambda o: billing.refuse_order(o, o.review_message),
+                    "refusées", need_message=True)
+
+    @admin.action(description="💸 Marquer comme remboursée")
+    def mark_refunded(self, request, queryset):
+        self._apply(request, queryset, ('refused',), lambda o: billing.mark_refunded(o, f"Remboursée par {request.user}"),
+                    "marquées remboursées, entreprise prévenue")
+
+    @admin.action(description="📄 Envoyer le devis (montant saisi dans la fiche)")
+    def send_quote(self, request, queryset):
+        done = 0
+        for order in queryset.filter(status='quote', amount__gt=0):
+            billing.send_quote(order, order.amount, order.review_message)
+            done += 1
+        self.message_user(request, f"{done} devis envoyé(s)." if done else
+                          "Aucun devis envoyé : saisissez d'abord le montant dans la fiche (commande « En attente de devis »).",
+                          level=messages.SUCCESS if done else messages.WARNING)
 
 
 # ─────────────────────────────

@@ -14,6 +14,10 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('Contact', {
             'fields': ('email', 'whatsapp_1', 'whatsapp_2'),
         }),
+        ('Paiements (publications des entreprises)', {
+            'fields': ('payment_flooz', 'payment_tmoney'),
+            'description': "Numéros Mobile Money affichés aux entreprises quand elles paient. Laissez vide pour leur demander de vous contacter sur WhatsApp.",
+        }),
         ('Réseaux sociaux', {
             'fields': ('facebook_url', 'instagram_url', 'tiktok_url',
                        'youtube_url', 'telegram_url', 'twitter_url'),

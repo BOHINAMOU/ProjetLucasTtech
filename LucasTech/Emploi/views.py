@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Case, Count, IntegerField, Q, Value, When
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -12,14 +12,15 @@ from django.views.decorators.http import require_POST
 from core.models import Partner
 
 from .forms import (
-    ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
+    OrderContentForm, PaymentForm, ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
     JobOfferForm, MessageForm, NewConversationForm, StaffingRequestForm,
 )
 from .models import (
-    Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
+    PublicationOrder, ServicePlan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
+from . import billing
 from .services import (
     assign_conversation, can_browse_candidates, can_see_private, is_staff, notify, notify_staff,
     send_auto_ack, send_intro, staff_full_name, staff_users,
@@ -334,6 +335,7 @@ def dashboard(request):
         context['appointments'] = candidate.appointments.filter(
             scheduled_at__gte=timezone.now()).exclude(status__in=['declined', 'cancelled'])[:5]
     if employer:
+        context['orders'] = employer.orders.exclude(status='cancelled')[:8]
         JobOffer.close_expired()
         # Seules les offres en cours : une offre terminée (date de fin ou poste pourvu) disparaît de l'espace.
         context['offers'] = employer.offers.filter(status__in=['pending', 'published'])[:20]
@@ -414,6 +416,13 @@ def offer_create(request):
     if request.method == 'POST' and form.is_valid():
         offer = form.save(commit=False)
         offer.employer = employer
+        plan = ServicePlan.objects.filter(kind='job', is_active=True).first()
+        if plan:
+            offer.status = 'awaiting_payment'  # brouillon : mis en ligne après paiement et validation
+            offer.save()
+            form.save_skills(offer)
+            order = billing.create_order(employer, plan, title=offer.title, job_offer=offer)
+            return redirect('emploi:order_detail', pk=order.pk)
         offer.status = 'published' if employer.is_verified else 'pending'
         offer.save()
         form.save_skills(offer)
@@ -459,6 +468,11 @@ def request_create(request):
         form.save_skills(req)
         notify_staff(f"Demande de recrutement : {req.title} ({employer.company_name})",
                      f"/lantanteAdminTech/Emploi/staffingrequest/{req.pk}/change/")
+        plan = ServicePlan.objects.filter(kind='recruit', is_active=True).first()
+        if plan:
+            order = billing.create_order(employer, plan, title=req.title, staffing_request=req)
+            messages.success(request, "✓ Demande envoyée. Lantante vous contacte avec un devis pour l'accompagnement.")
+            return redirect('emploi:order_detail', pk=order.pk)
         messages.success(request, "✓ Demande envoyée à Lantante. Nous vous proposerons des candidats rapidement.")
         return redirect('emploi:dashboard')
     return render(request, 'emploi/request_form.html', {'form': form, 'employer': employer})
@@ -467,11 +481,23 @@ def request_create(request):
 # ─────────────────────────────
 # 📰 FIL D'ACTUALITÉS
 # ─────────────────────────────
+def _company_must_order(user):
+    """Une entreprise (non exonérée / sans badge bleu) publie via le service payant « Publier »."""
+    employer = getattr(user, 'employer_profile', None) if user.is_authenticated else None
+    if not employer or (employer.publishing_free and employer.is_verified):
+        return False
+    return ServicePlan.objects.filter(kind='news', is_active=True).exists()
+
+
 def feed(request):
     form = FeedPostForm()
+    must_order = _company_must_order(request.user)
     if request.method == 'POST':
         if not request.user.is_authenticated:
             return redirect(f"/users/connexion/?next={request.path}")
+        if must_order:
+            messages.info(request, "Les entreprises publient une actualité depuis « Publier » (tarifs et validation par Lantante).")
+            return redirect('emploi:publish_hub')
         form = FeedPostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
@@ -479,10 +505,15 @@ def feed(request):
             post.save()
             messages.success(request, "✓ Publication ajoutée.")
             return redirect('emploi:feed')
+    now = timezone.now()
     posts = FeedPost.objects.filter(is_hidden=False).select_related('author').prefetch_related(
-        'comments__author', 'likes')
+        'comments__author', 'likes').annotate(pinned=Case(
+            When(is_featured=True, featured_until__gt=now, then=Value(1)),
+            When(is_featured=True, featured_until__isnull=True, then=Value(1)),
+            default=Value(0), output_field=IntegerField())).order_by('-pinned', '-created_at')
     return render(request, 'emploi/feed.html', {
-        'page': _page(request, posts, 10), 'form': form, 'comment_form': CommentForm(),
+        'page': _page(request, posts, 10), 'form': form, 'comment_form': CommentForm(), 'must_order': must_order,
+        'news_plan': ServicePlan.objects.filter(kind='news', is_active=True).first(),
     })
 
 
@@ -691,3 +722,135 @@ def notifications(request):
     items = list(request.user.emploi_notifications.all()[:50])
     request.user.emploi_notifications.filter(is_read=False).update(is_read=True)
     return render(request, 'emploi/notifications.html', {'items': items})
+
+
+# ─────────────────────────────
+# 💳 TARIFS, PUBLICATION ET PAIEMENT
+# ─────────────────────────────
+def pricing(request):
+    """Les deux formules : publication ponctuelle (payante) et partenariat officiel (sur validation)."""
+    from core.models import SiteSettings
+    return render(request, 'emploi/pricing.html', {
+        'plans': ServicePlan.objects.filter(is_active=True), 'site': SiteSettings.load(),
+    })
+
+
+def _approved_employer(request):
+    employer = getattr(request.user, 'employer_profile', None)
+    if not employer:
+        messages.info(request, "Inscrivez d'abord votre entreprise pour publier.")
+        return None
+    if not employer.is_approved:
+        messages.info(request, "Votre entreprise doit d'abord être acceptée par Lantante pour publier.")
+        return None
+    return employer
+
+
+@login_required
+def publish_hub(request):
+    employer = _approved_employer(request)
+    if not employer:
+        return redirect('emploi:dashboard' if hasattr(request.user, 'employer_profile') else 'emploi:employer_edit')
+    return render(request, 'emploi/publish_hub.html', {
+        'plans': ServicePlan.objects.filter(is_active=True), 'employer': employer,
+        'exempt': billing.employer_is_exempt(employer),
+    })
+
+
+@login_required
+def order_new(request, code):
+    employer = _approved_employer(request)
+    if not employer:
+        return redirect('emploi:dashboard')
+    plan = get_object_or_404(ServicePlan, code=code, is_active=True)
+    if plan.kind == 'job':
+        return redirect('emploi:offer_create')
+    if plan.kind == 'recruit':
+        return redirect('emploi:request_create')
+    form = OrderContentForm(request.POST or None, request.FILES or None, plan=plan)
+    if request.method == 'POST' and form.is_valid():
+        data = {k: v for k, v in form.cleaned_data.items() if v not in (None, '')}
+        order = billing.create_order(employer, plan, **data)
+        return redirect('emploi:order_detail', pk=order.pk)
+    return render(request, 'emploi/order_form.html', {'form': form, 'plan': plan, 'employer': employer,
+                                                      'exempt': billing.employer_is_exempt(employer)})
+
+
+def _my_order(request, pk):
+    return get_object_or_404(PublicationOrder.objects.select_related('plan', 'employer'), pk=pk,
+                             employer__user=request.user)
+
+
+@login_required
+def order_detail(request, pk):
+    from core.models import SiteSettings
+    order = _my_order(request, pk)
+    return render(request, 'emploi/order_detail.html', {
+        'order': order, 'site': SiteSettings.load(),
+        'form': PaymentForm(initial={'payment_method': 'flooz'}), 'steps': ["Soumise", "Paiement", "Validation", "Publiée"],
+    })
+
+
+@login_required
+@require_POST
+def order_pay(request, pk):
+    order = _my_order(request, pk)
+    if not order.can_pay:
+        messages.info(request, "Cette commande n'attend pas de paiement.")
+        return redirect('emploi:order_detail', pk=order.pk)
+    form = PaymentForm(request.POST)
+    if form.is_valid():
+        billing.declare_payment(order, form.cleaned_data['payment_method'], form.cleaned_data['payer_phone'],
+                                form.cleaned_data['payment_reference'])
+        messages.success(request, "✓ Merci ! Nous vérifions votre paiement : patientez quelques instants.")
+        return redirect('emploi:order_detail', pk=order.pk)
+    from core.models import SiteSettings
+    return render(request, 'emploi/order_detail.html', {
+        'order': order, 'site': SiteSettings.load(), 'form': form, 'steps': ["Soumise", "Paiement", "Validation", "Publiée"]})
+
+
+@login_required
+def order_edit(request, pk):
+    """Modifier le contenu (correction demandée, ou avant paiement) puis renvoyer."""
+    from .forms import JobOfferForm, StaffingRequestForm
+    order = _my_order(request, pk)
+    if not order.can_edit:
+        messages.info(request, "Cette publication ne peut plus être modifiée.")
+        return redirect('emploi:order_detail', pk=order.pk)
+    kind = order.plan.kind
+    if kind == 'job' and order.job_offer:
+        form = JobOfferForm(request.POST or None, request.FILES or None, instance=order.job_offer)
+    elif kind == 'recruit' and order.staffing_request:
+        form = StaffingRequestForm(request.POST or None, instance=order.staffing_request)
+    else:
+        form = OrderContentForm(request.POST or None, request.FILES or None, instance=order)
+    if request.method == 'POST' and form.is_valid():
+        saved = form.save()
+        if hasattr(form, 'save_skills'):
+            form.save_skills(saved)
+        if kind == 'job' and order.job_offer:
+            order.title = order.job_offer.title
+            order.save(update_fields=['title'])
+        billing.resubmit(order)
+        messages.success(request, "✓ Modifications enregistrées.")
+        return redirect('emploi:order_detail', pk=order.pk)
+    return render(request, 'emploi/order_form.html', {'form': form, 'plan': order.plan, 'employer': order.employer,
+                                                      'editing': True, 'order': order})
+
+
+@login_required
+def order_receipt(request, pk):
+    order = _my_order(request, pk)
+    if not order.paid_at:
+        messages.info(request, "Le reçu est disponible après confirmation du paiement.")
+        return redirect('emploi:order_detail', pk=order.pk)
+    return render(request, 'emploi/order_receipt.html', {'order': order})
+
+
+@login_required
+@require_POST
+def order_cancel(request, pk):
+    order = _my_order(request, pk)
+    billing.cancel_order(order)
+    messages.success(request, "Commande annulée.")
+    return redirect('emploi:dashboard')

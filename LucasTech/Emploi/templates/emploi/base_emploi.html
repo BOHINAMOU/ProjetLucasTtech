@@ -82,6 +82,17 @@
 .em-status--approved { background:var(--em-green-bg); color:#14532d; }
 .em-status--rejected { background:#fee2e2; color:#991b1b; }
 
+/* étapes d'une commande */
+.em-steps { display:flex; align-items:flex-start; margin:10px 0 4px; }
+.em-step { flex:1; text-align:center; position:relative; font-size:.78rem; color:var(--em-muted); font-weight:600; }
+.em-step::before { content:''; display:block; width:20px; height:20px; border-radius:50%; background:#e2e8f0; margin:0 auto 6px; position:relative; z-index:1; }
+.em-step::after { content:''; position:absolute; top:9px; left:-50%; width:100%; height:2px; background:#e2e8f0; }
+.em-step:first-child::after { display:none; }
+.em-step.done::before, .em-step.done::after { background:var(--em-green); }
+.em-step.done { color:var(--em-green); }
+.em-step.now::before { box-shadow:0 0 0 4px rgba(15,122,69,.2); }
+.em-step.stop::before { background:#dc2626; }
+
 /* choix multiples sous forme de pastilles */
 .em-choices > div, .em-choices { display:flex; flex-wrap:wrap; gap:8px; }
 .em-choices > div > div { display:contents; }
@@ -114,6 +125,7 @@
       {% if user.is_staff or user.employer_profile.is_approved %}<a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate_list' in request.resolver_match.url_name or request.resolver_match.url_name == 'candidate_detail' %}is-on{% endif %}">Candidats</a>{% endif %}
       <a href="{% url 'emploi:company_list' %}" class="{% if 'company' in request.resolver_match.url_name %}is-on{% endif %}">Entreprises</a>
       <a href="{% url 'emploi:feed' %}" class="{% if request.resolver_match.url_name == 'feed' %}is-on{% endif %}">Actualités</a>
+      <a href="{% url 'emploi:pricing' %}" class="{% if request.resolver_match.url_name == 'pricing' %}is-on{% endif %}">Tarifs</a>
       {% if user.is_authenticated %}
         <a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>
         <a href="{% url 'emploi:inbox' %}">Messages{% if em_unread_msgs %}<span class="em-badge">{{ em_unread_msgs }}</span>{% endif %}</a>

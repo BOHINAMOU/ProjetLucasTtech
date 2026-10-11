@@ -236,6 +236,10 @@ class EmployerProfile(models.Model):
     is_verified = models.BooleanField(default=False, verbose_name="Badge bleu (entreprise de confiance)",
                                       help_text="Badge bleu affiché sur ses pages. Ses offres sont publiées directement, "
                                                 "sans validation.")
+    publishing_free = models.BooleanField(
+        default=False, verbose_name="Publications incluses (partenaire officiel / contrat)",
+        help_text="Cochez pour un partenaire dont le contrat inclut les publications : il ne paie rien. "
+                  "Avec le badge bleu, ses publications sont mises en ligne directement.")
     admin_notes = models.TextField(blank=True, verbose_name="Notes internes Lantante")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créée le")
 
@@ -272,6 +276,7 @@ class EmployerProfile(models.Model):
 # ─────────────────────────────
 class JobOffer(models.Model):
     STATUS = [
+        ('awaiting_payment', "En attente de paiement"),
         ('pending', "En attente de validation"),
         ('published', "Publiée"),
         ('filled', "Pourvue (poste pourvu)"),
@@ -294,7 +299,7 @@ class JobOffer(models.Model):
                                 help_text="Ex : 3 mois")
     deadline = models.DateField(null=True, blank=True, verbose_name="Date de fin",
                                 help_text="À cette date, l'offre disparaît automatiquement du site et de l'espace de l'entreprise.")
-    status = models.CharField(max_length=10, choices=STATUS, default='pending', verbose_name="Statut")
+    status = models.CharField(max_length=20, choices=STATUS, default='pending', verbose_name="Statut")
     cover_image = models.ImageField(upload_to='emploi/offers/', blank=True, verbose_name="Photo de couverture",
                                     help_text="Illustre l'offre dans les listes. Sans photo, un visuel coloré est affiché.")
     requires_cover_letter = models.BooleanField(default=False, verbose_name="Lettre de motivation demandée",
@@ -665,6 +670,132 @@ class AccountBan(models.Model):
         return self.lifted_at is None
 
 
+class ServicePlan(models.Model):
+    """Un service payant proposé aux entreprises (tarif modifiable dans l'administration)."""
+    KIND = [
+        ('news', "Actualité"),
+        ('news_boost', "Actualité mise en avant"),
+        ('job', "Offre d'emploi"),
+        ('ad', "Publicité avec visuels"),
+        ('recruit', "Accompagnement au recrutement"),
+    ]
+    code = models.SlugField(max_length=30, unique=True, verbose_name="Code")
+    kind = models.CharField(max_length=12, choices=KIND, verbose_name="Type de service")
+    name = models.CharField(max_length=100, verbose_name="Nom affiché")
+    description = models.TextField(blank=True, verbose_name="Ce qui est inclus")
+    price = models.PositiveIntegerField(default=0, verbose_name="Prix (FCFA)",
+                                        help_text="0 = gratuit. Pour un service sur devis, laissez 0 et cochez « Sur devis ».")
+    price_from = models.BooleanField(default=False, verbose_name="« À partir de »")
+    quote_only = models.BooleanField(default=False, verbose_name="Sur devis",
+                                     help_text="Lantante contacte l'entreprise et fixe le montant avant le paiement.")
+    duration_days = models.PositiveSmallIntegerField(default=0, verbose_name="Durée de visibilité (jours)",
+                                                     help_text="0 = sans limite.")
+    is_active = models.BooleanField(default=True, verbose_name="Proposé",
+                                    help_text="Décochez pour retirer ce service des formules.")
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="Ordre")
+
+    class Meta:
+        ordering = ['order', 'price']
+        verbose_name = "Tarif"
+        verbose_name_plural = "Tarifs des services"
+
+    def __str__(self):
+        return f"{self.name} — {self.price_label}"
+
+    @property
+    def price_label(self):
+        if self.quote_only:
+            return "Sur devis"
+        if self.price == 0:
+            return "Gratuit"
+        amount = f"{self.price:,}".replace(",", " ")
+        return f"{'À partir de ' if self.price_from else ''}{amount} FCFA"
+
+
+class PublicationOrder(models.Model):
+    """Commande de publication d'une entreprise : choix du service, paiement, validation, mise en ligne."""
+    STATUS = [
+        ('quote', "En attente de devis"),
+        ('awaiting_payment', "À payer"),
+        ('payment_declared', "Paiement à vérifier"),
+        ('in_review', "En cours de validation"),
+        ('changes_requested', "À corriger"),
+        ('published', "Publiée"),
+        ('refused', "Refusée"),
+        ('refunded', "Remboursée"),
+        ('cancelled', "Annulée"),
+    ]
+    METHODS = [('flooz', "Flooz"), ('tmoney', "T-Money"), ('other', "Autre moyen")]
+    employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE, related_name='orders',
+                                 verbose_name="Entreprise")
+    plan = models.ForeignKey(ServicePlan, on_delete=models.PROTECT, related_name='orders', verbose_name="Service")
+    status = models.CharField(max_length=20, choices=STATUS, default='awaiting_payment', verbose_name="Statut")
+    amount = models.PositiveIntegerField(default=0, verbose_name="Montant (FCFA)")
+
+    # contenu à publier (actualité, mise en avant, publicité)
+    title = models.CharField(max_length=160, blank=True, verbose_name="Titre")
+    text = models.TextField(blank=True, verbose_name="Texte")
+    image = models.ImageField(upload_to='emploi/orders/', blank=True, verbose_name="Image")
+    link_url = models.URLField(blank=True, verbose_name="Lien (publicité)")
+    post_kind = models.CharField(max_length=8, default='news', verbose_name="Type d'actualité",
+                                 choices=[('news', "Actualité"), ('product', "Nouveau produit / service")])
+    job_offer = models.OneToOneField('JobOffer', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='order', verbose_name="Offre liée")
+    staffing_request = models.OneToOneField('StaffingRequest', on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='order', verbose_name="Demande liée")
+    feed_post = models.OneToOneField('FeedPost', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='order', verbose_name="Publication en ligne")
+
+    # paiement (manuel pour l'instant ; prêt pour un paiement en ligne)
+    provider = models.CharField(max_length=10, default='manual', verbose_name="Mode d'encaissement")
+    payment_method = models.CharField(max_length=10, choices=METHODS, blank=True, verbose_name="Moyen de paiement")
+    payer_phone = models.CharField(max_length=30, blank=True, verbose_name="Numéro ayant payé")
+    payment_reference = models.CharField(max_length=80, blank=True, verbose_name="Référence de la transaction")
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="Paiement confirmé le")
+    receipt_number = models.CharField(max_length=20, blank=True, verbose_name="N° de reçu")
+
+    # décision de Lantante
+    review_message = models.TextField(blank=True, verbose_name="Message à l'entreprise",
+                                      help_text="Correction demandée, motif de refus, devis… envoyé à l'entreprise.")
+    internal_note = models.TextField(blank=True, verbose_name="Note interne")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créée le")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Modifiée le")
+    published_at = models.DateTimeField(null=True, blank=True, verbose_name="Publiée le")
+    visible_until = models.DateTimeField(null=True, blank=True, verbose_name="Visible jusqu'au")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Commande de publication"
+        verbose_name_plural = "Commandes et paiements"
+
+    def __str__(self):
+        return f"#{self.pk} {self.plan.name} — {self.employer.company_name}"
+
+    @property
+    def reference(self):
+        return f"LT-{self.created_at:%y}{self.pk:05d}" if self.pk else ""
+
+    @property
+    def amount_label(self):
+        if self.amount == 0:
+            return "Gratuit" if self.status != 'quote' else "Devis en attente"
+        return f"{self.amount:,}".replace(",", " ") + " FCFA"
+
+    @property
+    def can_pay(self):
+        return self.status == 'awaiting_payment' and self.amount > 0
+
+    @property
+    def can_edit(self):
+        return self.status in ('awaiting_payment', 'changes_requested', 'quote')
+
+    @property
+    def step_index(self):
+        """Étape affichée : 0 soumise, 1 paiement, 2 validation, 3 publiée."""
+        return {'quote': 0, 'awaiting_payment': 1, 'payment_declared': 1, 'in_review': 2, 'changes_requested': 2,
+                'published': 3}.get(self.status, -1)
+
+
 class StaffProfile(models.Model):
     """Fonction d'un membre de l'équipe Lantante (affichée quand il se présente aux candidats)."""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -718,6 +849,9 @@ class FeedPost(models.Model):
     kind = models.CharField(max_length=8, choices=KIND, default='news', verbose_name="Type")
     image = models.ImageField(upload_to='emploi/feed/', blank=True, verbose_name="Image")
     is_hidden = models.BooleanField(default=False, verbose_name="Masquée (modération)")
+    is_featured = models.BooleanField(default=False, verbose_name="Mise en avant (en haut du fil)")
+    featured_until = models.DateTimeField(null=True, blank=True, verbose_name="Mise en avant jusqu'au")
+    is_sponsored = models.BooleanField(default=False, verbose_name="Publicité (affiche « Sponsorisé »)")
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
                                    related_name='liked_posts', verbose_name="J'aime")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Publiée le")

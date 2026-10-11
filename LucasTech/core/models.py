@@ -257,6 +257,10 @@ class SiteSettings(models.Model):
                                       help_text="Numéro complet ex : 22890000000")
     whatsapp_2     = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp (2)",
                                       help_text="Numéro complet ex : 22890000000 (laisser vide si un seul numéro)")
+    payment_flooz  = models.CharField(max_length=20, blank=True, verbose_name="Numéro Flooz pour les paiements",
+                                      help_text="Numéro complet ex : 22890000000. Affiché aux entreprises qui paient une publication.")
+    payment_tmoney = models.CharField(max_length=20, blank=True, verbose_name="Numéro T-Money pour les paiements",
+                                      help_text="Numéro complet ex : 22890000000. Affiché aux entreprises qui paient une publication.")
     facebook_url   = models.URLField(blank=True, verbose_name="Lien Facebook")
     instagram_url  = models.URLField(blank=True, verbose_name="Lien Instagram")
     tiktok_url     = models.URLField(blank=True, verbose_name="Lien TikTok")

@@ -112,7 +112,8 @@
       <p>Publiez vos offres ou confiez-nous votre besoin : nous sélectionnons les candidats, organisons les entretiens et vous accompagnons jusqu'à l'embauche.</p>
       {% if has_employer %}<a class="em-btn em-btn--navy" href="{% url 'emploi:request_create' %}">Déposer une demande</a>
       {% elif user.is_authenticated %}<a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a>
-      {% else %}<a class="em-btn em-btn--navy" href="{% url 'users:register' %}?role=employer">Inscrire mon entreprise</a>{% endif %}</div>
+      {% else %}<a class="em-btn em-btn--navy" href="{% url 'users:register' %}?role=employer">Inscrire mon entreprise</a>{% endif %}
+      <a class="em-btn em-btn--ghost" href="{% url 'emploi:pricing' %}">Tarifs</a></div>
     {% endif %}
   </div>
 </section>

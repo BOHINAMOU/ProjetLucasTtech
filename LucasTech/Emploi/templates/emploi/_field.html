@@ -2,6 +2,9 @@
   {% if field.field.widget.allow_multiple_selected and field.field.widget.input_type == 'checkbox' %}
     <label>{{ field.label }}</label>
     <div class="em-choices">{{ field }}</div>
+  {% elif field.field.widget.input_type == 'radio' %}
+    <label>{{ field.label }}</label>
+    <div class="em-choices">{{ field }}</div>
   {% elif field.field.widget.input_type == 'checkbox' %}
     <label>{{ field }} {{ field.label }}</label>
   {% else %}

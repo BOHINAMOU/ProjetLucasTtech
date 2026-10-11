@@ -1,0 +1,17 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}{{ plan.name }}{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">{% if editing %}Modifier la publication{% else %}{{ plan.name }}{% endif %}</h1>
+<p class="em-lead" style="margin-bottom:20px">
+  {% if editing %}Corrigez puis renvoyez : {% if order.paid_at %}votre paiement est conservé.{% else %}le paiement se fait à l'étape suivante.{% endif %}
+  {% elif exempt %}Inclus dans votre contrat. Lantante relit votre publication avant sa mise en ligne.
+  {% else %}Tarif : <b>{{ plan.price_label }}</b>{% if plan.duration_days %} · visible {{ plan.duration_days }} jours{% endif %}. Vous payez à l'étape suivante, puis Lantante vérifie votre publication avant de la mettre en ligne.{% endif %}
+</p>
+{% if editing and order.review_message %}<div class="em-status em-status--pending" style="max-width:760px"><b>Message de Lantante :</b><br>{{ order.review_message|linebreaksbr }}</div>{% endif %}
+<form class="em-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-arrow-right"></i> {% if editing %}Enregistrer et renvoyer{% else %}Continuer{% endif %}</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}">Annuler</a>
+</form>
+{% endblock %}

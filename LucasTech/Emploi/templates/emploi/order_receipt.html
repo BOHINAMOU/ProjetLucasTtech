@@ -1,0 +1,19 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Reçu {{ order.receipt_number }}{% endblock %}
+{% block em_content %}
+<style>@media print { .em-subnav, header, footer, .no-print { display:none !important; } .er-card { box-shadow:none !important; border:1px solid #ccc !important; } }</style>
+<div class="em-card er-card" style="max-width:640px;margin:34px auto 0;gap:14px">
+  <div class="em-row" style="justify-content:space-between"><h1 class="em-h1" style="font-size:2rem;margin:0">Reçu de paiement</h1><b>{{ order.receipt_number }}</b></div>
+  <div class="em-muted">Lantante Technologie — {{ order.paid_at|date:"d/m/Y" }}</div>
+  <table style="width:100%;border-collapse:collapse;font-size:.95rem">
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Entreprise</td><td style="text-align:right"><b>{{ order.employer.company_name }}</b></td></tr>
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Service</td><td style="text-align:right">{{ order.plan.name }}{% if order.title %} — « {{ order.title }} »{% endif %}</td></tr>
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Commande</td><td style="text-align:right">{{ order.reference }}</td></tr>
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Moyen de paiement</td><td style="text-align:right">{{ order.get_payment_method_display|default:"—" }}{% if order.payment_reference %} · réf. {{ order.payment_reference }}{% endif %}</td></tr>
+    <tr style="border-top:2px solid var(--em-border)"><td style="padding:12px 0"><b>Montant payé</b></td><td style="text-align:right;font-size:1.3rem"><b>{{ order.amount_label }}</b></td></tr>
+  </table>
+  <p class="em-muted" style="font-size:.82rem">Ce paiement rémunère le service de publication ou d'accompagnement défini ci-dessus ; il ne garantit pas le recrutement d'un candidat.</p>
+  <div class="no-print"><button class="em-btn em-btn--navy em-btn--sm" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+    <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:order_detail' order.pk %}">Retour</a></div>
+</div>
+{% endblock %}

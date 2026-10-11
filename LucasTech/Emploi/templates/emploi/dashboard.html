@@ -135,14 +135,21 @@
       <span class="em-tag">{% if employer.document %}Document fourni{% else %}Document manquant{% endif %}</span></div>
     <div>
       {% if employer.is_approved %}
-      <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:offer_create' %}"><i class="fas fa-plus"></i> Publier une offre</a>
-      <a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:request_create' %}"><i class="fas fa-clipboard-list"></i> Demande de recrutement</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:feed' %}"><i class="fas fa-newspaper"></i> Publier une actualité / un produit</a>
+      <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}"><i class="fas fa-paper-plane"></i> Publier (offre, actualité, publicité…)</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:pricing' %}"><i class="fas fa-tags"></i> Tarifs et partenariat</a>
       {% endif %}
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:employer_edit' %}">Modifier la fiche</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{{ employer.get_absolute_url }}">Voir la fiche publique</a>
     </div>
   </div>
+  {% if orders %}
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes publications et paiements</h3>
+  <div class="em-grid">{% for o in orders %}
+    <article class="em-card"><h3><a href="{% url 'emploi:order_detail' o.pk %}" style="text-decoration:none">{{ o.plan.name }}{% if o.title %} — {{ o.title|truncatechars:40 }}{% endif %}</a></h3>
+      <div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% elif o.status == 'awaiting_payment' or o.status == 'changes_requested' or o.status == 'payment_declared' %}em-tag--warn{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.amount_label }}</span></div>
+      <a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:order_detail' o.pk %}">{% if o.can_pay %}Payer{% elif o.status == 'changes_requested' %}Corriger{% else %}Voir{% endif %}</a></article>
+  {% endfor %}</div>
+  {% endif %}
   <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes offres</h3>
   {% if offers %}<div class="em-grid">{% for o in offers %}<article class="em-card"><h3><a href="{{ o.get_absolute_url }}" style="text-decoration:none">{{ o.title }}</a></h3><div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.applications.count }} candidature{{ o.applications.count|pluralize }}</span>{% if o.deadline %}<span class="em-tag em-tag--warn"><i class="fas fa-hourglass-half"></i> Fin le {{ o.deadline|date:"d/m/Y" }}</span>{% endif %}</div>
     <form method="post" action="{% url 'emploi:offer_filled' o.slug %}" onsubmit="return confirm('Marquer ce poste comme pourvu ? L\'offre disparaîtra du site.')">{% csrf_token %}<button class="em-btn em-btn--ghost em-btn--sm" type="submit"><i class="fas fa-check"></i> Poste pourvu</button></form></article>{% endfor %}</div>

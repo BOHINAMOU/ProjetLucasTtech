@@ -1,0 +1,59 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Commande {{ order.reference }}{% endblock %}
+{% block em_content %}
+<p style="margin-top:28px"><a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:dashboard' %}">← Mon espace</a></p>
+<h1 class="em-h1" style="font-size:clamp(1.7rem,4vw,2.4rem);margin:12px 0 4px">{{ order.plan.name }}</h1>
+<div class="em-muted">Commande {{ order.reference }} · {{ order.created_at|date:"d/m/Y" }}{% if order.title %} · « {{ order.title }} »{% endif %}</div>
+
+<div class="em-card" style="max-width:760px;margin-top:18px">
+  {% if order.status in 'refused refunded cancelled' %}
+    <div class="em-status em-status--rejected" style="margin:0"><b>{{ order.get_status_display }}</b></div>
+  {% else %}
+    <div class="em-steps">
+      {% for label in steps %}<div class="em-step {% if forloop.counter0 <= order.step_index %}done{% endif %}{% if forloop.counter0 == order.step_index %} now{% endif %}">{{ label }}</div>{% endfor %}
+    </div>
+  {% endif %}
+  <div class="em-meta"><span class="em-tag em-tag--green">{{ order.get_status_display }}</span><span class="em-tag">{{ order.amount_label }}</span>{% if order.visible_until %}<span class="em-tag">Visible jusqu'au {{ order.visible_until|date:"d/m/Y" }}</span>{% endif %}</div>
+
+  {% if order.status == 'quote' %}
+    <div class="em-status em-status--pending" style="margin:0"><b>Lantante prépare votre devis.</b> Nous vous contactons très vite avec le montant de la prestation ; vous pourrez alors payer depuis cette page.</div>
+  {% elif order.status == 'awaiting_payment' %}
+    {% if order.review_message %}<div class="em-status em-status--pending" style="margin:0">{{ order.review_message|linebreaksbr }}</div>{% endif %}
+  {% elif order.status == 'payment_declared' %}
+    <div class="em-status em-status--pending" style="margin:0"><b>Nous vérifions votre paiement.</b> Merci de patienter quelques instants : vous êtes prévenu dès qu'il est confirmé.</div>
+  {% elif order.status == 'in_review' %}
+    <div class="em-status em-status--approved" style="margin:0"><b>Paiement confirmé — validation en cours.</b> Lantante vérifie votre publication avant de la mettre en ligne.</div>
+  {% elif order.status == 'changes_requested' %}
+    <div class="em-status em-status--pending" style="margin:0"><b>Une correction est demandée :</b><br>{{ order.review_message|linebreaksbr }}</div>
+  {% elif order.status == 'published' %}
+    <div class="em-status em-status--approved" style="margin:0"><b>Votre publication est en ligne.</b></div>
+  {% elif order.status == 'refused' or order.status == 'refunded' %}
+    <div class="em-status em-status--rejected" style="margin:0">{{ order.review_message|linebreaksbr }}</div>
+  {% endif %}
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    {% if order.can_edit %}<a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:order_edit' order.pk %}"><i class="fas fa-pen"></i> {% if order.status == 'changes_requested' %}Corriger et renvoyer{% else %}Modifier{% endif %}</a>{% endif %}
+    {% if order.paid_at %}<a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:order_receipt' order.pk %}"><i class="fas fa-receipt"></i> Reçu {{ order.receipt_number }}</a>{% endif %}
+    {% if order.status == 'awaiting_payment' or order.status == 'quote' %}
+    <form method="post" action="{% url 'emploi:order_cancel' order.pk %}" onsubmit="return confirm('Annuler cette commande ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Annuler</button></form>
+    {% endif %}
+  </div>
+</div>
+
+{% if order.can_pay %}
+<div class="em-form" style="margin-top:18px">
+  <h2 class="em-h2" style="font-size:1.4rem">Payer {{ order.amount_label }}</h2>
+  <ol style="padding-left:20px;line-height:1.8;color:var(--em-ink2);margin-bottom:16px">
+    <li>Envoyez <b>{{ order.amount_label }}</b> par
+      {% if site.payment_flooz %}<b>Flooz</b> au <b>+{{ site.payment_flooz }}</b>{% endif %}{% if site.payment_flooz and site.payment_tmoney %} ou {% endif %}{% if site.payment_tmoney %}<b>T-Money</b> au <b>+{{ site.payment_tmoney }}</b>{% endif %}{% if not site.payment_flooz and not site.payment_tmoney %}Flooz ou T-Money — <b>contactez-nous{% if site.whatsapp_1 %} sur <a href="https://wa.me/{{ site.whatsapp_1 }}?text=Bonjour%2C%20je%20souhaite%20payer%20la%20commande%20{{ order.reference }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}</b> pour recevoir le numéro de paiement{% endif %}.</li>
+    <li>Indiquez la référence <b>{{ order.reference }}</b> si l'application le permet.</li>
+    <li>Saisissez ci-dessous le numéro de la transaction reçu par SMS : nous vérifions puis lançons la validation.</li>
+  </ol>
+  <form method="post" action="{% url 'emploi:order_pay' order.pk %}">{% csrf_token %}
+    {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+    <button class="em-btn em-btn--green" type="submit"><i class="fas fa-check"></i> J'ai payé</button>
+  </form>
+  <p class="em-help" style="margin-top:10px">Le paiement rémunère la publication, il ne garantit pas de recrutement. Si votre publication est refusée, vous pouvez la corriger sans repayer ou être remboursé.</p>
+</div>
+{% endif %}
+{% endblock %}

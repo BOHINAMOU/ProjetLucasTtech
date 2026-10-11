@@ -1,0 +1,22 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Publier{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Que souhaitez-vous publier ?</h1>
+<p class="em-lead" style="margin-bottom:20px">{% if exempt %}Votre contrat inclut les publications : rien à payer.{% else %}Choisissez un service, payez, puis Lantante vérifie et publie. <a href="{% url 'emploi:pricing' %}">Voir toutes les conditions</a>.{% endif %}</p>
+<div class="em-grid">
+  {% for plan in plans %}
+  <article class="em-card">
+    <h3>{{ plan.name }}</h3>
+    <div class="em-meta"><span class="em-tag em-tag--green">{% if exempt and not plan.quote_only %}Inclus{% else %}{{ plan.price_label }}{% endif %}</span>{% if plan.duration_days %}<span class="em-tag">{{ plan.duration_days }} jours</span>{% endif %}</div>
+    <p>{{ plan.description }}</p>
+    <a class="em-btn em-btn--navy em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:order_new' plan.code %}">Choisir</a>
+  </article>
+  {% endfor %}
+  <article class="em-card" style="border:2px solid var(--em-gold)">
+    <h3>Devenir partenaire officiel</h3>
+    <div class="em-meta"><span class="em-tag em-tag--warn">Sur validation</span></div>
+    <p>Page partenaire, carrousel, publications selon contrat. Lantante vous contacte pour définir les conditions.</p>
+    <a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:pricing' %}">Découvrir</a>
+  </article>
+</div>
+{% endblock %}

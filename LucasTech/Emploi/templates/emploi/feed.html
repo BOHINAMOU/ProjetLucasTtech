@@ -11,7 +11,11 @@
 </style>
 <h1 class="em-h1" style="margin:34px 0 18px;text-align:center">Fil d'actualités</h1>
 <div class="ef-col">
-  {% if user.is_authenticated %}
+  {% if user.is_authenticated and must_order %}
+  <div class="em-card"><h3><i class="fas fa-bullhorn"></i> Publier une actualité ou une publicité</h3>
+    <p>Les publications des entreprises sont vérifiées par Lantante avant leur mise en ligne{% if news_plan %} — à partir de <b>{{ news_plan.price_label }}</b>{% endif %}.</p>
+    <div><a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}">Publier</a> <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:pricing' %}">Tarifs et partenariat</a></div></div>
+  {% elif user.is_authenticated %}
   <form class="em-card" method="post" enctype="multipart/form-data">{% csrf_token %}
     <div class="em-field" style="margin:0 0 8px">{{ form.kind }}</div>
     <div class="em-field" style="margin:0">{{ form.text }}</div>
@@ -25,7 +29,7 @@
   {% for post in page %}
   <article class="em-card ef-post">
     <div class="em-row"><div class="em-avatar">{{ post.author_label|slice:":1" }}</div>
-      <div style="min-width:0"><b>{% if post.author_employer %}<a href="{{ post.author_employer.get_absolute_url }}" style="text-decoration:none">{{ post.author_label }}</a>{% else %}{{ post.author_label }}{% endif %}</b>{% if post.author_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}<div class="em-muted">{{ post.created_at|date:"d/m/Y H:i" }}</div></div>{% if post.kind == 'product' %}<span class="em-tag em-tag--warn" style="margin-left:auto">Nouveau produit</span>{% endif %}</div>
+      <div style="min-width:0"><b>{% if post.author_employer %}<a href="{{ post.author_employer.get_absolute_url }}" style="text-decoration:none">{{ post.author_label }}</a>{% else %}{{ post.author_label }}{% endif %}</b>{% if post.author_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}<div class="em-muted">{{ post.created_at|date:"d/m/Y H:i" }}</div></div>{% if post.is_sponsored %}<span class="em-tag" style="margin-left:auto;background:#e0e7ff;color:#3730a3">Sponsorisé</span>{% elif post.pinned %}<span class="em-tag em-tag--warn" style="margin-left:auto"><i class="fas fa-thumbtack"></i> À la une</span>{% elif post.kind == 'product' %}<span class="em-tag em-tag--warn" style="margin-left:auto">Nouveau produit</span>{% endif %}</div>
     <p style="white-space:pre-line">{{ post.text }}</p>
     {% if post.image %}<img class="ef-img" src="{{ post.image.url }}" alt="" loading="lazy">{% endif %}
     <div class="ef-actions">
