@@ -82,6 +82,14 @@
 .em-status--approved { background:var(--em-green-bg); color:#14532d; }
 .em-status--rejected { background:#fee2e2; color:#991b1b; }
 
+/* choix multiples sous forme de pastilles */
+.em-choices > div, .em-choices { display:flex; flex-wrap:wrap; gap:8px; }
+.em-choices > div > div { display:contents; }
+.em-choices label { display:inline-flex !important; align-items:center; gap:8px; margin:0 !important; padding:8px 14px; border:1.5px solid #cbd5e1; border-radius:999px; background:#fff; font-weight:600; cursor:pointer; font-size:.88rem; transition:all .15s; }
+.em-choices label:hover { border-color:var(--em-navy); }
+.em-choices label:has(input:checked) { background:var(--em-navy); border-color:var(--em-navy); color:#fff; }
+.em-choices input { accent-color:var(--em-green); margin:0; }
+
 /* photo de couverture des offres */
 .em-cover { display:block; margin:-20px -20px 4px; height:160px; border-radius:16px 16px 0 0; overflow:hidden; position:relative; text-decoration:none; }
 .em-cover img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s; }

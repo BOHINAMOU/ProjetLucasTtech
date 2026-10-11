@@ -41,6 +41,7 @@ def _page(request, queryset, per_page=12):
 
 
 def _open_offers():
+    JobOffer.close_expired()  # date de fin dépassée : l'offre disparaît
     today = timezone.localdate()
     return JobOffer.objects.filter(status='published').filter(
         Q(deadline__isnull=True) | Q(deadline__gte=today)
@@ -333,11 +334,13 @@ def dashboard(request):
         context['appointments'] = candidate.appointments.filter(
             scheduled_at__gte=timezone.now()).exclude(status__in=['declined', 'cancelled'])[:5]
     if employer:
-        context['offers'] = employer.offers.all()[:10]
-        context['staffing'] = employer.requests.all()[:10]
+        JobOffer.close_expired()
+        # Seules les offres en cours : une offre terminée (date de fin ou poste pourvu) disparaît de l'espace.
+        context['offers'] = employer.offers.filter(status__in=['pending', 'published'])[:20]
+        context['staffing'] = employer.requests.exclude(status__in=['filled', 'cancelled'])[:20]
         context['offer_apps'] = Application.objects.filter(
             Q(offer__employer=employer) | Q(request__employer=employer), shared_with_employer=True
-        ).select_related('candidate__user', 'offer', 'request')[:15]
+        ).exclude(offer__status__in=['filled', 'closed']).exclude(request__status__in=['filled', 'cancelled']).select_related('candidate__user', 'offer', 'request')[:15]
     return render(request, 'emploi/dashboard.html', context)
 
 
@@ -422,6 +425,25 @@ def offer_create(request):
             messages.success(request, "✓ Offre publiée.")
         return redirect('emploi:dashboard')
     return render(request, 'emploi/offer_form.html', {'form': form, 'employer': employer})
+
+
+@login_required
+@require_POST
+def offer_filled(request, slug):
+    """L'entreprise a trouvé ses candidats : l'offre disparaît du site et de son espace."""
+    offer = get_object_or_404(JobOffer, slug=slug)
+    owner = offer.employer_id and offer.employer.user_id == request.user.pk
+    if not (owner or is_staff(request.user)):
+        return HttpResponseForbidden("Accès non autorisé.")
+    if offer.status != 'filled':
+        offer.status = 'filled'
+        offer.save(update_fields=['status', 'updated_at'])
+        pending = offer.applications.filter(status='received').count()
+        notify_staff(f"Poste pourvu : « {offer.title} » ({offer.company_name}). "
+                     f"{pending} candidature(s) encore en attente à traiter.",
+                     f"/lantanteAdminTech/Emploi/application/?offer__id__exact={offer.pk}&traitement=pending")
+        messages.success(request, "✓ Offre retirée : le poste est pourvu. Merci !")
+    return redirect('emploi:dashboard')
 
 
 @login_required

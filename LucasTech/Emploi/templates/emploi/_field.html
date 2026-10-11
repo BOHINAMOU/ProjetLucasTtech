@@ -1,5 +1,8 @@
-<div class="em-field{% if field.field.widget.input_type == 'checkbox' %} em-field--check{% endif %}">
-  {% if field.field.widget.input_type == 'checkbox' %}
+<div class="em-field{% if field.field.widget.input_type == 'checkbox' and not field.field.widget.allow_multiple_selected %} em-field--check{% endif %}">
+  {% if field.field.widget.allow_multiple_selected and field.field.widget.input_type == 'checkbox' %}
+    <label>{{ field.label }}</label>
+    <div class="em-choices">{{ field }}</div>
+  {% elif field.field.widget.input_type == 'checkbox' %}
     <label>{{ field }} {{ field.label }}</label>
   {% else %}
     <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>

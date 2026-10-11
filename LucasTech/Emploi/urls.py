@@ -10,6 +10,7 @@ urlpatterns = [
     path('offres/', views.offer_list, name='offer_list'),
     path('offres/<slug:slug>/', views.offer_detail, name='offer_detail'),
     path('offres/<slug:slug>/postuler/', views.offer_apply, name='offer_apply'),
+    path('offres/<slug:slug>/pourvue/', views.offer_filled, name='offer_filled'),
 
     # Candidats
     path('candidats/', views.candidate_list, name='candidate_list'),

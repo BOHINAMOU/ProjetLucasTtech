@@ -35,6 +35,16 @@ CONTRACT_CHOICES = [
     ('benevolat', "Bénévolat"),
 ]
 
+INTERNSHIP_DURATION_CHOICES = [
+    ("1 mois", "1 mois"), ("2 mois", "2 mois"), ("3 mois", "3 mois"), ("4 mois", "4 mois"),
+    ("6 mois", "6 mois"), ("Plus de 6 mois", "Plus de 6 mois"),
+]
+OFFER_DURATION_CHOICES = [
+    ("1 mois", "1 mois"), ("2 mois", "2 mois"), ("3 mois", "3 mois"), ("4 mois", "4 mois"), ("6 mois", "6 mois"),
+    ("9 mois", "9 mois"), ("12 mois", "12 mois"), ("18 mois", "18 mois"), ("24 mois", "24 mois"),
+    ("Plus de 24 mois", "Plus de 24 mois"),
+]
+
 LEVEL_CHOICES = [
     ('', "Non précisé"),
     ('bepc', "BEPC / niveau collège"),
@@ -81,7 +91,7 @@ class CandidateProfile(models.Model):
     education_level = models.CharField(max_length=10, choices=LEVEL_CHOICES, blank=True,
                                        verbose_name="Niveau d'études")
     contract_wanted = models.CharField(max_length=120, blank=True, verbose_name="Types de contrat souhaités",
-                                       help_text="Ex : CDI, Stage")
+                                       help_text="Cochez un ou plusieurs types de contrat.")
     available = models.BooleanField(default=True, verbose_name="Disponible")
     seeking_internship = models.BooleanField(default=False, verbose_name="Je cherche un stage")
     internship_duration = models.CharField(max_length=60, blank=True, verbose_name="Durée de stage souhaitée",
@@ -122,6 +132,16 @@ class CandidateProfile(models.Model):
     def get_absolute_url(self):
         return reverse('emploi:candidate_detail', args=[self.pk])
 
+    @property
+    def contract_wanted_codes(self):
+        valid = dict(CONTRACT_CHOICES)
+        return [c for c in self.contract_wanted.split(',') if c in valid]
+
+    @property
+    def contract_wanted_display(self):
+        labels = dict(CONTRACT_CHOICES)
+        return ", ".join(labels[c] for c in self.contract_wanted_codes)
+
     def snapshot(self):
         """Copie des champs modifiables (pour l'historique interne)."""
         return {
@@ -133,7 +153,7 @@ class CandidateProfile(models.Model):
             'À propos': self.bio,
             'Années d\'expérience': self.experience_years,
             'Niveau': self.get_education_level_display(),
-            'Contrats souhaités': self.contract_wanted,
+            'Contrats souhaités': self.contract_wanted_display,
             'Disponible': "oui" if self.available else "non",
             'Téléphone': self.phone,
             'CV': self.cv.name if self.cv else "",
@@ -254,7 +274,8 @@ class JobOffer(models.Model):
     STATUS = [
         ('pending', "En attente de validation"),
         ('published', "Publiée"),
-        ('closed', "Clôturée"),
+        ('filled', "Pourvue (poste pourvu)"),
+        ('closed', "Terminée (date de fin dépassée)"),
         ('rejected', "Refusée"),
     ]
     employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE, null=True, blank=True,
@@ -271,7 +292,8 @@ class JobOffer(models.Model):
     salary = models.CharField(max_length=100, blank=True, verbose_name="Rémunération")
     duration = models.CharField(max_length=60, blank=True, verbose_name="Durée (stage, CDD…)",
                                 help_text="Ex : 3 mois")
-    deadline = models.DateField(null=True, blank=True, verbose_name="Date limite")
+    deadline = models.DateField(null=True, blank=True, verbose_name="Date de fin",
+                                help_text="À cette date, l'offre disparaît automatiquement du site et de l'espace de l'entreprise.")
     status = models.CharField(max_length=10, choices=STATUS, default='pending', verbose_name="Statut")
     cover_image = models.ImageField(upload_to='emploi/offers/', blank=True, verbose_name="Photo de couverture",
                                     help_text="Illustre l'offre dans les listes. Sans photo, un visuel coloré est affiché.")
@@ -337,6 +359,11 @@ class JobOffer(models.Model):
 
     def get_absolute_url(self):
         return reverse('emploi:offer_detail', args=[self.slug])
+
+    @classmethod
+    def close_expired(cls):
+        """Les offres dont la date de fin est dépassée disparaissent (statut « Terminée »)."""
+        return cls.objects.filter(status='published', deadline__lt=timezone.localdate()).update(status='closed')
 
     @property
     def company_name(self):

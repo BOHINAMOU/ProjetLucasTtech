@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import (
+    CONTRACT_CHOICES, INTERNSHIP_DURATION_CHOICES, OFFER_DURATION_CHOICES,
     CandidateDocument, CandidateProfile, EmployerProfile, JobOffer, StaffingRequest, Skill,
     FeedPost, FeedComment, Application,
 )
@@ -12,6 +13,8 @@ def _style(form):
     """Ajoute la classe CSS commune aux champs."""
     for name, field in form.fields.items():
         widget = field.widget
+        if getattr(widget, 'allow_multiple_selected', False) and isinstance(widget, forms.CheckboxSelectMultiple):
+            continue  # liste de cases à cocher : mise en forme par le gabarit
         if isinstance(widget, forms.CheckboxInput):
             widget.attrs.setdefault('class', 'em-check')
         elif isinstance(widget, forms.FileInput):
@@ -51,6 +54,11 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
     last_name = forms.CharField(max_length=150, label="Nom")
     avatar = forms.ImageField(required=False, label="Photo de profil")
     skills_text = SkillsTextMixin.skills_text
+    contract_wanted = forms.MultipleChoiceField(
+        choices=CONTRACT_CHOICES, required=False, widget=forms.CheckboxSelectMultiple,
+        label="Types de contrat souhaités", help_text="Cochez un ou plusieurs types de contrat.")
+    internship_duration = forms.ChoiceField(
+        choices=[('', "— Choisir —")] + INTERNSHIP_DURATION_CHOICES, required=False, label="Durée de stage souhaitée")
 
     class Meta:
         model = CandidateProfile
@@ -67,11 +75,17 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
         if user:
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
+        if self.instance.pk:
+            self.initial['contract_wanted'] = self.instance.contract_wanted_codes
         if user and not self.instance.pk:
             self.fields['phone'].initial = user.phone or ''
             self.fields['city'].initial = user.city or ''
         self.init_skills()
         _style(self)
+
+    def clean_contract_wanted(self):
+        chosen = set(self.cleaned_data.get('contract_wanted') or [])
+        return ",".join(code for code, _ in CONTRACT_CHOICES if code in chosen)  # stocké dans l'ordre du catalogue
 
     def clean_cv(self):
         cv = self.cleaned_data.get('cv')
@@ -155,6 +169,8 @@ class EmployerForm(forms.ModelForm):
 
 class JobOfferForm(SkillsTextMixin, forms.ModelForm):
     skills_text = SkillsTextMixin.skills_text
+    duration = forms.ChoiceField(choices=[('', "— Aucune —")] + OFFER_DURATION_CHOICES, required=False,
+                                 label="Durée (stage, CDD…)")
 
     class Meta:
         model = JobOffer
@@ -209,10 +225,10 @@ class ApplicationForm(forms.Form):
         self.is_internship = bool(offer and offer.contract == 'stage')
         if self.is_internship:
             # Stage : le candidat précise la durée souhaitée et sa date de début.
-            self.fields['internship_duration'] = forms.CharField(
-                max_length=60, label="Durée de stage souhaitée",
-                initial=(profile.internship_duration if profile else '') or offer.duration,
-                widget=forms.TextInput(attrs={'placeholder': 'Ex : 3 mois'}))
+            wanted = (profile.internship_duration if profile else '') or offer.duration
+            self.fields['internship_duration'] = forms.ChoiceField(
+                choices=[('', "— Choisir —")] + INTERNSHIP_DURATION_CHOICES, label="Durée de stage souhaitée",
+                initial=wanted if wanted in dict(INTERNSHIP_DURATION_CHOICES) else '')
             self.fields['available_from'] = forms.DateField(
                 required=False, label="Disponible à partir du",
                 initial=profile.available_from if profile else None,

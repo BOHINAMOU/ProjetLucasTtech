@@ -237,7 +237,12 @@ class JobOfferAdmin(SuggestionsMixin, admin.ModelAdmin):
     search_fields = ('title', 'description', 'employer__company_name', 'city')
     filter_horizontal = ('skills',)
     autocomplete_fields = ('employer',)
-    actions = ['publish', 'close']
+    actions = ['publish', 'mark_filled', 'close']
+
+    @admin.action(description="✓ Marquer comme pourvue (l'offre disparaît)")
+    def mark_filled(self, request, queryset):
+        count = queryset.exclude(status='filled').update(status='filled')
+        self.message_user(request, f"{count} offre(s) marquée(s) pourvue(s) : elles ont disparu du site.")
 
     def get_queryset(self, request):
         from django.db.models import Count, Q
