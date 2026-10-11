@@ -5,7 +5,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 
 from .models import (
-    Appointment, Application, CandidateProfile, Conversation, EmployerProfile,
+    Appointment, Application, CandidateDocument, CandidateProfile, Conversation, EmployerProfile,
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
     ProfileRevision, Skill, StaffingRequest,
 )
@@ -87,6 +87,23 @@ class ProfileRevisionInline(admin.TabularInline):
         return False
 
 
+class CandidateDocumentInline(admin.TabularInline):
+    model = CandidateDocument
+    extra = 0
+    fields = ('kind', 'title', 'open_link', 'created_at')
+    readonly_fields = ('open_link', 'created_at')
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Fichier")
+    def open_link(self, obj):
+        if obj.pk:
+            return format_html('<a href="{}" target="_blank">Ouvrir</a>',
+                               reverse('emploi:document_download', args=[obj.pk]))
+        return "—"
+
+
 class CandidateApplicationInline(admin.TabularInline):
     model = Application
     extra = 0
@@ -104,7 +121,7 @@ class CandidateProfileAdmin(admin.ModelAdmin):
     filter_horizontal = ('skills',)
     readonly_fields = ('cv_link', 'contact_info', 'created_at', 'updated_at')
     autocomplete_fields = ('user',)
-    inlines = [CandidateApplicationInline, ProfileRevisionInline]
+    inlines = [CandidateDocumentInline, CandidateApplicationInline, ProfileRevisionInline]
     fieldsets = (
         ("Compte", {'fields': ('user', 'contact_info')}),
         ("Profil", {'fields': ('headline', 'domain', 'skills', 'city', 'bio', 'experience_years',

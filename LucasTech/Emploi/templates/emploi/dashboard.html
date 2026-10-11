@@ -22,6 +22,7 @@
         <span class="em-tag">{% if candidate.cv %}CV ajouté{% else %}CV manquant{% endif %}</span>
         <span class="em-tag">{{ candidate.skills.count }} compétence{{ candidate.skills.count|pluralize }}</span></div></div></div>
     <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}">Modifier mon profil</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:documents' %}"><i class="fas fa-graduation-cap"></i> Mes diplômes ({{ candidate.documents.count }})</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Voir mon profil public</a></div>
   </div>
   <h2 class="em-h2" style="margin-top:26px">Mes candidatures et propositions</h2>

@@ -136,6 +136,26 @@ class CandidateProfile(models.Model):
         }
 
 
+class CandidateDocument(models.Model):
+    """Diplôme, attestation ou autre pièce du candidat (privé, comme le CV)."""
+    KIND = [('diplome', "Diplôme"), ('attestation', "Attestation / certificat"),
+            ('identite', "Pièce d'identité"), ('autre', "Autre")]
+    candidate = models.ForeignKey(CandidateProfile, on_delete=models.CASCADE,
+                                  related_name='documents', verbose_name="Candidat")
+    kind = models.CharField(max_length=12, choices=KIND, default='diplome', verbose_name="Type")
+    title = models.CharField(max_length=120, verbose_name="Intitulé", help_text="Ex : Licence en Physique-Chimie")
+    file = models.FileField(upload_to='candidate_docs/', storage=private_storage, verbose_name="Fichier (PDF ou photo)")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ajouté le")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Document du candidat"
+        verbose_name_plural = "Documents des candidats"
+
+    def __str__(self):
+        return f"{self.get_kind_display()} : {self.title}"
+
+
 class ProfileRevision(models.Model):
     """Ancienne version d'un profil candidat, gardée en interne."""
     candidate = models.ForeignKey(CandidateProfile, on_delete=models.CASCADE,

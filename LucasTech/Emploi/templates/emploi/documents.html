@@ -1,0 +1,27 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}Mes diplômes et documents{% endblock %}
+{% block em_content %}
+<h1 class="em-h1" style="margin:34px 0 8px">Mes diplômes et documents</h1>
+<p class="em-lead" style="margin-bottom:20px">Déposez-les une seule fois : ils sont joints automatiquement à chacune de vos candidatures. Ils restent privés, visibles seulement par Lantante et les recruteurs autorisés.</p>
+<div class="em-grid" style="margin-bottom:24px">
+  {% for d in docs %}
+  <article class="em-card">
+    <h3>{{ d.title }}</h3>
+    <div class="em-meta"><span class="em-tag em-tag--green">{{ d.get_kind_display }}</span><span class="em-tag">{{ d.created_at|date:"d/m/Y" }}</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:document_download' d.pk %}" target="_blank">Ouvrir</a>
+      <form method="post" action="{% url 'emploi:document_delete' d.pk %}" onsubmit="return confirm('Supprimer ce document ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Supprimer</button></form>
+    </div>
+  </article>
+  {% empty %}
+  <div class="em-empty" style="grid-column:1/-1">Aucun document pour le moment.</div>
+  {% endfor %}
+</div>
+<form class="em-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <h2 class="em-h2" style="font-size:1.3rem">Ajouter un document</h2>
+  {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
+  <button class="em-btn em-btn--green" type="submit"><i class="fas fa-upload"></i> Ajouter</button>
+  <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}">Retour</a>
+</form>
+{% endblock %}

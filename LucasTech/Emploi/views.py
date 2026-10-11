@@ -11,11 +11,11 @@ from django.views.decorators.http import require_POST
 from core.models import Partner
 
 from .forms import (
-    ApplicationForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
+    ApplicationForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
     JobOfferForm, MessageForm, NewConversationForm, StaffingRequestForm,
 )
 from .models import (
-    Appointment, Application, CandidateProfile, Conversation, DOMAIN_CHOICES,
+    Appointment, Application, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
@@ -151,6 +151,48 @@ def candidate_detail(request, pk):
         'private_ok': can_see_private(request.user, candidate),
         'is_me': request.user.is_authenticated and candidate.user_id == request.user.pk,
     })
+
+
+@login_required
+def documents(request):
+    """Diplômes et pièces du candidat : déposés une fois, joints à toutes ses candidatures."""
+    profile = getattr(request.user, 'candidate_profile', None)
+    if not profile:
+        messages.info(request, "Créez d'abord votre profil candidat.")
+        return redirect('emploi:candidate_edit')
+    form = CandidateDocumentForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        doc = form.save(commit=False)
+        doc.candidate = profile
+        doc.save()
+        notify_staff(f"{profile.name} a ajouté un document : {doc.title}",
+                     f"/lantanteAdminTech/Emploi/candidateprofile/{profile.pk}/change/")
+        messages.success(request, "✓ Document ajouté. Il sera joint à vos candidatures.")
+        return redirect('emploi:documents')
+    return render(request, 'emploi/documents.html', {
+        'form': form, 'profile': profile, 'docs': profile.documents.all(),
+    })
+
+
+@login_required
+@require_POST
+def document_delete(request, pk):
+    doc = get_object_or_404(CandidateDocument, pk=pk, candidate__user=request.user)
+    doc.file.delete(save=False)
+    doc.delete()
+    messages.success(request, "Document supprimé.")
+    return redirect('emploi:documents')
+
+
+@login_required
+def document_download(request, pk):
+    doc = get_object_or_404(CandidateDocument.objects.select_related('candidate'), pk=pk)
+    if not can_see_private(request.user, doc.candidate):
+        return HttpResponseForbidden("Accès non autorisé à ce document.")
+    try:
+        return FileResponse(doc.file.open('rb'), filename=doc.file.name.rsplit('/', 1)[-1])
+    except FileNotFoundError:
+        raise Http404
 
 
 @login_required

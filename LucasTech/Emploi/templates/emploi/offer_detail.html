@@ -40,6 +40,18 @@
       {% elif applied %}
         <div class="em-tag em-tag--green" style="align-self:flex-start"><i class="fas fa-check"></i> Candidature envoyée</div>
       {% else %}
+        <fieldset class="em-fieldset" style="margin:0 0 12px">
+          <legend style="font-weight:700;color:var(--em-navy);font-size:.88rem">Envoyé avec votre candidature</legend>
+          <div style="font-size:.88rem;line-height:1.7">
+            {% if profile.cv %}<div><i class="fas fa-circle-check" style="color:var(--em-green)"></i> Votre CV</div>
+            {% else %}<div><i class="fas fa-circle-exclamation" style="color:var(--em-warn)"></i> Pas de CV — <a href="{% url 'emploi:candidate_edit' %}"><b>l'ajouter</b></a></div>{% endif %}
+            {% with n=profile.documents.count %}
+            {% if n %}<div><i class="fas fa-circle-check" style="color:var(--em-green)"></i> {{ n }} diplôme{{ n|pluralize }} / document{{ n|pluralize }}</div>
+            {% else %}<div><i class="fas fa-circle-exclamation" style="color:var(--em-warn)"></i> Aucun diplôme — <a href="{% url 'emploi:documents' %}"><b>en ajouter</b></a></div>{% endif %}
+            {% endwith %}
+            <div><i class="fas fa-circle-check" style="color:var(--em-green)"></i> Votre profil et vos compétences</div>
+          </div>
+        </fieldset>
         <form method="post" action="{% url 'emploi:offer_apply' offer.slug %}">{% csrf_token %}
           <div class="em-field">{{ form.message }}</div>
           <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer ma candidature</button>

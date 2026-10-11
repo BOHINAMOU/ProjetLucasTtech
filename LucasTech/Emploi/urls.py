@@ -15,6 +15,9 @@ urlpatterns = [
     path('candidats/', views.candidate_list, name='candidate_list'),
     path('candidats/<int:pk>/', views.candidate_detail, name='candidate_detail'),
     path('candidats/<int:pk>/cv/', views.cv_download, name='cv_download'),
+    path('mon-espace/documents/', views.documents, name='documents'),
+    path('documents/<int:pk>/supprimer/', views.document_delete, name='document_delete'),
+    path('documents/<int:pk>/', views.document_download, name='document_download'),
 
     # Entreprises
     path('entreprises/', views.company_list, name='company_list'),

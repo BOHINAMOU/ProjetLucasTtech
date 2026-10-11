@@ -27,6 +27,7 @@
         <p><i class="fas fa-envelope"></i> {{ candidate.user.email }}</p>
         {% if candidate.phone or candidate.user.phone %}<p><i class="fas fa-phone"></i> {{ candidate.phone|default:candidate.user.phone }}</p>{% endif %}
         {% if candidate.cv %}<a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:cv_download' candidate.pk %}" target="_blank"><i class="fas fa-file-pdf"></i> Ouvrir le CV</a>{% endif %}
+        {% for d in candidate.documents.all %}<a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:document_download' d.pk %}" target="_blank"><i class="fas fa-graduation-cap"></i> {{ d.title }}</a>{% endfor %}
       {% else %}
         <p><i class="fas fa-lock"></i> Coordonnées et CV privés. Ils sont communiqués aux recruteurs par Lantante.</p>
       {% endif %}

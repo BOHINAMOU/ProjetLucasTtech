@@ -1,7 +1,7 @@
 from django import forms
 
 from .models import (
-    CandidateProfile, EmployerProfile, JobOffer, StaffingRequest, Skill,
+    CandidateDocument, CandidateProfile, EmployerProfile, JobOffer, StaffingRequest, Skill,
     FeedPost, FeedComment, Application,
 )
 
@@ -232,3 +232,35 @@ class NewConversationForm(MessageForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _style(self)
+
+
+# Diplômes : PDF ou photo (JPG/PNG), vérifiés sur leur contenu.
+DIPLOMA_SIGNATURES = {
+    '.pdf': (b'%PDF-',),
+    '.jpg': (bytes.fromhex('ffd8ff'),),
+    '.jpeg': (bytes.fromhex('ffd8ff'),),
+    '.png': (bytes.fromhex('89504e47'),),
+}
+
+
+class CandidateDocumentForm(forms.ModelForm):
+    class Meta:
+        model = CandidateDocument
+        fields = ['kind', 'title', 'file']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _style(self)
+
+    def clean_file(self):
+        f = self.cleaned_data['file']
+        ext = '.' + f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+        if ext not in DIPLOMA_SIGNATURES:
+            raise forms.ValidationError("Format accepté : PDF, JPG ou PNG.")
+        if f.size > CV_MAX_MB * 1024 * 1024:
+            raise forms.ValidationError(f"Le fichier ne doit pas dépasser {CV_MAX_MB} Mo.")
+        head = f.read(8)
+        f.seek(0)
+        if not any(head.startswith(sig) for sig in DIPLOMA_SIGNATURES[ext]):
+            raise forms.ValidationError("Ce fichier ne semble pas être un vrai document de ce format.")
+        return f
