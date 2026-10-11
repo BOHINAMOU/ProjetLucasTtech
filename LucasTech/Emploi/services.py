@@ -60,6 +60,25 @@ def share_application(application):
     return True
 
 
+def decide_employer(employer, status):
+    """Applique la décision de Lantante (acceptée / refusée) et prévient l'entreprise."""
+    from django.utils import timezone
+    if employer.status == status:
+        return
+    employer.status = status
+    employer.decided_at = timezone.now()
+    employer.save(update_fields=['status', 'decided_at'])
+    extra = f"\n\n{employer.decision_message}" if employer.decision_message else ""
+    if status == 'approved':
+        notify(employer.user, "Bonne nouvelle : votre entreprise « %s » est acceptée. Vous pouvez déposer vos demandes "
+               "de recrutement et vos offres autant de fois que nécessaire.%s" % (employer.company_name, extra),
+               '/emploi/mon-espace/')
+    elif status == 'rejected':
+        notify(employer.user, "Votre demande d'inscription pour « %s » n'a pas été retenue.%s "
+               "Vous pouvez corriger votre fiche et la renvoyer." % (employer.company_name, extra),
+               '/emploi/mon-espace/')
+
+
 def is_staff(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
@@ -76,9 +95,10 @@ def can_see_private(viewer, candidate):
     if viewer.pk == candidate.user_id or is_staff(viewer):
         return True
     employer = getattr(viewer, 'employer_profile', None)
-    if not employer or not employer.is_verified:
+    if not employer or not employer.is_approved:
         return False
-    if candidate.share_with_recruiters:
+    # Partage libre voulu par le candidat : réservé aux entreprises avec le badge bleu.
+    if candidate.share_with_recruiters and employer.is_verified:
         return True
     # Candidature : le dossier n'est visible qu'après transmission par Lantante.
     return Application.objects.filter(candidate=candidate, shared_with_employer=True).filter(

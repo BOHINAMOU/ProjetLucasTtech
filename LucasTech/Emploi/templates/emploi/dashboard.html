@@ -44,13 +44,20 @@
 {% if employer %}
 <section class="em-section">
   <h2 class="em-h2">Mon entreprise : {{ employer.company_name }}</h2>
+  {% if employer.status == 'pending' %}<div class="em-status em-status--pending"><b>Votre fiche est en cours d'analyse par Lantante.</b> Vous pourrez déposer vos demandes de recrutement dès qu'elle sera acceptée.</div>
+  {% elif employer.status == 'rejected' %}<div class="em-status em-status--rejected"><b>Votre demande n'a pas été retenue.</b>{% if employer.decision_message %}<br>{{ employer.decision_message|linebreaksbr }}{% endif %}<br>Corrigez votre fiche puis renvoyez-la : <a href="{% url 'emploi:employer_edit' %}"><b>modifier ma fiche</b></a>.</div>
+  {% else %}<div class="em-status em-status--approved"><b>Votre entreprise est acceptée.</b> Vous pouvez déposer autant de demandes et d'offres que nécessaire.{% if employer.decision_message %}<br>{{ employer.decision_message|linebreaksbr }}{% endif %}</div>{% endif %}
   <div class="em-card">
-    <div class="em-meta"><span class="em-tag {% if employer.is_verified %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if employer.is_verified %}Entreprise vérifiée{% else %}En attente de vérification{% endif %}</span>
+    <div class="em-meta">{% if employer.is_verified %}<span class="em-tag em-tag--green"><i class="fas fa-circle-check" style="color:#1d6fe0"></i> Badge bleu</span>{% endif %}
+      <span class="em-tag {% if employer.is_approved %}em-tag--green{% else %}em-tag--warn{% endif %}">{{ employer.get_status_display }}</span>
       {% if employer.employees_count %}<span class="em-tag">{{ employer.employees_count }} employé{{ employer.employees_count|pluralize }}</span>{% endif %}
       <span class="em-tag">{% if employer.document %}Document fourni{% else %}Document manquant{% endif %}</span></div>
     <div>
+      {% if employer.is_approved %}
       <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:offer_create' %}"><i class="fas fa-plus"></i> Publier une offre</a>
       <a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:request_create' %}"><i class="fas fa-clipboard-list"></i> Demande de recrutement</a>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:feed' %}"><i class="fas fa-newspaper"></i> Publier une actualité / un produit</a>
+      {% endif %}
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:employer_edit' %}">Modifier la fiche</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{{ employer.get_absolute_url }}">Voir la fiche publique</a>
     </div>

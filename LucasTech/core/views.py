@@ -61,9 +61,19 @@ def partner_detail(request, pk):
     partner = get_object_or_404(Partner, pk=pk, is_active=True)
     related = Partner.objects.filter(is_active=True, category=partner.category).exclude(pk=partner.pk)[:3] \
         if partner.category else Partner.objects.none()
+    # Si le partenaire a un compte entreprise accepté sur Emploi : ses publications et produits.
+    employer = getattr(partner, 'employer', None)
+    if employer is not None and not employer.is_approved:
+        employer = None
+    posts = []
+    if employer is not None:
+        from Emploi.models import FeedPost
+        posts = FeedPost.objects.filter(author=employer.user, is_hidden=False)[:8]
     return render(request, 'core/partner_detail.html', {
         'partner': partner,
         'related': related,
+        'partner_employer': employer,
+        'partner_posts': posts,
     })
 
 

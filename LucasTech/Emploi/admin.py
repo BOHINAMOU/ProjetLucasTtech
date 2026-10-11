@@ -9,7 +9,7 @@ from .models import (
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
     ProfileRevision, Skill, StaffingRequest,
 )
-from .services import notify, share_application, suggest_candidates
+from .services import decide_employer, notify, share_application, suggest_candidates
 
 
 # ─────────────────────────────
@@ -155,12 +155,20 @@ class CandidateProfileAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 @admin.register(EmployerProfile)
 class EmployerProfileAdmin(admin.ModelAdmin):
-    list_display = ('company_name', 'sector', 'city', 'employees_count', 'is_verified', 'partner', 'created_at')
-    list_filter = ('is_verified', 'sector')
+    list_display = ('company_name', 'sector', 'city', 'employees_count', 'status', 'is_verified', 'partner', 'created_at')
+    list_filter = ('status', 'is_verified', 'sector')
+    list_editable = ('is_verified',)
     search_fields = ('company_name', 'user__email', 'city')
     autocomplete_fields = ('user', 'partner')
-    readonly_fields = ('document_link',)
-    actions = ['verify', 'unverify']
+    readonly_fields = ('document_link', 'decided_at')
+    actions = ['approve', 'reject', 'give_badge', 'remove_badge']
+    fieldsets = (
+        ("Entreprise", {'fields': ('user', 'company_name', 'logo', 'sector', 'city', 'employees_count',
+                                   'description', 'products', 'website', 'whatsapp', 'contact_email')}),
+        ("Document fourni", {'fields': ('document', 'document_link')}),
+        ("Décision de Lantante", {'fields': ('status', 'decision_message', 'decided_at', 'is_verified',
+                                             'partner', 'admin_notes')}),
+    )
 
     @admin.display(description="Document de l'entreprise")
     def document_link(self, obj):
@@ -169,16 +177,38 @@ class EmployerProfileAdmin(admin.ModelAdmin):
                                reverse('emploi:employer_document', args=[obj.pk]))
         return "—"
 
-    @admin.action(description="✓ Vérifier les entreprises sélectionnées")
-    def verify(self, request, queryset):
-        for emp in queryset.filter(is_verified=False):
+    def save_model(self, request, obj, form, change):
+        # Un changement de décision dans la fiche prévient automatiquement l'entreprise.
+        new_status = obj.status
+        if change and 'status' in form.changed_data:
+            obj.status = form.initial.get('status', 'pending')
+            super().save_model(request, obj, form, change)
+            decide_employer(obj, new_status)
+        else:
+            super().save_model(request, obj, form, change)
+
+    @admin.action(description="✓ Accepter les entreprises sélectionnées")
+    def approve(self, request, queryset):
+        for emp in queryset:
+            decide_employer(emp, 'approved')
+        self.message_user(request, "Entreprises acceptées et prévenues.")
+
+    @admin.action(description="✗ Refuser les entreprises sélectionnées")
+    def reject(self, request, queryset):
+        for emp in queryset:
+            decide_employer(emp, 'rejected')
+        self.message_user(request, "Entreprises refusées et prévenues (ajoutez le motif dans « Message à l'entreprise »).")
+
+    @admin.action(description="🔵 Donner le badge bleu")
+    def give_badge(self, request, queryset):
+        for emp in queryset:
             emp.is_verified = True
             emp.save(update_fields=['is_verified'])
-            notify(emp.user, "Votre entreprise est vérifiée : vos offres sont publiées directement.", '/emploi/mon-espace/')
-        self.message_user(request, "Entreprises vérifiées.")
+            decide_employer(emp, 'approved')
+            notify(emp.user, "Votre entreprise reçoit le badge bleu : vos offres sont publiées directement.", '/emploi/mon-espace/')
 
-    @admin.action(description="Retirer la vérification")
-    def unverify(self, request, queryset):
+    @admin.action(description="Retirer le badge bleu")
+    def remove_badge(self, request, queryset):
         queryset.update(is_verified=False)
 
 

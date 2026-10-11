@@ -198,9 +198,20 @@ class EmployerProfile(models.Model):
         upload_to='employer_docs/', storage=private_storage, blank=True,
         verbose_name="Document de présentation (Word, Excel ou PDF)",
         help_text="Explique votre entreprise et ce que vous recherchez. Visible uniquement par Lantante.")
-    is_verified = models.BooleanField(default=False, verbose_name="Entreprise vérifiée",
-                                      help_text="Seule une entreprise vérifiée par Lantante peut publier des offres "
-                                                "et voir les CV autorisés.")
+    STATUS = [
+        ('pending', "En cours d'analyse"),
+        ('approved', "Acceptée"),
+        ('rejected', "Refusée"),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS, default='pending', verbose_name="Décision de Lantante",
+                              help_text="Une entreprise acceptée peut déposer autant de demandes et d'offres qu'elle veut.")
+    decision_message = models.TextField(
+        blank=True, verbose_name="Message à l'entreprise",
+        help_text="Conditions, contrat proposé ou motif du refus. Envoyé à l'entreprise quand vous changez la décision.")
+    decided_at = models.DateTimeField(null=True, blank=True, verbose_name="Décision prise le")
+    is_verified = models.BooleanField(default=False, verbose_name="Badge bleu (entreprise de confiance)",
+                                      help_text="Badge bleu affiché sur ses pages. Ses offres sont publiées directement, "
+                                                "sans validation.")
     admin_notes = models.TextField(blank=True, verbose_name="Notes internes Lantante")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créée le")
 
@@ -214,6 +225,10 @@ class EmployerProfile(models.Model):
 
     def get_absolute_url(self):
         return reverse('emploi:company_detail', args=[self.pk])
+
+    @property
+    def is_approved(self):
+        return self.status == 'approved'
 
     @property
     def logo_url(self):
@@ -477,6 +492,8 @@ class FeedPost(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                related_name='feed_posts', verbose_name="Auteur")
     text = models.TextField(verbose_name="Texte")
+    KIND = [('news', "Actualité"), ('product', "Nouveau produit / service")]
+    kind = models.CharField(max_length=8, choices=KIND, default='news', verbose_name="Type")
     image = models.ImageField(upload_to='emploi/feed/', blank=True, verbose_name="Image")
     is_hidden = models.BooleanField(default=False, verbose_name="Masquée (modération)")
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
@@ -490,6 +507,15 @@ class FeedPost(models.Model):
 
     def __str__(self):
         return f"{self.author.public_name} : {self.text[:50]}"
+
+    @property
+    def author_verified(self):
+        employer = getattr(self.author, 'employer_profile', None)
+        return bool(employer and employer.is_verified)
+
+    @property
+    def author_employer(self):
+        return getattr(self.author, 'employer_profile', None)
 
     @property
     def author_label(self):

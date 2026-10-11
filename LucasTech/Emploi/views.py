@@ -40,7 +40,7 @@ def _open_offers():
     today = timezone.localdate()
     return JobOffer.objects.filter(status='published').filter(
         Q(deadline__isnull=True) | Q(deadline__gte=today)
-    ).select_related('employer', 'employer__partner')
+    ).filter(Q(employer__isnull=True) | Q(employer__status='approved')).select_related('employer', 'employer__partner')
 
 
 # ─────────────────────────────
@@ -53,8 +53,14 @@ def home(request):
         'latest_offers': offers[:6],
         'offers_count': offers.count(),
         'candidates_count': CandidateProfile.objects.filter(is_published=True).count(),
-        'companies_count': EmployerProfile.objects.filter(is_verified=True).count(),
+        'companies_count': EmployerProfile.objects.filter(status='approved').count(),
         'posts': FeedPost.objects.filter(is_hidden=False).select_related('author')[:3],
+        'partner_posts': FeedPost.objects.filter(
+            is_hidden=False, author__employer_profile__partner__isnull=False,
+            author__employer_profile__status='approved',
+        ).select_related('author', 'author__employer_profile')[:6],
+        'has_candidate': request.user.is_authenticated and hasattr(request.user, 'candidate_profile'),
+        'has_employer': request.user.is_authenticated and hasattr(request.user, 'employer_profile'),
         'domains': DOMAIN_CHOICES,
     }
     return render(request, 'emploi/home.html', context)
@@ -220,15 +226,15 @@ def cv_download(request, pk):
 # 🏢 ENTREPRISES
 # ─────────────────────────────
 def company_list(request):
-    qs = EmployerProfile.objects.filter(is_verified=True).annotate(
-        n_offers=Count('offers', filter=Q(offers__status='published'))).order_by('company_name')
+    qs = EmployerProfile.objects.filter(status='approved').annotate(
+        n_offers=Count('offers', filter=Q(offers__status='published'))).order_by('-is_verified', 'company_name')
     return render(request, 'emploi/company_list.html', {'page': _page(request, qs)})
 
 
 def company_detail(request, pk):
     company = get_object_or_404(EmployerProfile, pk=pk)
     me = request.user.is_authenticated and company.user_id == request.user.pk
-    if not company.is_verified and not (me or is_staff(request.user)):
+    if not company.is_approved and not (me or is_staff(request.user)):
         raise Http404
     offers = _open_offers().filter(employer=company)
     posts = FeedPost.objects.filter(author=company.user, is_hidden=False)[:5]
@@ -303,11 +309,18 @@ def employer_edit(request):
     if request.method == 'POST' and form.is_valid():
         employer = form.save(commit=False)
         employer.user = request.user
+        resubmitted = not creating and employer.status == 'rejected'
+        if resubmitted:
+            employer.status = 'pending'
         employer.save()
-        if creating:
+        if resubmitted:
+            notify_staff(f"Entreprise corrigée et renvoyée pour analyse : {employer.company_name}",
+                         f"/lantanteAdminTech/Emploi/employerprofile/{employer.pk}/change/")
+            messages.success(request, "✓ Fiche renvoyée : Lantante l'analyse de nouveau.")
+        elif creating:
             notify_staff(f"Nouvelle entreprise à vérifier : {employer.company_name}",
                          f"/lantanteAdminTech/Emploi/employerprofile/{employer.pk}/change/")
-            messages.success(request, "✓ Entreprise enregistrée. Lantante la vérifie avant de publier vos offres.")
+            messages.success(request, "✓ Entreprise enregistrée. Lantante analyse votre fiche et vous répond bientôt.")
         else:
             messages.success(request, "✓ Fiche entreprise mise à jour.")
         return redirect('emploi:dashboard')
@@ -315,9 +328,13 @@ def employer_edit(request):
 
 
 def _require_employer(request):
+    """L'entreprise doit exister ET avoir été acceptée par Lantante pour déposer offres et demandes."""
     employer = getattr(request.user, 'employer_profile', None)
     if not employer:
         messages.info(request, "Créez d'abord la fiche de votre entreprise.")
+    elif not employer.is_approved:
+        messages.info(request, "Votre entreprise doit d'abord être acceptée par Lantante pour déposer une demande.")
+        return None
     return employer
 
 
@@ -325,7 +342,7 @@ def _require_employer(request):
 def offer_create(request):
     employer = _require_employer(request)
     if not employer:
-        return redirect('emploi:employer_edit')
+        return redirect('emploi:dashboard' if hasattr(request.user, 'employer_profile') else 'emploi:employer_edit')
     form = JobOfferForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         offer = form.save(commit=False)
@@ -347,7 +364,7 @@ def offer_create(request):
 def request_create(request):
     employer = _require_employer(request)
     if not employer:
-        return redirect('emploi:employer_edit')
+        return redirect('emploi:dashboard' if hasattr(request.user, 'employer_profile') else 'emploi:employer_edit')
     form = StaffingRequestForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         req = form.save(commit=False)

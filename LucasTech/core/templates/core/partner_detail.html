@@ -154,9 +154,23 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <div class="pd-achievements">{{ partner.achievements }}</div>
       {% endif %}
 
-      {% if partner.employer %}
+      {% if partner_employer %}
+      {% if partner_employer.product_list %}
+      <p class="pd-block-title">Produits et services</p>
+      <ul style="margin:0 0 6px 18px;line-height:1.7">{% for item in partner_employer.product_list %}<li>{{ item }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% if partner_posts %}
+      <p class="pd-block-title">Actualités et nouveautés</p>
+      {% for post in partner_posts %}
+      <div style="border:1px solid rgba(15,23,42,.09);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff">
+        <div style="font-size:.78rem;color:#64748b;margin-bottom:6px">{{ post.created_at|date:"d/m/Y" }}{% if post.kind == 'product' %} · <b style="color:#b8420a">Nouveau produit</b>{% endif %}</div>
+        <div style="white-space:pre-line">{{ post.text }}</div>
+        {% if post.image %}<img src="{{ post.image.url }}" alt="" loading="lazy" style="width:100%;height:auto;max-height:420px;object-fit:cover;border-radius:10px;margin-top:10px">{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
       <p class="pd-block-title">Offres d'emploi</p>
-      <p><a href="{{ partner.employer.get_absolute_url }}" class="btn-site-link" style="display:inline-flex"><i class="fa fa-briefcase"></i>&nbsp; Voir les offres de {{ partner.name }}</a></p>
+      <p><a href="{{ partner_employer.get_absolute_url }}" class="btn-site-link" style="display:inline-flex"><i class="fa fa-briefcase"></i>&nbsp; Voir les offres de {{ partner.name }}</a></p>
       {% endif %}
     </div>
   </div>
@@ -173,6 +187,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% if partner.website %}
       <a href="{{ partner.website }}" target="_blank" rel="noopener noreferrer" class="btn-site-link">
         <i class="fa fa-globe"></i> Visiter le site
+      </a>
+      {% endif %}
+      {% if partner_employer %}
+      <a href="{% if user.is_authenticated %}{% url 'emploi:new_conversation' partner_employer.user_id %}{% else %}{% url 'users:login' %}?next={{ request.path }}{% endif %}" class="btn-site-link" style="display:flex">
+        <i class="fa fa-comments"></i>&nbsp; Discuter sur le site
       </a>
       {% endif %}
       {% if partner.whatsapp %}

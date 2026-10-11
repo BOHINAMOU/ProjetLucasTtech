@@ -130,6 +130,8 @@ class EmployerForm(forms.ModelForm):
         # Le document est obligatoire à l'inscription de l'entreprise.
         if not self.instance.pk or not self.instance.document:
             self.fields['document'].required = True
+        if not self.instance.pk:
+            self.fields['logo'].required = True
         self.fields['employees_count'].required = True
         self.fields['employees_count'].widget.attrs['min'] = 1
         _style(self)
@@ -213,12 +215,16 @@ class ApplicationForm(forms.Form):
 class FeedPostForm(forms.ModelForm):
     class Meta:
         model = FeedPost
-        fields = ['text', 'image']
+        fields = ['kind', 'text', 'image']
         widgets = {'text': forms.Textarea(attrs={'rows': 3, 'placeholder': "Partagez une actualité, une opportunité, une réussite…"})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['kind'].required = False
         _style(self)
+
+    def clean_kind(self):
+        return self.cleaned_data.get('kind') or 'news'
 
 
 class CommentForm(forms.ModelForm):

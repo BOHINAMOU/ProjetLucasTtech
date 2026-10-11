@@ -2,7 +2,7 @@
 {% block em_title %}Ma fiche entreprise{% endblock %}
 {% block em_content %}
 <h1 class="em-h1" style="margin:34px 0 8px">{% if creating %}Inscrire mon entreprise{% else %}Ma fiche entreprise{% endif %}</h1>
-<p class="em-lead" style="margin-bottom:20px">Pour éviter les fausses offres, Lantante vérifie chaque entreprise avant de publier ses annonces. Vous pouvez déjà déposer des demandes de recrutement.</p>
+<p class="em-lead" style="margin-bottom:20px">Pour éviter les fausses offres, Lantante analyse chaque nouvelle entreprise (logo, présentation, document) puis l'accepte ou la refuse. Une fois acceptée, vous pouvez déposer autant de demandes de recrutement que vous voulez.</p>
 <form class="em-form" method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}

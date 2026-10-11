@@ -23,7 +23,7 @@
       <div class="em-row">
         {% if offer.employer and offer.employer.logo_url %}<img class="em-logo" src="{{ offer.employer.logo_url }}" alt="">{% endif %}
         <div style="min-width:0"><b>{{ offer.company_name }}</b>
-          {% if offer.employer and offer.employer.is_verified %}<div class="em-muted"><i class="fas fa-circle-check" style="color:var(--em-green)"></i> Entreprise vérifiée</div>{% endif %}</div>
+          {% if offer.employer and offer.employer.is_verified %}<div class="em-muted"><i class="fas fa-circle-check" style="color:#1d6fe0"></i> Entreprise de confiance</div>{% endif %}</div>
       </div>
       {% if offer.employer %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ offer.employer.get_absolute_url }}">Voir l'entreprise</a>{% endif %}
     </div>

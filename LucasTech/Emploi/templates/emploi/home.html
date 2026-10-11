@@ -41,8 +41,16 @@
   <p class="em-lead">Lantante Technologie met en relation candidats et entreprises au Togo : nous présélectionnons les profils, organisons les entretiens et suivons chaque recrutement jusqu'au contrat.</p>
   <div class="eh-cta">
     <a class="em-btn em-btn--green" href="{% url 'emploi:offer_list' %}"><i class="fas fa-search"></i> Voir les offres</a>
-    <a class="em-btn em-btn--ghost" href="{% if user.is_authenticated %}{% url 'emploi:candidate_edit' %}{% else %}{% url 'users:register' %}?role=candidate{% endif %}"><i class="fas fa-user-plus"></i> Je cherche un emploi</a>
-    <a class="em-btn em-btn--ghost" href="{% if user.is_authenticated %}{% url 'emploi:employer_edit' %}{% else %}{% url 'users:register' %}?role=employer{% endif %}"><i class="fas fa-building"></i> Je recrute</a>
+    {% if not user.is_authenticated %}
+      <a class="em-btn em-btn--ghost" href="{% url 'users:register' %}?role=candidate"><i class="fas fa-user-plus"></i> Je cherche un emploi</a>
+      <a class="em-btn em-btn--ghost" href="{% url 'users:register' %}?role=employer"><i class="fas fa-building"></i> Je recrute</a>
+    {% else %}
+      <a class="em-btn em-btn--ghost" href="{% url 'emploi:dashboard' %}"><i class="fas fa-user-circle"></i> Mon espace</a>
+      {% if not has_candidate and not has_employer %}
+        <a class="em-btn em-btn--ghost" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-user-plus"></i> Compléter mon profil candidat</a>
+        <a class="em-btn em-btn--ghost" href="{% url 'emploi:employer_edit' %}"><i class="fas fa-building"></i> Inscrire mon entreprise</a>
+      {% endif %}
+    {% endif %}
   </div>
   <div class="eh-stats">
     <div class="eh-stat"><b>{{ offers_count }}</b><span>offres ouvertes</span></div>
@@ -71,14 +79,37 @@
 </section>
 {% endif %}
 
+{% if partner_posts %}
+<section class="em-section">
+  <h2 class="em-h2">Les partenaires publient</h2>
+  <div class="em-grid">
+    {% for post in partner_posts %}
+    <article class="em-card">
+      <div class="em-row">
+        {% if post.author_employer.logo_url %}<img class="em-logo" src="{{ post.author_employer.logo_url }}" alt="">{% endif %}
+        <div style="min-width:0"><b>{{ post.author_label }}</b>{% if post.author_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}<div class="em-muted">{{ post.created_at|date:"d/m/Y" }}</div></div>
+      </div>
+      {% if post.kind == 'product' %}<span class="em-tag em-tag--warn" style="align-self:flex-start">Nouveau produit</span>{% endif %}
+      <p>{{ post.text|truncatechars:150 }}</p>
+      {% if post.author_employer.partner %}<a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'core:partner_detail' post.author_employer.partner.pk %}">Voir le partenaire</a>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 <section class="em-section">
   <div class="eh-two">
     <div class="eh-big"><i class="fas fa-user-graduate"></i><h3>Vous cherchez un emploi ?</h3>
       <p>Créez votre profil, ajoutez votre CV (visible seulement par Lantante et les recruteurs autorisés) et laissez-nous vous proposer les opportunités qui vous correspondent.</p>
-      <a class="em-btn em-btn--green" href="{% if user.is_authenticated %}{% url 'emploi:candidate_edit' %}{% else %}{% url 'users:register' %}?role=candidate{% endif %}">Créer mon profil</a></div>
+      {% if has_candidate %}<a class="em-btn em-btn--green" href="{% url 'emploi:offer_list' %}">Voir les offres</a>
+      {% elif user.is_authenticated %}<a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Compléter mon profil</a>
+      {% else %}<a class="em-btn em-btn--green" href="{% url 'users:register' %}?role=candidate">Créer mon profil</a>{% endif %}</div>
     <div class="eh-big"><i class="fas fa-building"></i><h3>Vous recrutez ?</h3>
       <p>Publiez vos offres ou confiez-nous votre besoin : nous sélectionnons les candidats, organisons les entretiens et vous accompagnons jusqu'à l'embauche.</p>
-      <a class="em-btn em-btn--navy" href="{% if user.is_authenticated %}{% url 'emploi:employer_edit' %}{% else %}{% url 'users:register' %}?role=employer{% endif %}">Déposer une demande</a></div>
+      {% if has_employer %}<a class="em-btn em-btn--navy" href="{% url 'emploi:request_create' %}">Déposer une demande</a>
+      {% elif user.is_authenticated %}<a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a>
+      {% else %}<a class="em-btn em-btn--navy" href="{% url 'users:register' %}?role=employer">Inscrire mon entreprise</a>{% endif %}</div>
   </div>
 </section>
 

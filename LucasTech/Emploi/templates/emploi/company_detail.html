@@ -4,11 +4,11 @@
 {% block em_content %}
 <div style="margin-top:30px;display:grid;gap:22px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)" class="cp-grid">
   <div style="min-width:0">
-    {% if not company.is_verified %}<div class="em-flash em-flash--info" style="margin:0 0 16px">Cette entreprise est en attente de vérification par Lantante : sa fiche n'est pas encore publique.</div>{% endif %}
+    {% if not company.is_approved %}<div class="em-flash em-flash--info" style="margin:0 0 16px">Cette entreprise n'est pas encore acceptée par Lantante : sa fiche n'est pas publique.</div>{% endif %}
     <div class="em-row" style="margin-bottom:18px">
       {% if company.logo_url %}<img class="em-logo" style="width:84px;height:84px" src="{{ company.logo_url }}" alt="">{% endif %}
-      <div style="min-width:0"><h1 class="em-h1" style="font-size:clamp(1.7rem,4vw,2.4rem)">{{ company.company_name }}</h1>
-        <div class="em-meta" style="margin-top:6px"><span class="em-tag">{{ company.get_sector_display }}</span>{% if company.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ company.city }}</span>{% endif %}{% if company.is_verified %}<span class="em-tag em-tag--green"><i class="fas fa-circle-check"></i> Vérifiée</span>{% endif %}</div></div>
+      <div style="min-width:0"><h1 class="em-h1" style="font-size:clamp(1.7rem,4vw,2.4rem)">{{ company.company_name }}{% if company.is_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}</h1>
+        <div class="em-meta" style="margin-top:6px"><span class="em-tag">{{ company.get_sector_display }}</span>{% if company.city %}<span class="em-tag"><i class="fas fa-location-dot"></i> {{ company.city }}</span>{% endif %}{% if company.is_verified %}<span class="em-tag em-tag--green"><i class="fas fa-circle-check" style="color:#1d6fe0"></i> Entreprise de confiance</span>{% endif %}</div></div>
     </div>
     {% if company.description %}<div class="em-card" style="margin-bottom:16px"><h3>Présentation</h3><p style="white-space:pre-line">{{ company.description }}</p></div>{% endif %}
     {% if company.product_list %}<div class="em-card" style="margin-bottom:16px"><h3>Produits et services</h3><div class="em-meta">{% for p in company.product_list %}<span class="em-tag">{{ p }}</span>{% endfor %}</div></div>{% endif %}
@@ -24,6 +24,7 @@
     <div class="em-card">
       <h3>Contact</h3>
       {% if company.whatsapp %}<a class="em-btn em-btn--green em-btn--sm" href="https://wa.me/{{ company.whatsapp }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+      {% if company.partner %}<a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'core:partner_detail' company.partner.pk %}"><i class="fas fa-handshake"></i> Fiche partenaire</a>{% endif %}
       {% if company.website %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ company.website }}" target="_blank" rel="noopener"><i class="fas fa-globe"></i> Site web</a>{% endif %}
       {% if is_me %}
         <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:employer_edit' %}">Modifier ma fiche</a>
