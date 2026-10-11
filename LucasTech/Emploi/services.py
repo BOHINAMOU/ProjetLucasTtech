@@ -37,6 +37,29 @@ def notify_staff(text, url=''):
         notify(staff, text, url)
 
 
+def share_application(application):
+    """Transmet le dossier du candidat à l'entreprise concernée. Retourne False s'il n'y a pas d'entreprise."""
+    from django.utils import timezone
+    employer = application.employer
+    if not employer:
+        return False
+    if not application.shared_with_employer:
+        application.shared_with_employer = True
+        application.shared_at = timezone.now()
+        if application.status == 'received':
+            application.status = 'shortlisted'
+        application.save()
+    target = application.offer or application.request
+    notify(employer.user,
+           f"Lantante vous transmet le dossier de {application.candidate.name} pour « {target} » (CV, contacts"
+           + (", lettre de motivation" if application.cover_letter else "") + "). Analysez-le puis contactez le candidat.",
+           '/emploi/mon-espace/')
+    notify(application.candidate.user,
+           f"Votre dossier pour « {target} » a été transmis à {employer.company_name}. L'entreprise peut vous contacter.",
+           '/emploi/mon-espace/')
+    return True
+
+
 def is_staff(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
@@ -45,8 +68,8 @@ def can_see_private(viewer, candidate):
     """Qui a le droit de voir le CV et les contacts d'un candidat ?
 
     - le candidat lui-même et l'équipe Lantante, toujours ;
-    - une entreprise VÉRIFIÉE si le candidat l'a autorisé, ou s'il a postulé
-      à une de ses offres / a été proposé pour une de ses demandes.
+    - une entreprise VÉRIFIÉE si le candidat l'a autorisé, ou si Lantante lui
+      a transmis son dossier (candidature à une de ses offres, proposition).
     """
     if not viewer.is_authenticated:
         return False
@@ -57,7 +80,8 @@ def can_see_private(viewer, candidate):
         return False
     if candidate.share_with_recruiters:
         return True
-    return Application.objects.filter(candidate=candidate).filter(
+    # Candidature : le dossier n'est visible qu'après transmission par Lantante.
+    return Application.objects.filter(candidate=candidate, shared_with_employer=True).filter(
         Q(offer__employer=employer) | Q(request__employer=employer)
     ).exists()
 

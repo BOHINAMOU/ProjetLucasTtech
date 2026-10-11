@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <p><a href="{{ back_url }}">← Retour à la candidature</a></p>
+    {% if application.employer %}
+    <h4>Transmettre le dossier de {{ application.candidate.name }} à {{ application.employer.company_name }} ?</h4>
+    <p>Poste : <b>{{ application.offer|default:application.request }}</b></p>
+    <ul>
+      <li>Coordonnées : {{ application.candidate.user.email }}{% if application.candidate.phone %} · {{ application.candidate.phone }}{% endif %}</li>
+      <li>CV : {% if application.candidate.cv %}oui{% else %}<b>non fourni</b>{% endif %}</li>
+      <li>Diplômes / documents : {{ application.candidate.documents.count }}</li>
+      <li>Lettre de motivation : {% if application.cover_letter %}oui{% elif application.offer.requires_cover_letter %}<b>demandée mais absente</b>{% else %}non demandée{% endif %}</li>
+    </ul>
+    {% if application.cover_letter %}<blockquote style="white-space:pre-line">{{ application.cover_letter }}</blockquote>{% endif %}
+    <p class="text-muted">L'entreprise verra le CV, les documents et les coordonnées du candidat dans son espace, et le candidat sera prévenu de la transmission.</p>
+    <form method="post">{% csrf_token %}
+      <button class="btn btn-success" type="submit"><i class="fas fa-paper-plane"></i> Transmettre à {{ application.employer.company_name }}</button>
+      <a class="btn btn-default" href="{{ back_url }}">Annuler</a>
+    </form>
+    {% else %}
+    <p>Cette candidature n'est liée à aucune entreprise inscrite : il n'y a rien à transmettre ici (vous pouvez contacter l'entreprise directement).</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

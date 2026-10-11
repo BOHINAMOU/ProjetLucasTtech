@@ -252,6 +252,8 @@ class JobOffer(models.Model):
     salary = models.CharField(max_length=100, blank=True, verbose_name="Rémunération")
     deadline = models.DateField(null=True, blank=True, verbose_name="Date limite")
     status = models.CharField(max_length=10, choices=STATUS, default='pending', verbose_name="Statut")
+    requires_cover_letter = models.BooleanField(default=False, verbose_name="Lettre de motivation demandée",
+                                                help_text="Le candidat devra écrire une lettre de motivation pour postuler.")
     is_featured = models.BooleanField(default=False, verbose_name="À la une")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créée le")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Modifiée le")
@@ -345,6 +347,11 @@ class Application(models.Model):
                                 related_name='applications', verbose_name="Demande de recrutement")
     origin = models.CharField(max_length=10, choices=ORIGIN, default='candidate', verbose_name="Origine")
     message = models.TextField(blank=True, verbose_name="Message du candidat")
+    cover_letter = models.TextField(blank=True, verbose_name="Lettre de motivation")
+    shared_with_employer = models.BooleanField(
+        default=False, verbose_name="Dossier transmis à l'entreprise",
+        help_text="Tant que Lantante ne transmet pas le dossier, l'entreprise ne voit ni le CV ni les coordonnées.")
+    shared_at = models.DateTimeField(null=True, blank=True, verbose_name="Transmis le")
     status = models.CharField(max_length=12, choices=STATUS, default='received', verbose_name="Statut")
     admin_notes = models.TextField(blank=True, verbose_name="Notes internes Lantante")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date")

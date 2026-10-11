@@ -155,7 +155,7 @@ class JobOfferForm(SkillsTextMixin, forms.ModelForm):
     class Meta:
         model = JobOffer
         fields = ['title', 'domain', 'contract', 'city', 'description', 'requirements',
-                  'salary', 'deadline']
+                  'salary', 'deadline', 'requires_cover_letter']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
             'requirements': forms.Textarea(attrs={'rows': 4}),
@@ -182,15 +182,32 @@ class StaffingRequestForm(SkillsTextMixin, forms.ModelForm):
         _style(self)
 
 
-class ApplicationForm(forms.ModelForm):
-    class Meta:
-        model = Application
-        fields = ['message']
-        widgets = {'message': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Un petit mot pour appuyer votre candidature (facultatif)'})}
+COVER_LETTER_MIN = 80
 
-    def __init__(self, *args, **kwargs):
+
+class ApplicationForm(forms.Form):
+    """Un seul champ : lettre de motivation (obligatoire si l'offre la demande) ou petit message."""
+    text = forms.CharField(required=False, max_length=5000, widget=forms.Textarea(attrs={'rows': 6}))
+
+    def __init__(self, *args, offer=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.needs_letter = bool(offer and offer.requires_cover_letter)
+        field = self.fields['text']
+        if self.needs_letter:
+            field.required = True
+            field.label = "Lettre de motivation (demandée par l'entreprise)"
+            field.widget.attrs['placeholder'] = "Expliquez pourquoi ce poste vous intéresse et ce que vous apporterez…"
+        else:
+            field.label = "Message (facultatif)"
+            field.widget.attrs['placeholder'] = "Un petit mot pour appuyer votre candidature"
         _style(self)
+
+    def clean_text(self):
+        text = self.cleaned_data.get('text', '').strip()
+        if self.needs_letter and len(text) < COVER_LETTER_MIN:
+            raise forms.ValidationError(
+                f"La lettre de motivation est demandée : écrivez au moins {COVER_LETTER_MIN} caractères.")
+        return text
 
 
 class FeedPostForm(forms.ModelForm):

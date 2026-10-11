@@ -62,8 +62,8 @@
   {% if staffing %}<div class="em-grid">{% for r in staffing %}<article class="em-card"><h3>{{ r.title }}</h3><div class="em-meta"><span class="em-tag em-tag--green">{{ r.get_status_display }}</span><span class="em-tag">{{ r.positions }} poste{{ r.positions|pluralize }}</span></div><div class="em-muted">{{ r.created_at|date:"d/m/Y" }}</div></article>{% endfor %}</div>
   {% else %}<div class="em-empty">Aucune demande.</div>{% endif %}
   {% if offer_apps %}
-  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Candidats retenus pour vous</h3>
-  <div class="em-grid">{% for a in offer_apps %}<article class="em-card"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div><div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span></div></article>{% endfor %}</div>
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Dossiers transmis par Lantante</h3>
+  <div class="em-grid">{% for a in offer_apps %}<article class="em-card"><h3><a href="{{ a.candidate.get_absolute_url }}" style="text-decoration:none">{{ a.candidate.name }}</a></h3><div class="em-muted">{{ a.candidate.headline }}</div><div class="em-meta"><span class="em-tag em-tag--green">{{ a.get_status_display }}</span><span class="em-tag">{% if a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</span></div>{% if a.cover_letter %}<details><summary style="cursor:pointer;font-weight:600;color:var(--em-navy)">Lettre de motivation</summary><p style="white-space:pre-line;margin-top:6px">{{ a.cover_letter }}</p></details>{% endif %}<a class="em-btn em-btn--ghost em-btn--sm" href="{{ a.candidate.get_absolute_url }}" style="align-self:flex-start">Voir le dossier (CV, contacts)</a></article>{% endfor %}</div>
   {% endif %}
 </section>
 {% endif %}

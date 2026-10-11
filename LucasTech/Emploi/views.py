@@ -83,7 +83,7 @@ def offer_list(request):
     })
 
 
-def offer_detail(request, slug):
+def offer_detail(request, slug, form=None):
     offer = get_object_or_404(JobOffer.objects.select_related('employer'), slug=slug)
     owner = request.user.is_authenticated and offer.employer_id and offer.employer.user_id == request.user.pk
     if offer.status != 'published' and not (owner or is_staff(request.user)):
@@ -94,7 +94,7 @@ def offer_detail(request, slug):
         applied = Application.objects.filter(candidate=profile, offer=offer).exists()
     return render(request, 'emploi/offer_detail.html', {
         'offer': offer, 'applied': applied, 'profile': profile,
-        'form': ApplicationForm(), 'owner': owner,
+        'form': form or ApplicationForm(offer=offer), 'owner': owner,
     })
 
 
@@ -109,15 +109,23 @@ def offer_apply(request, slug):
     if not offer.is_open:
         messages.error(request, "Cette offre n'accepte plus de candidatures.")
         return redirect(offer)
+    form = ApplicationForm(request.POST, offer=offer)
+    if not form.is_valid():
+        return offer_detail(request, slug, form=form)
+    text = form.cleaned_data['text']
     application, created = Application.objects.get_or_create(
         candidate=profile, offer=offer,
-        defaults={'message': request.POST.get('message', '')[:2000], 'origin': 'candidate'},
+        defaults={
+            'origin': 'candidate',
+            'cover_letter': text if offer.requires_cover_letter else '',
+            'message': '' if offer.requires_cover_letter else text,
+        },
     )
     if created:
         notify_staff(f"Nouvelle candidature : {profile.name} → {offer.title}", f"/lantanteAdminTech/Emploi/application/{application.pk}/change/")
         if offer.employer_id:
             notify(offer.employer.user, f"Nouvelle candidature pour « {offer.title} ». Lantante vous transmettra les profils retenus.", "")
-        messages.success(request, "✓ Candidature envoyée. Lantante revient vers vous très vite.")
+        messages.success(request, "✓ Candidature envoyée à Lantante, qui étudie votre dossier et le transmet à l'entreprise. Vous serez prévenu.")
     else:
         messages.info(request, "Vous avez déjà postulé à cette offre.")
     return redirect(offer)
@@ -258,7 +266,7 @@ def dashboard(request):
         context['offers'] = employer.offers.all()[:10]
         context['staffing'] = employer.requests.all()[:10]
         context['offer_apps'] = Application.objects.filter(
-            Q(offer__employer=employer) | Q(request__employer=employer)
+            Q(offer__employer=employer) | Q(request__employer=employer), shared_with_employer=True
         ).select_related('candidate__user', 'offer', 'request')[:15]
     return render(request, 'emploi/dashboard.html', context)
 

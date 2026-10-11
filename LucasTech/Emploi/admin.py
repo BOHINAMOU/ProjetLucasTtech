@@ -9,7 +9,7 @@ from .models import (
     FeedComment, FeedPost, JobOffer, Message, Notification, Placement,
     ProfileRevision, Skill, StaffingRequest,
 )
-from .services import notify, suggest_candidates
+from .services import notify, share_application, suggest_candidates
 
 
 # ─────────────────────────────
@@ -230,9 +230,56 @@ class PlacementInline(admin.StackedInline):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'offer', 'request', 'origin', 'status', 'created_at')
-    list_filter = ('status', 'origin')
+    list_display = ('candidate', 'offer', 'request', 'origin', 'status', 'shared_with_employer', 'share_link', 'created_at')
+    list_filter = ('status', 'origin', 'shared_with_employer')
     list_editable = ('status',)
+    readonly_fields = ('shared_at', 'share_link')
+    actions = ['share_selected']
+
+    def get_urls(self):
+        return [
+            path('<int:pk>/transmettre/', self.admin_site.admin_view(self.share_view),
+                 name='emploi_application_share'),
+        ] + super().get_urls()
+
+    @admin.display(description="Transmission à l'entreprise")
+    def share_link(self, obj):
+        if not obj.pk:
+            return "—"
+        if obj.shared_with_employer:
+            return format_html('<span class="badge badge-success">Transmis le {}</span>',
+                               obj.shared_at.strftime('%d/%m/%Y') if obj.shared_at else '')
+        if not obj.employer:
+            return "Pas d'entreprise liée"
+        url = reverse('admin:emploi_application_share', args=[obj.pk])
+        return format_html('<a class="btn btn-sm btn-success" href="{}"><i class="fas fa-paper-plane"></i> Transmettre à l\'entreprise</a>', url)
+
+    def share_view(self, request, pk):
+        application = get_object_or_404(Application, pk=pk)
+        if not self.has_change_permission(request, application):
+            raise PermissionDenied
+        back = reverse('admin:Emploi_application_change', args=[pk])
+        if request.method == 'POST':
+            if share_application(application):
+                messages.success(request, f"Dossier transmis à {application.employer.company_name} ; le candidat est prévenu.")
+            else:
+                messages.error(request, "Aucune entreprise liée à cette candidature : rien à transmettre.")
+            return redirect(back)
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta,
+            'title': "Transmettre le dossier à l'entreprise",
+            'application': application,
+            'back_url': back,
+        }
+        return render(request, 'admin/emploi/share_application.html', context)
+
+    @admin.action(description="✉ Transmettre les dossiers sélectionnés à leur entreprise")
+    def share_selected(self, request, queryset):
+        done = sum(1 for app in queryset.select_related('offer__employer', 'request__employer', 'candidate__user')
+                   if share_application(app))
+        self.message_user(request, f"{done} dossier(s) transmis. Les candidats sans entreprise liée sont ignorés.")
+
     search_fields = ('candidate__user__first_name', 'candidate__user__last_name', 'candidate__headline',
                      'offer__title', 'request__title')
     autocomplete_fields = ('candidate', 'offer', 'request')

@@ -53,8 +53,13 @@
           </div>
         </fieldset>
         <form method="post" action="{% url 'emploi:offer_apply' offer.slug %}">{% csrf_token %}
-          <div class="em-field">{{ form.message }}</div>
-          <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Envoyer ma candidature</button>
+          <div class="em-field">
+            <label for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+            {{ form.text }}
+            {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
+          </div>
+          <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Candidater</button>
+          <p class="em-help" style="margin-top:8px">Votre dossier est envoyé à Lantante, qui le transmet à l'entreprise si votre profil correspond.</p>
         </form>
       {% endif %}
     </div>
