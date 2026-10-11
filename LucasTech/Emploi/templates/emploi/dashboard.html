@@ -2,19 +2,27 @@
 {% block em_title %}Mon espace{% endblock %}
 {% block em_content %}
 <style>
-.ed-hero { margin:0 calc(-1 * clamp(1rem,4vw,2rem)); padding:clamp(28px,5vw,48px) clamp(1rem,4vw,2rem); background:linear-gradient(135deg,#0d3b7a,#163a63 60%,#0f5a4a); color:#fff; border-radius:0 0 28px 28px; display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; }
-.ed-hello { display:flex; align-items:center; gap:16px; min-width:0; }
-.ed-avatar { width:68px; height:68px; border-radius:50%; background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center; font-size:1.7rem; font-weight:700; overflow:hidden; flex:none; }
+.ed-hero { position:relative; overflow:hidden; margin:26px 0 0; padding:clamp(24px,4vw,40px); background:linear-gradient(120deg,#0d3b7a 0%,#15508f 55%,#0f6a52 100%); color:#fff; border-radius:24px; display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; box-shadow:0 18px 40px rgba(13,59,122,.22); }
+.ed-hero::before { content:''; position:absolute; width:320px; height:320px; right:-90px; top:-140px; border-radius:50%; background:rgba(255,255,255,.07); }
+.ed-hero::after { content:''; position:absolute; width:200px; height:200px; right:140px; bottom:-120px; border-radius:50%; background:rgba(255,255,255,.05); }
+.ed-hero > * { position:relative; z-index:1; }
+.ed-hello { display:flex; align-items:center; gap:18px; min-width:0; }
+.ed-avatar { width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,.16); border:3px solid rgba(255,255,255,.45); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; overflow:hidden; flex:none; }
 .ed-avatar img { width:100%; height:100%; object-fit:cover; }
-.ed-hello h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.6rem,4vw,2.4rem); margin:0; line-height:1.15; color:#fff; overflow-wrap:anywhere; }
-.ed-hello p { margin:4px 0 0; color:#cfe0f3; font-size:.95rem; }
-.ed-tiles { display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:-26px; position:relative; }
-.ed-tile { background:#fff; border:1px solid var(--em-border); border-radius:16px; padding:16px; box-shadow:var(--em-shadow); text-decoration:none; color:inherit; display:flex; align-items:center; gap:12px; min-width:0; transition:transform .15s; }
-.ed-tile:hover { transform:translateY(-2px); }
-.ed-tile i { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--em-surf2); color:var(--em-navy); font-size:1.1rem; flex:none; }
-.ed-tile b { display:block; font-size:1.5rem; line-height:1; color:var(--em-navy); }
-.ed-tile span { font-size:.8rem; color:var(--em-muted); }
-.ed-two { display:grid; gap:18px; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); margin-top:26px; align-items:start; }
+.ed-hello h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.7rem,4vw,2.5rem); margin:0; line-height:1.1; color:#fff; overflow-wrap:anywhere; }
+.ed-hello p { margin:6px 0 0; color:#d6e5f6; font-size:.96rem; line-height:1.4; }
+.ed-tiles { display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; }
+.ed-tiles > .ed-tile { flex:1 1 160px; }
+.ed-tile { background:#fff; border:1px solid var(--em-border); border-radius:18px; padding:14px 16px; box-shadow:0 6px 18px rgba(15,23,42,.06); text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; min-width:0; transition:transform .15s, box-shadow .15s; }
+.ed-tile:hover { transform:translateY(-3px); box-shadow:0 12px 26px rgba(15,23,42,.1); }
+.ed-tile i { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex:none; background:#e8f0fb; color:#0d3b7a; }
+.ed-tile:nth-child(2) i { background:#dcfce7; color:#0f7a45; }
+.ed-tile:nth-child(3) i { background:#fef3c7; color:#b45309; }
+.ed-tile:nth-child(4) i { background:#ede9fe; color:#6d28d9; }
+.ed-tile:nth-child(5) i { background:#ffe4e6; color:#be123c; }
+.ed-tile b { display:block; font-size:1.6rem; line-height:1; color:var(--em-navy); }
+.ed-tile span { font-size:.8rem; color:var(--em-muted); line-height:1.3; display:block; margin-top:3px; }
+.ed-two { display:grid; gap:18px; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); margin-top:22px; align-items:stretch; }
 .ed-bar { height:10px; background:var(--em-surf2); border-radius:99px; overflow:hidden; }
 .ed-bar > i { display:block; height:100%; background:linear-gradient(90deg,#0f7a45,#34d399); border-radius:99px; }
 .ed-check { list-style:none; padding:0; margin:10px 0 0; display:grid; gap:7px; }
@@ -33,13 +41,13 @@
 .ed-step.done { color:var(--em-green); }
 .ed-step.now::before { box-shadow:0 0 0 4px rgba(15,122,69,.2); }
 .ed-refused { background:#fee2e2; color:#991b1b; border-radius:10px; padding:8px 12px; font-size:.85rem; font-weight:600; }
-@media (max-width:900px) { .ed-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } .ed-two { grid-template-columns:minmax(0,1fr); } }
+@media (max-width:900px) { .ed-two { grid-template-columns:minmax(0,1fr); } }
 </style>
 
 <section class="ed-hero">
   <div class="ed-hello">
     <div class="ed-avatar">{% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% else %}{{ user.public_name|slice:":1" }}{% endif %}</div>
-    <div style="min-width:0"><h1>Bonjour {{ user.first_name|default:user.public_name }}</h1>
+    <div style="min-width:0"><h1>Bonjour {{ user.first_name|default:user.public_name|title }}</h1>
       <p>Gérez votre profil, vos candidatures et vos échanges avec Lantante.</p></div>
   </div>
   <a class="em-btn em-btn--green" href="{% url 'emploi:contact_lantante' %}"><i class="fas fa-headset"></i> Écrire à l'équipe Lantante</a>
