@@ -39,6 +39,7 @@ urlpatterns = [
     # Entreprise
     path('employer/profile', views.employer_me),
     path('employer/applications', views.employer_applications),
+    path('employer/applications/<int:pk>', views.employer_application_detail),
     path('employer/applications/<int:pk>/decide', views.employer_decide),
     path('employer/applications/<int:pk>/schedule', views.employer_schedule),
     path('employer/offers', views.employer_offers),

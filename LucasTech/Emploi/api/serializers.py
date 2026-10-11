@@ -79,7 +79,7 @@ def candidate_payload(request, c, private=False):
     }
     if private:  # CV, coordonnées, lettre : propriétaire ou entreprise ayant reçu la candidature
         data.update({
-            'email': c.user.email, 'phone': c.phone or c.user.phone or '', 'cover_letter': c.cover_letter,
+            'user_id': c.user_id, 'email': c.user.email, 'phone': c.phone or c.user.phone or '', 'cover_letter': c.cover_letter,
             'has_cv': bool(c.cv), 'cv_url': request.build_absolute_uri(f'/api/v1/candidates/{c.pk}/cv') if c.cv else None,
             'documents': [document_payload(request, d) for d in c.documents.all()],
         })

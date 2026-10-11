@@ -608,6 +608,12 @@ def _my_application(request, pk):
     return application
 
 
+@api_view(['GET'])
+@kinds('employer')
+def employer_application_detail(request, pk):
+    return Response(application_payload(request, _my_application(request, pk), for_employer=True))
+
+
 @api_view(['POST'])
 @kinds('employer')
 def employer_decide(request, pk):

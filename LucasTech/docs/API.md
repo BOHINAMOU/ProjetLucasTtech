@@ -55,6 +55,7 @@ Un endpoint réservé à un autre type répond `403` avec `code: "wrong_account_
 |---|---|---|
 | GET/POST/PATCH | `employer/profile` | Fiche entreprise (multipart pour `logo`, `document`). Statut : `pending`, `approved`, `rejected` |
 | GET | `employer/applications` | Candidatures reçues ; `tab=new|progress|hired|refused|all`, `offer=<id>` ; chaque candidat contient `email`, `phone`, `cv_url`, `documents` |
+| GET | `employer/applications/<id>` | Une candidature reçue (même contenu que la liste) |
 | POST | `employer/applications/<id>/decide` | `{action: shortlist|accept|refuse, message?}` |
 | POST | `employer/applications/<id>/schedule` | `{when: ISO, place, notes}` — fixe l'entretien |
 | GET | `employer/offers`, POST `employer/offers/<slug>/filled` | Mes offres en cours ; « poste pourvu » |
