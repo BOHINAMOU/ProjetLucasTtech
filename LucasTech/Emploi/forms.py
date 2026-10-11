@@ -64,9 +64,10 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
         model = CandidateProfile
         fields = ['headline', 'domain', 'city', 'bio', 'experience_years', 'education_level',
                   'contract_wanted', 'available', 'seeking_internship', 'internship_duration', 'available_from',
-                  'phone', 'cv',
+                  'phone', 'cv', 'cover_letter',
                   'show_photo', 'show_city', 'show_bio', 'show_experience']
         widgets = {'bio': forms.Textarea(attrs={'rows': 5}),
+                   'cover_letter': forms.Textarea(attrs={'rows': 8, 'placeholder': "Madame, Monsieur, …"}),
                    'available_from': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')}
 
     def __init__(self, *args, user=None, **kwargs):
@@ -216,7 +217,7 @@ COVER_LETTER_MIN = 80
 
 
 class ApplicationForm(forms.Form):
-    """Un seul champ : lettre de motivation (obligatoire si l'offre la demande) ou petit message."""
+    """Lettre de motivation : obligatoire si l'offre la demande, sinon facultative. Préremplie depuis le profil."""
     text = forms.CharField(required=False, max_length=5000, widget=forms.Textarea(attrs={'rows': 6}))
 
     def __init__(self, *args, offer=None, profile=None, **kwargs):
@@ -234,13 +235,15 @@ class ApplicationForm(forms.Form):
                 initial=profile.available_from if profile else None,
                 widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
         field = self.fields['text']
+        if profile and profile.cover_letter and not self.is_bound:
+            field.initial = profile.cover_letter  # lettre du profil, adaptable à chaque offre
         if self.needs_letter:
             field.required = True
             field.label = "Lettre de motivation (demandée par l'entreprise)"
             field.widget.attrs['placeholder'] = "Expliquez pourquoi ce poste vous intéresse et ce que vous apporterez…"
         else:
-            field.label = "Message (facultatif)"
-            field.widget.attrs['placeholder'] = "Un petit mot pour appuyer votre candidature"
+            field.label = "Lettre de motivation (facultative)"
+            field.widget.attrs['placeholder'] = "Un petit mot ou votre lettre de motivation pour appuyer votre candidature"
         _style(self)
 
     def clean_text(self):

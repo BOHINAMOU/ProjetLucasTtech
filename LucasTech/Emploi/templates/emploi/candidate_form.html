@@ -30,6 +30,7 @@
   <fieldset class="em-fieldset"><legend>CV et contact (privés)</legend>
     {% include 'emploi/_field.html' with field=form.phone %}
     {% include 'emploi/_field.html' with field=form.cv %}
+    {% include 'emploi/_field.html' with field=form.cover_letter %}
     {% if profile and profile.cv %}<div class="em-help" style="margin-top:-8px;margin-bottom:12px">CV actuel enregistré. Envoyez un nouveau PDF pour le remplacer.</div>{% endif %}
   </fieldset>
   <fieldset class="em-fieldset"><legend>Ce que je rends public</legend>

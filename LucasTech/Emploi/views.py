@@ -156,6 +156,9 @@ def offer_apply(request, slug):
     if not offer.is_open:
         messages.error(request, "Cette offre n'accepte plus de candidatures.")
         return redirect(offer)
+    if not profile.cv:
+        messages.error(request, "Ajoutez d'abord votre CV (PDF) dans votre profil : il est envoyé avec chaque candidature.")
+        return redirect('emploi:candidate_edit')
     form = ApplicationForm(request.POST, offer=offer, profile=profile)
     if not form.is_valid():
         return offer_detail(request, slug, form=form)
@@ -164,8 +167,8 @@ def offer_apply(request, slug):
         candidate=profile, offer=offer,
         defaults={
             'origin': 'candidate',
-            'cover_letter': text if offer.requires_cover_letter else '',
-            'message': '' if offer.requires_cover_letter else text,
+            'cover_letter': text,
+            'message': '',
             'internship_duration': form.cleaned_data.get('internship_duration', ''),
             'available_from': form.cleaned_data.get('available_from'),
         },

@@ -100,6 +100,8 @@ class CandidateProfile(models.Model):
     phone = models.CharField(max_length=30, blank=True, verbose_name="Téléphone / WhatsApp")
     cv = models.FileField(upload_to='cv/', storage=private_storage, blank=True,
                           verbose_name="CV (PDF)")
+    cover_letter = models.TextField(blank=True, verbose_name="Lettre de motivation",
+                                    help_text="Rédigez-la une fois : elle est préremplie à chaque candidature (vous pouvez l'adapter à chaque offre).")
 
     # Ce que le candidat choisit de rendre public
     show_photo = models.BooleanField(default=True, verbose_name="Afficher ma photo")
@@ -166,6 +168,7 @@ class CandidateProfile(models.Model):
             'Disponible': "oui" if self.available else "non",
             'Téléphone': self.phone,
             'CV': self.cv.name if self.cv else "",
+            'Lettre de motivation': self.cover_letter,
         }
 
 

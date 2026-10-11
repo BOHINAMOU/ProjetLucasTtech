@@ -54,6 +54,7 @@
             {% else %}<div><i class="fas fa-circle-exclamation" style="color:var(--em-warn)"></i> Aucun diplôme — <a href="{% url 'emploi:documents' %}"><b>en ajouter</b></a></div>{% endif %}
             {% endwith %}
             <div><i class="fas fa-circle-check" style="color:var(--em-green)"></i> Votre profil et vos compétences</div>
+            <div><i class="fas fa-circle-check" style="color:var(--em-green)"></i> Votre lettre de motivation (ci-dessous, modifiable)</div>
           </div>
         </fieldset>
         <form method="post" action="{% url 'emploi:offer_apply' offer.slug %}">{% csrf_token %}
@@ -73,7 +74,8 @@
             {{ form.text }}
             {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
           </div>
-          <button class="em-btn em-btn--green" type="submit"><i class="fas fa-paper-plane"></i> Candidater</button>
+          {% if not profile.cv %}<div class="em-status em-status--pending" style="margin:0 0 10px">Ajoutez votre CV pour pouvoir candidater. <a href="{% url 'emploi:candidate_edit' %}"><b>Compléter mon profil</b></a></div>{% endif %}
+          <button class="em-btn em-btn--green" type="submit" {% if not profile.cv %}disabled{% endif %}><i class="fas fa-paper-plane"></i> Candidater</button>
           <p class="em-help" style="margin-top:8px">{% if offer.employer %}Votre dossier est envoyé <b>directement à l'entreprise</b> ({{ offer.employer.company_name }}), qui vous répond elle-même.{% else %}Votre dossier est envoyé à Lantante, qui vous répond.{% endif %}</p>
         </form>
       {% endif %}
