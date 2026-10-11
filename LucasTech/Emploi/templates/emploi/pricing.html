@@ -75,18 +75,7 @@
 
 {% endif %}
 
-{% if boost_plans and kind != 'employer' %}
-<section class="em-section">
-  <h2 class="em-h2">Pour les candidats : booster sa visibilité (facultatif)</h2>
-  <p class="em-muted" style="margin-bottom:12px">Chercher un emploi, consulter les offres et postuler restent gratuits. Le boost met votre profil ou une candidature en avant auprès des recruteurs et participe au développement de la plateforme.</p>
-  <div class="em-grid">
-    {% for plan in boost_plans %}
-    <article class="em-card"><h3>{{ plan.name }}</h3><div class="em-meta"><span class="em-tag em-tag--green">{{ plan.price_label }}</span><span class="em-tag">{{ plan.duration_days }} jours</span></div><p>{{ plan.description }}</p></article>
-    {% endfor %}
-  </div>
-  <div class="ep-note">Le boost augmente la visibilité de votre profil ou de votre candidature. <b>Il ne garantit ni une présélection, ni un entretien, ni un recrutement</b> : les entreprises examinent toujours les compétences, l'expérience et les critères du poste. <a href="{% url 'emploi:boost_hub' %}"><b>Booster mon profil</b></a></div>
-</section>
-{% endif %}
+
 
 {% if kind != 'candidate' %}
 <section class="em-section">

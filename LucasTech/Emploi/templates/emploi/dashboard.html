@@ -59,12 +59,29 @@
   {% if candidate %}<a class="ed-tile" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-user-check"></i><div><b>{{ completion }}%</b><span>profil complété</span></div></a>{% endif %}
 </div>
 
-{% if not candidate and not employer %}
-<div class="em-status em-status--pending" style="margin-top:26px"><b>Choisissez votre espace.</b> Un compte candidat et un compte entreprise sont deux espaces distincts, avec leurs propres menus et leurs propres droits : ce choix est définitif pour ce compte (une entreprise qui cherche aussi un emploi utilise une autre adresse e-mail).</div>
+{% if kind == 'undefined' %}
+<div class="em-status em-status--pending" style="margin-top:26px"><b>Choisissez votre espace.</b> Il existe trois types de comptes, avec leurs propres menus et leurs propres droits : candidat, entreprise et particulier. Ce choix est définitif pour ce compte (une entreprise qui cherche aussi un emploi utilise une autre adresse e-mail).</div>
 <div class="em-grid" style="margin-top:14px">
   <div class="em-card"><h3><i class="fas fa-user-graduate"></i> Je cherche un emploi</h3><p>Espace candidat : profil et CV, offres, candidatures, demandes spontanées.</p><a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
   <div class="em-card"><h3><i class="fas fa-building"></i> Je représente une entreprise</h3><p>Espace entreprise : page professionnelle, offres, actualités, demandes de recrutement.</p><a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Inscrire mon entreprise</a></div>
+  <div class="em-card"><h3><i class="fas fa-user"></i> Je suis un particulier</h3><p>Espace particulier : publier une actualité ou une annonce, voir les partenaires et les entreprises.</p>
+    <form method="post" action="{% url 'emploi:choose_member' %}">{% csrf_token %}<button class="em-btn em-btn--ghost" type="submit">Choisir l'espace particulier</button></form></div>
 </div>
+{% endif %}
+
+{% if kind == 'member' %}
+<section class="em-section">
+  <div class="em-row" style="justify-content:space-between;flex-wrap:wrap"><h2 class="em-h2" style="margin:0">Mes publications</h2>
+    <a class="em-btn em-btn--green" href="{% url 'emploi:publish_hub' %}"><i class="fas fa-paper-plane"></i> Publier une actualité ou une annonce</a></div>
+  <p class="em-muted" style="margin:8px 0 14px">Vous choisissez ce que vous publiez, vous payez les frais indiqués, puis Lantante vérifie et met en ligne.</p>
+  {% if member_orders %}
+  <div class="em-grid">{% for o in member_orders %}
+    <article class="em-card"><h3><a href="{% url 'emploi:order_detail' o.pk %}" style="text-decoration:none">{{ o.plan.name }}{% if o.title %} — {{ o.title|truncatechars:40 }}{% endif %}</a></h3>
+      <div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% elif o.status == 'awaiting_payment' or o.status == 'changes_requested' or o.status == 'payment_declared' %}em-tag--warn{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.amount_label }}</span></div>
+      <a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:order_detail' o.pk %}">{% if o.can_pay %}Payer{% elif o.status == 'changes_requested' %}Corriger{% else %}Voir{% endif %}</a></article>
+  {% endfor %}</div>
+  {% else %}<div class="em-empty">Aucune publication pour le moment.</div>{% endif %}
+</section>
 {% endif %}
 
 {% if candidate %}
@@ -78,8 +95,7 @@
     </div>
     <div><a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-pen"></i> Modifier mon profil</a>
       <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:documents' %}"><i class="fas fa-graduation-cap"></i> Mes diplômes ({{ candidate.documents.count }})</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Aperçu recruteur</a>
-      <a class="em-btn em-btn--ghost em-btn--sm" href="{% url 'emploi:boost_hub' %}"><i class="fas fa-rocket"></i> {% if live_boost %}Boost actif · {{ live_boost.expires_at|date:"d/m" }}{% else %}Booster mon profil{% endif %}</a></div>
+      <a class="em-btn em-btn--ghost em-btn--sm" href="{{ candidate.get_absolute_url }}">Aperçu recruteur</a></div>
   </section>
   <section class="em-card">
     <h3>Complétez votre profil — {{ completion }}%</h3>
@@ -110,7 +126,6 @@
     <article class="em-card ed-app">
       <h3>{% if a.offer.is_open %}<a href="{{ a.offer.get_absolute_url }}" style="text-decoration:none">{{ a.offer.title }}</a>{% elif a.offer %}{{ a.offer.title }}{% else %}{{ a.request.title }}{% endif %}</h3>
       <div class="em-muted">{% if a.employer %}{{ a.employer.company_name }}{% else %}Lantante Technologie{% endif %} · {{ a.created_at|date:"d/m/Y" }}</div>
-      {% if a.status == 'received' and a.consent == 'accepted' %}<a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:boost_hub' %}"><i class="fas fa-rocket"></i> Booster</a>{% endif %}
       {% if a.consent == 'pending' %}
         <div class="em-status em-status--pending" style="margin:0"><b>Lantante vous propose cette opportunité.</b> Acceptez-vous que votre dossier soit transmis à l'entreprise ?
           <form method="post" action="{% url 'emploi:consent_respond' a.pk %}" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">{% csrf_token %}

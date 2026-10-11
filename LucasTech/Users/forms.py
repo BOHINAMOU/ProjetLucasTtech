@@ -16,14 +16,14 @@ LOGIN_LOCKOUT_SECONDS = 15 * 60  # 15 minutes
 ACCOUNT_TYPES = [
     ('candidate', "Je cherche un emploi — espace candidat"),
     ('employer', "Je représente une entreprise — espace entreprise"),
-    ('member', "Je veux simplement utiliser le site (boutique, formations)"),
+    ('member', "Je suis un particulier — publier une actualité ou une annonce"),
 ]
 
 
 class RegisterForm(forms.ModelForm):
     # Type de compte enregistré dès l'inscription : un compte candidat et un compte entreprise
     # sont deux espaces séparés (un compte ne fait pas les deux).
-    account_type = forms.ChoiceField(choices=ACCOUNT_TYPES, initial='member', required=False,
+    account_type = forms.ChoiceField(choices=ACCOUNT_TYPES, initial='candidate', required=False,
                                      widget=forms.RadioSelect)
     password1 = forms.CharField(widget=forms.PasswordInput)
     password2 = forms.CharField(widget=forms.PasswordInput)

@@ -65,7 +65,7 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
         fields = ['headline', 'domain', 'city', 'bio', 'experience_years', 'education_level',
                   'contract_wanted', 'available', 'seeking_internship', 'internship_duration', 'available_from',
                   'phone', 'cv',
-                  'show_photo', 'show_city', 'show_bio', 'show_experience', 'share_with_recruiters']
+                  'show_photo', 'show_city', 'show_bio', 'show_experience']
         widgets = {'bio': forms.Textarea(attrs={'rows': 5}),
                    'available_from': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')}
 
@@ -435,3 +435,15 @@ class SpontaneousRequestForm(SkillsTextMixin, forms.ModelForm):
             req.save()
             self.save_skills(req)
         return req
+
+
+class OfferBoostForm(forms.Form):
+    """Choix de l'offre à mettre en avant (parmi celles déjà publiées par l'entreprise)."""
+    offer = forms.ModelChoiceField(queryset=None, label="Offre à mettre en avant", empty_label="— Choisir une offre —")
+
+    def __init__(self, *args, employer=None, **kwargs):
+        from .models import JobOffer
+        super().__init__(*args, **kwargs)
+        self.fields['offer'].queryset = JobOffer.objects.filter(employer=employer, status='published') if employer \
+            else JobOffer.objects.none()
+        _style(self)

@@ -124,7 +124,9 @@
         <a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>
         <a href="{% url 'emploi:applications_received' %}" class="{% if 'application' in request.resolver_match.url_name %}is-on{% endif %}">Candidatures{% if em_new_apps %}<span class="em-badge">{{ em_new_apps }}</span>{% endif %}</a>
         <a href="{% url 'emploi:publish_hub' %}" class="{% if 'order' in request.resolver_match.url_name or request.resolver_match.url_name == 'publish_hub' %}is-on{% endif %}">Publier</a>
-        {% if user.employer_profile.is_approved %}<a href="{% url 'emploi:candidate_list' %}" class="{% if 'candidate' in request.resolver_match.url_name %}is-on{% endif %}">Candidats</a>{% endif %}
+      {% elif em_kind == 'member' %}
+        <a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>
+        <a href="{% url 'emploi:publish_hub' %}" class="{% if 'order' in request.resolver_match.url_name or request.resolver_match.url_name == 'publish_hub' %}is-on{% endif %}">Publier</a>
       {% else %}
         <a href="{% url 'emploi:home' %}" class="{% if request.resolver_match.url_name == 'home' %}is-on{% endif %}">Emploi</a>
         <a href="{% url 'emploi:offer_list' %}" class="{% if 'offer' in request.resolver_match.url_name %}is-on{% endif %}">Offres</a>
@@ -133,9 +135,9 @@
       <a href="{% url 'emploi:company_list' %}" class="{% if 'company' in request.resolver_match.url_name %}is-on{% endif %}">Entreprises</a>
       <a href="{% url 'emploi:feed' %}" class="{% if request.resolver_match.url_name == 'feed' %}is-on{% endif %}">Actualités</a>
       {% if user.is_authenticated %}
-        {% if em_kind != 'employer' %}<a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>{% endif %}
+        {% if em_kind != 'employer' and em_kind != 'member' %}<a href="{% url 'emploi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-on{% endif %}">Mon espace</a>{% endif %}
         <a href="{% url 'emploi:inbox' %}">Messages{% if em_unread_msgs %}<span class="em-badge">{{ em_unread_msgs }}</span>{% endif %}</a>
-        <a href="{% url 'emploi:appointments' %}">Rendez-vous</a>
+        {% if em_kind != 'member' %}<a href="{% url 'emploi:appointments' %}">Rendez-vous</a>{% endif %}
         <a href="{% url 'emploi:notifications' %}">Notifications{% if em_unread_notifs %}<span class="em-badge">{{ em_unread_notifs }}</span>{% endif %}</a>
       {% else %}
         <a href="{% url 'users:login' %}?next={{ request.path }}">Se connecter</a>

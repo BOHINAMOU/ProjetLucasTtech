@@ -11,14 +11,13 @@ from django.views.decorators.http import require_POST
 
 from core.models import Partner
 
-from . import boost as boosting
 from . import spontaneous as spont
 from .forms import (
-    SpontaneousRequestForm, OrderContentForm, PaymentForm, ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
+    OfferBoostForm, SpontaneousRequestForm, OrderContentForm, PaymentForm, ApplicationForm, AvailabilityForm, CandidateDocumentForm, CandidateForm, CommentForm, EmployerForm, FeedPostForm,
     JobOfferForm, MessageForm, NewConversationForm, StaffingRequestForm,
 )
 from .models import (
-    BoostOrder, SpontaneousRequest, PublicationOrder, ServicePlan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
+    SpontaneousRequest, PublicationOrder, ServicePlan, Appointment, Application, AvailabilitySlot, CandidateDocument, CandidateProfile, Conversation, DOMAIN_CHOICES,
     CONTRACT_CHOICES, EmployerProfile, FeedComment, FeedPost, JobOffer, Message,
     Notification, ProfileRevision, StaffingRequest,
 )
@@ -48,8 +47,9 @@ def _space(allowed, label):
     return decorator
 
 
-candidate_space = _space(('candidate', 'member'), "candidats")
-employer_space = _space(('employer', 'member'), "entreprises")
+candidate_space = _space(('candidate', 'undefined'), "candidats")
+employer_space = _space(('employer', 'undefined'), "entreprises")
+publisher_space = _space(('employer', 'member'), "entreprises et aux particuliers qui publient")
 
 
 def _qs(request):
@@ -66,6 +66,7 @@ def _page(request, queryset, per_page=12):
 
 def _open_offers():
     JobOffer.close_expired()  # date de fin dépassée : l'offre disparaît
+    JobOffer.expire_featured()  # mise en avant terminée
     today = timezone.localdate()
     return JobOffer.objects.filter(status='published').filter(
         Q(deadline__isnull=True) | Q(deadline__gte=today)
@@ -75,14 +76,14 @@ def _open_offers():
 # ─────────────────────────────
 # 🏠 ACCUEIL
 # ─────────────────────────────
-def _employer_redirect(request, text="Les offres d'emploi sont réservées aux candidats : votre espace entreprise est ici."):
+def _employer_redirect(request, text="Les offres d'emploi sont réservées aux candidats : votre espace est ici."):
     messages.info(request, text)
     return redirect('emploi:dashboard')
 
 
 def home(request):
-    if account_kind(request.user) == 'employer':
-        return redirect('emploi:dashboard')  # une entreprise arrive directement dans son tableau de bord
+    if account_kind(request.user) in ('employer', 'member'):
+        return redirect('emploi:dashboard')  # entreprise et particulier arrivent directement dans leur espace
     offers = _open_offers()
     context = {
         'partner_list': Partner.objects.filter(is_active=True),
@@ -106,7 +107,7 @@ def home(request):
 # 💼 OFFRES
 # ─────────────────────────────
 def offer_list(request):
-    if account_kind(request.user) == 'employer':
+    if account_kind(request.user) in ('employer', 'member'):
         return _employer_redirect(request)
     qs = _open_offers()
     q = request.GET.get('q', '').strip()
@@ -132,7 +133,7 @@ def offer_detail(request, slug, form=None):
     owner = request.user.is_authenticated and offer.employer_id and offer.employer.user_id == request.user.pk
     if offer.status != 'published' and not (owner or is_staff(request.user)):
         raise Http404
-    if account_kind(request.user) == 'employer' and not (owner or is_staff(request.user)):
+    if account_kind(request.user) in ('employer', 'member') and not (owner or is_staff(request.user)):
         return _employer_redirect(request)
     applied = False
     profile = getattr(request.user, 'candidate_profile', None) if request.user.is_authenticated else None
@@ -193,17 +194,14 @@ def _directory_denied(request):
     """Redirection si la personne n'a pas le droit de parcourir les candidats."""
     if not request.user.is_authenticated:
         return redirect(f"/users/connexion/?next={request.path}")
-    messages.info(request, "L'annuaire des candidats est réservé à Lantante et aux entreprises acceptées.")
+    messages.info(request, "Les profils des candidats sont masqués : vous voyez ceux qui ont postulé à vos offres, dans « Candidatures ».")
     return redirect('emploi:home')
 
 
 def candidate_list(request):
     if not can_browse_candidates(request.user):
         return _directory_denied(request)
-    now = timezone.now()
-    qs = CandidateProfile.objects.filter(is_published=True).select_related('user').prefetch_related('skills').annotate(
-        boosted=Exists(BoostOrder.objects.filter(candidate=OuterRef('pk'), application__isnull=True, status='active',
-                                                 expires_at__gt=now))).order_by('-boosted', '-updated_at')
+    qs = CandidateProfile.objects.filter(is_published=True).select_related('user').prefetch_related('skills').order_by('-updated_at')
     q = request.GET.get('q', '').strip()
     domain = request.GET.get('domain', '')
     city = request.GET.get('city', '').strip()
@@ -225,8 +223,8 @@ def candidate_list(request):
 def candidate_detail(request, pk):
     candidate = get_object_or_404(CandidateProfile.objects.select_related('user'), pk=pk)
     is_owner = request.user.is_authenticated and candidate.user_id == request.user.pk
-    if not is_owner and not can_browse_candidates(request.user):
-        return _directory_denied(request)
+    if not is_owner and not can_see_private(request.user, candidate):
+        return _directory_denied(request)  # profil masqué sauf pour celui qui a reçu sa candidature
     if not candidate.is_published and not can_see_private(request.user, candidate):
         raise Http404
     return render(request, 'emploi/candidate_detail.html', {
@@ -342,7 +340,7 @@ def company_detail(request, pk):
     posts = FeedPost.objects.filter(author=company.user, is_hidden=False)[:5]
     return render(request, 'emploi/company_detail.html', {
         'company': company, 'offers': offers, 'posts': posts, 'is_me': me,
-        'hide_offers': account_kind(request.user) == 'employer' and not me,
+        'hide_offers': account_kind(request.user) in ('employer', 'member') and not me,
     })
 
 
@@ -362,11 +360,23 @@ def employer_document(request, pk):
 # 🧭 MON ESPACE
 # ─────────────────────────────
 @login_required
+@require_POST
+def choose_member(request):
+    """Un compte sans type choisit « particulier » (publier une actualité ou une annonce)."""
+    if account_kind(request.user) == 'undefined':
+        request.user.account_type = 'member'
+        request.user.save(update_fields=['account_type'])
+        messages.success(request, "✓ Espace particulier activé : vous pouvez publier une actualité ou une annonce.")
+    return redirect('emploi:dashboard')
+
+
+@login_required
 def dashboard(request):
     user = request.user
     candidate = getattr(user, 'candidate_profile', None)
     employer = getattr(user, 'employer_profile', None)
     context = {'kind': account_kind(user), 'candidate': candidate, 'employer': employer,
+               'member_orders': user.publication_orders.exclude(status='cancelled')[:8] if account_kind(user) == 'member' else [],
                'my_warnings': list(user.moderation_warnings.filter(is_active=True)[:3])}
     if candidate:
         checks = [
@@ -380,7 +390,6 @@ def dashboard(request):
         context['checks'] = checks
         context['completion'] = round(100 * sum(1 for _, done, _ in checks if done) / len(checks))
         context['apps_count'] = candidate.applications.count()
-        context['live_boost'] = candidate.live_profile_boost()
         context['spontaneous'] = candidate.spontaneous_requests.exclude(status__in=('closed', 'rejected')).filter(withdrawn=False)[:5]
         context['applications'] = candidate.applications.select_related('offer', 'request')[:10]
         context['appointments'] = candidate.appointments.filter(
@@ -478,7 +487,7 @@ def offer_create(request):
             offer.status = 'awaiting_payment'  # brouillon : mis en ligne après paiement et validation
             offer.save()
             form.save_skills(offer)
-            order = billing.create_order(employer, plan, title=offer.title, job_offer=offer)
+            order = billing.create_order(plan, request.user, employer, title=offer.title, job_offer=offer)
             return redirect('emploi:order_detail', pk=order.pk)
         offer.status = 'published' if employer.is_verified else 'pending'
         offer.save()
@@ -527,7 +536,7 @@ def request_create(request):
                      f"/lantanteAdminTech/Emploi/staffingrequest/{req.pk}/change/")
         plan = ServicePlan.objects.filter(kind='recruit', is_active=True).first()
         if plan:
-            order = billing.create_order(employer, plan, title=req.title, staffing_request=req)
+            order = billing.create_order(plan, request.user, employer, title=req.title, staffing_request=req)
             messages.success(request, "✓ Demande envoyée. Lantante vous contacte avec un devis pour l'accompagnement.")
             return redirect('emploi:order_detail', pk=order.pk)
         messages.success(request, "✓ Demande envoyée à Lantante. Nous vous proposerons des candidats rapidement.")
@@ -540,8 +549,13 @@ def request_create(request):
 # ─────────────────────────────
 def _company_must_order(user):
     """Une entreprise (non exonérée / sans badge bleu) publie via le service payant « Publier »."""
-    employer = getattr(user, 'employer_profile', None) if user.is_authenticated else None
-    if not employer or ((employer.publishing_free or employer.partner_id) and employer.is_verified):
+    if not user.is_authenticated:
+        return False
+    kind = account_kind(user)
+    if kind == 'member':  # le particulier qui publie paie toujours
+        return ServicePlan.objects.filter(kind='news', is_active=True).exists()
+    employer = getattr(user, 'employer_profile', None)
+    if kind != 'employer' or not employer or ((employer.publishing_free or employer.partner_id) and employer.is_verified):
         return False
     return ServicePlan.objects.filter(kind='news', is_active=True).exists()
 
@@ -795,8 +809,7 @@ def pricing(request):
     """Les deux formules : publication ponctuelle (payante) et partenariat officiel (sur validation)."""
     from core.models import SiteSettings
     return render(request, 'emploi/pricing.html', {
-        'plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.EMPLOYER_KINDS),
-        'boost_plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.CANDIDATE_KINDS),
+        'plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.MEMBER_KINDS if account_kind(request.user) == 'member' else ServicePlan.EMPLOYER_KINDS),
         'site': SiteSettings.load(), 'kind': account_kind(request.user),
     })
 
@@ -812,42 +825,57 @@ def _approved_employer(request):
     return employer
 
 
-@employer_space
-def publish_hub(request):
+def _publisher(request):
+    """(compte, entreprise ou None, services autorisés) — un particulier publie sans fiche entreprise."""
+    if account_kind(request.user) == 'member':
+        return True, None, ServicePlan.MEMBER_KINDS
     employer = _approved_employer(request)
-    if not employer:
+    return bool(employer), employer, ServicePlan.EMPLOYER_KINDS
+
+
+@publisher_space
+def publish_hub(request):
+    ok, employer, kinds = _publisher(request)
+    if not ok:
         return redirect('emploi:dashboard' if hasattr(request.user, 'employer_profile') else 'emploi:employer_edit')
     return render(request, 'emploi/publish_hub.html', {
-        'plans': ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.EMPLOYER_KINDS), 'employer': employer,
-        'exempt': billing.employer_is_exempt(employer),
+        'plans': ServicePlan.objects.filter(is_active=True, kind__in=kinds), 'employer': employer,
+        'exempt': billing.employer_is_exempt(employer), 'is_member': employer is None,
     })
 
 
-@employer_space
+@publisher_space
 def order_new(request, code):
-    employer = _approved_employer(request)
-    if not employer:
+    ok, employer, kinds = _publisher(request)
+    if not ok:
         return redirect('emploi:dashboard')
-    plan = get_object_or_404(ServicePlan, code=code, is_active=True, kind__in=ServicePlan.EMPLOYER_KINDS)
+    plan = get_object_or_404(ServicePlan, code=code, is_active=True, kind__in=kinds)
     if plan.kind == 'job':
         return redirect('emploi:offer_create')
     if plan.kind == 'recruit':
         return redirect('emploi:request_create')
+    if plan.kind == 'job_boost':  # mise en avant d'une offre déjà publiée
+        form = OfferBoostForm(request.POST or None, employer=employer)
+        if request.method == 'POST' and form.is_valid():
+            offer = form.cleaned_data['offer']
+            order = billing.create_order(plan, request.user, employer, title=offer.title, boosted_offer=offer)
+            return redirect('emploi:order_detail', pk=order.pk)
+        return render(request, 'emploi/order_form.html', {'form': form, 'plan': plan, 'employer': employer,
+                                                          'exempt': billing.employer_is_exempt(employer)})
     form = OrderContentForm(request.POST or None, request.FILES or None, plan=plan)
     if request.method == 'POST' and form.is_valid():
         data = {k: v for k, v in form.cleaned_data.items() if v not in (None, '')}
-        order = billing.create_order(employer, plan, **data)
+        order = billing.create_order(plan, request.user, employer, **data)
         return redirect('emploi:order_detail', pk=order.pk)
     return render(request, 'emploi/order_form.html', {'form': form, 'plan': plan, 'employer': employer,
                                                       'exempt': billing.employer_is_exempt(employer)})
 
 
 def _my_order(request, pk):
-    return get_object_or_404(PublicationOrder.objects.select_related('plan', 'employer'), pk=pk,
-                             employer__user=request.user)
+    return get_object_or_404(PublicationOrder.objects.select_related('plan', 'employer'), pk=pk, user=request.user)
 
 
-@employer_space
+@publisher_space
 def order_detail(request, pk):
     from core.models import SiteSettings
     order = _my_order(request, pk)
@@ -857,7 +885,7 @@ def order_detail(request, pk):
     })
 
 
-@employer_space
+@publisher_space
 @require_POST
 def order_pay(request, pk):
     order = _my_order(request, pk)
@@ -875,7 +903,7 @@ def order_pay(request, pk):
         'order': order, 'site': SiteSettings.load(), 'form': form, 'steps': ["Soumise", "Paiement", "Validation", "Publiée"]})
 
 
-@employer_space
+@publisher_space
 def order_edit(request, pk):
     """Modifier le contenu (correction demandée, ou avant paiement) puis renvoyer."""
     from .forms import JobOfferForm, StaffingRequestForm
@@ -904,7 +932,7 @@ def order_edit(request, pk):
                                                       'editing': True, 'order': order})
 
 
-@employer_space
+@publisher_space
 def order_receipt(request, pk):
     order = _my_order(request, pk)
     if not order.paid_at:
@@ -913,7 +941,7 @@ def order_receipt(request, pk):
     return render(request, 'emploi/order_receipt.html', {'order': order})
 
 
-@employer_space
+@publisher_space
 @require_POST
 def order_cancel(request, pk):
     order = _my_order(request, pk)
@@ -998,92 +1026,6 @@ def consent_respond(request, pk):
         share_application(application)  # transmission immédiate à l'entreprise
     messages.success(request, "✓ Merci, Lantante transmet votre dossier." if accept else "C'est noté : votre dossier ne sera pas transmis.")
     return redirect('emploi:dashboard')
-
-
-# ─────────────────────────────
-# 🚀 BOOST DES CANDIDATS
-# ─────────────────────────────
-def _boost_plans():
-    return ServicePlan.objects.filter(is_active=True, kind__in=ServicePlan.CANDIDATE_KINDS)
-
-
-@candidate_space
-def boost_hub(request):
-    profile = _candidate_or_redirect(request)
-    if not profile:
-        return redirect('emploi:candidate_edit')
-    live = profile.live_profile_boost()
-    return render(request, 'emploi/boost_hub.html', {
-        'profile': profile, 'live': live, 'transparency': boosting.TRANSPARENCY,
-        'profile_plans': _boost_plans().filter(kind='cand_boost'),
-        'app_plan': _boost_plans().filter(kind='cand_app').first(),
-        'applications': profile.applications.filter(status__in=('received', 'shortlisted', 'interview')).select_related('offer', 'request'),
-        'boosts': profile.boosts.all()[:6],
-    })
-
-
-@candidate_space
-@require_POST
-def boost_new(request, code):
-    profile = _candidate_or_redirect(request)
-    if not profile:
-        return redirect('emploi:candidate_edit')
-    plan = get_object_or_404(ServicePlan, code=code, is_active=True, kind__in=ServicePlan.CANDIDATE_KINDS)
-    application = None
-    if plan.kind == 'cand_app':
-        application = get_object_or_404(Application, pk=request.POST.get('application'), candidate=profile)
-    boost = boosting.create_boost(profile, plan, application)
-    return redirect('emploi:boost_detail', pk=boost.pk)
-
-
-def _my_boost(request, pk):
-    return get_object_or_404(BoostOrder.objects.select_related('plan', 'candidate', 'application'), pk=pk,
-                             candidate__user=request.user)
-
-
-@candidate_space
-def boost_detail(request, pk):
-    from core.models import SiteSettings
-    boost = _my_boost(request, pk)
-    return render(request, 'emploi/boost_detail.html', {
-        'boost': boost, 'site': SiteSettings.load(), 'form': PaymentForm(initial={'payment_method': 'flooz'}),
-        'transparency': boosting.TRANSPARENCY,
-    })
-
-
-@candidate_space
-@require_POST
-def boost_pay(request, pk):
-    boost = _my_boost(request, pk)
-    if not boost.can_pay:
-        messages.info(request, "Ce boost n'attend pas de paiement.")
-        return redirect('emploi:boost_detail', pk=boost.pk)
-    form = PaymentForm(request.POST)
-    if form.is_valid():
-        boosting.declare_boost_payment(boost, form.cleaned_data['payment_method'], form.cleaned_data['payer_phone'],
-                                       form.cleaned_data['payment_reference'])
-        messages.success(request, "✓ Merci ! Nous vérifions votre paiement : votre boost démarre dès sa confirmation.")
-        return redirect('emploi:boost_detail', pk=boost.pk)
-    from core.models import SiteSettings
-    return render(request, 'emploi/boost_detail.html', {'boost': boost, 'site': SiteSettings.load(), 'form': form,
-                                                       'transparency': boosting.TRANSPARENCY})
-
-
-@candidate_space
-def boost_receipt(request, pk):
-    boost = _my_boost(request, pk)
-    if not boost.paid_at:
-        messages.info(request, "Le reçu est disponible après confirmation du paiement.")
-        return redirect('emploi:boost_detail', pk=boost.pk)
-    return render(request, 'emploi/boost_receipt.html', {'boost': boost})
-
-
-@candidate_space
-@require_POST
-def boost_cancel(request, pk):
-    boosting.cancel_boost(_my_boost(request, pk))
-    messages.success(request, "Boost annulé.")
-    return redirect('emploi:boost_hub')
 
 
 # ─────────────────────────────

@@ -285,17 +285,18 @@ def staff_users():
 
 
 def account_kind(user):
-    """'candidate', 'employer', 'member' (pas encore choisi) ou 'anonymous'. Deux espaces séparés : jamais les deux."""
+    """'candidate', 'employer', 'member' (particulier), 'undefined' (pas encore choisi) ou 'anonymous'.
+    Trois espaces séparés : jamais deux à la fois."""
     if not user.is_authenticated:
         return 'anonymous'
     kind = getattr(user, 'account_type', '')
-    if kind in ('candidate', 'employer'):
+    if kind in ('candidate', 'employer', 'member'):
         return kind
     if hasattr(user, 'employer_profile') and not hasattr(user, 'candidate_profile'):
         return 'employer'
     if hasattr(user, 'candidate_profile'):
         return 'candidate'
-    return 'member'
+    return 'undefined'
 
 
 def is_staff(user):
@@ -303,13 +304,9 @@ def is_staff(user):
 
 
 def can_browse_candidates(user):
-    """L'annuaire des candidats est réservé à Lantante et aux entreprises acceptées."""
-    if not user.is_authenticated:
-        return False
-    if is_staff(user):
-        return True
-    employer = getattr(user, 'employer_profile', None)
-    return bool(employer and employer.is_approved)
+    """Les profils des candidats sont masqués : seul Lantante parcourt la liste. Une entreprise ne voit que ceux
+    qui ont postulé à ses offres."""
+    return user.is_authenticated and is_staff(user)
 
 
 def can_see_private(viewer, candidate):
@@ -326,9 +323,6 @@ def can_see_private(viewer, candidate):
     employer = getattr(viewer, 'employer_profile', None)
     if not employer or not employer.is_approved:
         return False
-    # Partage libre voulu par le candidat : réservé aux entreprises avec le badge bleu.
-    if candidate.share_with_recruiters and employer.is_verified:
-        return True
     # Candidature : le dossier n'est visible qu'après transmission par Lantante.
     return Application.objects.filter(candidate=candidate, shared_with_employer=True).filter(
         Q(offer__employer=employer) | Q(request__employer=employer)

@@ -314,6 +314,8 @@ class JobOffer(models.Model):
     requires_cover_letter = models.BooleanField(default=False, verbose_name="Lettre de motivation demandée",
                                                 help_text="Le candidat devra écrire une lettre de motivation pour postuler.")
     is_featured = models.BooleanField(default=False, verbose_name="À la une")
+    featured_until = models.DateTimeField(null=True, blank=True, verbose_name="À la une jusqu'au",
+                                          help_text="Rempli par une mise en avant payée ; vide = sans limite.")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créée le")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Modifiée le")
 
@@ -373,6 +375,11 @@ class JobOffer(models.Model):
 
     def get_absolute_url(self):
         return reverse('emploi:offer_detail', args=[self.slug])
+
+    @classmethod
+    def expire_featured(cls):
+        """Une mise en avant payée s'arrête à sa date de fin."""
+        return cls.objects.filter(is_featured=True, featured_until__lt=timezone.now()).update(is_featured=False)
 
     @classmethod
     def close_expired(cls):
@@ -693,10 +700,12 @@ class ServicePlan(models.Model):
         ('job', "Offre d'emploi"),
         ('ad', "Publicité avec visuels"),
         ('recruit', "Accompagnement au recrutement"),
-        ('cand_boost', "Boost de profil (candidat)"),
+        ('job_boost', "Mise en avant d'une offre"),
+        ('cand_boost', "Boost de profil (candidat) — retiré"),
         ('cand_app', "Boost d'une candidature (candidat)"),
     ]
-    EMPLOYER_KINDS = ('news', 'news_boost', 'job', 'ad', 'recruit')
+    EMPLOYER_KINDS = ('news', 'news_boost', 'job', 'job_boost', 'ad', 'recruit')
+    MEMBER_KINDS = ('news', 'news_boost', 'ad')  # un particulier publie une actualité ou une annonce, jamais d'offre d'emploi
     CANDIDATE_KINDS = ('cand_boost', 'cand_app')
     code = models.SlugField(max_length=30, unique=True, verbose_name="Code")
     kind = models.CharField(max_length=12, choices=KIND, verbose_name="Type de service")
@@ -751,8 +760,13 @@ class PublicationOrder(models.Model):
         ('cancelled', "Annulée"),
     ]
     METHODS = [('flooz', "Flooz"), ('tmoney', "T-Money"), ('other', "Autre moyen")]
-    employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE, related_name='orders',
-                                 verbose_name="Entreprise")
+    employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE, null=True, blank=True,
+                                 related_name='orders', verbose_name="Entreprise")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
+                             related_name='publication_orders', verbose_name="Compte",
+                             help_text="Entreprise ou particulier qui publie.")
+    boosted_offer = models.ForeignKey('JobOffer', on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='boost_orders', verbose_name="Offre mise en avant")
     plan = models.ForeignKey(ServicePlan, on_delete=models.PROTECT, related_name='orders', verbose_name="Service")
     status = models.CharField(max_length=20, choices=STATUS, default='awaiting_payment', verbose_name="Statut")
     amount = models.PositiveIntegerField(default=0, verbose_name="Montant (FCFA)")
@@ -794,7 +808,13 @@ class PublicationOrder(models.Model):
         verbose_name_plural = "Commandes et paiements"
 
     def __str__(self):
-        return f"#{self.pk} {self.plan.name} — {self.employer.company_name}"
+        return f"#{self.pk} {self.plan.name} — {self.owner_name}"
+
+    @property
+    def owner_name(self):
+        if self.employer_id:
+            return self.employer.company_name
+        return self.user.public_name if self.user_id else "—"
 
     @property
     def reference(self):

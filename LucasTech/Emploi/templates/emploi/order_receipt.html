@@ -6,7 +6,7 @@
   <div class="em-row" style="justify-content:space-between"><h1 class="em-h1" style="font-size:2rem;margin:0">Reçu de paiement</h1><b>{{ order.receipt_number }}</b></div>
   <div class="em-muted">Lantante Technologie — {{ order.paid_at|date:"d/m/Y" }}</div>
   <table style="width:100%;border-collapse:collapse;font-size:.95rem">
-    <tr><td style="padding:8px 0;color:var(--em-muted)">Entreprise</td><td style="text-align:right"><b>{{ order.employer.company_name }}</b></td></tr>
+    <tr><td style="padding:8px 0;color:var(--em-muted)">Compte</td><td style="text-align:right"><b>{{ order.owner_name }}</b></td></tr>
     <tr><td style="padding:8px 0;color:var(--em-muted)">Service</td><td style="text-align:right">{{ order.plan.name }}{% if order.title %} — « {{ order.title }} »{% endif %}</td></tr>
     <tr><td style="padding:8px 0;color:var(--em-muted)">Commande</td><td style="text-align:right">{{ order.reference }}</td></tr>
     <tr><td style="padding:8px 0;color:var(--em-muted)">Moyen de paiement</td><td style="text-align:right">{{ order.get_payment_method_display|default:"—" }}{% if order.payment_reference %} · réf. {{ order.payment_reference }}{% endif %}</td></tr>

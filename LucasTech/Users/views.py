@@ -33,7 +33,7 @@ class SiteLoginView(LoginView):
     """Après connexion, un candidat ou une entreprise arrive directement dans son propre espace."""
 
     def get_default_redirect_url(self):
-        if getattr(self.request.user, 'account_type', '') in ('candidate', 'employer'):
+        if getattr(self.request.user, 'account_type', '') in ('candidate', 'employer', 'member'):
             return reverse('emploi:dashboard')
         return super().get_default_redirect_url()
 
@@ -43,12 +43,12 @@ def register(request):
     if request.user.is_authenticated:
         return redirect(next_url or 'core:home')
 
-    initial = {'account_type': request.GET.get('role') if request.GET.get('role') in ('candidate', 'employer') else 'member'}
+    initial = {'account_type': request.GET.get('role') if request.GET.get('role') in ('candidate', 'employer') else 'candidate'}
     form = RegisterForm(request.POST or None, initial=initial)
 
     if request.method == 'POST' and form.is_valid():
         user = form.save(commit=False)
-        user.account_type = form.cleaned_data.get('account_type') or 'member'
+        user.account_type = form.cleaned_data.get('account_type') or 'candidate'
         user.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f'Bienvenue {user.email} !')
@@ -58,6 +58,8 @@ def register(request):
             return redirect('emploi:candidate_edit')
         if account_type == 'employer':
             return redirect('emploi:employer_edit')
+        if account_type == 'member':
+            return redirect(next_url or 'emploi:dashboard')
         return redirect(next_url or 'core:home')
 
     return render(request, 'users/register.html', {'form': form, 'next': next_url})

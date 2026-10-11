@@ -42,7 +42,7 @@ class User(AbstractUser):
         ('', "Non défini"),
         ('candidate', "Candidat (cherche un emploi ou un stage)"),
         ('employer', "Entreprise (recrute, publie)"),
-        ('member', "Membre (boutique, formations)"),
+        ('member', "Particulier (publie une actualité ou une annonce)"),
     ]
     account_type  = models.CharField(max_length=10, choices=ACCOUNT_TYPES, blank=True, default='',
                                      verbose_name="Type de compte",

@@ -12,8 +12,8 @@
 <h1 class="em-h1" style="margin:34px 0 18px;text-align:center">Fil d'actualités</h1>
 <div class="ef-col">
   {% if user.is_authenticated and must_order %}
-  <div class="em-card"><h3><i class="fas fa-bullhorn"></i> Publier une actualité ou une publicité</h3>
-    <p>Les publications des entreprises sont vérifiées par Lantante avant leur mise en ligne{% if news_plan %} — à partir de <b>{{ news_plan.price_label }}</b>{% endif %}.</p>
+  <div class="em-card"><h3><i class="fas fa-bullhorn"></i> Publier une actualité ou une annonce</h3>
+    <p>Les publications sont vérifiées par Lantante avant leur mise en ligne{% if news_plan %} — à partir de <b>{{ news_plan.price_label }}</b>{% endif %}.</p>
     <div><a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}">Publier</a></div></div>
   {% elif can_post %}
   <form class="em-card" method="post" enctype="multipart/form-data">{% csrf_token %}

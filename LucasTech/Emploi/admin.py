@@ -751,14 +751,14 @@ STATUS_BADGES = {
 
 @admin.register(PublicationOrder)
 class PublicationOrderAdmin(admin.ModelAdmin):
-    list_display = ('reference', 'employer', 'plan', 'amount_label', 'status_badge', 'payment_reference', 'created_at')
+    list_display = ('reference', 'owner_name', 'plan', 'amount_label', 'status_badge', 'payment_reference', 'created_at')
     list_filter = ('status', 'plan__kind', 'payment_method')
-    search_fields = ('employer__company_name', 'title', 'payment_reference', 'receipt_number')
+    search_fields = ('employer__company_name', 'user__first_name', 'user__last_name', 'user__email', 'title', 'payment_reference', 'receipt_number')
     readonly_fields = ('reference', 'employer', 'plan', 'status', 'payer_phone', 'payment_method', 'payment_reference',
-                       'paid_at', 'receipt_number', 'job_offer', 'staffing_request', 'feed_post', 'published_at',
+                       'paid_at', 'receipt_number', 'job_offer', 'boosted_offer', 'staffing_request', 'feed_post', 'user', 'published_at',
                        'visible_until', 'created_at', 'updated_at', 'provider')
     fieldsets = (
-        ("Commande", {'fields': ('reference', 'employer', 'plan', 'status', 'amount')}),
+        ("Commande", {'fields': ('reference', 'user', 'employer', 'plan', 'status', 'amount')}),
         ("Contenu", {'fields': ('title', 'post_kind', 'text', 'image', 'link_url', 'job_offer', 'staffing_request',
                                 'feed_post')}),
         ("Paiement", {'fields': ('provider', 'payment_method', 'payer_phone', 'payment_reference', 'paid_at',
@@ -778,7 +778,7 @@ class PublicationOrderAdmin(admin.ModelAdmin):
 
     def _apply(self, request, queryset, allowed, func, done_text, need_message=False):
         done = skipped = 0
-        for order in queryset.select_related('plan', 'employer__user'):
+        for order in queryset.select_related('plan', 'employer', 'user'):
             if order.status not in allowed:
                 skipped += 1
                 continue
@@ -925,8 +925,7 @@ class SpontaneousRequestAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 # 🚀 Boosts des candidats
 # ─────────────────────────────
-@admin.register(BoostOrder)
-class BoostOrderAdmin(admin.ModelAdmin):
+class BoostOrderAdmin(admin.ModelAdmin):  # boost candidat retiré : non enregistré (historique en base)
     list_display = ('reference', 'candidate', 'plan', 'amount_label', 'state', 'payment_reference', 'expires_at', 'created_at')
     list_filter = ('status', 'plan')
     search_fields = ('candidate__user__first_name', 'candidate__user__last_name', 'payment_reference', 'receipt_number')

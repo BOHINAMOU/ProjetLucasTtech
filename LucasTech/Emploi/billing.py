@@ -14,8 +14,8 @@ ADMIN_ORDER_URL = "/lantanteAdminTech/Emploi/publicationorder/{}/change/"
 
 
 def employer_is_exempt(employer):
-    """Partenaire dont le contrat inclut les publications : rien à payer."""
-    return bool(employer.publishing_free or employer.partner_id)
+    """Partenaire dont le contrat inclut les publications : rien à payer. Un particulier paie toujours."""
+    return bool(employer and (employer.publishing_free or employer.partner_id))
 
 
 def _staff_alert(order, text):
@@ -27,11 +27,11 @@ def _order_url(order):
 
 
 # ── création ────────────────────────────────────────────────────────────────
-def create_order(employer, plan, **content):
-    """Crée la commande et la place à la bonne étape : devis, paiement ou validation."""
+def create_order(plan, user, employer=None, **content):
+    """Crée la commande (entreprise ou particulier) et la place à la bonne étape : devis, paiement ou validation."""
     exempt = employer_is_exempt(employer)
     amount = 0 if (exempt or plan.quote_only) else plan.price
-    order = PublicationOrder.objects.create(employer=employer, plan=plan, amount=amount, **content)
+    order = PublicationOrder.objects.create(employer=employer, user=user, plan=plan, amount=amount, **content)
     if plan.quote_only and not exempt:
         order.status = 'quote'
     elif amount == 0:
@@ -41,14 +41,14 @@ def create_order(employer, plan, **content):
     order.save(update_fields=['status'])
     _sync_linked_status(order)
     if order.status == 'in_review':
-        if exempt and employer.is_verified:
+        if exempt and employer and employer.is_verified:
             approve_order(order)  # partenaire de confiance : mise en ligne directe
         else:
-            _staff_alert(order, f"À valider : {order.plan.name} — {employer.company_name}")
+            _staff_alert(order, f"À valider : {order.plan.name} — {order.owner_name}")
     elif order.status == 'quote':
-        _staff_alert(order, f"Devis à établir : {order.plan.name} — {employer.company_name}")
+        _staff_alert(order, f"Devis à établir : {order.plan.name} — {order.owner_name}")
     else:
-        _staff_alert(order, f"Commande en attente de paiement : {order.plan.name} ({order.amount_label}) — {employer.company_name}")
+        _staff_alert(order, f"Commande en attente de paiement : {order.plan.name} ({order.amount_label}) — {order.owner_name}")
     return order
 
 
@@ -79,7 +79,7 @@ def send_quote(order, amount, message=''):
         order.review_message = message
     order.save()
     _sync_linked_status(order)
-    notify(order.employer.user,
+    notify(order.user,
            f"Votre devis pour « {order.plan.name} » : {order.amount_label}."
            + (f"\n\n{message}" if message else "") + "\n\nVous pouvez payer depuis votre espace pour lancer la prestation.",
            _order_url(order))
@@ -95,7 +95,7 @@ def declare_payment(order, method, phone, reference):
     order.save()
     _sync_linked_status(order)
     _staff_alert(order, f"Paiement à vérifier : {order.amount_label} ({order.get_payment_method_display()}, "
-                        f"réf. {reference}) — {order.employer.company_name}")
+                        f"réf. {reference}) — {order.owner_name}")
 
 
 def confirm_payment(order, by=None):
@@ -107,11 +107,11 @@ def confirm_payment(order, by=None):
     order.status = 'in_review'
     order.save()
     _sync_linked_status(order)
-    notify(order.employer.user,
+    notify(order.user,
            f"Paiement confirmé ({order.amount_label}) pour « {order.plan.name} ». Merci ! "
            "Votre publication est en cours de validation par Lantante : patientez quelques instants. "
            f"Reçu n° {order.receipt_number}.", _order_url(order))
-    _staff_alert(order, f"À valider (paiement confirmé) : {order.plan.name} — {order.employer.company_name}")
+    _staff_alert(order, f"À valider (paiement confirmé) : {order.plan.name} — {order.owner_name}")
 
 
 def payment_not_received(order, message=''):
@@ -121,7 +121,7 @@ def payment_not_received(order, message=''):
         order.review_message = message
     order.save()
     _sync_linked_status(order)
-    notify(order.employer.user,
+    notify(order.user,
            "Nous n'avons pas retrouvé votre paiement pour « %s »." % order.plan.name
            + (f"\n\n{message}" if message else "")
            + "\n\nVérifiez la référence de la transaction puis renvoyez-la depuis votre espace.", _order_url(order))
@@ -136,7 +136,7 @@ def approve_order(order, by=None):
     plan = order.plan
     until = now + timedelta(days=plan.duration_days) if plan.duration_days else None
     if plan.kind in ('news', 'news_boost', 'ad'):
-        post = order.feed_post or FeedPost(author=order.employer.user)
+        post = order.feed_post or FeedPost(author=order.user)
         post.text = (f"{order.title}\n\n{order.text}" if order.title else order.text).strip()
         post.kind = order.post_kind
         post.is_hidden = False
@@ -147,6 +147,11 @@ def approve_order(order, by=None):
             post.image = order.image
         post.save()
         order.feed_post = post
+    elif plan.kind == 'job_boost' and order.boosted_offer:
+        offer = order.boosted_offer
+        offer.is_featured = True
+        offer.featured_until = until
+        offer.save(update_fields=['is_featured', 'featured_until', 'updated_at'])
     elif plan.kind == 'job' and order.job_offer:
         offer = order.job_offer
         offer.status = 'published'
@@ -160,7 +165,7 @@ def approve_order(order, by=None):
     order.published_at = now
     order.visible_until = until
     order.save()
-    notify(order.employer.user, f"Votre publication « {order.plan.name} » est validée et en ligne.", _order_url(order))
+    notify(order.user, f"Votre publication « {order.plan.name} » est validée et en ligne.", _order_url(order))
 
 
 def request_changes(order, message):
@@ -168,7 +173,7 @@ def request_changes(order, message):
     order.review_message = message
     order.save()
     _sync_linked_status(order)
-    notify(order.employer.user,
+    notify(order.user,
            f"Votre publication « {order.plan.name} » demande une correction avant mise en ligne.\n\n{message}"
            "\n\nModifiez-la depuis votre espace puis renvoyez-la : votre paiement est conservé.", _order_url(order))
 
@@ -179,7 +184,7 @@ def refuse_order(order, message):
     order.save()
     _sync_linked_status(order)
     paid = " Votre paiement vous sera remboursé : Lantante vous contacte." if order.paid_at else ""
-    notify(order.employer.user,
+    notify(order.user,
            f"Votre publication « {order.plan.name} » n'a pas pu être acceptée.\n\n{message}{paid}", _order_url(order))
 
 
@@ -189,7 +194,7 @@ def mark_refunded(order, note=''):
         order.internal_note = (order.internal_note + "\n" + note).strip()
     order.save()
     _sync_linked_status(order)
-    notify(order.employer.user, f"Votre paiement de {order.amount_label} pour « {order.plan.name} » a été remboursé.",
+    notify(order.user, f"Votre paiement de {order.amount_label} pour « {order.plan.name} » a été remboursé.",
            _order_url(order))
 
 
@@ -200,7 +205,7 @@ def resubmit(order):
         order.save()
         _sync_linked_status(order)
         if order.status == 'in_review':
-            _staff_alert(order, f"Publication corrigée à revalider : {order.plan.name} — {order.employer.company_name}")
+            _staff_alert(order, f"Publication corrigée à revalider : {order.plan.name} — {order.owner_name}")
 
 
 def cancel_order(order):

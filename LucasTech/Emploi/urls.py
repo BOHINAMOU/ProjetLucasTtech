@@ -23,12 +23,6 @@ urlpatterns = [
     path('demandes/<int:pk>/modifier/', views.spontaneous_edit, name='spontaneous_edit'),
     path('demandes/<int:pk>/retirer/', views.spontaneous_withdraw, name='spontaneous_withdraw'),
     path('candidatures/<int:pk>/accord/', views.consent_respond, name='consent_respond'),
-    path('mon-espace/booster/', views.boost_hub, name='boost_hub'),
-    path('mon-espace/booster/<slug:code>/', views.boost_new, name='boost_new'),
-    path('boosts/<int:pk>/', views.boost_detail, name='boost_detail'),
-    path('boosts/<int:pk>/payer/', views.boost_pay, name='boost_pay'),
-    path('boosts/<int:pk>/recu/', views.boost_receipt, name='boost_receipt'),
-    path('boosts/<int:pk>/annuler/', views.boost_cancel, name='boost_cancel'),
     path('mon-espace/publier/', views.publish_hub, name='publish_hub'),
     path('candidatures-recues/', views.applications_received, name='applications_received'),
     path('candidatures-recues/<int:pk>/decider/', views.application_decide, name='application_decide'),
@@ -49,6 +43,7 @@ urlpatterns = [
 
     # Mon espace
     path('mon-espace/', views.dashboard, name='dashboard'),
+    path('mon-espace/particulier/', views.choose_member, name='choose_member'),
     path('mon-espace/profil-candidat/', views.candidate_edit, name='candidate_edit'),
     path('mon-espace/entreprise/', views.employer_edit, name='employer_edit'),
     path('mon-espace/nouvelle-offre/', views.offer_create, name='offer_create'),
