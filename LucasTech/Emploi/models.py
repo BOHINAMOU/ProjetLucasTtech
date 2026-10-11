@@ -173,6 +173,11 @@ class EmployerProfile(models.Model):
     whatsapp = models.CharField(max_length=30, blank=True, verbose_name="WhatsApp",
                                 help_text="Numéro complet, ex : 22890000000")
     contact_email = models.EmailField(blank=True, verbose_name="Email de contact")
+    employees_count = models.PositiveIntegerField(null=True, blank=True, verbose_name="Nombre d'employés")
+    document = models.FileField(
+        upload_to='employer_docs/', storage=private_storage, blank=True,
+        verbose_name="Document de présentation (Word, Excel ou PDF)",
+        help_text="Explique votre entreprise et ce que vous recherchez. Visible uniquement par Lantante.")
     is_verified = models.BooleanField(default=False, verbose_name="Entreprise vérifiée",
                                       help_text="Seule une entreprise vérifiée par Lantante peut publier des offres "
                                                 "et voir les CV autorisés.")

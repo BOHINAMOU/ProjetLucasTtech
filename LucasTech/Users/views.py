@@ -32,12 +32,19 @@ def register(request):
     if request.user.is_authenticated:
         return redirect(next_url or 'core:home')
 
-    form = RegisterForm(request.POST or None)
+    initial = {'account_type': request.GET.get('role') if request.GET.get('role') in ('candidate', 'employer') else 'other'}
+    form = RegisterForm(request.POST or None, initial=initial)
 
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f'Bienvenue {user.email} !')
+        # Selon ce que la personne cherche, on l'envoie compléter le bon profil.
+        account_type = form.cleaned_data.get('account_type')
+        if account_type == 'candidate':
+            return redirect('emploi:candidate_edit')
+        if account_type == 'employer':
+            return redirect('emploi:employer_edit')
         return redirect(next_url or 'core:home')
 
     return render(request, 'users/register.html', {'form': form, 'next': next_url})

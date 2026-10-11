@@ -187,6 +187,18 @@ def company_detail(request, pk):
     })
 
 
+@login_required
+def employer_document(request, pk):
+    employer = get_object_or_404(EmployerProfile, pk=pk)
+    if not employer.document or not (is_staff(request.user) or employer.user_id == request.user.pk):
+        return HttpResponseForbidden("Accès non autorisé à ce document.")
+    try:
+        return FileResponse(employer.document.open('rb'), as_attachment=True,
+                            filename=employer.document.name.rsplit('/', 1)[-1])
+    except FileNotFoundError:
+        raise Http404
+
+
 # ─────────────────────────────
 # 🧭 MON ESPACE
 # ─────────────────────────────
@@ -237,7 +249,7 @@ def candidate_edit(request):
 def employer_edit(request):
     profile = getattr(request.user, 'employer_profile', None)
     creating = profile is None
-    form = EmployerForm(request.POST or None, request.FILES or None, instance=profile)
+    form = EmployerForm(request.POST or None, request.FILES or None, instance=profile, user=request.user)
     if request.method == 'POST' and form.is_valid():
         employer = form.save(commit=False)
         employer.user = request.user

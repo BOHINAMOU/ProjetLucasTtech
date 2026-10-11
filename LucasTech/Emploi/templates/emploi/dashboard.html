@@ -44,7 +44,9 @@
 <section class="em-section">
   <h2 class="em-h2">Mon entreprise : {{ employer.company_name }}</h2>
   <div class="em-card">
-    <div class="em-meta"><span class="em-tag {% if employer.is_verified %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if employer.is_verified %}Entreprise vérifiée{% else %}En attente de vérification{% endif %}</span></div>
+    <div class="em-meta"><span class="em-tag {% if employer.is_verified %}em-tag--green{% else %}em-tag--warn{% endif %}">{% if employer.is_verified %}Entreprise vérifiée{% else %}En attente de vérification{% endif %}</span>
+      {% if employer.employees_count %}<span class="em-tag">{{ employer.employees_count }} employé{{ employer.employees_count|pluralize }}</span>{% endif %}
+      <span class="em-tag">{% if employer.document %}Document fourni{% else %}Document manquant{% endif %}</span></div>
     <div>
       <a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:offer_create' %}"><i class="fas fa-plus"></i> Publier une offre</a>
       <a class="em-btn em-btn--navy em-btn--sm" href="{% url 'emploi:request_create' %}"><i class="fas fa-clipboard-list"></i> Demande de recrutement</a>

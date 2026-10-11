@@ -41,8 +41,8 @@
   <p class="em-lead">Lantante Technologie met en relation candidats et entreprises au Togo : nous présélectionnons les profils, organisons les entretiens et suivons chaque recrutement jusqu'au contrat.</p>
   <div class="eh-cta">
     <a class="em-btn em-btn--green" href="{% url 'emploi:offer_list' %}"><i class="fas fa-search"></i> Voir les offres</a>
-    <a class="em-btn em-btn--ghost" href="{% url 'emploi:candidate_edit' %}"><i class="fas fa-user-plus"></i> Mon profil candidat</a>
-    <a class="em-btn em-btn--ghost" href="{% url 'emploi:employer_edit' %}"><i class="fas fa-building"></i> Je recrute</a>
+    <a class="em-btn em-btn--ghost" href="{% if user.is_authenticated %}{% url 'emploi:candidate_edit' %}{% else %}{% url 'users:register' %}?role=candidate{% endif %}"><i class="fas fa-user-plus"></i> Je cherche un emploi</a>
+    <a class="em-btn em-btn--ghost" href="{% if user.is_authenticated %}{% url 'emploi:employer_edit' %}{% else %}{% url 'users:register' %}?role=employer{% endif %}"><i class="fas fa-building"></i> Je recrute</a>
   </div>
   <div class="eh-stats">
     <div class="eh-stat"><b>{{ offers_count }}</b><span>offres ouvertes</span></div>
@@ -75,10 +75,10 @@
   <div class="eh-two">
     <div class="eh-big"><i class="fas fa-user-graduate"></i><h3>Vous cherchez un emploi ?</h3>
       <p>Créez votre profil, ajoutez votre CV (visible seulement par Lantante et les recruteurs autorisés) et laissez-nous vous proposer les opportunités qui vous correspondent.</p>
-      <a class="em-btn em-btn--green" href="{% url 'emploi:candidate_edit' %}">Créer mon profil</a></div>
+      <a class="em-btn em-btn--green" href="{% if user.is_authenticated %}{% url 'emploi:candidate_edit' %}{% else %}{% url 'users:register' %}?role=candidate{% endif %}">Créer mon profil</a></div>
     <div class="eh-big"><i class="fas fa-building"></i><h3>Vous recrutez ?</h3>
       <p>Publiez vos offres ou confiez-nous votre besoin : nous sélectionnons les candidats, organisons les entretiens et vous accompagnons jusqu'à l'embauche.</p>
-      <a class="em-btn em-btn--navy" href="{% url 'emploi:employer_edit' %}">Déposer une demande</a></div>
+      <a class="em-btn em-btn--navy" href="{% if user.is_authenticated %}{% url 'emploi:employer_edit' %}{% else %}{% url 'users:register' %}?role=employer{% endif %}">Déposer une demande</a></div>
   </div>
 </section>
 

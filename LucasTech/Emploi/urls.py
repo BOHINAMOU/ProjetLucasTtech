@@ -19,6 +19,7 @@ urlpatterns = [
     # Entreprises
     path('entreprises/', views.company_list, name='company_list'),
     path('entreprises/<int:pk>/', views.company_detail, name='company_detail'),
+    path('entreprises/<int:pk>/document/', views.employer_document, name='employer_document'),
 
     # Mon espace
     path('mon-espace/', views.dashboard, name='dashboard'),

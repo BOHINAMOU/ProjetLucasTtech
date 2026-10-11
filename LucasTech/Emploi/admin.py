@@ -138,11 +138,19 @@ class CandidateProfileAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 @admin.register(EmployerProfile)
 class EmployerProfileAdmin(admin.ModelAdmin):
-    list_display = ('company_name', 'sector', 'city', 'is_verified', 'partner', 'created_at')
+    list_display = ('company_name', 'sector', 'city', 'employees_count', 'is_verified', 'partner', 'created_at')
     list_filter = ('is_verified', 'sector')
     search_fields = ('company_name', 'user__email', 'city')
     autocomplete_fields = ('user', 'partner')
+    readonly_fields = ('document_link',)
     actions = ['verify', 'unverify']
+
+    @admin.display(description="Document de l'entreprise")
+    def document_link(self, obj):
+        if obj.pk and obj.document:
+            return format_html('<a href="{}" target="_blank">Télécharger le document</a>',
+                               reverse('emploi:employer_document', args=[obj.pk]))
+        return "—"
 
     @admin.action(description="✓ Vérifier les entreprises sélectionnées")
     def verify(self, request, queryset):

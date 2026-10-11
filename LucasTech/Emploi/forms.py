@@ -65,6 +65,9 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
         if user:
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
+        if user and not self.instance.pk:
+            self.fields['phone'].initial = user.phone or ''
+            self.fields['city'].initial = user.city or ''
         self.init_skills()
         _style(self)
 
@@ -96,19 +99,54 @@ class CandidateForm(SkillsTextMixin, forms.ModelForm):
         return profile
 
 
+DOC_MAX_MB = 10
+# (extension, début du fichier) : on vérifie aussi le contenu, pas seulement le nom.
+DOC_SIGNATURES = {
+    '.pdf': (b'%PDF-',),
+    '.docx': (bytes.fromhex('504b0304'),),  # fichier zip (Office moderne)
+    '.xlsx': (bytes.fromhex('504b0304'),),
+    '.doc': (bytes.fromhex('d0cf11e0'),),   # ancien format Office
+    '.xls': (bytes.fromhex('d0cf11e0'),),
+}
+
+
 class EmployerForm(forms.ModelForm):
     class Meta:
         model = EmployerProfile
-        fields = ['company_name', 'logo', 'sector', 'city', 'description', 'products',
-                  'website', 'whatsapp', 'contact_email']
+        fields = ['company_name', 'logo', 'sector', 'city', 'employees_count', 'description', 'products',
+                  'website', 'whatsapp', 'contact_email', 'document']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 5}),
             'products': forms.Textarea(attrs={'rows': 4}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Reprend les informations déjà connues du compte (modifiables).
+        if user and not self.instance.pk:
+            self.fields['contact_email'].initial = user.email
+            self.fields['whatsapp'].initial = ''.join(ch for ch in (user.phone or '') if ch.isdigit())
+            self.fields['city'].initial = user.city or ''
+        # Le document est obligatoire à l'inscription de l'entreprise.
+        if not self.instance.pk or not self.instance.document:
+            self.fields['document'].required = True
+        self.fields['employees_count'].required = True
+        self.fields['employees_count'].widget.attrs['min'] = 1
         _style(self)
+
+    def clean_document(self):
+        doc = self.cleaned_data.get('document')
+        if doc and hasattr(doc, 'size') and not getattr(doc, '_committed', False):
+            ext = '.' + doc.name.rsplit('.', 1)[-1].lower() if '.' in doc.name else ''
+            if ext not in DOC_SIGNATURES:
+                raise forms.ValidationError("Format accepté : Word (.doc, .docx), Excel (.xls, .xlsx) ou PDF.")
+            if doc.size > DOC_MAX_MB * 1024 * 1024:
+                raise forms.ValidationError(f"Le document ne doit pas dépasser {DOC_MAX_MB} Mo.")
+            head = doc.read(5)
+            doc.seek(0)
+            if not any(head.startswith(sig) for sig in DOC_SIGNATURES[ext]):
+                raise forms.ValidationError("Ce fichier ne semble pas être un vrai document de ce format.")
+        return doc
 
 
 class JobOfferForm(SkillsTextMixin, forms.ModelForm):
