@@ -60,6 +60,14 @@ def _qs(request):
     return encoded + '&' if encoded else ''
 
 
+def _qs(request):
+    """Filtres de l'URL sans « page », pour garder les filtres en changeant de page."""
+    params = request.GET.copy()
+    params.pop("page", None)
+    encoded = params.urlencode()
+    return encoded + "&" if encoded else ""
+
+
 def _page(request, queryset, per_page=12):
     return Paginator(queryset, per_page).get_page(request.GET.get('page'))
 

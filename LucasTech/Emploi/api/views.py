@@ -37,7 +37,7 @@ from ..services import (
     staff_users,
 )
 from .serializers import (
-    abs_url, application_payload, appointment_payload, candidate_payload, company_payload, conversation_payload,
+    DOMAINS, abs_url, application_payload, appointment_payload, candidate_payload, company_payload, conversation_payload,
     document_payload, notification_payload, offer_payload, order_payload, partner_payload, plan_payload, post_payload,
     spontaneous_payload, user_payload,
 )
@@ -331,6 +331,8 @@ def partner_detail(request, pk):
         data['company'] = company_payload(request, employer, detail=True)
         data['posts'] = [post_payload(request, p, request.user) for p in
                          FeedPost.objects.filter(author=employer.user, is_hidden=False)[:8]]
+        from ..views import _open_offers
+        data['offers'] = [] if account_kind(request.user) in ('employer', 'member') else             [offer_payload(request, o) for o in _open_offers().filter(employer=employer)]
     return Response(data)
 
 
@@ -343,6 +345,80 @@ def feed(request):
                     When(is_featured=True, featured_until__isnull=True, then=Value(1)),
                     default=Value(0), output_field=IntegerField())).order_by('-pinned', '-created_at')
     return paginate(request, posts, lambda p: post_payload(request, p, request.user), per_page=10)
+
+
+def _organizations():
+    """Entreprises et partenaires, c'est la même chose : une seule liste.
+    Un partenaire (lié ou non à un compte entreprise) est listé comme partenaire ; les autres entreprises acceptées comme entreprises."""
+    partners_ = list(Partner.objects.filter(is_active=True).select_related('employer'))
+    companies_ = list(EmployerProfile.objects.filter(status='approved', partner__isnull=True).order_by('-is_verified', 'company_name'))
+    return partners_, companies_
+
+
+def _org_payload(request, kind, obj):
+    if kind == 'partner':
+        employer = getattr(obj, 'employer', None)
+        return {'key': f'partner-{obj.pk}', 'kind': 'partner', 'id': obj.pk, 'name': obj.name, 'logo': abs_url(request, obj.logo),
+                'subtitle': obj.domain or obj.country, 'city': obj.country, 'verified': bool(employer and employer.is_verified),
+                'is_partner': True}
+    return {'key': f'company-{obj.pk}', 'kind': 'company', 'id': obj.pk, 'name': obj.company_name, 'logo': abs_url(request, obj.logo),
+            'subtitle': DOMAINS.get(obj.sector, ''), 'city': obj.city, 'verified': obj.is_verified, 'is_partner': False}
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def directory(request):
+    """Liste unique des entreprises et partenaires (recherche : ?q=)."""
+    partners_, companies_ = _organizations()
+    items = [_org_payload(request, 'partner', p) for p in partners_] + [_org_payload(request, 'company', c) for c in companies_]
+    q = request.query_params.get('q', '').strip().lower()
+    if q:
+        items = [i for i in items if q in i['name'].lower() or q in (i['subtitle'] or '').lower() or q in (i['city'] or '').lower()]
+    items.sort(key=lambda i: (not i['is_partner'], not i['verified'], i['name'].lower()))
+    return paginate(request, items, lambda x: x, per_page=30)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def highlights(request):
+    """Bannière de l'accueil : entreprises/partenaires, actualités et offres d'emploi, l'un après l'autre."""
+    from ..views import _open_offers
+    kind = account_kind(request.user)
+    partners_, companies_ = _organizations()
+    orgs = [_org_payload(request, 'partner', p) for p in partners_[:8]] + [_org_payload(request, 'company', c) for c in companies_[:4]]
+    orgs = [{'type': 'org', 'target': o['kind'], 'id': o['id'], 'title': o['name'], 'subtitle': o['subtitle'], 'image': o['logo'],
+             'logo': o['logo'], 'badge': 'Partenaire' if o['is_partner'] else 'Entreprise'} for o in orgs]
+    now = timezone.now()
+    posts = FeedPost.objects.filter(is_hidden=False).select_related('author').annotate(
+        pinned=Case(When(is_featured=True, featured_until__gt=now, then=Value(1)),
+                    When(is_featured=True, featured_until__isnull=True, then=Value(1)),
+                    default=Value(0), output_field=IntegerField())).order_by('-pinned', '-created_at')[:8]
+    news = []
+    for p in posts:
+        employer = p.author_employer
+        logo = abs_url(request, employer.logo) if employer and employer.logo else None
+        news.append({'type': 'post', 'target': 'post', 'id': p.pk, 'title': p.author_label, 'subtitle': p.text[:110],
+                     'image': abs_url(request, p.image) or logo, 'logo': logo, 'badge': 'Actualité'})
+    jobs = []
+    if kind in ('candidate', 'anonymous', 'undefined'):  # les offres sont réservées aux candidats
+        for o in _open_offers().order_by('-is_featured', '-created_at')[:8]:
+            logo = abs_url(request, o.employer.logo) if o.employer_id and o.employer.logo else None
+            jobs.append({'type': 'offer', 'target': 'offer', 'id': o.pk, 'slug': o.slug, 'title': o.title,
+                         'subtitle': f"{o.company_name} · {o.city}" if o.city else o.company_name,
+                         'image': abs_url(request, o.cover_image) or logo, 'logo': logo, 'badge': "Offre d'emploi"})
+    mixed, lists = [], [orgs, news, jobs]
+    for i in range(max(len(x) for x in lists)):
+        for lst in lists:
+            if i < len(lst):
+                mixed.append(lst[i])
+    return Response({'count': len(mixed), 'results': mixed})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def post_detail(request, pk):
+    post = get_object_or_404(FeedPost, pk=pk, is_hidden=False)
+    return Response(post_payload(request, post, request.user))
 
 
 @api_view(['POST'])

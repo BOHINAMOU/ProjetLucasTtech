@@ -36,6 +36,9 @@ Un endpoint réservé à un autre type répond `403` avec `code: "wrong_account_
 | GET | `companies`, `companies/<id>` *(public)* | Entreprises acceptées ; le détail contient offres et publications |
 | GET | `partners`, `partners/<id>` *(public)* | Partenaires (visibles par tous) |
 | POST | `partners/<id>/message` | `{subject?, body}` — écrit directement au partenaire (compte entreprise lié ; créé au besoin à partir de son e-mail). `400 no_contact` si aucun e-mail. Le détail contient `can_message` |
+| GET | `directory` *(public)* | Liste unique entreprises + partenaires (`?q=`) : `{kind: partner|company, id, name, logo, subtitle, verified}` |
+| GET | `highlights` *(public)* | Bannière d'accueil : entreprises/partenaires, actualités et offres mélangées (`type: org|post|offer`) |
+| GET | `feed/<id>` *(public)* | Une actualité |
 | GET | `feed` *(public)* | Actualités (mises en avant d'abord) |
 | POST | `feed/<id>/like`, `feed/<id>/comments` | J'aime (bascule), commentaire `{text}` |
 

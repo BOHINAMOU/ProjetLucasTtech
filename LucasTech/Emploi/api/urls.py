@@ -23,7 +23,10 @@ urlpatterns = [
     path('partners', views.partners),
     path('partners/<int:pk>', views.partner_detail),
     path('partners/<int:pk>/message', views.partner_message),
+    path('directory', views.directory),
+    path('highlights', views.highlights),
     path('feed', views.feed),
+    path('feed/<int:pk>', views.post_detail),
     path('feed/<int:pk>/like', views.post_like),
     path('feed/<int:pk>/comments', views.post_comment),
 

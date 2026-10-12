@@ -118,7 +118,7 @@ export interface Conversation {
 
 export interface Partner {
   id: number; name: string; logo: string | null; country: string; domain: string; description: string; website: string;
-  whatsapp: string; phone: string; email: string; achievements?: string; company?: Company; posts?: Post[]; can_message?: boolean;
+  whatsapp: string; phone: string; email: string; achievements?: string; company?: Company; posts?: Post[]; offers?: Offer[]; can_message?: boolean;
 }
 
 export interface Dashboard {
@@ -130,4 +130,14 @@ export interface Dashboard {
 export interface EmployerProfileData extends Company {
   exists: boolean; status: 'pending' | 'approved' | 'rejected'; status_label: string; decision_message: string;
   has_document: boolean; publishing_free: boolean;
+}
+
+export interface Highlight {
+  type: 'org' | 'post' | 'offer'; target: 'partner' | 'company' | 'post' | 'offer'; id: number; slug?: string;
+  title: string; subtitle: string; image: string | null; logo: string | null; badge: string;
+}
+
+export interface DirectoryItem {
+  key: string; kind: 'partner' | 'company'; id: number; name: string; logo: string | null; subtitle: string; city: string;
+  verified: boolean; is_partner: boolean;
 }

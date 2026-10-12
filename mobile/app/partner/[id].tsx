@@ -7,7 +7,7 @@ import { useLoad } from '@/lib/hooks';
 import { colors, space } from '@/lib/theme';
 import type { Partner } from '@/lib/types';
 import { Badge, Button, Card, InfoLine, Muted, Screen, Section, T } from '@/ui';
-import { PostCard } from '@/ui/cards';
+import { OfferCard, PostCard } from '@/ui/cards';
 
 const web = (url: string) => (url.startsWith('http') ? url : `https://${url}`);
 
@@ -61,8 +61,9 @@ export default function PartnerScreen() {
           {company ? <Button label="Voir sa fiche entreprise et ses offres" variant="ghost" onPress={() => router.push(`/company/${company.id}` as never)} /> : null}
           {p.description ? <Section title="Présentation"><T color={colors.ink2}>{p.description}</T></Section> : null}
           {p.achievements ? <Section title="Réalisations"><T color={colors.ink2}>{p.achievements}</T></Section> : null}
+          {p.offers?.length ? <Section title="Offres d'emploi">{p.offers.map((o) => <OfferCard key={o.id} offer={o} />)}</Section> : null}
           {p.posts?.length ? <Section title="Actualités">{p.posts.map((x) => <PostCard key={x.id} post={x} />)}</Section> : null}
-          {!p.description && !p.achievements && !p.posts?.length ? <Muted>Ce partenaire n'a pas encore ajouté de description.</Muted> : null}
+          {!p.description && !p.achievements && !p.posts?.length && !p.offers?.length ? <Muted>Ce partenaire n'a pas encore ajouté de description.</Muted> : null}
         </>
       ) : null}
     </Screen>

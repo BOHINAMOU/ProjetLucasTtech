@@ -50,11 +50,12 @@ function Gate() {
       <Stack.Screen name="offer/[slug]" options={{ title: "Offre d'emploi" }} />
       <Stack.Screen name="company/[id]" options={{ title: 'Entreprise' }} />
       <Stack.Screen name="partner/[id]" options={{ title: 'Partenaire' }} />
+      <Stack.Screen name="post/[id]" options={{ title: 'Actualité' }} />
       <Stack.Screen name="chat/[id]" options={{ title: 'Conversation' }} />
       <Stack.Screen name="new-message" options={{ title: 'Nouveau message' }} />
       <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
       <Stack.Screen name="appointments" options={{ title: 'Rendez-vous' }} />
-      <Stack.Screen name="discover" options={{ title: 'Découvrir' }} />
+      <Stack.Screen name="discover" options={{ title: 'Actualités et entreprises' }} />
       <Stack.Screen name="orders" options={{ title: 'Mes publications' }} />
       <Stack.Screen name="order/[id]" options={{ title: 'Ma publication' }} />
       <Stack.Screen name="publish/[code]" options={{ title: 'Publier' }} />
