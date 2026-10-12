@@ -710,6 +710,7 @@ class ServicePlan(models.Model):
     EMPLOYER_KINDS = ('news', 'news_boost', 'job', 'job_boost', 'ad', 'recruit')
     MEMBER_KINDS = ('news', 'news_boost', 'ad')  # un particulier publie une actualité ou une annonce, jamais d'offre d'emploi
     CANDIDATE_KINDS = ('cand_boost', 'cand_app')
+    PUBLICATION_KINDS = ('news', 'job', 'ad')  # prix unique, réglé dans « Réglages du site »
     code = models.SlugField(max_length=30, unique=True, verbose_name="Code")
     kind = models.CharField(max_length=12, choices=KIND, verbose_name="Type de service")
     name = models.CharField(max_length=100, verbose_name="Nom affiché")
@@ -732,6 +733,16 @@ class ServicePlan(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.price_label}"
+
+    def save(self, *args, **kwargs):
+        if self.kind in self.PUBLICATION_KINDS and not self.quote_only:
+            from core.models import SiteSettings
+            self.price, self.price_from = SiteSettings.load().publication_price, False
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def apply_publication_price(cls, price):
+        return cls.objects.filter(kind__in=cls.PUBLICATION_KINDS, quote_only=False).update(price=price, price_from=False)
 
     @property
     def advantages(self):

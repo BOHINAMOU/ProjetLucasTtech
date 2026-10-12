@@ -18,6 +18,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('payment_flooz', 'payment_tmoney'),
             'description': "Numéros Mobile Money affichés aux entreprises quand elles paient. Laissez vide pour leur demander de vous contacter sur WhatsApp.",
         }),
+        ('Prix des publications', {
+            'fields': ('publication_price',),
+            'description': "Prix unique d'une publication (actualité, offre d'emploi, publicité) : 2 500 FCFA par défaut. "
+                           "Il s'applique à tous les tarifs de publication, pour les entreprises et les particuliers.",
+        }),
         ('Réseaux sociaux', {
             'fields': ('facebook_url', 'instagram_url', 'tiktok_url',
                        'youtube_url', 'telegram_url', 'twitter_url'),

@@ -737,9 +737,15 @@ class FeedPostAdmin(admin.ModelAdmin):
 @admin.register(ServicePlan)
 class ServicePlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'kind', 'price', 'price_from', 'quote_only', 'duration_days', 'is_active', 'order')
-    list_editable = ('price', 'price_from', 'quote_only', 'duration_days', 'is_active', 'order')
+    list_editable = ('quote_only', 'duration_days', 'is_active', 'order')
     list_filter = ('kind', 'is_active')
     prepopulated_fields = {'code': ('name',)}
+
+    def get_readonly_fields(self, request, obj=None):
+        # Actualité, offre d'emploi et publicité : prix unique, réglé dans « Réglages du site » (2 500 FCFA par défaut).
+        if obj and obj.kind in ServicePlan.PUBLICATION_KINDS:
+            return ('price', 'price_from')
+        return ()
 
 
 STATUS_BADGES = {
