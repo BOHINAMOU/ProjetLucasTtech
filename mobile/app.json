@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Lantante Emploi",
+    "name": "Lantante Technologie Job",
     "slug": "lantante-emploi",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,8 +27,12 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Lantante Technologie Job",
+      "shortName": "LT Job",
+      "themeColor": "#0d3b7a",
+      "backgroundColor": "#f7f3ee"
     },
     "plugins": [
       "expo-router",
@@ -61,7 +65,8 @@
       "eas": {}
     },
     "experiments": {
-      "typedRoutes": false
+      "typedRoutes": false,
+      "baseUrl": "/app"
     }
   }
 }

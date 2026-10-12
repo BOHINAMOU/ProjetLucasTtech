@@ -6,6 +6,8 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve as serve_static
 
+from Emploi.webapp import webapp
+
 from .sitemaps import sitemaps
 
 urlpatterns = [
@@ -13,6 +15,7 @@ urlpatterns = [
         'googlef89010971d315902.html',
         lambda request: HttpResponse("google-site-verification: googlef89010971d315902.html", content_type="text/html"),
     ),
+    re_path(r'^app/(?P<path>.*)$', webapp, name='webapp'),
     path('users/',        include('Users.urls', namespace='users')),
     path('lantanteAdminTech/', admin.site.urls),
     path('shop/',         include('Shop.urls')),

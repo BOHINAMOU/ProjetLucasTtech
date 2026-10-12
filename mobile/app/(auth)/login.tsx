@@ -31,7 +31,7 @@ export default function Login() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
-        <AuthHero title="Lantante Emploi" subtitle="Offres d'emploi, stages et recrutement au Togo et en Afrique." />
+        <AuthHero title="Lantante Technologie Job" subtitle="Offres d'emploi, stages et recrutement au Togo et en Afrique." />
         <View style={{ padding: space.xl, gap: space.lg }}>
           <T size={20} weight="800">Connexion</T>
           {error ? <Banner tone="red" icon="alert-circle">{error}</Banner> : null}

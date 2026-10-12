@@ -1,4 +1,4 @@
-# Lantante Emploi — application mobile (Android et iOS)
+# Lantante Technologie Job — application mobile (Android et iOS)
 
 Application React Native (Expo + TypeScript + Expo Router) qui utilise l'API du site : `https://lantantetechnologie.com/api/v1/`
 (documentation : `../LucasTech/docs/API.md`).
