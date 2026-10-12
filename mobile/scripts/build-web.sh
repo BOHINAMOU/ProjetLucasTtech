@@ -16,6 +16,9 @@ tags = ('<link rel="manifest" href="/app/manifest.webmanifest">'
         '<meta name="mobile-web-app-capable" content="yes">'
         '<meta name="apple-mobile-web-app-title" content="LT Job">'
         '<meta name="description" content="Offres d\'emploi, stages et recrutement au Togo et en Afrique.">')
+tags += ('<script>window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__installPrompt=e;'
+         'window.dispatchEvent(new Event("installready"))});'
+         'if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/app/sw.js",{scope:"/app/"})})}</script>')
 s = s.replace('</head>', tags + '</head>', 1)
 open(p, 'w', encoding='utf-8').write(s)
 PY

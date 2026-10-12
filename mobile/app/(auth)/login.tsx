@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { messageOf } from '@/lib/hooks';
 import { radius, space } from '@/lib/theme';
 import { AuthHero } from '@/screens/AuthHero';
+import InstallApp from '@/screens/InstallApp';
 import { Banner, Button, Input, Muted, T } from '@/ui';
 
 export default function Login() {
@@ -33,6 +34,7 @@ export default function Login() {
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
         <AuthHero title="Lantante Technologie Job" subtitle="Offres d'emploi, stages et recrutement au Togo et en Afrique." />
         <View style={{ padding: space.xl, gap: space.lg }}>
+          <InstallApp />
           <T size={20} weight="800">Connexion</T>
           {error ? <Banner tone="red" icon="alert-circle">{error}</Banner> : null}
           <Input label="Adresse e-mail" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email"
