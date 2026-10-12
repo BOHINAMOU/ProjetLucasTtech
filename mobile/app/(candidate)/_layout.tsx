@@ -3,7 +3,7 @@ import { TabsLayout } from '@/screens/TabsLayout';
 export default function CandidateLayout() {
   return (
     <TabsLayout tabs={[
-      { name: 'index', title: 'Offres', greeting: true, icon: 'briefcase-outline', iconOn: 'briefcase' },
+      { name: 'index', title: 'Offres', icon: 'briefcase-outline', iconOn: 'briefcase' },
       { name: 'applications', title: 'Candidatures', icon: 'paper-plane-outline', iconOn: 'paper-plane' },
       { name: 'discover', title: 'Découvrir', icon: 'compass-outline', iconOn: 'compass' },
       { name: 'messages', title: 'Messages', icon: 'chatbubbles-outline', iconOn: 'chatbubbles', badge: 'messages' },
