@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
@@ -13,6 +14,7 @@ export default function MemberMore() {
       <Menu items={[
         { icon: 'receipt-outline', label: 'Mes publications et paiements', onPress: () => router.push('/orders' as never) },
         { icon: 'notifications-outline', label: 'Notifications', badge: me.data?.unread_notifications, onPress: () => router.push('/notifications' as never) },
+        ...(Platform.OS === 'web' ? [{ icon: 'download-outline' as const, label: "Installer l'application", onPress: () => router.push('/telecharger' as never) }] : []),
         { icon: 'headset-outline', label: 'Service client', onPress: () => router.push('/support' as never) },
         { icon: 'settings-outline', label: 'Mon compte', onPress: () => router.push('/account' as never) },
       ]} />

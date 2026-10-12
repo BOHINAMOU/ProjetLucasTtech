@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
@@ -53,6 +53,7 @@ export default function CandidateProfileTab() {
         { icon: 'calendar-outline', label: 'Mes rendez-vous', onPress: () => router.push('/appointments' as never) },
         { icon: 'notifications-outline', label: 'Notifications', badge: counts?.unread_notifications, onPress: () => router.push('/notifications' as never) },
         { icon: 'business-outline', label: 'Entreprises et partenaires', onPress: () => router.push('/discover' as never) },
+        ...(Platform.OS === 'web' ? [{ icon: 'download-outline' as const, label: "Installer l'application", onPress: () => router.push('/telecharger' as never) }] : []),
         { icon: 'headset-outline', label: 'Service client', onPress: () => router.push('/support' as never) },
         { icon: 'settings-outline', label: 'Mon compte', onPress: () => router.push('/account' as never) },
       ]} />

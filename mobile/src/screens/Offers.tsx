@@ -11,6 +11,7 @@ import { OfferCard } from '@/ui/cards';
 import { PagedList } from '@/ui/PagedList';
 
 import HighlightsBanner from './HighlightsBanner';
+import InstallApp from './InstallApp';
 
 /** Offres d'emploi ouvertes : recherche par mots, filtre par domaine. */
 export default function Offers() {
@@ -29,7 +30,7 @@ export default function Offers() {
 
   const header = (
     <View style={{ gap: space.md, paddingTop: space.lg }}>
-      <View style={{ paddingHorizontal: space.lg }}><HighlightsBanner /></View>
+      <View style={{ paddingHorizontal: space.lg, gap: space.md }}><InstallApp dismissible /><HighlightsBanner /></View>
       <View style={{ paddingHorizontal: space.lg }}>
         <Row style={{ backgroundColor: colors.surface, borderRadius: radius.pill, paddingHorizontal: 16, borderWidth: 1, borderColor: colors.border }} gap={8}>
           <Ionicons name="search" size={18} color={colors.muted} />

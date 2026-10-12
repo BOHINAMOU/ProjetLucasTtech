@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
 import type { Dashboard, EmployerProfileData } from '@/lib/types';
 import HighlightsBanner from '@/screens/HighlightsBanner';
+import InstallApp from '@/screens/InstallApp';
 import { Banner, Button, Menu, Screen, Tile, TileGrid } from '@/ui';
 
 export default function EmployerHome() {
@@ -16,6 +17,7 @@ export default function EmployerHome() {
 
   return (
     <Screen loaded={dash}>
+      <InstallApp dismissible />
       <HighlightsBanner />
 
       {!c?.exists ? (

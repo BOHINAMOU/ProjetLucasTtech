@@ -20,7 +20,7 @@ function Gate() {
     const inAuth = first === '(auth)';
     const spaces: Record<string, string> = { candidate: '(candidate)', employer: '(employer)', member: '(member)' };
     if (!user) {
-      if (!inAuth) router.replace('/login');
+      if (!inAuth && first !== 'telecharger') router.replace('/login');
       return;
     }
     if (kind === 'undefined') {
@@ -46,6 +46,7 @@ function Gate() {
       <Stack.Screen name="(candidate)" options={{ headerShown: false }} />
       <Stack.Screen name="(employer)" options={{ headerShown: false }} />
       <Stack.Screen name="(member)" options={{ headerShown: false }} />
+      <Stack.Screen name="telecharger" options={{ title: "Installer l'application" }} />
       <Stack.Screen name="choose-type" options={{ title: 'Votre type de compte', headerBackVisible: false }} />
       <Stack.Screen name="offer/[slug]" options={{ title: "Offre d'emploi" }} />
       <Stack.Screen name="company/[id]" options={{ title: 'Entreprise' }} />
