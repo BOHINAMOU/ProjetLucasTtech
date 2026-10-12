@@ -118,7 +118,7 @@ export interface Conversation {
 
 export interface Partner {
   id: number; name: string; logo: string | null; country: string; domain: string; description: string; website: string;
-  whatsapp: string; phone: string; email: string; achievements?: string; company?: Company; posts?: Post[];
+  whatsapp: string; phone: string; email: string; achievements?: string; company?: Company; posts?: Post[]; can_message?: boolean;
 }
 
 export interface Dashboard {

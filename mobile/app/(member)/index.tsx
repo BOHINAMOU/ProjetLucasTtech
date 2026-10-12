@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
 import type { Dashboard, Order } from '@/lib/types';
 import { Hero } from '@/screens/Hero';
+import PartnersStrip from '@/screens/PartnersStrip';
 import { Banner, Button, Empty, Screen, Section, Tile, TileGrid } from '@/ui';
 import { OrderCard } from '@/ui/cards';
 
@@ -16,6 +17,7 @@ export default function MemberHome() {
   const waiting = list.filter((o) => o.can_pay).length;
   return (
     <Screen loaded={dash}>
+      <PartnersStrip />
       <Hero name={user?.name || ''} avatar={user?.avatar} subtitle="Publiez une actualité ou une annonce en quelques minutes." />
       <Button label="Publier maintenant" icon="add-circle" variant="green" onPress={() => router.push('/(member)/publish' as never)} />
       {waiting ? <Banner tone="gold" icon="card">{waiting === 1 ? 'Une publication attend votre paiement.' : `${waiting} publications attendent votre paiement.`}</Banner> : null}

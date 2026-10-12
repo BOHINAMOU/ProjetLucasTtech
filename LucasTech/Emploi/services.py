@@ -35,6 +35,55 @@ def notify(user, text, url='', email=True):
     return notification
 
 
+def partner_recipient(partner, create=True):
+    """Compte qui reçoit les messages adressés à un partenaire : partenaire = entreprise, donc le message va chez lui.
+
+    - partenaire déjà lié à un compte entreprise : ce compte ;
+    - sinon, avec une adresse e-mail : on lui ouvre un compte entreprise « géré » (sans mot de passe) lié à sa fiche, pour
+      qu'il reçoive le message par e-mail et puisse activer son espace en choisissant un mot de passe ;
+    - sinon (ou si l'e-mail appartient à un autre type de compte) : None (les moyens de contact directs restent proposés).
+    """
+    from .models import EmployerProfile
+    employer = getattr(partner, 'employer', None)
+    if employer is not None:
+        return employer.user
+    email = (partner.email or '').strip().lower()
+    if not email:
+        return None
+    User = get_user_model()
+    existing = User.objects.filter(email__iexact=email).first()
+    if existing is not None:
+        return existing if account_kind(existing) in ('employer', 'undefined') else None
+    if not create:
+        return User(email=email)  # sera créé au premier message
+    user = User(email=email, first_name=partner.name[:150], account_type='employer', is_active=True)
+    user.set_unusable_password()
+    user.save()
+    EmployerProfile.objects.create(
+        user=user, partner=partner, company_name=partner.name, sector='autre', city=partner.country or '',
+        description=partner.description or '', website=partner.website or '', whatsapp=partner.whatsapp or '',
+        contact_email=email, status='approved')
+    return user
+
+
+def notify_partner_message(user, sender, body, url):
+    """Prévient le destinataire d'un message. Un compte géré (sans mot de passe) reçoit le texte et le lien d'activation."""
+    if user.has_usable_password():
+        notify(user, f"Nouveau message de {sender.public_name}", url)
+        return
+    notify(user, f"Nouveau message de {sender.public_name}", url, email=False)
+    if user.email and settings.EMAIL_HOST_USER:
+        try:
+            send_mail(
+                subject=f"Lantante Technologie — message de {sender.public_name}",
+                message=(f"Bonjour,\n\n{sender.public_name} vous a écrit sur Lantante Technologie Emploi :\n\n« {body[:600]} »\n\n"
+                         f"Pour lire la conversation et répondre, activez votre espace en choisissant un mot de passe :\n"
+                         f"{SITE_URL}/users/mot-de-passe/oublie/\n\n— Lantante Technologie"),
+                from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email], fail_silently=True)
+        except Exception:
+            logger.exception("Échec d'envoi du message au partenaire")
+
+
 def notify_staff(text, url=''):
     """Prévient toute l'équipe Lantante (comptes administrateurs actifs)."""
     for staff in staff_users():

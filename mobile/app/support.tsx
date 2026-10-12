@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { post } from '@/lib/api';
@@ -10,7 +10,8 @@ import { Banner, Button, Card, H2, Input, Muted, Screen, notice } from '@/ui';
 export default function Support() {
   const loaded = useLoad<Conversation[]>('conversations');
   const open = loaded.data?.find((c) => c.kind === 'support' && c.status !== 'closed');
-  const [subject, setSubject] = useState('');
+  const params = useLocalSearchParams<{ subject?: string }>();
+  const [subject, setSubject] = useState(params.subject ?? '');
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});

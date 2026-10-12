@@ -33,7 +33,8 @@ from ..models import (
     Notification, PublicationOrder, ServicePlan, SpontaneousRequest,
 )
 from ..services import (
-    account_kind, can_see_private, is_staff, notify, notify_staff, send_auto_ack, staff_users,
+    account_kind, can_see_private, is_staff, notify, notify_partner_message, notify_staff, partner_recipient, send_auto_ack,
+    staff_users,
 )
 from .serializers import (
     abs_url, application_payload, appointment_payload, candidate_payload, company_payload, conversation_payload,
@@ -324,6 +325,7 @@ def partner_detail(request, pk):
     partner = get_object_or_404(Partner, pk=pk, is_active=True)
     data = partner_payload(request, partner)
     data['achievements'] = partner.achievements
+    data['can_message'] = bool(request.user.is_authenticated and partner_recipient(partner, create=False) is not None)
     employer = getattr(partner, 'employer', None)
     if employer is not None and employer.is_approved:
         data['company'] = company_payload(request, employer, detail=True)
@@ -839,15 +841,40 @@ def conversations(request):
     other = get_object_or_404(User, pk=request.data.get('user_id'), is_active=True)
     if other.pk == user.pk:
         return error("Vous ne pouvez pas vous écrire à vous-même.", 400, code='invalid')
-    conv = Conversation.objects.filter(participants=user).filter(participants=other).annotate(n=Count('participants')).filter(n=2).first()
+    conv = _direct_message(user, other, form.cleaned_data['subject'], form.cleaned_data['body'])
+    return Response(conversation_payload(conv, user, with_messages=True), status=201)
+
+
+def _direct_message(user, other, subject, body):
+    """Écrit à une autre personne (la conversation existante est reprise) et la prévient."""
+    conv = Conversation.objects.filter(kind='direct').annotate(n=Count('participants', distinct=True)).filter(n=2) \
+        .filter(participants=user).filter(participants=other).first()
     if not conv:
-        conv = Conversation.objects.create(subject=form.cleaned_data['subject'])
+        conv = Conversation.objects.create(subject=subject)
         conv.participants.add(user, other)
-    msg = Message.objects.create(conversation=conv, sender=user, body=form.cleaned_data['body'])
+    msg = Message.objects.create(conversation=conv, sender=user, body=body)
     msg.read_by.add(user)
     conv.save()
-    notify(other, f"Nouveau message de {user.public_name}", f"/emploi/messages/{conv.pk}/")
-    return Response(conversation_payload(conv, user, with_messages=True), status=201)
+    notify_partner_message(other, user, body, f"/emploi/messages/{conv.pk}/")
+    return conv
+
+
+@api_view(['POST'])
+def partner_message(request, pk):
+    """Écrire à un partenaire : le message va directement chez lui (partenaire = entreprise), pas chez Lantante."""
+    partner = get_object_or_404(Partner, pk=pk, is_active=True)
+    form = NewConversationForm({'subject': request.data.get('subject', '') or f"Message pour {partner.name}",
+                                'body': request.data.get('body', '')})
+    if not form.is_valid():
+        return invalid(form)
+    other = partner_recipient(partner)
+    if other is None:
+        return error("Ce partenaire ne peut pas être contacté dans l'application. Utilisez ses coordonnées directes.",
+                     400, code='no_contact')
+    if other.pk == request.user.pk:
+        return error("Vous ne pouvez pas vous écrire à vous-même.", 400, code='invalid')
+    conv = _direct_message(request.user, other, form.cleaned_data['subject'], form.cleaned_data['body'])
+    return Response(conversation_payload(conv, request.user, with_messages=True), status=201)
 
 
 @api_view(['GET'])

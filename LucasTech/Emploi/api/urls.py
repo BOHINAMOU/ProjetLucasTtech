@@ -22,6 +22,7 @@ urlpatterns = [
     path('companies/<int:pk>', views.company_detail),
     path('partners', views.partners),
     path('partners/<int:pk>', views.partner_detail),
+    path('partners/<int:pk>/message', views.partner_message),
     path('feed', views.feed),
     path('feed/<int:pk>/like', views.post_like),
     path('feed/<int:pk>/comments', views.post_comment),

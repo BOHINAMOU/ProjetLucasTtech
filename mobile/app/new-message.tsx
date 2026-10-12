@@ -8,7 +8,7 @@ import { Banner, Button, Input, Screen, T, notice } from '@/ui';
 
 /** Premier message à une entreprise (ou à un candidat qui a postulé) : ouvre ensuite la conversation. */
 export default function NewMessage() {
-  const { user_id, to } = useLocalSearchParams<{ user_id: string; to?: string }>();
+  const { user_id, partner_id, to } = useLocalSearchParams<{ user_id?: string; partner_id?: string; to?: string }>();
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
@@ -18,7 +18,10 @@ export default function NewMessage() {
     setBusy(true);
     setErrors({});
     try {
-      const conv = await post<Conversation>('conversations', { user_id: Number(user_id), subject, body });
+      // Un partenaire est aussi une entreprise : le message va directement chez lui.
+      const conv = partner_id
+        ? await post<Conversation>(`partners/${partner_id}/message`, { subject, body })
+        : await post<Conversation>('conversations', { user_id: Number(user_id), subject, body });
       router.replace(`/chat/${conv.id}` as never);
     } catch (e) {
       setErrors(fieldErrors(e));

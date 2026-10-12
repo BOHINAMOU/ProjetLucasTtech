@@ -173,6 +173,9 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
+if DEBUG:  # aperçu web de l'application mobile en développement uniquement
+    MIDDLEWARE.insert(0, 'Emploi.api.devcors.DevCorsMiddleware')
+
 
 ROOT_URLCONF = 'LucasTech.urls'
 

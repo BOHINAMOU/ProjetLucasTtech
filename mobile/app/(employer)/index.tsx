@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
 import type { Dashboard, EmployerProfileData } from '@/lib/types';
 import { Hero } from '@/screens/Hero';
+import PartnersStrip from '@/screens/PartnersStrip';
 import { Banner, Button, Menu, Screen, Tile, TileGrid } from '@/ui';
 
 export default function EmployerHome() {
@@ -16,6 +17,7 @@ export default function EmployerHome() {
 
   return (
     <Screen loaded={dash}>
+      <PartnersStrip />
       <Hero name={c?.exists ? c.name : user?.name || ''} avatar={c?.exists ? c.logo : user?.avatar}
         subtitle={c?.exists ? `${c.sector_label}${c.city ? ' · ' + c.city : ''}` : 'Espace entreprise'} />
 
