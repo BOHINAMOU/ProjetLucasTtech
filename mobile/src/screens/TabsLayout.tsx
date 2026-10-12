@@ -2,13 +2,29 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs, router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
+import { Avatar } from '@/ui';
+
 import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
 import { colors } from '@/lib/theme';
 import type { User } from '@/lib/types';
 
 type IconName = keyof typeof Ionicons.glyphMap;
-export interface TabDef { name: string; title: string; icon: IconName; iconOn: IconName; badge?: 'messages' | 'applications' }
+export interface TabDef { name: string; title: string; icon: IconName; iconOn: IconName; badge?: 'messages' | 'applications'; greeting?: boolean }
+
+/** Titre de l'onglet d'accueil : « Accueil » puis, juste à côté, la photo et « Bonjour, prénom ». */
+function Greeting({ title }: { title: string }) {
+  const { user } = useAuth();
+  const first = user?.first_name || user?.name || '';
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <Text style={{ color: colors.white, fontSize: 17, fontWeight: '700' }}>{title}</Text>
+      <View style={{ width: 1, height: 22, backgroundColor: 'rgba(255,255,255,0.35)' }} />
+      <Avatar uri={user?.avatar} name={user?.name || ''} size={28} />
+      <Text numberOfLines={1} style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: '600', maxWidth: 140 }}>Bonjour, {first}</Text>
+    </View>
+  );
+}
 
 function Bell() {
   const { user } = useAuth();
@@ -43,6 +59,7 @@ export function TabsLayout({ tabs }: { tabs: TabDef[] }) {
         return (
           <Tabs.Screen key={t.name} name={t.name} options={{
             title: t.title,
+            ...(t.greeting ? { headerTitle: () => <Greeting title={t.title} />, headerTitleAlign: 'left' as const } : {}),
             tabBarBadge: badge > 0 ? badge : undefined,
             tabBarBadgeStyle: { backgroundColor: colors.warn, color: colors.white },
             tabBarIcon: ({ focused, color, size }) => <Ionicons name={focused ? t.iconOn : t.icon} size={size} color={color} />,

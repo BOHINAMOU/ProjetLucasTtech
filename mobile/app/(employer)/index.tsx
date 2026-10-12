@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { useLoad } from '@/lib/hooks';
 import type { Dashboard, EmployerProfileData } from '@/lib/types';
-import { Hero } from '@/screens/Hero';
 import HighlightsBanner from '@/screens/HighlightsBanner';
 import { Banner, Button, Menu, Screen, Tile, TileGrid } from '@/ui';
 
@@ -18,8 +17,6 @@ export default function EmployerHome() {
   return (
     <Screen loaded={dash}>
       <HighlightsBanner />
-      <Hero name={c?.exists ? c.name : user?.name || ''} avatar={c?.exists ? c.logo : user?.avatar}
-        subtitle={c?.exists ? `${c.sector_label}${c.city ? ' · ' + c.city : ''}` : 'Espace entreprise'} />
 
       {!c?.exists ? (
         <>
