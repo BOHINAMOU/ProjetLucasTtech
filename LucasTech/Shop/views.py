@@ -37,13 +37,7 @@ def shop(request):
         (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
     ]
     announcement  = Announcement.objects.filter(is_active=True).first()
-    # Bandeau « entreprise / fournisseur » : créé automatiquement la première fois (modifiable ou désactivable dans l'administration)
-    from core.models import SiteSettings
-    site_wa = SiteSettings.load().whatsapp_1
-    banner = CollabBanner.objects.first() or CollabBanner.objects.create(whatsapp_number=site_wa or "22890000000")
-    if site_wa and banner.whatsapp_number == "22890000000":
-        banner.whatsapp_number = site_wa  # numéro par défaut → numéro WhatsApp du site
-    collab_banner = banner if banner.is_active else None
+    collab_banner = None  # bandeau de collaboration retiré de la boutique
     category_slug = request.GET.get('category')
     search_query  = request.GET.get('q', '').strip()
 
