@@ -866,6 +866,39 @@ header { position: sticky; top: 0; z-index: 400; }
 .btn-cta-outline:hover { background: rgba(255,255,255,.14); }
 @media (max-width: 640px) { .cta-btns { width: 100%; } .btn-cta-white, .btn-cta-outline { flex: 1 1 100%; justify-content: center; } }
 
+/* ══ EFFETS DISCRETS (survol, clavier, apparition des cartes) ══ */
+.fx-hidden { opacity: 0 !important; transform: translateY(14px) !important; animation: none !important; }
+.fx-hidden.fx-in { opacity: 1 !important; transform: none !important; transition: opacity .55s ease, transform .55s cubic-bezier(.22,.68,0,1); }
+
+/* Photos des cartes : léger zoom au survol (la carte reste immobile) */
+.sh-card-media, .sv-card-media, .pb-card-media, .fl-img, .pd-rel-card-media, .nw-card > a { overflow: hidden; }
+.sh-card:hover .sh-card-media img, .sv-card:hover .sv-card-media img, .pb-card:hover .pb-card-media img,
+.fl-card:hover .fl-img img, .pd-rel-card:hover .pd-rel-card-media img { transform: scale(1.04); }
+.sh-card-media img, .sv-card-media img, .pb-card-media img, .fl-img img, .pd-rel-card-media img { transition: transform .5s cubic-bezier(.22,.68,0,1); }
+
+/* Titres : la flèche avance un peu, la couleur s'assombrit */
+.pb-card-title i, .nw-title i { transition: transform .25s; }
+.pb-card:hover .pb-card-title i, .nw-card:hover .nw-title i { transform: translateX(4px); }
+.pb-card:hover .pb-card-title, .nw-card:hover .nw-title h3, .sh-card:hover .sh-card-name,
+.sv-card:hover .sv-card-title, .fl-card:hover .fl-title { color: #0b5e36 !important; }
+
+/* Boutons : réaction au toucher */
+.sh-btn-voir, .sv-btn-voir, .fl-btn, .btn-buy-now, .btn-submit, .btn-cta-white, .btn-cta-outline, .nd-form button { transition: background .2s, color .2s, transform .1s; }
+.sh-btn-voir:active, .sv-btn-voir:active, .fl-btn:active, .btn-buy-now:active, .btn-submit:active,
+.btn-cta-white:active, .btn-cta-outline:active, .nd-form button:active { transform: scale(.97) !important; }
+
+/* Liens du menu : trait qui se dessine au survol */
+.navbar__links a { background-image: linear-gradient(#0f7a45, #0f7a45); background-repeat: no-repeat; background-position: 0 100%; background-size: 0 2px; transition: background-size .25s, color .2s; }
+.navbar__links a:hover { background-size: 100% 2px; }
+
+/* Clavier : contour vert bien visible */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #0f7a45; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-hidden { opacity: 1 !important; transform: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
 /* ══ REVEAL ANIMATION ══ */
 .reveal {
   opacity: 0; transform: translateY(28px);
