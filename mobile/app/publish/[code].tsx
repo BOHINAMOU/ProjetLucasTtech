@@ -12,7 +12,7 @@ import { Badge, Banner, Button, Card, DateField, FilePicker, H2, Input, Muted, R
 const POST_KINDS = [{ value: 'news', label: 'Actualité' }, { value: 'product', label: 'Nouveau produit / service' }];
 const URGENCY = [{ value: 'normal', label: 'Normale' }, { value: 'urgent', label: 'Urgente' }];
 
-/** Formulaire de publication : le contenu dépend du service choisi (actualité, offre, publicité, mise en avant, accompagnement). */
+/** Formulaire d'actualité : le contenu dépend du service choisi (actualité, offre, publicité, mise en avant, accompagnement). */
 export default function Publish() {
   const { code } = useLocalSearchParams<{ code: string }>();
   const { config, kind } = useAuth();
@@ -55,7 +55,7 @@ export default function Publish() {
       router.replace(`/order/${order.id}` as never);
     } catch (e) {
       setErrors(fieldErrors(e));
-      notice('Publication incomplète', messageOf(e));
+      notice('Actualité incomplète', messageOf(e));
       setBusy(false);
     }
   };
@@ -74,9 +74,9 @@ export default function Publish() {
 
           {k === 'news' || k === 'news_boost' || k === 'ad' ? (
             <>
-              {k !== 'ad' && kind !== 'member' ? <Select label="Type de publication" value={f.post_kind} options={POST_KINDS} onChange={set('post_kind')} /> : null}
+              {k !== 'ad' && kind !== 'member' ? <Select label="Type d'actualité" value={f.post_kind} options={POST_KINDS} onChange={set('post_kind')} /> : null}
               <Input label="Titre (facultatif)" value={f.title} onChangeText={set('title')} error={errors.title} />
-              <Input label={k === 'ad' ? 'Texte de la publicité' : 'Texte de la publication'} value={f.text} onChangeText={set('text')} multiline error={errors.text} />
+              <Input label={k === 'ad' ? 'Texte de la publicité' : "Texte de l'actualité"} value={f.text} onChangeText={set('text')} multiline error={errors.text} />
               <FilePicker label={k === 'ad' ? 'Visuel de la publicité' : 'Image (facultative)'} icon="image-outline" fileName={image?.name} error={errors.image}
                 onPress={async () => setImage((await pickImage()) ?? image)} />
               {k === 'ad' ? <Input label="Lien (site, page Facebook, WhatsApp…)" value={f.link_url} onChangeText={set('link_url')} autoCapitalize="none" keyboardType="url" error={errors.link_url} /> : null}

@@ -35,7 +35,7 @@ export default function EmployerHome() {
       ) : (
         <>
           {c.decision_message ? <Banner tone="green" icon="checkmark-circle">{c.decision_message}</Banner> : null}
-          {c.publishing_free ? <Banner tone="navy" icon="ribbon">Partenaire Lantante : vos publications sont sans frais.</Banner> : null}
+          {c.publishing_free ? <Banner tone="navy" icon="ribbon">Partenaire Lantante : vos actualités sont sans frais.</Banner> : null}
         </>
       )}
 

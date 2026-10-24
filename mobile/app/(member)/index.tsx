@@ -20,16 +20,16 @@ export default function MemberHome() {
       <InstallApp dismissible />
       <HighlightsBanner />
       <Button label="Publier maintenant" icon="add-circle" variant="green" onPress={() => router.push('/(member)/publish' as never)} />
-      {waiting ? <Banner tone="gold" icon="card">{waiting === 1 ? 'Une publication attend votre paiement.' : `${waiting} publications attendent votre paiement.`}</Banner> : null}
+      {waiting ? <Banner tone="gold" icon="card">{waiting === 1 ? 'Une actualité attend votre paiement.' : `${waiting} actualités attendent votre paiement.`}</Banner> : null}
       <TileGrid>
-        <Tile icon="document-text" value={list.length} label="Publications" onPress={() => router.push('/orders' as never)} />
+        <Tile icon="document-text" value={list.length} label="Actualités" onPress={() => router.push('/orders' as never)} />
         <Tile icon="checkmark-circle" tone="green" value={list.filter((o) => o.status === 'published').length} label="En ligne" onPress={() => router.push('/orders' as never)} />
         <Tile icon="chatbubbles" tone="gold" value={dash.data?.unread_messages ?? 0} label="Messages non lus" onPress={() => router.push('/(member)/messages' as never)} />
         <Tile icon="notifications" tone="warn" value={dash.data?.unread_notifications ?? 0} label="Notifications" onPress={() => router.push('/notifications' as never)} />
       </TileGrid>
-      <Section title="Dernières publications">
+      <Section title="Dernières actualités">
         {list.length ? list.slice(0, 5).map((o) => <OrderCard key={o.id} order={o} />) : (
-          <Empty icon="megaphone-outline" title="Pas encore de publication" text="Choisissez un service, payez les frais, c'est publié après validation." />
+          <Empty icon="megaphone-outline" title="Pas encore d'actualité" text="Choisissez un service, payez les frais, c'est publié après validation." />
         )}
       </Section>
     </Screen>

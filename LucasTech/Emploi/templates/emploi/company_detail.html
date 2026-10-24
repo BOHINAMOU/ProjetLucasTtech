@@ -18,7 +18,7 @@
     {% else %}<div class="em-empty">Aucune offre ouverte pour le moment.</div>{% endif %}
     {% endif %}
     {% if posts %}
-    <h2 class="em-h2" style="margin-top:26px">Publications</h2>
+    <h2 class="em-h2" style="margin-top:26px">Actualités</h2>
     <div class="em-grid">{% for post in posts %}<article class="em-card"><div class="em-muted">{{ post.created_at|date:"d/m/Y" }}</div><p>{{ post.text|truncatechars:200 }}</p></article>{% endfor %}</div>
     {% endif %}
   </div>

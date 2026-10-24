@@ -1,0 +1,9 @@
+<article class="nw-card">
+  <a href="{% url 'emploi:order_detail' o.pk %}">{% if o.image %}<img class="nw-img" src="{{ o.image.url }}" alt="" loading="lazy">{% else %}<span class="nw-ph">{{ o.headline|slice:":1" }}</span>{% endif %}</a>
+  <a class="nw-title" href="{% url 'emploi:order_detail' o.pk %}"><h3>{{ o.headline }}</h3><i class="far fa-circle-right"></i></a>
+  <div class="nw-meta">
+    <span>{{ o.plan.name }} · {{ o.created_at|date:"d M Y" }}</span>
+    <span class="em-tag {% if o.status == 'published' %}em-tag--green{% elif o.status == 'awaiting_payment' or o.status == 'changes_requested' or o.status == 'payment_declared' %}em-tag--warn{% endif %}">{{ o.get_status_display }}</span>
+  </div>
+  <div class="nw-by"><span>{{ o.amount_label }}</span><a class="em-btn em-btn--ghost em-btn--sm" style="margin-left:auto" href="{% url 'emploi:order_detail' o.pk %}">{% if o.can_pay %}Payer{% elif o.status == 'changes_requested' %}Corriger{% else %}Voir{% endif %}</a></div>
+</article>

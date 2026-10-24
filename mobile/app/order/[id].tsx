@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Linking } from 'react-native';
+import { Linking } from 'react-native';
 
 import { api, post, SITE_URL } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -10,8 +10,8 @@ import { fieldErrors, messageOf, useLoad } from '@/lib/hooks';
 import { whatsappLink } from '@/lib/format';
 import { colors } from '@/lib/theme';
 import type { Order } from '@/lib/types';
-import { Badge, Banner, Button, Card, FilePicker, H2, InfoLine, Input, Muted, Screen, Select, Steps, T, confirm, notice } from '@/ui';
-import { orderTone } from '@/ui/cards';
+import { Badge, Banner, Button, Card, FilePicker, H2, InfoLine, Input, Muted, Screen, Section, Select, Steps, T, confirm, notice } from '@/ui';
+import { OrderPreview, orderTone } from '@/ui/cards';
 
 const STEPS = ['Soumise', 'Paiement', 'Validation', 'Publiée'];
 const METHODS = [{ value: 'flooz', label: 'Flooz' }, { value: 'tmoney', label: 'T-Money' }];
@@ -38,7 +38,7 @@ export default function OrderScreen() {
     setErrors({});
     try {
       await post(`orders/${id}/pay`, { payment_method: method, payer_phone: phone, payment_reference: reference });
-      notice('Paiement signalé', 'Lantante vérifie votre paiement puis valide la publication. Vous serez prévenu.');
+      notice('Paiement signalé', "Lantante vérifie votre paiement puis valide l'actualité. Vous serez prévenu.");
       await loaded.reload();
     } catch (e) {
       setErrors(fieldErrors(e));
@@ -48,7 +48,7 @@ export default function OrderScreen() {
     }
   };
 
-  const cancel = () => confirm('Annuler cette publication ?', "Elle ne sera pas publiée et aucun paiement n'est dû.", 'Annuler la publication', async () => {
+  const cancel = () => confirm('Annuler cette actualité ?', "Elle ne sera pas publiée et aucun paiement n'est dû.", "Annuler l'actualité", async () => {
     try {
       await post(`orders/${id}/cancel`);
       await loaded.reload();
@@ -62,7 +62,7 @@ export default function OrderScreen() {
     setErrors({});
     try {
       await api('PATCH', `orders/${id}`, { title, text, ...(image ? { image } : {}) });
-      notice('Publication corrigée', 'Elle est renvoyée à Lantante pour validation.');
+      notice('Actualité corrigée', 'Elle est renvoyée à Lantante pour validation.');
       setImage(null);
       await loaded.reload();
     } catch (e) {
@@ -90,15 +90,16 @@ export default function OrderScreen() {
             <InfoLine icon="calendar-outline" text={`Créée le ${formatDate(o.created_at)}`} />
             {o.visible_until ? <InfoLine icon="eye-outline" text={`Visible jusqu'au ${formatDate(o.visible_until)}`} /> : null}
           </Card>
-          {o.image ? <Image source={{ uri: o.image }} style={{ height: 160, borderRadius: 14, backgroundColor: colors.surface2 }} /> : null}
-          {o.text ? <Card><T color={colors.ink2}>{o.text}</T></Card> : null}
+          {['news', 'news_boost', 'ad'].includes(o.plan.kind) ? (
+            <Section title="Aperçu dans les actualités"><OrderPreview order={o} />{o.text ? <T color={colors.ink2}>{o.text}</T> : null}</Section>
+          ) : o.text ? <Card><T color={colors.ink2}>{o.text}</T></Card> : null}
 
           {o.review_message ? <Banner tone={o.status === 'refused' ? 'red' : 'gold'} icon="chatbubble-ellipses">{o.review_message}</Banner> : null}
           {o.status === 'quote' ? <Banner icon="time">Lantante prépare votre devis et vous contactera.</Banner> : null}
           {o.status === 'payment_declared' ? <Banner tone="gold" icon="hourglass">Paiement signalé : Lantante le vérifie.</Banner> : null}
-          {o.status === 'in_review' ? <Banner icon="shield-checkmark">Paiement reçu. Lantante valide votre publication.</Banner> : null}
-          {o.status === 'published' ? <Banner tone="green" icon="checkmark-circle">Votre publication est en ligne.</Banner> : null}
-          {o.status === 'refunded' ? <Banner tone="grey" icon="return-down-back">Cette publication a été refusée et vous avez été remboursé.</Banner> : null}
+          {o.status === 'in_review' ? <Banner icon="shield-checkmark">Paiement reçu. Lantante valide votre actualité.</Banner> : null}
+          {o.status === 'published' ? <Banner tone="green" icon="checkmark-circle">Votre actualité est en ligne.</Banner> : null}
+          {o.status === 'refunded' ? <Banner tone="grey" icon="return-down-back">Cette actualité a été refusée et vous avez été remboursé.</Banner> : null}
 
           {o.can_pay ? (
             <Card>
@@ -110,7 +111,7 @@ export default function OrderScreen() {
               {pay_cfg?.tmoney ? <InfoLine icon="call-outline" text={`T-Money : ${pay_cfg.tmoney}`} /> : null}
               {!pay_cfg?.flooz && !pay_cfg?.tmoney ? (
                 <Button small variant="green" icon="logo-whatsapp" label="Demander les numéros de paiement sur WhatsApp"
-                  onPress={() => Linking.openURL(`${whatsappLink(pay_cfg?.whatsapp || '')}?text=${encodeURIComponent(`Bonjour, je souhaite payer ma publication ${o.reference}.`)}`)} />
+                  onPress={() => Linking.openURL(`${whatsappLink(pay_cfg?.whatsapp || '')}?text=${encodeURIComponent(`Bonjour, je souhaite payer mon actualité ${o.reference}.`)}`)} />
               ) : null}
               <Select label="Moyen de paiement" value={method} options={METHODS} onChange={setMethod} error={errors.payment_method} />
               <Input label="Numéro avec lequel vous avez payé" value={phone} onChangeText={setPhone} keyboardType="phone-pad" error={errors.payer_phone} />
@@ -122,7 +123,7 @@ export default function OrderScreen() {
           {o.can_edit && o.status === 'changes_requested' ? (
             textual ? (
               <Card>
-                <H2>Corriger la publication</H2>
+                <H2>Corriger l'actualité</H2>
                 <Input label="Titre" value={title} onChangeText={setTitle} error={errors.title} />
                 <Input label="Texte" value={text} onChangeText={setText} multiline error={errors.text} />
                 <FilePicker label="Nouvelle image (facultative)" icon="image-outline" fileName={image?.name} onPress={async () => setImage((await pickImage()) ?? image)} />
@@ -134,7 +135,7 @@ export default function OrderScreen() {
           ) : null}
 
           {o.paid_at ? <Button label="Voir le reçu" icon="receipt-outline" variant="outline" onPress={() => router.push(`/receipt/${o.id}` as never)} /> : null}
-          {['awaiting_payment', 'quote'].includes(o.status) ? <Button label="Annuler cette publication" variant="ghost" onPress={cancel} /> : null}
+          {['awaiting_payment', 'quote'].includes(o.status) ? <Button label="Annuler cette actualité" variant="ghost" onPress={cancel} /> : null}
         </>
       ) : null}
     </Screen>

@@ -366,7 +366,7 @@ class OrderContentForm(forms.ModelForm):
         model = PublicationOrder
         fields = ['title', 'post_kind', 'text', 'image', 'link_url']
         widgets = {'text': forms.Textarea(attrs={'rows': 6})}
-        labels = {'title': "Titre (facultatif)", 'post_kind': "Type de publication", 'text': "Texte de la publication",
+        labels = {'title': "Titre (facultatif)", 'post_kind': "Type d'actualité", 'text': "Texte de l'actualité",
                   'image': "Image (facultative)", 'link_url': "Lien (site, page Facebook, WhatsApp…)"}
 
     def __init__(self, *args, plan=None, **kwargs):

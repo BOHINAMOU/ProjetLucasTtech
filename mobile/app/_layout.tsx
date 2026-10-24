@@ -57,8 +57,8 @@ function Gate() {
       <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
       <Stack.Screen name="appointments" options={{ title: 'Rendez-vous' }} />
       <Stack.Screen name="discover" options={{ title: 'Actualités et entreprises' }} />
-      <Stack.Screen name="orders" options={{ title: 'Mes publications' }} />
-      <Stack.Screen name="order/[id]" options={{ title: 'Ma publication' }} />
+      <Stack.Screen name="orders" options={{ title: 'Mes actualités' }} />
+      <Stack.Screen name="order/[id]" options={{ title: 'Mon actualité' }} />
       <Stack.Screen name="publish/[code]" options={{ title: 'Publier' }} />
       <Stack.Screen name="my-application/[id]" options={{ title: 'Ma candidature' }} />
       <Stack.Screen name="application/[id]" options={{ title: 'Candidature reçue' }} />

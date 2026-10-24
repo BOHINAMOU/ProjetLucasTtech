@@ -9,7 +9,7 @@ export default function Orders() {
   const loaded = useLoad<Order[]>('orders');
   return (
     <List loaded={loaded} data={loaded.data ?? []} render={(o) => <OrderCard order={o} />}
-      empty={<Empty icon="receipt-outline" title="Aucune publication" text="Vos publications payées ou en attente apparaîtront ici."
+      empty={<Empty icon="receipt-outline" title="Aucune actualité" text="Vos actualités payées ou en attente apparaîtront ici."
         action={<Button label="Publier" onPress={() => router.back()} />} />} />
   );
 }

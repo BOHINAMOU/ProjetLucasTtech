@@ -12,7 +12,7 @@ export default function MemberMore() {
   return (
     <Screen>
       <Menu items={[
-        { icon: 'receipt-outline', label: 'Mes publications et paiements', onPress: () => router.push('/orders' as never) },
+        { icon: 'receipt-outline', label: 'Mes actualités et paiements', onPress: () => router.push('/orders' as never) },
         { icon: 'notifications-outline', label: 'Notifications', badge: me.data?.unread_notifications, onPress: () => router.push('/notifications' as never) },
         ...(Platform.OS === 'web' ? [{ icon: 'download-outline' as const, label: "Installer l'application", onPress: () => router.push('/telecharger' as never) }] : []),
         { icon: 'headset-outline', label: 'Service client', onPress: () => router.push('/support' as never) },

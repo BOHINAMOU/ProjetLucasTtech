@@ -22,8 +22,8 @@ export default function PublishHub() {
       ) : loaded.data ? (
         <>
           <H2>Que voulez-vous publier ?</H2>
-          {loaded.data.exempt ? <Banner tone="navy" icon="ribbon">Partenaire Lantante : vos publications sont sans frais (validation toujours effectuée).</Banner> : (
-            <Muted size={13}>Le paiement se fait avant la validation. Si Lantante refuse la publication, vous êtes remboursé.</Muted>
+          {loaded.data.exempt ? <Banner tone="navy" icon="ribbon">Partenaire Lantante : vos actualités sont sans frais (validation toujours effectuée).</Banner> : (
+            <Muted size={13}>Le paiement se fait avant la validation. Si Lantante refuse l'actualité, vous êtes remboursé.</Muted>
           )}
           {loaded.data.plans.map((p) => (
             <Card key={p.code} onPress={() => router.push(`/publish/${p.code}` as never)}>
@@ -42,7 +42,7 @@ export default function PublishHub() {
               </Row>
             </Card>
           ))}
-          <Button label="Mes publications" variant="outline" icon="receipt-outline" onPress={() => router.push('/orders' as never)} />
+          <Button label="Mes actualités" variant="outline" icon="receipt-outline" onPress={() => router.push('/orders' as never)} />
         </>
       ) : null}
     </Screen>

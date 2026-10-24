@@ -2,7 +2,7 @@
 {% block em_title %}Publier{% endblock %}
 {% block em_content %}
 <h1 class="em-h1" style="margin:34px 0 8px">Que souhaitez-vous publier ?</h1>
-<p class="em-lead" style="margin-bottom:20px">{% if is_member %}Publiez une actualité ou une annonce : le tarif s'affiche, vous payez les frais, puis Lantante vérifie et met en ligne.{% elif exempt %}Vous êtes partenaire : vos publications sont incluses, rien à payer. Lantante les relit avant la mise en ligne.{% else %}Choisissez un service : le tarif s'affiche, vous payez les frais, puis Lantante vérifie et publie. <a href="{% url 'emploi:pricing' %}">Voir les conditions</a>.{% endif %}</p>
+<p class="em-lead" style="margin-bottom:20px">{% if is_member %}Publiez une actualité ou une annonce : le tarif s'affiche, vous payez les frais, puis Lantante vérifie et met en ligne.{% elif exempt %}Vous êtes partenaire : vos actualités sont incluses, rien à payer. Lantante les relit avant la mise en ligne.{% else %}Choisissez un service : le tarif s'affiche, vous payez les frais, puis Lantante vérifie et publie. <a href="{% url 'emploi:pricing' %}">Voir les conditions</a>.{% endif %}</p>
 <div class="em-grid">
   {% for plan in plans %}
   <article class="em-card">

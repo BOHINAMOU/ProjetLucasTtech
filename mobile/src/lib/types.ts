@@ -92,7 +92,7 @@ export interface Plan {
 
 export interface Order {
   id: number; reference: string; plan: Plan; status: string; status_label: string; step: number; amount: number;
-  amount_label: string; title: string; text: string; post_kind: string; link_url: string; image: string | null;
+  amount_label: string; title: string; headline: string; text: string; post_kind: string; link_url: string; image: string | null;
   review_message: string; can_pay: boolean; can_edit: boolean; payment_method: string; payment_reference: string;
   receipt_number: string; paid_at: string | null; visible_until: string | null; created_at: string; offer_id: number | null;
 }

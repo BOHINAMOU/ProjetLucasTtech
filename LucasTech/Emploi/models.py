@@ -825,6 +825,16 @@ class PublicationOrder(models.Model):
         return f"#{self.pk} {self.plan.name} — {self.owner_name}"
 
     @property
+    def headline(self):
+        """Titre de l'actualité telle qu'elle apparaîtra (titre saisi, sinon première ligne du texte, sinon le nom du service)."""
+        if self.title:
+            return self.title
+        line = (self.text or '').strip().splitlines()[0].strip() if (self.text or '').strip() else ''
+        if not line:
+            return self.plan.name
+        return line if len(line) <= 90 else line[:87].rstrip() + '…'
+
+    @property
     def owner_name(self):
         if self.employer_id:
             return self.employer.company_name

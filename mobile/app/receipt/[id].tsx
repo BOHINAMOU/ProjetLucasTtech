@@ -36,7 +36,7 @@ export default function ReceiptScreen() {
             <Muted>N° {r.receipt_number}</Muted>
             {line('Client', r.owner)}
             {line('Service', r.service)}
-            {r.title ? line('Publication', r.title) : null}
+            {r.title ? line('Actualité', r.title) : null}
             {line('Référence', r.reference)}
             {line('Moyen de paiement', r.payment_method)}
             {line('Transaction', r.payment_reference)}

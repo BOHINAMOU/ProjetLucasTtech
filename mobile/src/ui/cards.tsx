@@ -281,12 +281,50 @@ export function ApplicationCard({ application, onPress, employer }: { applicatio
   );
 }
 
-export function OrderCard({ order }: { order: Order }) {
+const NEWS_KINDS = ['news', 'news_boost', 'ad'];
+
+/** Aperçu d'une actualité en cours de publication, présenté comme dans le fil (image, titre vert, date). */
+export function OrderPreview({ order, onPress }: { order: Order; onPress?: () => void }) {
+  const Wrapper: any = onPress ? Pressable : View;
   return (
-    <Card onPress={() => router.push(`/order/${order.id}` as never)}>
+    <View>
+      <Wrapper onPress={onPress}>
+        {order.image
+          ? <Image source={{ uri: order.image }} style={{ width: '100%', aspectRatio: 1.85, backgroundColor: colors.surface2 }} resizeMode="cover" />
+          : <View style={{ width: '100%', aspectRatio: 1.85, backgroundColor: colors.navy, alignItems: 'center', justifyContent: 'center' }}>
+              <T size={44} weight="800" color={colors.white}>{(order.headline || '?').charAt(0).toUpperCase()}</T>
+            </View>}
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 14, marginBottom: 12 }}>
+          <View style={{ flex: 1 }}><T size={19} weight="800" color={colors.green}>{order.headline}</T></View>
+          {onPress ? <Ionicons name="arrow-forward-circle-outline" size={26} color={colors.ink2} style={{ marginTop: 2 }} /> : null}
+        </View>
+      </Wrapper>
+      <View style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <Muted size={13}>Publié le {formatDate(order.created_at)}</Muted>
+        <Muted size={13}>{order.plan.name}</Muted>
+      </View>
+    </View>
+  );
+}
+
+export function OrderCard({ order }: { order: Order }) {
+  const go = () => router.push(`/order/${order.id}` as never);
+  if (NEWS_KINDS.includes(order.plan.kind)) {
+    return (
+      <View style={{ gap: 8 }}>
+        <OrderPreview order={order} onPress={go} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Badge label={order.status_label} tone={orderTone(order.status)} />
+          <Muted size={13}>{order.amount_label} · Réf. {order.reference}</Muted>
+        </Row>
+      </View>
+    );
+  }
+  return (
+    <Card onPress={go}>
       <Row style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <View style={{ flex: 1, gap: 2 }}>
-          <T weight="700" lines={2}>{order.title || order.plan.name}</T>
+          <T weight="700" lines={2}>{order.headline}</T>
           <Muted>{order.plan.name} · {order.amount_label}</Muted>
         </View>
         <Badge label={order.status_label} tone={orderTone(order.status)} />

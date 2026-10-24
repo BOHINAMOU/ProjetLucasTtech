@@ -31,7 +31,7 @@ export default function Support() {
 
   return (
     <Screen loaded={loaded}>
-      <Banner icon="headset">Notre équipe répond à vos questions sur les offres, les publications et les paiements.</Banner>
+      <Banner icon="headset">Notre équipe répond à vos questions sur les offres, les actualités et les paiements.</Banner>
       {open ? (
         <Card>
           <H2>Conversation en cours</H2>
@@ -41,7 +41,7 @@ export default function Support() {
       ) : null}
       <Card>
         <H2>{open ? 'Ajouter un message' : 'Nouvelle demande'}</H2>
-        {!open ? <Input label="Sujet" value={subject} onChangeText={setSubject} placeholder="Ex : paiement, publication…" maxLength={160} error={errors.subject} /> : null}
+        {!open ? <Input label="Sujet" value={subject} onChangeText={setSubject} placeholder="Ex : paiement, actualité…" maxLength={160} error={errors.subject} /> : null}
         <Input label="Votre message" value={body} onChangeText={setBody} multiline error={errors.body} />
         <Button label="Envoyer" icon="send" onPress={send} loading={busy} disabled={!body.trim()} />
       </Card>

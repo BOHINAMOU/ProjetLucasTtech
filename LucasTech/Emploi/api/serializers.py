@@ -137,7 +137,7 @@ def order_payload(request, o):
     return {
         'id': o.pk, 'reference': o.reference, 'plan': plan_payload(o.plan), 'status': o.status,
         'status_label': o.get_status_display(), 'step': o.step_index, 'amount': o.amount, 'amount_label': o.amount_label,
-        'title': o.title, 'text': o.text, 'post_kind': o.post_kind, 'link_url': o.link_url,
+        'title': o.title, 'headline': o.headline, 'text': o.text, 'post_kind': o.post_kind, 'link_url': o.link_url,
         'image': abs_url(request, o.image), 'review_message': o.review_message,
         'can_pay': o.can_pay, 'can_edit': o.can_edit, 'payment_method': o.payment_method,
         'payment_reference': o.payment_reference, 'receipt_number': o.receipt_number, 'paid_at': dt(o.paid_at),

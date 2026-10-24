@@ -5,6 +5,11 @@
 <h1 class="em-h1" style="font-size:clamp(1.7rem,4vw,2.4rem);margin:12px 0 4px">{{ order.plan.name }}</h1>
 <div class="em-muted">Commande {{ order.reference }} · {{ order.created_at|date:"d/m/Y" }}{% if order.title %} · « {{ order.title }} »{% endif %}</div>
 
+{% include 'emploi/_news_css.html' %}
+{% if order.plan.kind == 'news' or order.plan.kind == 'news_boost' or order.plan.kind == 'ad' %}
+<div style="max-width:520px;margin-top:18px"><div class="nw-bar nw-bar--sm"><span>Aperçu dans les actualités</span></div>
+  <div style="margin-top:14px">{% with o=order %}{% include 'emploi/_order_card.html' %}{% endwith %}</div></div>
+{% endif %}
 <div class="em-card" style="max-width:760px;margin-top:18px">
   {% if order.status in 'refused refunded cancelled' %}
     <div class="em-status em-status--rejected" style="margin:0"><b>{{ order.get_status_display }}</b></div>
@@ -22,11 +27,11 @@
   {% elif order.status == 'payment_declared' %}
     <div class="em-status em-status--pending" style="margin:0"><b>Nous vérifions votre paiement.</b> Merci de patienter quelques instants : vous êtes prévenu dès qu'il est confirmé.</div>
   {% elif order.status == 'in_review' %}
-    <div class="em-status em-status--approved" style="margin:0"><b>Paiement confirmé — validation en cours.</b> Lantante vérifie votre publication avant de la mettre en ligne.</div>
+    <div class="em-status em-status--approved" style="margin:0"><b>Paiement confirmé — validation en cours.</b> Lantante vérifie votre actualité avant de la mettre en ligne.</div>
   {% elif order.status == 'changes_requested' %}
     <div class="em-status em-status--pending" style="margin:0"><b>Une correction est demandée :</b><br>{{ order.review_message|linebreaksbr }}</div>
   {% elif order.status == 'published' %}
-    <div class="em-status em-status--approved" style="margin:0"><b>Votre publication est en ligne.</b></div>
+    <div class="em-status em-status--approved" style="margin:0"><b>Votre actualité est en ligne.</b></div>
   {% elif order.status == 'refused' or order.status == 'refunded' %}
     <div class="em-status em-status--rejected" style="margin:0">{{ order.review_message|linebreaksbr }}</div>
   {% endif %}
@@ -53,7 +58,7 @@
     {% for field in form %}{% include 'emploi/_field.html' %}{% endfor %}
     <button class="em-btn em-btn--green" type="submit"><i class="fas fa-check"></i> J'ai payé</button>
   </form>
-  <p class="em-help" style="margin-top:10px">Le paiement rémunère la publication, il ne garantit pas de recrutement. Si votre publication est refusée, vous pouvez la corriger sans repayer ou être remboursé.</p>
+  <p class="em-help" style="margin-top:10px">Le paiement rémunère l'actualité, il ne garantit pas de recrutement. Si votre actualité est refusée, vous pouvez la corriger sans repayer ou être remboursé.</p>
 </div>
 {% endif %}
 {% endblock %}

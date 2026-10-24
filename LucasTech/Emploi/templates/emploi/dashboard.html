@@ -79,16 +79,13 @@
 
 {% if kind == 'member' %}
 <section class="em-section">
-  <div class="em-row" style="justify-content:space-between;flex-wrap:wrap"><h2 class="em-h2" style="margin:0">Mes publications</h2>
+  <div class="em-row" style="justify-content:space-between;flex-wrap:wrap"><h2 class="em-h2" style="margin:0">Mes actualités</h2>
     <a class="em-btn em-btn--green" href="{% url 'emploi:publish_hub' %}"><i class="fas fa-paper-plane"></i> Publier une actualité ou une annonce</a></div>
   <p class="em-muted" style="margin:8px 0 14px">Vous choisissez ce que vous publiez, vous payez les frais indiqués, puis Lantante vérifie et met en ligne.</p>
   {% if member_orders %}
-  <div class="em-grid">{% for o in member_orders %}
-    <article class="em-card"><h3><a href="{% url 'emploi:order_detail' o.pk %}" style="text-decoration:none">{{ o.plan.name }}{% if o.title %} — {{ o.title|truncatechars:40 }}{% endif %}</a></h3>
-      <div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% elif o.status == 'awaiting_payment' or o.status == 'changes_requested' or o.status == 'payment_declared' %}em-tag--warn{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.amount_label }}</span></div>
-      <a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:order_detail' o.pk %}">{% if o.can_pay %}Payer{% elif o.status == 'changes_requested' %}Corriger{% else %}Voir{% endif %}</a></article>
-  {% endfor %}</div>
-  {% else %}<div class="em-empty">Aucune publication pour le moment.</div>{% endif %}
+  {% include 'emploi/_news_css.html' %}
+  <div class="nw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">{% for o in member_orders %}{% include 'emploi/_order_card.html' %}{% endfor %}</div>
+  {% else %}<div class="em-empty">Aucune actualité pour le moment.</div>{% endif %}
 </section>
 {% endif %}
 
@@ -184,12 +181,9 @@
     </div>
   </div>
   {% if orders %}
-  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes publications et paiements</h3>
-  <div class="em-grid">{% for o in orders %}
-    <article class="em-card"><h3><a href="{% url 'emploi:order_detail' o.pk %}" style="text-decoration:none">{{ o.plan.name }}{% if o.title %} — {{ o.title|truncatechars:40 }}{% endif %}</a></h3>
-      <div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% elif o.status == 'awaiting_payment' or o.status == 'changes_requested' or o.status == 'payment_declared' %}em-tag--warn{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.amount_label }}</span></div>
-      <a class="em-btn em-btn--ghost em-btn--sm" style="align-self:flex-start" href="{% url 'emploi:order_detail' o.pk %}">{% if o.can_pay %}Payer{% elif o.status == 'changes_requested' %}Corriger{% else %}Voir{% endif %}</a></article>
-  {% endfor %}</div>
+  <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes actualités et paiements</h3>
+  {% include 'emploi/_news_css.html' %}
+  <div class="nw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">{% for o in orders %}{% include 'emploi/_order_card.html' %}{% endfor %}</div>
   {% endif %}
   <h3 class="em-h2" style="margin-top:22px;font-size:1.3rem">Mes offres</h3>
   {% if offers %}<div class="em-grid">{% for o in offers %}<article class="em-card"><h3><a href="{{ o.get_absolute_url }}" style="text-decoration:none">{{ o.title }}</a></h3><div class="em-meta"><span class="em-tag {% if o.status == 'published' %}em-tag--green{% endif %}">{{ o.get_status_display }}</span><span class="em-tag">{{ o.applications.count }} candidature{{ o.applications.count|pluralize }}</span>{% if o.deadline %}<span class="em-tag em-tag--warn"><i class="fas fa-hourglass-half"></i> Fin le {{ o.deadline|date:"d/m/Y" }}</span>{% endif %}</div>
