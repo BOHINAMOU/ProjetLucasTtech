@@ -477,6 +477,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   </div>
 </div>
 
+<style>
+/* ── Présentation « journal » : barre verte, titres verts, date et partage ── */
+.pb-section-header { background:#0f7a45; border-left:6px solid #c9a84c; padding:8px 16px; align-items:center; margin-bottom:28px; }
+.pb-section-title, .pb-section-title span, .pb-count { color:#fff !important; font-family:var(--font); text-transform:uppercase; letter-spacing:.3px; font-size:.95rem; font-weight:800; margin:0; display:inline; }
+.pb-section-title span { opacity:.85; margin-right:8px; }
+.pb-count { background:transparent; border:0; padding:0; }
+.pb-grid { grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:38px 28px; }
+.pb-card { background:transparent; border:0; border-radius:0; box-shadow:none; transform:none; text-decoration:none; }
+.pb-card:hover { transform:none; box-shadow:none; border:0; }
+.pb-card-media { display:block; height:auto; aspect-ratio:1.85/1; border:1px solid var(--border); border-radius:0; }
+.pb-card-media::after { display:none; }
+.pb-card-cat-badge { background:#0f7a45; border-radius:0; }
+.pb-card-event-badge { background:#c9a84c; color:#0f172a; border-radius:0; }
+.pb-card-body { padding:0; margin:16px 0 12px; gap:0; }
+.pb-card-title { display:flex !important; gap:12px; align-items:flex-start; justify-content:space-between; font-family:var(--font); font-size:1.3rem; font-weight:800; line-height:1.25; color:#0f7a45 !important; text-decoration:none; -webkit-line-clamp:unset; overflow:visible; letter-spacing:0; }
+.pb-card-title i { flex:0 0 auto; font-size:1.5rem; margin-top:3px; color:#334155; }
+.pb-card-excerpt { display:none; }
+.pb-card-footer { border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:8px 0; justify-content:space-between; font-size:.92rem; color:#334155; }
+.pb-share { display:flex; align-items:center; gap:6px; }
+.pb-share a { width:32px; height:32px; background:#111; color:#fff; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:2px; }
+.pb-featured-title { color:#fff; }
+@media (max-width:640px) { .pb-grid { grid-template-columns:minmax(0,1fr); } .pb-card-title { font-size:1.15rem; } }
+</style>
 <!-- ══ GRILLE ══ -->
 <section class="pb-section">
   <div class="pb-section-header">
@@ -495,10 +518,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
   <div class="pb-grid">
     {% for pub in publications %}
-    <a href="{% url 'publications:publication_detail' pub.slug %}" class="pb-card"
-       style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
+    <article class="pb-card" style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
 
-      <div class="pb-card-media">
+      <a class="pb-card-media" href="{% url 'publications:publication_detail' pub.slug %}">
         {% if pub.category %}
           <span class="pb-card-cat-badge">{{ pub.category.name }}</span>
         {% endif %}
@@ -512,24 +534,27 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         {% else %}
           <div class="pb-card-media-placeholder">📰</div>
         {% endif %}
-      </div>
+      </a>
 
       <div class="pb-card-body">
-        <h3 class="pb-card-title">{{ pub.title }}</h3>
-        <p class="pb-card-excerpt">{{ pub.content|striptags|truncatewords:25 }}</p>
+        <a class="pb-card-title" href="{% url 'publications:publication_detail' pub.slug %}"><span>{{ pub.title }}</span><i class="far fa-circle-right"></i></a>
       </div>
 
       <div class="pb-card-footer">
-        <span class="pb-card-read">Lire l'article <i class="fa fa-arrow-right"></i></span>
+        <span>Publié le {{ pub.created_at|date:"d M Y" }}</span>
+        <span class="pb-share">Partager sur :
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{% url 'publications:publication_detail' pub.slug %}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://wa.me/?text={{ pub.title|urlencode }}%20{{ request.scheme }}://{{ request.get_host }}{% url 'publications:publication_detail' pub.slug %}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        </span>
       </div>
 
-    </a>
+    </article>
 
     {% empty %}
     <div class="pb-empty">
       <span class="pb-empty-icon">📭</span>
       <p>Aucune actualité trouvée.</p>
-      <a href="{% url 'publications:publications' %}">Voir toutes les publications</a>
+      <a href="{% url 'publications:publications' %}">Voir toutes les actualités</a>
     </div>
     {% endfor %}
   </div>
