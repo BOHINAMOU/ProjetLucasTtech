@@ -478,6 +478,21 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 </div>
 
 <style>
+/* ── Barre des thèmes : tous visibles, sur plusieurs lignes, sans défilement ── */
+.pb-cats-outer { position:static; box-shadow:none; background:transparent; border-bottom:0; }
+.pb-cats-wrap { flex-wrap:wrap; gap:10px 14px; padding-top:18px; padding-bottom:6px; align-items:center; }
+.pb-cats-label { color:#0f7a45; border-right:0; margin-right:0; padding-right:0; }
+.pb-cats-viewport { overflow:visible; flex:1 1 100%; }
+.pb-cats-track, .pb-cats-track.pb-cats-scroll { animation:none !important; transform:none !important; width:auto; flex-wrap:wrap; gap:10px; padding:0; }
+.pb-cats-fade { display:none; }
+.pb-cat-btn[aria-hidden="true"] { display:none; }
+.pb-cat-pinned { margin-right:0; }
+.pb-cat-btn, .pb-cat-btn.c-1, .pb-cat-btn.c-2, .pb-cat-btn.c-3, .pb-cat-btn.c-4, .pb-cat-btn.c-5 {
+  background:#fff; border:1px solid rgba(15,122,69,.4); color:#0f7a45; border-radius:0; box-shadow:none; padding:9px 16px; font-weight:700; }
+.pb-cat-btn:hover { background:rgba(15,122,69,.08); transform:none; box-shadow:none; border-color:#0f7a45; }
+.pb-cat-btn.active, .pb-cat-btn.all.active, .pb-cat-btn.active.c-1, .pb-cat-btn.active.c-2, .pb-cat-btn.active.c-3, .pb-cat-btn.active.c-4, .pb-cat-btn.active.c-5 {
+  background:#0f7a45; border-color:#0f7a45; color:#fff; box-shadow:none; }
+.pb-cat-btn i { color:inherit; }
 /* ── Présentation « journal » : barre verte, titres verts, date et partage ── */
 .pb-section-header { background:#0f7a45; border-left:6px solid #c9a84c; padding:8px 16px; align-items:center; margin-bottom:28px; }
 .pb-section-title, .pb-section-title span, .pb-count { color:#fff !important; font-family:var(--font); text-transform:uppercase; letter-spacing:.3px; font-size:.95rem; font-weight:800; margin:0; display:inline; }
