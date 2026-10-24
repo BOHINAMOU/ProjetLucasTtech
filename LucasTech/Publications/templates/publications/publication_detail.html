@@ -58,7 +58,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
    vides, quelle que soit l'orientation de l'image (portrait ou paysage).
    max-height reste une limite de sécurité pour les cas extrêmes. */
 .pd-cover img, .pd-cover video {
-  display: block; width: 100%; height: auto; max-height: 80vh; object-fit: cover;
+  display: block; width: 100%; height: auto; max-height: 80vh; object-fit: contain; /* photo entière, jamais coupée */
+  background: var(--surf2);
 }
 .pd-cover::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 6px;
@@ -217,7 +218,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .pd-gallery-item:hover { transform: scale(1.03); }
 .pd-gallery-item img {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 100%; object-fit: contain; /* photo entière */
 }
 .pd-gallery-video { cursor: default; }
 .pd-gallery-video video { width: 100%; height: 100%; object-fit: cover; background: #000; }
@@ -280,7 +281,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   height: 160px; overflow: hidden; background: var(--surf2); flex-shrink: 0;
 }
 .pd-rel-card-media img {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 100%; object-fit: cover; object-position: center 25%; /* garde les visages */
   transition: transform .5s;
 }
 .pd-rel-card:hover .pd-rel-card-media img { transform: scale(1.06); }
