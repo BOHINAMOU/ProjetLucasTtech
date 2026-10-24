@@ -226,24 +226,23 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── Bandeau collaboration / fournisseurs ── */
 .sh-vendor-ticker {
-  background: linear-gradient(100deg, var(--accent), #1f9d55 55%, var(--accent2));
-  overflow: hidden; border-radius: 12px;
-  padding: 16px 0; margin-bottom: 32px;
+  background: #0f7a45; overflow: hidden; border-radius: 0;
+  padding: 10px 0; margin-bottom: 28px; border-top: 2px solid #c9a84c;
 }
 .sh-vendor-ticker__track {
   display: flex; gap: 0; width: max-content;
-  animation: shTickerScroll 26s linear infinite;
+  animation: shTickerScroll 40s linear infinite;
 }
 .sh-vendor-ticker__track:hover { animation-play-state: paused; }
 @keyframes shTickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .sh-vendor-chip {
   display: inline-flex; align-items: center; gap: 12px;
-  padding: 0 44px; font-size: 1.15rem; font-weight: 700;
+  padding: 0 36px; font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
   color: #fff; white-space: nowrap; text-decoration: none;
   transition: color .2s;
 }
-.sh-vendor-chip i { color: #1c1814; font-size: 1.3rem; }
-.sh-vendor-chip:hover { color: #1c1814; }
+.sh-vendor-chip i { color: #c9a84c; font-size: .95rem; }
+.sh-vendor-chip:hover { color: #c9a84c; }
 .sh-section-title {
   font-family: var(--serif);
   font-size: clamp(1.5rem, 3vw, 2.2rem);

@@ -28,23 +28,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ── Message en bandeau défilant (au lieu du sous-titre statique) ── */
 .tm-hero-ticker {
   margin: 0 calc(-1 * clamp(1.5rem,6vw,5rem));
-  background: rgba(15,12,9,.62); overflow: hidden;
-  padding: 15px 0; border-top: 1px solid rgba(255,255,255,.14);
+  background: rgba(11,46,29,.82); overflow: hidden;
+  padding: 11px 0; border-top: 2px solid #c9a84c;
 }
 .tm-hero-ticker-track {
   display: flex; gap: 0; width: max-content;
-  animation: tmHeroTicker 20s linear infinite;
+  animation: tmHeroTicker 45s linear infinite;
 }
 .tm-hero-ticker-track:hover { animation-play-state: paused; }
 @keyframes tmHeroTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .tm-hero-ticker-item {
-  display: inline-flex; align-items: center; gap: 16px;
-  padding: 0 clamp(1.5rem,6vw,5rem);
-  font-family: var(--serif); font-style: italic; font-weight: 700;
-  font-size: clamp(1.1rem, 2.2vw, 1.5rem); white-space: nowrap; color: #fff;
-  text-shadow: 0 1px 5px rgba(0,0,0,.55);
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 0 clamp(1.5rem,5vw,3.5rem);
+  font-family: var(--font); font-weight: 600; font-style: normal;
+  font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: #fff;
 }
-.tm-hero-ticker-item i { color: #ffe9a8; font-size: .85rem; }
+.tm-hero-ticker-item i { color: #c9a84c; font-size: .8rem; }
 @media (prefers-reduced-motion: reduce) {
   .tm-hero-ticker-track { animation: none; }
 }
