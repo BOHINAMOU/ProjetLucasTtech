@@ -17,7 +17,7 @@
   --ink:     #1c1814;
   --ink2:    #3a3530;
   --muted:   #8a8078;
-  --terra:   #b8420a;
+  --terra:   #0f7a45;
   --terra2:  #d4652a;
   --gold:    #c9a84c;
   --forest:  #2c5f4a;
@@ -103,12 +103,12 @@ header { position: sticky; top: 0; z-index: 400; }
 .brand-logo-bg {
   position: absolute; inset: 0; border-radius: 14px;
   background: linear-gradient(135deg, var(--terra) 0%, var(--terra2) 55%, var(--gold) 100%);
-  box-shadow: 0 4px 16px rgba(184,66,10,.3);
+  box-shadow: 0 4px 16px rgba(15,122,69,.3);
   transition: transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
 }
 .navbar__brand:hover .brand-logo-bg {
   transform: rotate(-5deg) scale(1.1);
-  box-shadow: 0 8px 28px rgba(184,66,10,.45);
+  box-shadow: 0 8px 28px rgba(15,122,69,.45);
 }
 .brand-logo-img {
   position: absolute; inset: 4px; z-index: 1;
@@ -200,11 +200,11 @@ header { position: sticky; top: 0; z-index: 400; }
   background: var(--terra); border: none;
   padding: .5rem 1.3rem; border-radius: 2px;
   text-decoration: none; transition: all .2s;
-  box-shadow: 0 2px 12px rgba(184,66,10,.25); white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(15,122,69,.25); white-space: nowrap;
 }
 .nav-auth__register:hover {
   background: var(--terra2);
-  box-shadow: 0 4px 20px rgba(184,66,10,.4);
+  box-shadow: 0 4px 20px rgba(15,122,69,.4);
   transform: translateY(-1px);
 }
 
@@ -369,12 +369,12 @@ header { position: sticky; top: 0; z-index: 400; }
   font-size: .85rem; font-weight: 700; letter-spacing: .04em;
   text-decoration: none;
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%);
-  box-shadow: 4px 4px 0 rgba(184,66,10,.2);
+  box-shadow: 4px 4px 0 rgba(15,122,69,.2);
   transition: background .25s, transform .25s, box-shadow .25s;
 }
 .btn-primary:hover {
   background: var(--terra2); transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 rgba(184,66,10,.25);
+  box-shadow: 6px 6px 0 rgba(15,122,69,.25);
 }
 
 .btn-ghost {
@@ -668,7 +668,7 @@ header { position: sticky; top: 0; z-index: 400; }
   display: flex; flex-direction: column;
   transition: border-color .3s, box-shadow .3s;
 }
-.svc-card:hover { border-color: rgba(184,66,10,.25); box-shadow: 0 12px 48px rgba(0,0,0,.07); }
+.svc-card:hover { border-color: rgba(15,122,69,.25); box-shadow: 0 12px 48px rgba(0,0,0,.07); }
 
 .svc-card--hero { grid-row: 1 / 3; min-height: 540px; }
 .svc-card--hero .svc-media { flex: 1; }
@@ -710,7 +710,7 @@ header { position: sticky; top: 0; z-index: 400; }
 }
 .svc-stat-bg {
   position: absolute; inset: 0;
-  background: radial-gradient(circle at 30% 70%, rgba(184,66,10,.14) 0%, transparent 60%);
+  background: radial-gradient(circle at 30% 70%, rgba(15,122,69,.14) 0%, transparent 60%);
 }
 .svc-stat-num-deco {
   position: absolute; top: 10px; right: 16px;
@@ -749,7 +749,7 @@ header { position: sticky; top: 0; z-index: 400; }
 }
 .about-visual-deco {
   position: absolute; bottom: 28px; left: 28px; z-index: 2;
-  background: rgba(184,66,10,.9); padding: 12px 18px;
+  background: rgba(15,122,69,.9); padding: 12px 18px;
 }
 .about-visual-deco-label { font-size: .58rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-bottom: 4px; }
 .about-visual-deco-val { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; color: #fff; line-height: 1; }

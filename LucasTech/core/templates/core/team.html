@@ -9,7 +9,7 @@
   --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
   --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.07);
   --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
-  --accent: #b8420a; --accent2: #c9a84c;
+  --accent: #0f7a45; --accent2: #c9a84c;
   --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,7 +60,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   opacity: 0; transform: translate(-50%, 0) scale(.4);
 }
 .tm-float.circle {
-  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.85), transparent 45%), var(--bc, #b8420a);
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.85), transparent 45%), var(--bc, #0f7a45);
   box-shadow: 0 0 10px 0 rgba(0,0,0,.12);
 }
 .tm-float.heart, .tm-float.flower { border-radius: 0; filter: drop-shadow(0 2px 5px rgba(0,0,0,.1)); }
@@ -97,7 +97,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 44px 32px; box-shadow: 0 8px 32px var(--shadow);
   transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
 }
-.tm-founder-link:hover .tm-founder { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(184,66,10,.16); border-color: rgba(184,66,10,.3); }
+.tm-founder-link:hover .tm-founder { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(15,122,69,.16); border-color: rgba(15,122,69,.3); }
 
 .tm-photo-ring {
   position: relative; display: block; width: 130px; height: 130px; margin: 0 auto 20px;
@@ -125,8 +125,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 .tm-founder-badge {
   display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--accent); background: rgba(184,66,10,.08);
-  border: 1px solid rgba(184,66,10,.2); padding: 4px 12px; border-radius: 99px; margin-bottom: 12px;
+  text-transform: uppercase; color: var(--accent); background: rgba(15,122,69,.08);
+  border: 1px solid rgba(15,122,69,.2); padding: 4px 12px; border-radius: 99px; margin-bottom: 12px;
 }
 .tm-founder-name { font-family: var(--serif); font-size: 1.8rem; font-weight: 800; }
 .tm-founder-role { font-size: 1rem; color: var(--accent); font-weight: 600; margin-top: 6px; }
@@ -146,7 +146,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 28px; text-align: center;
   transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
 }
-.tm-card-link:hover .tm-card { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(184,66,10,.14); border-color: rgba(184,66,10,.3); }
+.tm-card-link:hover .tm-card { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(15,122,69,.14); border-color: rgba(15,122,69,.3); }
 .tm-card-photo-ring {
   position: relative; display: block; width: 96px; height: 96px; margin: 0 auto 16px;
   border-radius: 50%; padding: 4px; overflow: hidden;
@@ -207,7 +207,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <span class="tm-float circle down" style="left:41.1%; animation-delay:1.5s,1.5s; animation-duration:7.78s,7.78s; width:7.7px; height:7.7px; --bc:#6b8f5e; top:51.1%;"></span>
       <span class="tm-float heart up" style="left:44.9%; animation-delay:3.5s,3.5s; animation-duration:6.11s,6.11s; font-size:18.5px; color:#c93060; bottom:37.6%;">❤️</span>
       <span class="tm-float circle down" style="left:49.2%; animation-delay:2.66s,2.66s; animation-duration:8.3s,8.3s; width:16.4px; height:16.4px; --bc:#c93060; top:27.0%;"></span>
-      <span class="tm-float heart up" style="left:51.3%; animation-delay:2.53s,2.53s; animation-duration:6.39s,6.39s; font-size:23.2px; color:#b8420a; bottom:22.4%;">💚</span>
+      <span class="tm-float heart up" style="left:51.3%; animation-delay:2.53s,2.53s; animation-duration:6.39s,6.39s; font-size:23.2px; color:#0f7a45; bottom:22.4%;">💚</span>
       <span class="tm-float circle down" style="left:56.8%; animation-delay:2.96s,2.96s; animation-duration:4.65s,4.65s; width:13.5px; height:13.5px; --bc:#7c3aed; top:13.7%;"></span>
       <span class="tm-float circle up" style="left:58.9%; animation-delay:0.68s,0.68s; animation-duration:7.63s,7.63s; width:16.1px; height:16.1px; --bc:#15803d; bottom:2.7%;"></span>
       <span class="tm-float circle down" style="left:63.6%; animation-delay:4.29s,4.29s; animation-duration:8.37s,8.37s; width:13.0px; height:13.0px; --bc:#7c3aed; top:20.1%;"></span>

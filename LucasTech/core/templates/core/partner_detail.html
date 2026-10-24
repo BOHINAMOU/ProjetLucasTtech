@@ -163,7 +163,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <p class="pd-block-title">Actualités et nouveautés</p>
       {% for post in partner_posts %}
       <div style="border:1px solid rgba(15,23,42,.09);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff">
-        <div style="font-size:.78rem;color:#64748b;margin-bottom:6px">{{ post.created_at|date:"d/m/Y" }}{% if post.kind == 'product' %} · <b style="color:#b8420a">Nouveau produit</b>{% endif %}</div>
+        <div style="font-size:.78rem;color:#64748b;margin-bottom:6px">{{ post.created_at|date:"d/m/Y" }}{% if post.kind == 'product' %} · <b style="color:#0f7a45">Nouveau produit</b>{% endif %}</div>
         <div style="white-space:pre-line">{{ post.text }}</div>
         {% if post.image %}<img src="{{ post.image.url }}" alt="" loading="lazy" style="width:100%;height:auto;max-height:420px;object-fit:cover;border-radius:10px;margin-top:10px">{% endif %}
       </div>

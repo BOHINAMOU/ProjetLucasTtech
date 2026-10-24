@@ -10,7 +10,7 @@
 :root {
   --bg:#f7f3ee; --surf:#faf8f5; --surf2:#f2ede6;
   --border:rgba(0,0,0,.085); --shadow:rgba(0,0,0,.08);
-  --accent:#b8420a; --gold:#c9a84c; --green:#2c5f4a; --rose:#c93060;
+  --accent:#0f7a45; --gold:#c9a84c; --green:#2c5f4a; --rose:#c93060;
   --blue:#3b82f6;
   --text:#1c1814; --muted:#8a8078;
   --font:'Outfit',sans-serif; --head:'Cormorant Garamond',serif; --r:14px;
@@ -35,7 +35,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
   font-size:.75rem;font-weight:800;flex-shrink:0;
 }
 .py-step.done   .py-step-num{background:var(--green);color:#04060e;}
-.py-step.active .py-step-num{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(201,68,10,.4);}
+.py-step.active .py-step-num{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(15,122,69,.4);}
 .py-step.idle   .py-step-num{background:var(--surf2);color:var(--muted);border:1px solid var(--border);}
 .py-step.done>span{color:var(--green);}
 .py-step.active>span{color:var(--text);}
@@ -123,8 +123,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
   border-radius:10px;cursor:pointer;transition:all .2s;
   position:relative;
 }
-.py-method:hover{border-color:rgba(201,68,10,.4);}
-.py-method.selected{border-color:var(--accent);background:rgba(201,68,10,.07);}
+.py-method:hover{border-color:rgba(15,122,69,.4);}
+.py-method.selected{border-color:var(--accent);background:rgba(15,122,69,.07);}
 .py-method input[type="radio"]{position:absolute;opacity:0;width:0;height:0;}
 .py-method-icon{
   width:36px;height:36px;border-radius:8px;
@@ -163,7 +163,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
   font-family:var(--font);font-size:.95rem;
   outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
 }
-.py-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,68,10,.12);}
+.py-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,122,69,.12);}
 .py-input::placeholder{color:var(--muted);}
 
 .py-hint{font-size:.75rem;color:var(--muted);line-height:1.6;margin-bottom:16px;}
@@ -177,9 +177,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
   border-radius:12px;font-family:var(--font);
   font-size:.97rem;font-weight:700;cursor:pointer;
   transition:background .2s,transform .2s,box-shadow .2s;
-  box-shadow:0 4px 20px rgba(201,68,10,.35);letter-spacing:.02em;
+  box-shadow:0 4px 20px rgba(15,122,69,.35);letter-spacing:.02em;
 }
-.btn-pay:hover{background:#b53c09;transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,68,10,.45);}
+.btn-pay:hover{background:#0b6137;transform:translateY(-2px);box-shadow:0 8px 28px rgba(15,122,69,.45);}
 .btn-pay:active{transform:translateY(0);}
 
 /* WhatsApp option */

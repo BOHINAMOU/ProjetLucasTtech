@@ -18,7 +18,7 @@
   --ink:     #1c1814;
   --ink2:    #3a3530;
   --muted:   #8a8078;
-  --accent:  #0d8282;
+  --accent:  #0f7a45;
   --accent2: #14b8a6;
   --accent3: #0f766e;
   --green:   #2c5f4a;
@@ -56,7 +56,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sd-media {
   position: relative; border-radius: 20px; overflow: hidden;
   aspect-ratio: 16/10; background: var(--surf2);
-  box-shadow: 0 24px 80px rgba(9,60,60,.16);
+  box-shadow: 0 24px 80px rgba(10,61,36,.16);
   animation: fadeUp .5s ease both;
 }
 .sd-media img, .sd-media video {
@@ -80,7 +80,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-size: .68rem; font-weight: 800; letter-spacing: .1em;
   text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
   background: var(--accent); color: #fff;
-  box-shadow: 0 4px 14px rgba(13,130,130,.4);
+  box-shadow: 0 4px 14px rgba(15,122,69,.4);
 }
 
 /* Icône flottante sur le média */
@@ -205,7 +205,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   transition: border-color .2s, box-shadow .2s;
 }
 .sd-form-input:focus, .sd-form-textarea:focus {
-  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(13,130,130,.12);
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,122,69,.12);
 }
 .sd-form-textarea { resize: vertical; min-height: 110px; }
 .sd-form-input::placeholder, .sd-form-textarea::placeholder { color: var(--muted); }
@@ -217,9 +217,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   border-radius: 12px; font-family: var(--font);
   font-size: .95rem; font-weight: 800;
   cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 14px rgba(13,130,130,.3); margin-top: 6px;
+  box-shadow: 0 4px 14px rgba(15,122,69,.3); margin-top: 6px;
 }
-.btn-submit:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(13,130,130,.4); }
+.btn-submit:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(15,122,69,.4); }
 
 /* Pourquoi nous faire confiance */
 .sd-trust {
@@ -229,7 +229,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sd-trust-row { display: flex; align-items: center; gap: 13px; }
 .sd-trust-icon {
   width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
-  background: rgba(13,130,130,.1); color: var(--accent);
+  background: rgba(15,122,69,.1); color: var(--accent);
   display: flex; align-items: center; justify-content: center; font-size: 1rem;
 }
 .sd-trust-row strong { display: block; font-size: .84rem; font-weight: 700; color: var(--ink); }
@@ -250,7 +250,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .sd-link-row i:first-child { color: var(--accent); margin-right: 9px; }
 .sd-link-row i.fa-arrow-right { font-size: .78rem; color: var(--muted); transition: transform .2s; }
-.sd-link-row:hover { background: rgba(13,130,130,.07); border-color: rgba(13,130,130,.3); transform: translateX(2px); }
+.sd-link-row:hover { background: rgba(15,122,69,.07); border-color: rgba(15,122,69,.3); transform: translateX(2px); }
 .sd-link-row:hover i.fa-arrow-right { transform: translateX(3px); color: var(--accent); }
 
 /* Messages */
@@ -268,7 +268,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
   transition: transform .3s cubic-bezier(.22,.68,0,1.2), box-shadow .3s, border-color .3s;
 }
-.sd-related-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(9,60,60,.14); border-color: var(--accent2); }
+.sd-related-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(10,61,36,.14); border-color: var(--accent2); }
 .sd-related-media { height: 130px; background: var(--surf2); overflow: hidden; }
 .sd-related-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
 .sd-related-card:hover .sd-related-media img { transform: scale(1.08); }
@@ -465,7 +465,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <section class="sd-explore reveal">
   <p class="sd-explore-title">Explorer aussi</p>
   <div class="sd-explore-row">
-    <a href="{% url 'services:services' %}" class="sd-explore-tile" style="background:linear-gradient(135deg,#0d8282,#0f2422);">
+    <a href="{% url 'services:services' %}" class="sd-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#0f2422);">
       <span class="sd-explore-overlay"></span>
       <span class="sd-explore-label"><i class="fa fa-th-large"></i> Tous les services</span>
     </a>

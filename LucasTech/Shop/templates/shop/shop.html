@@ -20,7 +20,7 @@
   --ink2:     #3a3530;
   --muted:    #8a8078;
 
-  --accent:   #b8420a;     /* terracotta chaud */
+  --accent:   #0f7a45;     /* terracotta chaud */
   --accent2:  #c9a84c;     /* or soleil */
   --green:    #2c5f4a;
   --rose:     #c93060;
@@ -101,7 +101,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .sh-search:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(201,68,10,.2);
+  box-shadow: 0 0 0 4px rgba(15,122,69,.2);
 }
 .sh-search i { padding: 0 18px; color: rgba(245,242,238,.4); font-size: .95rem; flex-shrink: 0; }
 .sh-search input {
@@ -119,7 +119,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   cursor: pointer; transition: background .2s, transform .15s;
   white-space: nowrap; letter-spacing: .03em;
 }
-.sh-search-btn:hover { background: #b53c09; transform: translateY(-1px); }
+.sh-search-btn:hover { background: #0b6137; transform: translateY(-1px); }
 
 .sh-search-result {
   margin-top: 12px; font-size: .83rem; color: rgba(245,242,238,.45);
@@ -179,7 +179,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   transition: all .2s; flex-shrink: 0;
 }
 .sh-cat-btn:hover {
-  color: var(--accent); background: rgba(201,68,10,.07);
+  color: var(--accent); background: rgba(15,122,69,.07);
 }
 .sh-cat-btn.active {
   background: var(--accent); color: #fff; border-color: var(--accent);
@@ -187,9 +187,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-cat-btn i { font-size: .95rem; }
 
 /* Couleur distincte par catégorie */
-.sh-cat-btn.c-1 { color: #b8420a; }
-.sh-cat-btn.c-1:hover { background: rgba(184,66,10,.09); }
-.sh-cat-btn.c-1.active { background: #b8420a; border-color: #b8420a; color: #fff; }
+.sh-cat-btn.c-1 { color: #0f7a45; }
+.sh-cat-btn.c-1:hover { background: rgba(15,122,69,.09); }
+.sh-cat-btn.c-1.active { background: #0f7a45; border-color: #0f7a45; color: #fff; }
 
 .sh-cat-btn.c-2 { color: #2c5f4a; }
 .sh-cat-btn.c-2:hover { background: rgba(44,95,74,.09); }
@@ -226,7 +226,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 /* ── Bandeau collaboration / fournisseurs ── */
 .sh-vendor-ticker {
-  background: linear-gradient(100deg, var(--accent), #d4720f 55%, var(--accent2));
+  background: linear-gradient(100deg, var(--accent), #1f9d55 55%, var(--accent2));
   overflow: hidden; border-radius: 12px;
   padding: 16px 0; margin-bottom: 32px;
 }
@@ -323,7 +323,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-badge.unavailable { background: rgba(201,48,96,.1);  color: var(--rose);  border: 1.5px solid rgba(201,48,96,.25); }
 .sh-badge.featured    {
   background: var(--accent); color: #fff;
-  border: none; box-shadow: 0 4px 14px rgba(201,68,10,.35);
+  border: none; box-shadow: 0 4px 14px rgba(15,122,69,.35);
 }
 .sh-badge.sale {
   background: var(--rose); color: #fff;
@@ -406,13 +406,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   letter-spacing: .02em;
   cursor: pointer; text-decoration: none;
   transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(201,68,10,.35);
+  box-shadow: 0 4px 16px rgba(15,122,69,.35);
   white-space: nowrap;
 }
 .sh-btn-voir:hover {
-  background: #b53c09;
+  background: #0b6137;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(201,68,10,.45);
+  box-shadow: 0 8px 24px rgba(15,122,69,.45);
 }
 .sh-btn-voir i { font-size: .82rem; transition: transform .2s; }
 .sh-card:hover .sh-btn-voir i { transform: translateX(3px); }
@@ -429,7 +429,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-btn-cart:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(201,68,10,.06);
+  background: rgba(15,122,69,.06);
 }
 
 /* ─── Empty State ─── */
@@ -446,7 +446,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   font-weight: 700; font-size: .9rem;
   transition: background .2s;
 }
-.sh-empty a:hover { background: #b53c09; }
+.sh-empty a:hover { background: #0b6137; }
 
 /* ─── Animations ─── */
 @keyframes fadeUp {
@@ -683,4 +683,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   </div>
 </section>
 
+<style>
+/* ── Présentation verte (couleurs du logo) : barre de rubrique, cartes à plat, titres verts ── */
+.sh-section-header { background:#0f7a45; border-left:6px solid #c9a84c; padding:8px 16px; align-items:center; margin-bottom:28px; }
+.sh-section-title, .sh-section-title span, .sh-section-title span.eyebrow, .sh-count, .sh-section-title * { color:#fff !important; font-family:var(--font); font-size:.95rem; font-weight:800; text-transform:uppercase; letter-spacing:.3px; margin:0; }
+.sh-section-title span { display:inline; opacity:.85; margin-right:8px; }
+.sh-section-title-icon { display:none !important; }
+.sh-count { background:transparent !important; border:0 !important; padding:0 !important; }
+.sh-section-desc { display:none; }
+.sh-card { background:transparent; border:0; border-radius:0; box-shadow:none; }
+.sh-card:hover { transform:none; box-shadow:none; border:0; }
+.sh-card-media::after { display:none; }
+.sh-card-media { border:1px solid var(--border); border-radius:0; }
+.sh-card-name { font-family:var(--font); font-weight:800; letter-spacing:0; color:#0f7a45; }
+.sh-card-cat { color:#0f7a45; }
+.sh-card-body { padding-left:0; padding-right:0; }
+.sh-card-divider { margin-left:0; margin-right:0; }
+.sh-card-footer { padding-left:0; padding-right:0; }
+.sh-btn-voir { background:#0f7a45; border-radius:0; box-shadow:none; }
+.sh-btn-voir:hover { background:#0b6137; box-shadow:none; transform:none; }
+.sh-card-price strong { font-family:var(--font); color:#0f7a45; letter-spacing:0; }
+.sh-card-name { font-family:var(--font); font-weight:800; color:#0f7a45; letter-spacing:0; }
+.sh-btn-cart { border-radius:0; } .sh-btn-cart:hover { border-color:#0f7a45; color:#0f7a45; background:rgba(15,122,69,.06); }
+.sh-vendor-ticker { border-radius:0; }
+.sh-stock.ok { color:#0f7a45; }
+</style>
 {% endblock %}

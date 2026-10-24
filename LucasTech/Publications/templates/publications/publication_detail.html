@@ -18,7 +18,7 @@
   --ink:     #1c1814;
   --ink2:    #3a3530;
   --muted:   #8a8078;
-  --accent:  #b8420a;
+  --accent:  #0f7a45;
   --accent2: #c9a84c;
   --green:   #2c5f4a;
   --r:       16px;
@@ -76,8 +76,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 .pd-cat-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(201,68,10,.1); color: var(--accent);
-  border: 1px solid rgba(201,68,10,.2);
+  background: rgba(15,122,69,.1); color: var(--accent);
+  border: 1px solid rgba(15,122,69,.2);
   font-size: .7rem; font-weight: 800; letter-spacing: .1em;
   text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
   margin-bottom: 16px; text-decoration: none;
@@ -95,8 +95,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 /* ── Bloc événement ── */
 .pd-event {
   margin-top: 20px; padding: 22px 24px; border-radius: 16px;
-  background: linear-gradient(135deg, rgba(184,66,10,.08), rgba(201,168,76,.06));
-  border: 1px solid rgba(184,66,10,.2);
+  background: linear-gradient(135deg, rgba(15,122,69,.08), rgba(201,168,76,.06));
+  border: 1px solid rgba(15,122,69,.2);
   display: flex; flex-direction: column; gap: 14px;
 }
 .pd-event-badge {
@@ -113,9 +113,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   padding: 13px 26px; background: var(--accent); color: #fff;
   border-radius: 11px; text-decoration: none; font-weight: 700; font-size: .9rem;
   transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(184,66,10,.3);
+  box-shadow: 0 4px 16px rgba(15,122,69,.3);
 }
-.pd-event-btn:hover { background: #9c3708; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(184,66,10,.4); }
+.pd-event-btn:hover { background: #9c3708; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(15,122,69,.4); }
 .pd-event-closed {
   display: inline-flex; align-items: center; gap: 9px; width: fit-content;
   padding: 11px 20px; background: var(--surf2); color: var(--muted);
@@ -175,10 +175,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   margin-top: 24px; padding: 16px 26px; border-radius: 14px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: #fff; text-decoration: none; font-weight: 700; font-size: .96rem;
-  box-shadow: 0 8px 24px rgba(184,66,10,.25);
+  box-shadow: 0 8px 24px rgba(15,122,69,.25);
   transition: transform .2s, box-shadow .2s;
 }
-.pd-doc-download:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(184,66,10,.35); }
+.pd-doc-download:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(15,122,69,.35); }
 .pd-doc-download i { font-size: 1.15rem; }
 .pd-content-body table {
   width: 100%; border-collapse: collapse; margin: 1.5em 0;
@@ -630,7 +630,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <section class="pd-explore">
   <p class="pd-explore-title">Explorer aussi</p>
   <div class="pd-explore-row">
-    <a href="{% url 'publications:publications' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#b8420a,#20140a);">
+    <a href="{% url 'publications:publications' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#20140a);">
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-newspaper"></i> Toutes les actualités</span>
     </a>

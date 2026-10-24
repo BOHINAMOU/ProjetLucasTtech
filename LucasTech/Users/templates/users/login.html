@@ -7,7 +7,7 @@
 
 :root {
   --navy:  #f7f3ee; --navy2: #faf8f5; --navy3: #f2ede6;
-  --accent: #b8420a; --accent2: #c9a84c;
+  --accent: #0f7a45; --accent2: #c9a84c;
   --green: #2c5f4a;
   --white: #1c1814; --muted: #8a8078;
 }
@@ -23,14 +23,14 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
   content: '';
   position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
   width: 600px; height: 400px;
-  background: radial-gradient(ellipse, rgba(184,66,10,.15) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(15,122,69,.15) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .auth-card {
   width: 100%; max-width: 460px;
   background: var(--navy2);
-  border: 1px solid rgba(184,66,10,.2);
+  border: 1px solid rgba(15,122,69,.2);
   border-radius: 20px; padding: 48px 44px;
   box-shadow: 0 24px 80px rgba(0,0,0,.12);
   position: relative; z-index: 1;
@@ -41,8 +41,8 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
   display: flex; align-items: center; justify-content: center;
   width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 24px;
   background: #fff;
-  border: 1px solid rgba(184,66,10,.2);
-  box-shadow: 0 8px 24px rgba(184,66,10,.15);
+  border: 1px solid rgba(15,122,69,.2);
+  box-shadow: 0 8px 24px rgba(15,122,69,.15);
   overflow: hidden;
 }
 .auth-logo img { width: 100%; height: 100%; object-fit: contain; }
@@ -103,7 +103,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
 .auth-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(184,66,10,.12);
+  box-shadow: 0 0 0 3px rgba(15,122,69,.12);
 }
 
 .input-wrap { position: relative; }
