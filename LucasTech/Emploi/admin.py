@@ -714,6 +714,32 @@ class CommentInline(admin.TabularInline):
     fields = ('author', 'text', 'is_hidden')
 
 
+@admin.register(FeedComment)
+class FeedCommentAdmin(admin.ModelAdmin):
+    """Les commentaires du fil attendent votre validation avant d'être visibles."""
+    list_display = ('short_text', 'author', 'post', 'etat', 'created_at')
+    list_filter = ('is_hidden',)
+    search_fields = ('text', 'author__email', 'author__first_name', 'author__last_name')
+    ordering = ('-created_at',)
+    actions = ['publish', 'hide']
+
+    @admin.display(description="Commentaire")
+    def short_text(self, obj):
+        return obj.text[:80]
+
+    @admin.display(description="État")
+    def etat(self, obj):
+        return "En attente de validation" if obj.is_hidden else "Publié"
+
+    @admin.action(description="✓ Publier les commentaires choisis")
+    def publish(self, request, queryset):
+        queryset.update(is_hidden=False)
+
+    @admin.action(description="Masquer / remettre en attente les commentaires choisis")
+    def hide(self, request, queryset):
+        queryset.update(is_hidden=True)
+
+
 @admin.register(FeedPost)
 class FeedPostAdmin(admin.ModelAdmin):
     list_display = ('author_label', 'short_text', 'is_hidden', 'moderation', 'created_at')

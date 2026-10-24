@@ -8,7 +8,7 @@ import { formatDate, formatDateTime, timeAgo } from '@/lib/format';
 import { colors, radius, space } from '@/lib/theme';
 import type { Appointment, Application, Company, Conversation, Offer, Order, Partner, Post } from '@/lib/types';
 
-import { Avatar, Badge, Card, InfoLine, Logo, Muted, Row, T, VerifiedBadge, type Tone } from './index';
+import { Avatar, Badge, Card, InfoLine, Logo, Muted, Row, T, VerifiedBadge, notice, type Tone } from './index';
 
 export function applicationTone(status: string): Tone {
   return ({ received: 'gold', shortlisted: 'navy', interview: 'navy', hired: 'green', refused: 'red', treated: 'grey' } as Record<string, Tone>)[status] ?? 'grey';
@@ -180,8 +180,10 @@ function Comments({ item, onChange, canInteract }: { item: Post; onChange: (p: P
     if (!text.trim() || busy) return;
     setBusy(true);
     try {
-      onChange(await post<Post>(`feed/${item.id}/comments`, { text: text.trim() }));
+      const res = await post<Post & { comment_pending?: boolean }>(`feed/${item.id}/comments`, { text: text.trim() });
+      onChange(res);
       setText('');
+      if (res.comment_pending) notice('Merci !', 'Votre commentaire sera publié après validation par notre équipe.');
     } catch {
       /* le message reste dans le champ pour réessayer */
     } finally {

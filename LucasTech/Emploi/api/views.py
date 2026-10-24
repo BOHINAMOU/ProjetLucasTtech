@@ -439,8 +439,13 @@ def post_comment(request, pk):
         return invalid(form)
     comment = form.save(commit=False)
     comment.post, comment.author = post, request.user
+    staff = is_staff(request.user)
+    comment.is_hidden = not staff  # publié après validation par Lantante (sauf équipe)
     comment.save()
-    return Response(post_payload(request, post, request.user), status=201)
+    if not staff:
+        notify_staff(f"Commentaire à valider de {request.user.public_name} : {comment.text[:120]}",
+                     f"/lantanteAdminTech/Emploi/feedcomment/{comment.pk}/change/")
+    return Response({**post_payload(request, post, request.user), 'comment_pending': not staff}, status=201)
 
 
 # ─────────────────────────────

@@ -13,6 +13,6 @@
     {% if post.author_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}
     {% if post.pinned %}<span class="em-tag em-tag--warn"><i class="fas fa-thumbtack"></i> À la une</span>{% endif %}
     {% if post.kind == 'product' %}<span class="em-tag em-tag--warn">Nouveau produit</span>{% endif %}
-    <a href="{% url 'emploi:post_detail' post.pk %}#commentaires" style="margin-left:auto;color:inherit;text-decoration:none"><i class="far fa-comment"></i> {{ post.comments.count }} commentaire{{ post.comments.count|pluralize }}</a>
+    <a href="{% url 'emploi:post_detail' post.pk %}#commentaires" style="margin-left:auto;color:inherit;text-decoration:none"><i class="far fa-comment"></i> {{ post.visible_comment_count }} commentaire{{ post.visible_comment_count|pluralize }}</a>
   </div>
 </article>

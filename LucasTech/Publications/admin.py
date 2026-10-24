@@ -236,20 +236,25 @@ class EventRegistrationAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 @admin.register(PublicationComment)
 class PublicationCommentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'short_text', 'publication', 'is_hidden', 'created_at')
+    list_display = ('name', 'short_text', 'publication', 'etat', 'created_at')
     list_filter = ('is_hidden', 'publication')
+    ordering = ('-created_at',)
     search_fields = ('name', 'text', 'publication__title')
-    actions = ['hide', 'show']
+    actions = ['show', 'hide']
+
+    @admin.display(description="État", boolean=False)
+    def etat(self, obj):
+        return "En attente de validation" if obj.is_hidden else "Publié"
 
     @admin.display(description="Commentaire")
     def short_text(self, obj):
         return obj.text[:80]
 
-    @admin.action(description="Masquer les commentaires choisis")
+    @admin.action(description="Masquer / remettre en attente les commentaires choisis")
     def hide(self, request, queryset):
         queryset.update(is_hidden=True)
 
-    @admin.action(description="Réafficher les commentaires choisis")
+    @admin.action(description="✓ Publier les commentaires choisis")
     def show(self, request, queryset):
         queryset.update(is_hidden=False)
 

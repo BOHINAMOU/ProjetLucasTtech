@@ -608,7 +608,15 @@ def post_comment(request, pk):
         comment = form.save(commit=False)
         comment.post = post
         comment.author = request.user
+        staff = is_staff(request.user)
+        comment.is_hidden = not staff  # publié après validation par Lantante (sauf commentaire de l'équipe)
         comment.save()
+        if staff:
+            messages.success(request, "✓ Commentaire publié.")
+        else:
+            messages.success(request, "✓ Merci ! Votre commentaire sera publié après validation par notre équipe.")
+            notify_staff(f"Commentaire à valider de {request.user.public_name} : {comment.text[:120]}",
+                         f"/lantanteAdminTech/Emploi/feedcomment/{comment.pk}/change/")
     return redirect(request.META.get('HTTP_REFERER') or 'emploi:feed')
 
 

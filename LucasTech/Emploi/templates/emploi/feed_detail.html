@@ -20,9 +20,10 @@
       <form method="post" action="{% url 'emploi:post_delete' post.pk %}" style="display:inline" onsubmit="return confirm('Supprimer cette actualité ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Supprimer</button></form>
       {% endif %}
       <div id="commentaires" style="border-top:1px solid var(--em-border);margin-top:18px;padding-top:12px;display:flex;flex-direction:column;gap:8px">
-        <b style="font-size:1.15rem"><i class="far fa-comments"></i> Commentaires ({{ post.comments.count }})</b>
-        {% for c in post.comments.all %}{% if not c.is_hidden %}<div style="font-size:.9rem;background:var(--em-surf2);padding:8px 12px;border-radius:10px;overflow-wrap:anywhere"><b>{{ c.author.public_name }}</b> · {{ c.text }}</div>{% endif %}{% endfor %}
+        <b style="font-size:1.15rem"><i class="far fa-comments"></i> Commentaires ({{ post.visible_comment_count }})</b>
+        {% for c in post.visible_comments %}{% if True %}<div style="font-size:.9rem;background:var(--em-surf2);padding:8px 12px;border-radius:10px;overflow-wrap:anywhere"><b>{{ c.author.public_name }}</b> · {{ c.text }}</div>{% endif %}{% endfor %}
         {% if not user.is_authenticated %}<p class="em-muted"><a href="{% url 'users:login' %}?next={{ request.path }}">Connectez-vous</a> pour commenter.</p>{% endif %}
+        <p class="em-muted" style="margin:0">Les commentaires sont publiés après validation par notre équipe.</p>
         {% if user.is_authenticated %}
         <form method="post" action="{% url 'emploi:post_comment' post.pk %}" style="display:flex;gap:8px">{% csrf_token %}{{ comment_form.text }}<button class="em-btn em-btn--navy em-btn--sm" type="submit" style="width:auto">Envoyer</button></form>
         {% endif %}

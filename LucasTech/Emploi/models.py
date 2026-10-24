@@ -1071,6 +1071,15 @@ class FeedPost(models.Model):
         return f"{self.author.public_name} : {self.text[:50]}"
 
     @property
+    def visible_comments(self):
+        """Commentaires publiés (ni en attente de validation, ni masqués)."""
+        return [c for c in self.comments.all() if not c.is_hidden]
+
+    @property
+    def visible_comment_count(self):
+        return len(self.visible_comments)
+
+    @property
     def _split(self):
         """(titre, corps) : le titre est le premier paragraphe quand il est court et suivi d'une ligne vide."""
         text = self.text.strip()
@@ -1111,7 +1120,7 @@ class FeedComment(models.Model):
     post = models.ForeignKey(FeedPost, on_delete=models.CASCADE, related_name='comments', verbose_name="Publication")
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Auteur")
     text = models.TextField(max_length=1000, verbose_name="Commentaire")
-    is_hidden = models.BooleanField(default=False, verbose_name="Masqué")
+    is_hidden = models.BooleanField(default=False, verbose_name="Masqué / en attente de validation")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date")
 
     class Meta:

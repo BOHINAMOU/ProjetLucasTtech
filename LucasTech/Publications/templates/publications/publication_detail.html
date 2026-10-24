@@ -507,6 +507,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       {% for c in comments %}
       <div class="nd-comment"><b>{{ c.name }}</b><small>{{ c.created_at|date:"d M Y H:i" }}</small><p>{{ c.text }}</p></div>
       {% empty %}<p style="color:#8a8a8a">Soyez le premier à commenter.</p>{% endfor %}
+      <p style="margin:12px 0 0;color:#8a8a8a;font-size:.9rem">Les commentaires sont publiés après validation par notre équipe.</p>
       <form class="nd-form" method="post" action="{% url 'publications:publication_comment' publication.slug %}">{% csrf_token %}
         <div class="nd-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
         {% if not user.is_authenticated %}<input type="text" name="name" maxlength="80" placeholder="Votre nom" required>{% endif %}
