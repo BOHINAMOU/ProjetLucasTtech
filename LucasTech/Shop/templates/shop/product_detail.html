@@ -660,4 +660,23 @@ function pdSwapImage(btn, url) {
   btn.classList.add('active');
 }
 </script>
+<style>
+/* ── Pages de détail : même présentation que les actualités (titres verts, barres vertes, boutons carrés) ── */
+.fd-title, .sd-title, .pd-title { font-family:var(--font) !important; font-weight:800 !important; letter-spacing:0 !important; color:#0f7a45 !important; line-height:1.2 !important; font-size:clamp(1.6rem,3.2vw,2.3rem) !important; }
+.fd-learn-title, .fd-related-title, .sd-related-title, .pd-related-title, .pd-desc-block-title, .pd-full-side-title, .sd-form-title, .fd-full-title {
+  background:#0f7a45; border-left:6px solid #c9a84c; color:#fff !important; font-family:var(--font) !important; font-size:.95rem !important;
+  font-weight:800 !important; text-transform:uppercase; letter-spacing:.3px !important; padding:8px 14px; margin-bottom:16px; }
+.fd-card, .pd-buy-card { border-radius:4px !important; box-shadow:0 2px 14px rgba(0,0,0,.06) !important; }
+.fd-price, .pd-price { font-family:var(--font) !important; color:#0f7a45 !important; letter-spacing:0 !important; }
+.fd-qty-input, .pd-qty-input { border-radius:0 !important; }
+.btn-buy-now, .btn-submit, .btn-form-toggle { background:#0f7a45 !important; color:#fff !important; border:2px solid #0f7a45 !important; border-radius:0 !important; box-shadow:none !important; clip-path:none !important; transform:none !important; }
+.btn-buy-now:hover, .btn-submit:hover, .btn-form-toggle:hover { background:#0b6137 !important; border-color:#0b6137 !important; transform:none !important; }
+.btn-primary, .btn-add-cart { background:#fff !important; color:#0f7a45 !important; border:2px solid #0f7a45 !important; border-radius:0 !important; clip-path:none !important; box-shadow:none !important; transform:none !important; }
+.btn-primary:hover, .btn-add-cart:hover { background:#eef7f1 !important; transform:none !important; }
+.btn-whatsapp { border-radius:0 !important; }
+.fd-learn-item, .fd-related-card, .sd-related-card, .pd-related-card, .fd-img-wrap, .sd-media, .pd-media { border-radius:0 !important; }
+.fd-learn-item i { color:#0f7a45 !important; }
+.fd-related-price, .pd-related-price, .fd-cart-link, .pd-cart-link { color:#0f7a45 !important; }
+.fd-breadcrumb a, .sd-breadcrumb a, .pd-breadcrumb a { color:#0f7a45 !important; }
+</style>
 {% endblock %}
