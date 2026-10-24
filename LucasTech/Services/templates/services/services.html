@@ -733,18 +733,21 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sv-card-media { height:auto; aspect-ratio:1.85/1; }
 </style>
 <style>
-/* ── Bande des thèmes : tous visibles, sans défilement, style vert ── */
-.sv-cats-outer { position:static !important; box-shadow:none !important; background:transparent !important; border-bottom:0 !important; }
-.sv-cats-wrap { flex-wrap:wrap !important; gap:10px 14px; padding-top:18px; padding-bottom:6px; align-items:center; }
-.sv-cats-label { color:#0f7a45 !important; border-right:0 !important; margin-right:0 !important; padding-right:0 !important; }
-.sv-cats-viewport { overflow:visible !important; flex:1 1 100% !important; }
-.sv-cats-track, .sv-cats-track[class*="scroll"] { animation:none !important; transform:none !important; width:auto !important; flex-wrap:wrap !important; gap:10px !important; padding:0 !important; }
-.sv-cats-fade { display:none !important; }
-.sv-cat-btn[aria-hidden="true"] { display:none !important; }
-.sv-cat-pinned { margin-right:0 !important; }
-.sv-cat-btn { background:#fff !important; border:1px solid rgba(15,122,69,.4) !important; color:#0f7a45 !important; border-radius:0 !important; box-shadow:none !important; padding:9px 16px !important; font-weight:700 !important; }
-.sv-cat-btn:hover { background:rgba(15,122,69,.08) !important; transform:none !important; box-shadow:none !important; border-color:#0f7a45 !important; }
-.sv-cat-btn.active, .sv-cat-btn.all.active { background:#0f7a45 !important; border-color:#0f7a45 !important; color:#fff !important; box-shadow:none !important; }
-.sv-cat-btn i { color:inherit !important; }
+/* ── Bande des thèmes : une seule ligne qui défile doucement, boutons soignés ── */
+.sv-cats-outer { position:static !important; background:#fff !important; border-top:1px solid rgba(15,122,69,.14) !important; border-bottom:1px solid rgba(15,122,69,.14) !important; box-shadow:none !important; }
+.sv-cats-wrap { flex-wrap:nowrap !important; gap:0 !important; padding-top:0 !important; padding-bottom:0 !important; align-items:center !important; }
+.sv-cats-label { color:#0f7a45 !important; font-weight:800 !important; letter-spacing:.16em !important; border-right:1px solid rgba(15,122,69,.25) !important; margin-right:16px !important; padding-right:20px !important; }
+.sv-cats-viewport { overflow:hidden !important; flex:1 1 auto !important; min-width:0 !important; }
+.sv-cats-track { padding:13px 4px !important; gap:10px !important; flex-wrap:nowrap !important; width:max-content !important; }
+.sv-cats-track[class*="scroll"] { animation-duration:55s !important; }
+.sv-cats-fade.left { background:linear-gradient(90deg,#fff,rgba(255,255,255,0)) !important; }
+.sv-cats-fade.right { background:linear-gradient(270deg,#fff,rgba(255,255,255,0)) !important; }
+.sv-cats-fade { display:block !important; width:48px !important; }
+.sv-cat-btn[aria-hidden="true"] { display:inline-flex !important; }
+.sv-cat-pinned { margin-right:12px !important; }
+.sv-cat-btn { background:#eef7f1 !important; border:1px solid transparent !important; color:#0b5e36 !important; border-radius:999px !important; padding:9px 20px !important; font-weight:600 !important; font-size:.92rem !important; letter-spacing:.01em !important; box-shadow:none !important; white-space:nowrap !important; }
+.sv-cat-btn:hover { background:#0f7a45 !important; color:#fff !important; transform:none !important; box-shadow:none !important; }
+.sv-cat-btn.active, .sv-cat-btn.all.active { background:#0f7a45 !important; color:#fff !important; box-shadow:none !important; }
+.sv-cat-btn i { color:inherit !important; opacity:.9; }
 </style>
 {% endblock %}
