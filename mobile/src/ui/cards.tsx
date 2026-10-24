@@ -80,19 +80,6 @@ export function PartnerCard({ partner }: { partner: Partner }) {
 
 export function PostDetail({ post: initial, canInteract = true }: { post: Post; canInteract?: boolean }) {
   const [item, setItem] = useState(initial);
-  const [showComments, setShowComments] = useState(false);
-
-  const toggleLike = async () => {
-    if (!canInteract) return;
-    setItem({ ...item, liked: !item.liked, likes: item.likes + (item.liked ? -1 : 1) });
-    try {
-      const res = await post<{ liked: boolean; likes: number }>(`feed/${item.id}/like`);
-      setItem((old) => ({ ...old, liked: res.liked, likes: res.likes }));
-    } catch {
-      setItem(initial);
-    }
-  };
-
   return (
     <Card style={{ padding: 0, overflow: 'hidden' }}>
       <View style={{ padding: space.lg, gap: space.sm }}>
@@ -115,17 +102,11 @@ export function PostDetail({ post: initial, canInteract = true }: { post: Post; 
       {item.image ? <Image source={{ uri: item.image }} style={{ width: '100%', aspectRatio: 1.4, backgroundColor: colors.surface2 }} resizeMode="cover" /> : null}
       {item.body ? <View style={{ padding: space.lg }}><T color={colors.ink2}>{item.body}</T></View> : null}
       <ShareRow post={item} />
-      <Row style={{ padding: space.md, paddingHorizontal: space.lg, borderTopWidth: 1, borderTopColor: colors.border }} gap={space.xl}>
-        <Pressable onPress={toggleLike} disabled={!canInteract} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={22} color={item.liked ? colors.danger : colors.muted} />
-          <Muted size={14}>{item.likes}</Muted>
-        </Pressable>
-        <Pressable onPress={() => setShowComments(!showComments)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Ionicons name="chatbubble-outline" size={20} color={colors.muted} />
-          <Muted size={14}>{item.comments.length}</Muted>
-        </Pressable>
+      <Row style={{ padding: space.md, paddingHorizontal: space.lg, borderTopWidth: 1, borderTopColor: colors.border }} gap={8}>
+        <Ionicons name="chatbubbles-outline" size={20} color={colors.navy} />
+        <T weight="700" color={colors.navy}>Commentaires ({item.comments.length})</T>
       </Row>
-      {showComments ? <Comments item={item} onChange={setItem} canInteract={canInteract} /> : null}
+      <Comments item={item} onChange={setItem} canInteract={canInteract} />
     </Card>
   );
 }
@@ -177,8 +158,7 @@ export function PostCard({ post: p }: { post: Post; canInteract?: boolean }) {
         {p.sponsored ? <Badge label="Sponsorisé" tone="gold" /> : p.featured ? <Badge label="À la une" tone="gold" icon="star" /> : null}
         {p.kind === 'product' ? <Badge label="Nouveau produit" tone="green" /> : null}
         <View style={{ flex: 1 }} />
-        <Ionicons name="heart-outline" size={14} color={colors.muted} /><Muted size={12}>{p.likes}</Muted>
-        <Ionicons name="chatbubble-outline" size={13} color={colors.muted} /><Muted size={12}>{p.comments.length}</Muted>
+        <Ionicons name="chatbubble-outline" size={13} color={colors.muted} /><Muted size={12}>{p.comments.length} commentaire{p.comments.length > 1 ? 's' : ''}</Muted>
       </Row>
     </View>
   );
