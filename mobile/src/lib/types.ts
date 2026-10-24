@@ -101,7 +101,7 @@ export interface Comment { id: number; author: string; text: string; created_at:
 
 export interface Post {
   id: number; author: string; author_verified: boolean; author_company_id: number | null; author_logo: string | null;
-  text: string; image: string | null; kind: string; sponsored: boolean; featured: boolean; likes: number; liked: boolean;
+  text: string; headline: string; body: string; share_url: string; image: string | null; kind: string; sponsored: boolean; featured: boolean; likes: number; liked: boolean;
   comments: Comment[]; created_at: string;
 }
 

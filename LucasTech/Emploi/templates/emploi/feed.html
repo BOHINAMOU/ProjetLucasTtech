@@ -1,55 +1,49 @@
 {% extends 'emploi/base_emploi.html' %}
 {% block em_title %}Actualités{% endblock %}
 {% block em_content %}
-<style>
-.ef-col { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
-.ef-post img.ef-img { width:100%; height:auto; max-height:480px; object-fit:cover; border-radius:12px; }
-.ef-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-.ef-comments { border-top:1px solid var(--em-border); padding-top:10px; display:flex; flex-direction:column; gap:8px; }
-.ef-comment { font-size:.88rem; background:var(--em-surf2); padding:8px 12px; border-radius:10px; overflow-wrap:anywhere; }
-.ef-inline { display:inline; }
-</style>
-<h1 class="em-h1" style="margin:34px 0 18px;text-align:center">Fil d'actualités</h1>
-<div class="ef-col">
-  {% if user.is_authenticated and must_order %}
-  <div class="em-card"><h3><i class="fas fa-bullhorn"></i> Publier une actualité ou une annonce</h3>
-    <p>Les publications sont vérifiées par Lantante avant leur mise en ligne{% if news_plan %} — à partir de <b>{{ news_plan.price_label }}</b>{% endif %}.</p>
-    <div><a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}">Publier</a></div></div>
-  {% elif can_post %}
-  <form class="em-card" method="post" enctype="multipart/form-data">{% csrf_token %}
-    <div class="em-field" style="margin:0 0 8px">{{ form.kind }}</div>
-    <div class="em-field" style="margin:0">{{ form.text }}</div>
-    {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
-    <div class="ef-actions">{{ form.image }}<button class="em-btn em-btn--green em-btn--sm" type="submit" style="margin-left:auto"><i class="fas fa-paper-plane"></i> Publier</button></div>
-  </form>
-  {% elif user.is_authenticated %}
-  <div class="em-card"><p>Les actualités sont publiées par les entreprises et par Lantante. Vous pouvez aimer et commenter.</p></div>
-  {% else %}
-  <div class="em-card"><p>Connectez-vous pour publier, aimer et commenter.</p><a class="em-btn em-btn--green em-btn--sm" href="{% url 'users:login' %}?next={{ request.path }}" style="align-self:flex-start">Se connecter</a></div>
-  {% endif %}
+{% include 'emploi/_news_css.html' %}
+<div class="nw-wrap" style="margin-top:26px">
+  <div style="min-width:0">
+    <div class="nw-bar"><span>Actualités</span>{% if user.is_authenticated and can_post %}<a href="#nw-publish">Publier +</a>{% elif user.is_authenticated and must_order %}<a href="{% url 'emploi:publish_hub' %}">Publier +</a>{% endif %}</div>
 
-  {% for post in page %}
-  <article class="em-card ef-post">
-    <div class="em-row"><div class="em-avatar">{{ post.author_label|slice:":1" }}</div>
-      <div style="min-width:0"><b>{% if post.author_employer %}<a href="{{ post.author_employer.get_absolute_url }}" style="text-decoration:none">{{ post.author_label }}</a>{% else %}{{ post.author_label }}{% endif %}</b>{% if post.author_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}<div class="em-muted">{{ post.created_at|date:"d/m/Y H:i" }}</div></div>{% if post.is_sponsored %}<span class="em-tag" style="margin-left:auto;background:#e0e7ff;color:#3730a3">Sponsorisé</span>{% elif post.pinned %}<span class="em-tag em-tag--warn" style="margin-left:auto"><i class="fas fa-thumbtack"></i> À la une</span>{% elif post.kind == 'product' %}<span class="em-tag em-tag--warn" style="margin-left:auto">Nouveau produit</span>{% endif %}</div>
-    <p style="white-space:pre-line">{{ post.text }}</p>
-    {% if post.image %}<img class="ef-img" src="{{ post.image.url }}" alt="" loading="lazy">{% endif %}
-    <div class="ef-actions">
-      {% if user.is_authenticated %}
-      <form class="ef-inline" method="post" action="{% url 'emploi:post_like' post.pk %}">{% csrf_token %}<button class="em-btn em-btn--ghost em-btn--sm" type="submit"><i class="fas fa-thumbs-up"></i> J'aime ({{ post.likes.count }})</button></form>
-      {% if post.author_id == user.pk or user.is_staff %}<form class="ef-inline" method="post" action="{% url 'emploi:post_delete' post.pk %}" onsubmit="return confirm('Supprimer cette publication ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Supprimer</button></form>{% endif %}
-      {% else %}<span class="em-muted"><i class="fas fa-thumbs-up"></i> {{ post.likes.count }}</span>{% endif %}
+    {% if user.is_authenticated and must_order %}
+    <div class="em-card" style="margin-top:18px"><h3><i class="fas fa-bullhorn"></i> Publier une actualité ou une annonce</h3>
+      <p>Les publications sont vérifiées par Lantante avant leur mise en ligne{% if news_plan %} — <b>{{ news_plan.price_label }}</b>{% endif %}.</p>
+      <div><a class="em-btn em-btn--green em-btn--sm" href="{% url 'emploi:publish_hub' %}">Publier</a></div></div>
+    {% elif can_post %}
+    <form id="nw-publish" class="em-card" method="post" enctype="multipart/form-data" style="margin-top:18px">{% csrf_token %}
+      <div class="em-field" style="margin:0 0 8px">{{ form.kind }}</div>
+      <div class="em-field" style="margin:0">{{ form.text }}</div>
+      {% for e in form.text.errors %}<div class="em-err">{{ e }}</div>{% endfor %}
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px">{{ form.image }}<button class="em-btn em-btn--green em-btn--sm" type="submit" style="margin-left:auto"><i class="fas fa-paper-plane"></i> Publier</button></div>
+    </form>
+    {% elif not user.is_authenticated %}
+    <div class="em-card" style="margin-top:18px"><p>Connectez-vous pour aimer et commenter.</p><a class="em-btn em-btn--green em-btn--sm" href="{% url 'users:login' %}?next={{ request.path }}" style="align-self:flex-start">Se connecter</a></div>
+    {% endif %}
+
+    <div class="nw-grid" style="margin-top:22px">
+      {% for post in page %}
+      {% include 'emploi/_news_card.html' %}
+      {% empty %}
+      <div class="em-empty" style="grid-column:1/-1">Aucune actualité pour le moment.</div>
+      {% endfor %}
     </div>
-    <div class="ef-comments">
-      {% for c in post.comments.all %}{% if not c.is_hidden %}<div class="ef-comment"><b>{{ c.author.public_name }}</b> · {{ c.text }}</div>{% endif %}{% endfor %}
-      {% if user.is_authenticated %}
-      <form method="post" action="{% url 'emploi:post_comment' post.pk %}" style="display:flex;gap:8px">{% csrf_token %}{{ comment_form.text }}<button class="em-btn em-btn--navy em-btn--sm" type="submit" style="width:auto">Envoyer</button></form>
-      {% endif %}
+    {% include 'emploi/_pager.html' with qs="" %}
+  </div>
+
+  <aside class="nw-side">
+    {% for ad in ads %}
+    <a class="nw-ad" href="{% url 'emploi:post_detail' ad.pk %}" title="Publicité"><img src="{{ ad.image.url }}" alt="{{ ad.headline }}" loading="lazy"><span>Sponsorisé</span></a>
+    {% endfor %}
+    <div class="nw-panel">
+      <div class="nw-bar nw-bar--sm"><span>Dernières actualités</span></div>
+      {% for p in latest %}
+      <a class="nw-mini" href="{% url 'emploi:post_detail' p.pk %}">
+        {% if p.image %}<img src="{{ p.image.url }}" alt="" loading="lazy">{% else %}<span class="nw-mini-ph">{{ p.author_label|slice:":1" }}</span>{% endif %}
+        <b>{{ p.headline }}</b>
+      </a>
+      {% endfor %}
     </div>
-  </article>
-  {% empty %}
-  <div class="em-empty">Aucune publication pour le moment. Soyez le premier à partager !</div>
-  {% endfor %}
-  {% include 'emploi/_pager.html' with qs="" %}
+  </aside>
 </div>
 {% endblock %}

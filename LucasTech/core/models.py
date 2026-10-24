@@ -253,6 +253,8 @@ class SiteSettings(models.Model):
     """Réglages globaux du site (footer, contact, réseaux sociaux).
     Singleton : une seule ligne existe, éditable depuis l'admin."""
     email          = models.EmailField(blank=True, verbose_name="Email de contact")
+    email_2        = models.EmailField(blank=True, verbose_name="Email de contact (2)",
+                                       help_text="Seconde adresse affichée à côté de la première (facultatif).")
     whatsapp_1     = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp (1)",
                                       help_text="Numéro complet ex : 22890000000")
     whatsapp_2     = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp (2)",

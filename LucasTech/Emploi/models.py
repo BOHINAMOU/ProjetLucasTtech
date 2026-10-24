@@ -1061,6 +1061,26 @@ class FeedPost(models.Model):
         return f"{self.author.public_name} : {self.text[:50]}"
 
     @property
+    def _split(self):
+        """(titre, corps) : le titre est le premier paragraphe quand il est court et suivi d'une ligne vide."""
+        text = self.text.strip()
+        first, sep, rest = text.partition('\n\n')
+        first = first.strip()
+        if sep and 0 < len(first) <= 140:
+            return first, rest.strip()
+        line = text.splitlines()[0].strip() if text else ''
+        return (line if len(line) <= 90 else line[:87].rstrip() + '…'), text
+
+    @property
+    def headline(self):
+        """Titre affiché sur les cartes d'actualité."""
+        return self._split[0]
+
+    @property
+    def body(self):
+        return self._split[1]
+
+    @property
     def author_verified(self):
         employer = getattr(self.author, 'employer_profile', None)
         return bool(employer and employer.is_verified)

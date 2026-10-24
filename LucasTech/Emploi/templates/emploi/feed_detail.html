@@ -1,0 +1,46 @@
+{% extends 'emploi/base_emploi.html' %}
+{% block em_title %}{{ post.headline }}{% endblock %}
+{% block em_content %}
+{% include 'emploi/_news_css.html' %}
+<div class="nw-wrap" style="margin-top:26px">
+  <div style="min-width:0">
+    <div class="nw-bar"><span>Actualités</span><a href="{% url 'emploi:feed' %}">← Toutes les actualités</a></div>
+    <article class="nw-article">
+      <h1>{{ post.headline }}</h1>
+      <div class="nw-meta">
+        <span>Publié le {{ post.created_at|date:"d M Y" }} · par {% if post.author_employer %}<a href="{{ post.author_employer.get_absolute_url }}" style="color:inherit;font-weight:700">{{ post.author_label }}</a>{% else %}<b>{{ post.author_label }}</b>{% endif %}{% if post.author_verified %} <i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}</span>
+        <span class="nw-share">Partager sur :
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{{ request.path|urlencode }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://wa.me/?text={{ post.headline|urlencode }}%20{{ request.scheme }}://{{ request.get_host }}{{ request.path }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        </span>
+      </div>
+      {% if post.image %}<img class="nw-img" style="margin-top:18px;aspect-ratio:auto;max-height:560px" src="{{ post.image.url }}" alt="">{% endif %}
+      <div class="nw-body">{{ post.body }}</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'emploi:post_like' post.pk %}" style="display:inline">{% csrf_token %}<button class="em-btn em-btn--ghost em-btn--sm" type="submit"><i class="fas fa-thumbs-up"></i> J'aime ({{ post.likes.count }})</button></form>
+        {% if post.author_id == user.pk or user.is_staff %}<form method="post" action="{% url 'emploi:post_delete' post.pk %}" style="display:inline" onsubmit="return confirm('Supprimer cette publication ?')">{% csrf_token %}<button class="em-btn em-btn--danger em-btn--sm" type="submit">Supprimer</button></form>{% endif %}
+        {% else %}<span class="em-muted"><i class="fas fa-thumbs-up"></i> {{ post.likes.count }} · <a href="{% url 'users:login' %}?next={{ request.path }}">Connectez-vous</a> pour aimer et commenter.</span>{% endif %}
+      </div>
+      <div style="border-top:1px solid var(--em-border);margin-top:18px;padding-top:12px;display:flex;flex-direction:column;gap:8px">
+        <b>Commentaires ({{ post.comments.count }})</b>
+        {% for c in post.comments.all %}{% if not c.is_hidden %}<div style="font-size:.9rem;background:var(--em-surf2);padding:8px 12px;border-radius:10px;overflow-wrap:anywhere"><b>{{ c.author.public_name }}</b> · {{ c.text }}</div>{% endif %}{% endfor %}
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'emploi:post_comment' post.pk %}" style="display:flex;gap:8px">{% csrf_token %}{{ comment_form.text }}<button class="em-btn em-btn--navy em-btn--sm" type="submit" style="width:auto">Envoyer</button></form>
+        {% endif %}
+      </div>
+    </article>
+  </div>
+  <aside class="nw-side">
+    <div class="nw-panel">
+      <div class="nw-bar nw-bar--sm"><span>Dernières actualités</span></div>
+      {% for p in latest %}
+      <a class="nw-mini" href="{% url 'emploi:post_detail' p.pk %}">
+        {% if p.image %}<img src="{{ p.image.url }}" alt="" loading="lazy">{% else %}<span class="nw-mini-ph">{{ p.author_label|slice:":1" }}</span>{% endif %}
+        <b>{{ p.headline }}</b>
+      </a>
+      {% endfor %}
+    </div>
+  </aside>
+</div>
+{% endblock %}

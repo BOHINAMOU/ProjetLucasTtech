@@ -56,7 +56,7 @@
 
   <h2>Contact</h2>
   <p>Pour toute question, écrivez-nous à
-  <a href="mailto:lucasbohinamou@gmail.com">lucasbohinamou@gmail.com</a>.</p>
+  <a href="mailto:{{ site_settings.email|default:'contact@lantantetechnologie.com' }}">{{ site_settings.email|default:'contact@lantantetechnologie.com' }}</a>{% if site_settings.email_2 %} ou <a href="mailto:{{ site_settings.email_2 }}">{{ site_settings.email_2 }}</a>{% endif %}.</p>
 
   <p style="margin-top:24px;">Voir aussi notre
   <a href="{% url 'core:privacy_policy' %}">politique de confidentialité</a>.</p>

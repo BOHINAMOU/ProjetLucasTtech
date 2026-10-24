@@ -568,16 +568,24 @@ def feed(request):
             messages.success(request, "✓ Publication ajoutée.")
             return redirect('emploi:feed')
     now = timezone.now()
-    posts = FeedPost.objects.filter(is_hidden=False).select_related('author').prefetch_related(
-        'comments__author', 'likes').annotate(pinned=Case(
-            When(is_featured=True, featured_until__gt=now, then=Value(1)),
-            When(is_featured=True, featured_until__isnull=True, then=Value(1)),
-            default=Value(0), output_field=IntegerField())).order_by('-pinned', '-created_at')
+    base = FeedPost.objects.filter(is_hidden=False).select_related('author', 'author__employer_profile')
+    pinned = Case(When(is_featured=True, featured_until__gt=now, then=Value(1)),
+                  When(is_featured=True, featured_until__isnull=True, then=Value(1)),
+                  default=Value(0), output_field=IntegerField())
+    posts = base.filter(is_sponsored=False).annotate(pinned=pinned).order_by('-pinned', '-created_at')
     return render(request, 'emploi/feed.html', {
-        'page': _page(request, posts, 10), 'form': form, 'comment_form': CommentForm(), 'must_order': must_order,
-        'can_post': can_post,
+        'page': _page(request, posts, 12), 'form': form, 'must_order': must_order, 'can_post': can_post,
         'news_plan': ServicePlan.objects.filter(kind='news', is_active=True).first(),
+        'ads': base.filter(is_sponsored=True).exclude(image='').order_by('-created_at')[:3],
+        'latest': base.filter(is_sponsored=False).order_by('-created_at')[:6],
     })
+
+
+def post_detail(request, pk):
+    """Une actualité en entier, avec j'aime, commentaires et partage."""
+    post = get_object_or_404(FeedPost.objects.select_related('author').prefetch_related('comments__author', 'likes'), pk=pk, is_hidden=False)
+    latest = FeedPost.objects.filter(is_hidden=False, is_sponsored=False).exclude(pk=pk).select_related('author')[:5]
+    return render(request, 'emploi/feed_detail.html', {'post': post, 'comment_form': CommentForm(), 'latest': latest})
 
 
 @login_required

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, TextInput, View } from 'react-native';
+import { Image, Linking, Pressable, TextInput, View } from 'react-native';
 
 import { post } from '@/lib/api';
 import { formatDate, formatDateTime, timeAgo } from '@/lib/format';
@@ -78,7 +78,7 @@ export function PartnerCard({ partner }: { partner: Partner }) {
   );
 }
 
-export function PostCard({ post: initial, canInteract = true }: { post: Post; canInteract?: boolean }) {
+export function PostDetail({ post: initial, canInteract = true }: { post: Post; canInteract?: boolean }) {
   const [item, setItem] = useState(initial);
   const [showComments, setShowComments] = useState(false);
 
@@ -110,9 +110,11 @@ export function PostCard({ post: initial, canInteract = true }: { post: Post; ca
           {item.sponsored ? <Badge label="Sponsorisé" tone="gold" /> : item.featured ? <Badge label="À la une" tone="gold" icon="star" /> : null}
         </Row>
         {item.kind === 'product' ? <Badge label="Nouveau produit / service" tone="green" /> : null}
-        <T>{item.text}</T>
+        <T size={20} weight="800" color={colors.green}>{item.headline}</T>
       </View>
       {item.image ? <Image source={{ uri: item.image }} style={{ width: '100%', aspectRatio: 1.4, backgroundColor: colors.surface2 }} resizeMode="cover" /> : null}
+      {item.body ? <View style={{ padding: space.lg }}><T color={colors.ink2}>{item.body}</T></View> : null}
+      <ShareRow post={item} />
       <Row style={{ padding: space.md, paddingHorizontal: space.lg, borderTopWidth: 1, borderTopColor: colors.border }} gap={space.xl}>
         <Pressable onPress={toggleLike} disabled={!canInteract} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={22} color={item.liked ? colors.danger : colors.muted} />
@@ -125,6 +127,69 @@ export function PostCard({ post: initial, canInteract = true }: { post: Post; ca
       </Row>
       {showComments ? <Comments item={item} onChange={setItem} canInteract={canInteract} /> : null}
     </Card>
+  );
+}
+
+const SQUARE = { width: 32, height: 32, backgroundColor: '#111', alignItems: 'center', justifyContent: 'center', borderRadius: 2 } as const;
+
+/** « Partager sur : f  WhatsApp » (liens vers la page publique de l'actualité). */
+export function ShareRow({ post: p, bordered = true }: { post: Post; bordered?: boolean }) {
+  const url = encodeURIComponent(p.share_url);
+  const text = encodeURIComponent(`${p.headline} `);
+  return (
+    <Row style={[{ justifyContent: 'space-between', paddingVertical: 8, paddingHorizontal: bordered ? space.lg : 0 }, bordered ? { borderTopWidth: 1, borderTopColor: colors.border } : null]}>
+      <Muted size={13}>Publié le {formatDate(p.created_at)}</Muted>
+      <Row gap={6}>
+        <Muted size={13}>Partager sur :</Muted>
+        <Pressable accessibilityLabel="Facebook" onPress={() => Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${url}`)} style={SQUARE}>
+          <Ionicons name="logo-facebook" size={18} color="#fff" />
+        </Pressable>
+        <Pressable accessibilityLabel="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/?text=${text}${url}`)} style={SQUARE}>
+          <Ionicons name="logo-whatsapp" size={18} color="#fff" />
+        </Pressable>
+      </Row>
+    </Row>
+  );
+}
+
+/** Carte d'actualité des listes : grande image, titre vert avec flèche, date et partage ; un toucher ouvre l'actualité. */
+export function PostCard({ post: p }: { post: Post; canInteract?: boolean }) {
+  const open = () => router.push(`/post/${p.id}` as never);
+  return (
+    <View style={{ gap: 0 }}>
+      <Pressable onPress={open}>
+        {p.image
+          ? <Image source={{ uri: p.image }} style={{ width: '100%', aspectRatio: 1.85, backgroundColor: colors.surface2 }} resizeMode="cover" />
+          : <View style={{ width: '100%', aspectRatio: 1.85, backgroundColor: colors.navy, alignItems: 'center', justifyContent: 'center' }}>
+              <T size={44} weight="800" color={colors.white}>{(p.author || '?').charAt(0).toUpperCase()}</T>
+            </View>}
+      </Pressable>
+      <Pressable onPress={open} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 14, marginBottom: 12 }}>
+        <View style={{ flex: 1 }}><T size={19} weight="800" color={colors.green}>{p.headline}</T></View>
+        <Ionicons name="arrow-forward-circle-outline" size={26} color={colors.ink2} style={{ marginTop: 2 }} />
+      </Pressable>
+      <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <ShareRow post={p} bordered />
+      </View>
+      <Row gap={6} style={{ marginTop: 8, flexWrap: 'wrap' }}>
+        <Muted size={12} style={{ fontWeight: '700' }}>{p.author}</Muted>
+        {p.author_verified ? <VerifiedBadge /> : null}
+        {p.sponsored ? <Badge label="Sponsorisé" tone="gold" /> : p.featured ? <Badge label="À la une" tone="gold" icon="star" /> : null}
+        {p.kind === 'product' ? <Badge label="Nouveau produit" tone="green" /> : null}
+        <View style={{ flex: 1 }} />
+        <Ionicons name="heart-outline" size={14} color={colors.muted} /><Muted size={12}>{p.likes}</Muted>
+        <Ionicons name="chatbubble-outline" size={13} color={colors.muted} /><Muted size={12}>{p.comments.length}</Muted>
+      </Row>
+    </View>
+  );
+}
+
+/** Bandeau de rubrique vert, comme sur les sites d'actualité. */
+export function SectionBar({ title }: { title: string }) {
+  return (
+    <View style={{ backgroundColor: colors.green, borderLeftWidth: 6, borderLeftColor: colors.gold, paddingVertical: 7, paddingHorizontal: 14 }}>
+      <T size={14} weight="800" color={colors.white} style={{ textTransform: 'uppercase', letterSpacing: 0.4 }}>{title}</T>
+    </View>
   );
 }
 

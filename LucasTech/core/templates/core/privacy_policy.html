@@ -58,10 +58,10 @@
   <h2>Vos droits</h2>
   <p>Vous pouvez demander l'accès, la correction ou la suppression de vos données personnelles
   à tout moment en nous contactant à
-  <a href="mailto:lucasbohinamou@gmail.com">lucasbohinamou@gmail.com</a>.</p>
+  <a href="mailto:{{ site_settings.email|default:'contact@lantantetechnologie.com' }}">{{ site_settings.email|default:'contact@lantantetechnologie.com' }}</a>{% if site_settings.email_2 %} ou <a href="mailto:{{ site_settings.email_2 }}">{{ site_settings.email_2 }}</a>{% endif %}.</p>
 
   <h2>Contact</h2>
   <p>Pour toute question concernant cette politique de confidentialité, écrivez-nous à
-  <a href="mailto:lucasbohinamou@gmail.com">lucasbohinamou@gmail.com</a>.</p>
+  <a href="mailto:{{ site_settings.email|default:'contact@lantantetechnologie.com' }}">{{ site_settings.email|default:'contact@lantantetechnologie.com' }}</a>{% if site_settings.email_2 %} ou <a href="mailto:{{ site_settings.email_2 }}">{{ site_settings.email_2 }}</a>{% endif %}.</p>
 </div>
 {% endblock %}

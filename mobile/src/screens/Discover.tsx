@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { TextInput, useWindowDimensions, View } from 'react-native';
 
 import { usePaged } from '@/lib/paged';
 import { colors, radius, space } from '@/lib/theme';
 import type { DirectoryItem, Post } from '@/lib/types';
 import { Badge, Card, Chips, Empty, Logo, Muted, Row, T, VerifiedBadge } from '@/ui';
-import { PostCard } from '@/ui/cards';
+import { PostCard, SectionBar } from '@/ui/cards';
 import { PagedList } from '@/ui/PagedList';
 
 const SECTIONS = [
@@ -24,7 +24,9 @@ export default function Discover() {
 
 function Feed({ header }: { header: React.ReactNode }) {
   const paged = usePaged<Post>('feed');
-  return <PagedList paged={paged} header={header} render={(p) => <PostCard post={p} />}
+  const { width } = useWindowDimensions();
+  const top = <View style={{ gap: space.md }}>{header}<View style={{ paddingHorizontal: space.lg }}><SectionBar title="Actualités" /></View></View>;
+  return <PagedList paged={paged} header={top} columns={width >= 760 ? 2 : 1} render={(p) => <PostCard post={p} />}
     empty={<Empty icon="newspaper-outline" title="Pas encore d'actualité" text="Les publications des entreprises et de Lantante apparaîtront ici." />} />;
 }
 

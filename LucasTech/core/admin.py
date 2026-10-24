@@ -12,7 +12,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     # Singleton : une seule ligne de réglages, pas d'ajout ni de suppression.
     fieldsets = (
         ('Contact', {
-            'fields': ('email', 'whatsapp_1', 'whatsapp_2'),
+            'fields': ('email', 'email_2', 'whatsapp_1', 'whatsapp_2'),
         }),
         ('Paiements (publications des entreprises)', {
             'fields': ('payment_flooz', 'payment_tmoney'),

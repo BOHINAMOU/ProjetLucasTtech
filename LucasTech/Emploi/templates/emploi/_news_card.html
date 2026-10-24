@@ -1,0 +1,18 @@
+<article class="nw-card">
+  <a href="{% url 'emploi:post_detail' post.pk %}">{% if post.image %}<img class="nw-img" src="{{ post.image.url }}" alt="" loading="lazy">{% else %}<span class="nw-ph">{{ post.author_label|slice:":1" }}</span>{% endif %}</a>
+  <a class="nw-title" href="{% url 'emploi:post_detail' post.pk %}"><h3>{{ post.headline }}</h3><i class="far fa-circle-right"></i></a>
+  <div class="nw-meta">
+    <span>Publié le {{ post.created_at|date:"d M Y" }}</span>
+    <span class="nw-share">Partager sur :
+      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{% url 'emploi:post_detail' post.pk|urlencode %}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://wa.me/?text={{ post.headline|urlencode }}%20{{ request.scheme }}://{{ request.get_host }}{% url 'emploi:post_detail' post.pk %}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </span>
+  </div>
+  <div class="nw-by">
+    {% if post.author_employer %}<a href="{{ post.author_employer.get_absolute_url }}" style="color:inherit;font-weight:700;text-decoration:none">{{ post.author_label }}</a>{% else %}<b>{{ post.author_label }}</b>{% endif %}
+    {% if post.author_verified %}<i class="fas fa-circle-check em-vbadge" title="Entreprise de confiance"></i>{% endif %}
+    {% if post.pinned %}<span class="em-tag em-tag--warn"><i class="fas fa-thumbtack"></i> À la une</span>{% endif %}
+    {% if post.kind == 'product' %}<span class="em-tag em-tag--warn">Nouveau produit</span>{% endif %}
+    <span style="margin-left:auto"><i class="fas fa-thumbs-up"></i> {{ post.likes.count }} · <i class="far fa-comment"></i> {{ post.comments.count }}</span>
+  </div>
+</article>

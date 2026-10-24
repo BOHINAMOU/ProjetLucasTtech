@@ -151,7 +151,8 @@ def post_payload(request, p, user=None):
     return {
         'id': p.pk, 'author': p.author_label, 'author_verified': p.author_verified, 'author_company_id': employer.pk if employer else None,
         'author_logo': abs_url(request, employer.logo) if employer and employer.logo else None,
-        'text': p.text, 'image': abs_url(request, p.image), 'kind': p.kind, 'sponsored': p.is_sponsored,
+        'text': p.text, 'headline': p.headline, 'body': p.body, 'share_url': request.build_absolute_uri(f'/emploi/actualites/{p.pk}/'),
+        'image': abs_url(request, p.image), 'kind': p.kind, 'sponsored': p.is_sponsored,
         'featured': bool(p.is_featured), 'likes': p.likes.count(),
         'liked': bool(user and user.is_authenticated and p.likes.filter(pk=user.pk).exists()),
         'comments': [{'id': c.pk, 'author': c.author.public_name, 'text': c.text, 'created_at': dt(c.created_at)}

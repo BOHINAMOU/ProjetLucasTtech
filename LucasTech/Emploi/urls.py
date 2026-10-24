@@ -51,6 +51,7 @@ urlpatterns = [
 
     # Fil d'actualités
     path('actualites/', views.feed, name='feed'),
+    path('actualites/<int:pk>/', views.post_detail, name='post_detail'),
     path('actualites/<int:pk>/aime/', views.post_like, name='post_like'),
     path('actualites/<int:pk>/commenter/', views.post_comment, name='post_comment'),
     path('actualites/<int:pk>/supprimer/', views.post_delete, name='post_delete'),

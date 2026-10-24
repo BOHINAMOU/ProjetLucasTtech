@@ -53,6 +53,14 @@
                     <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
                 </li>
                 {% endif %}
+                {% if site_settings.email_2 %}
+                <li>
+                    <span class="lt-footer__contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <a href="mailto:{{ site_settings.email_2 }}">{{ site_settings.email_2 }}</a>
+                </li>
+                {% endif %}
                 {% if site_settings.whatsapp_1 %}
                 <li>
                     <span class="lt-footer__contact-icon lt-footer__contact-icon--wa">
