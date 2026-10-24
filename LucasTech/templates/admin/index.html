@@ -2,7 +2,7 @@
 {% load i18n static %}
 
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
-{% block content_title %}Tableau de bord{% endblock %}
+{% block content_title %}{% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
@@ -13,92 +13,129 @@
 
 {% block content %}
 <style>
-.ltd { --g:#0f7a45; --g2:#0b6137; --gold:#c9a84c; --navy:#0d3b7a; --ink:#0f172a; --muted:#64748b; --line:#e5e7eb; max-width:1240px; }
+.ltd { --g:#0f7a45; --g2:#0b6137; --gd:#0b2e1d; --gold:#c9a84c; --navy:#0d3b7a; --ink:#0f172a; --muted:#64748b; --line:#e6eaee; max-width:1280px; font-family:inherit; }
 .ltd * { box-sizing:border-box; }
-.ltd-hello { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
-.ltd-hello h2 { margin:0; font-size:1.5rem; font-weight:800; color:var(--ink); }
-.ltd-hello p { margin:2px 0 0; color:var(--muted); }
-.ltd-pill { display:inline-flex; align-items:center; gap:8px; background:#eef7f1; color:var(--g2); font-weight:700; padding:8px 14px; border-radius:999px; font-size:.9rem; }
-.ltd-pill.warn { background:#fff4e5; color:#b45309; }
-.ltd-bar { background:var(--g); border-left:6px solid var(--gold); color:#fff; padding:8px 14px; font-weight:800; font-size:.85rem; text-transform:uppercase; letter-spacing:.3px; margin:26px 0 14px; display:flex; justify-content:space-between; align-items:center; }
-.ltd-bar a { color:#fff; font-size:.8rem; text-transform:none; font-weight:600; opacity:.9; }
-.ltd-actions { display:flex; flex-wrap:wrap; gap:10px; }
-.ltd-btn { display:inline-flex; align-items:center; gap:9px; padding:11px 16px; font-weight:700; font-size:.92rem; text-decoration:none !important; border:2px solid transparent; transition:background .15s, transform .08s; }
-.ltd-btn:active { transform:scale(.97); }
-.ltd-btn.green { background:var(--g); color:#fff !important; } .ltd-btn.green:hover { background:var(--g2); }
-.ltd-btn.navy { background:#fff; color:var(--navy) !important; border-color:var(--navy); } .ltd-btn.navy:hover { background:#eef3fb; }
-.ltd-btn.gold { background:#fbf3dc; color:#7a5f12 !important; border-color:var(--gold); } .ltd-btn.gold:hover { background:#f6e8bb; }
-.ltd-btn.grey { background:#f1f5f9; color:#334155 !important; } .ltd-btn.grey:hover { background:#e2e8f0; }
-.ltd-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
-.ltd-card { background:#fff; border:1px solid var(--line); padding:14px 16px; display:flex; gap:12px; align-items:center; text-decoration:none !important; color:var(--ink) !important; transition:border-color .15s, box-shadow .15s; }
-.ltd-card:hover { border-color:var(--g); box-shadow:0 4px 14px rgba(15,122,69,.12); }
-.ltd-ico { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:#eef7f1; color:var(--g); font-size:1.05rem; flex:0 0 auto; }
-.ltd-n { font-size:1.6rem; font-weight:800; line-height:1; }
-.ltd-l { font-size:.82rem; color:var(--muted); margin-top:3px; line-height:1.25; }
-.ltd-sub { font-size:.72rem; color:var(--g); font-weight:700; margin-top:2px; }
-.ltd-todo.red .ltd-ico { background:#fee2e2; color:#b91c1c; } .ltd-todo.red.has { border-color:#fca5a5; }
-.ltd-todo.orange .ltd-ico { background:#fff4e5; color:#b45309; } .ltd-todo.orange.has { border-color:#fcd9a3; }
-.ltd-todo.blue .ltd-ico { background:#e0ecfb; color:var(--navy); }
-.ltd-todo:not(.has) { opacity:.62; }
-.ltd-two { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:22px; }
-@media (max-width:1000px) { .ltd-two { grid-template-columns:minmax(0,1fr); } }
-.ltd-panel { background:#fff; border:1px solid var(--line); }
-.ltd-row { display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--line); text-decoration:none !important; color:var(--ink) !important; align-items:flex-start; }
+.ltd a { text-decoration:none !important; }
+
+/* ── Bandeau d'accueil ── */
+.ltd-hero { background:var(--gd); color:#fff; border-radius:16px; padding:26px 30px; display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; border-bottom:5px solid var(--gold); box-shadow:0 10px 30px rgba(11,46,29,.18); }
+.ltd-date { font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:700; }
+.ltd-hero h2 { margin:6px 0 4px; font-size:2rem; font-weight:800; color:#fff; letter-spacing:0; }
+.ltd-hero p { margin:0 0 14px; color:rgba(255,255,255,.78); }
+.ltd-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.12); color:#fff; font-weight:700; padding:8px 16px; border-radius:999px; font-size:.9rem; }
+.ltd-pill.warn { background:var(--gold); color:#2a2205; }
+.ltd-kpis { display:flex; gap:0; }
+.ltd-kpi { padding:4px 26px; text-align:center; border-left:1px solid rgba(255,255,255,.18); }
+.ltd-kpi:first-child { border-left:0; }
+.ltd-kpi strong { display:block; font-size:2rem; font-weight:800; line-height:1.1; }
+.ltd-kpi span { font-size:.76rem; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.08em; }
+.ltd-kpi.hot strong { color:#f1d27a; }
+
+/* ── Titres de section ── */
+.ltd-h { display:flex; justify-content:space-between; align-items:center; margin:30px 0 14px; }
+.ltd-h h3 { margin:0; font-size:1.05rem; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:10px; }
+.ltd-h h3::before { content:''; width:5px; height:20px; background:var(--g); border-radius:3px; box-shadow:5px 0 0 var(--gold); margin-right:5px; }
+.ltd-h a { font-size:.85rem; font-weight:700; color:var(--g2); }
+
+/* ── Actions rapides ── */
+.ltd-actions { display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:12px; }
+.ltd-act { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 12px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:9px; color:var(--ink) !important; font-weight:700; font-size:.88rem; line-height:1.25; transition:transform .15s, box-shadow .15s, border-color .15s; }
+.ltd-act i { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:#eef7f1; color:var(--g); transition:background .15s, color .15s; }
+.ltd-act:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(15,23,42,.10); border-color:var(--g); }
+.ltd-act:hover i { background:var(--g); color:#fff; }
+.ltd-act.navy i { background:#e6eefb; color:var(--navy); } .ltd-act.navy:hover i { background:var(--navy); color:#fff; }
+.ltd-act.gold i { background:#fbf3dc; color:#8a6d1d; } .ltd-act.gold:hover i { background:var(--gold); color:#2a2205; }
+.ltd-act.grey i { background:#eef1f5; color:#475569; } .ltd-act.grey:hover i { background:#475569; color:#fff; }
+
+/* ── Cartes (à traiter, chiffres) ── */
+.ltd-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(228px,1fr)); gap:12px; }
+.ltd-card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; display:flex; gap:14px; align-items:center; color:var(--ink) !important; position:relative; overflow:hidden; transition:box-shadow .15s, transform .15s; }
+.ltd-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--g); }
+.ltd-card:hover { box-shadow:0 10px 24px rgba(15,23,42,.10); transform:translateY(-2px); }
+.ltd-ico { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:#eef7f1; color:var(--g); font-size:1.05rem; flex:0 0 auto; }
+.ltd-n { font-size:1.75rem; font-weight:800; line-height:1; display:block; }
+.ltd-l { font-size:.82rem; color:var(--muted); margin-top:4px; line-height:1.25; display:block; }
+.ltd-sub { font-size:.72rem; color:var(--g); font-weight:700; margin-top:3px; display:block; }
+.ltd-todo.red::before { background:#dc2626; } .ltd-todo.red .ltd-ico { background:#fee2e2; color:#b91c1c; }
+.ltd-todo.orange::before { background:#f59e0b; } .ltd-todo.orange .ltd-ico { background:#fff4e5; color:#b45309; }
+.ltd-todo.blue::before { background:var(--navy); } .ltd-todo.blue .ltd-ico { background:#e6eefb; color:var(--navy); }
+.ltd-todo.has .ltd-n { color:#b91c1c; }
+.ltd-todo.orange.has .ltd-n { color:#b45309; } .ltd-todo.blue.has .ltd-n { color:var(--navy); }
+.ltd-todo:not(.has) { opacity:.55; }
+.ltd-todo:not(.has)::before { background:#cbd5e1; }
+
+/* ── Panneaux ── */
+.ltd-two { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:22px; align-items:start; }
+@media (max-width:1050px) { .ltd-two { grid-template-columns:minmax(0,1fr); } }
+.ltd-panel { background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+.ltd-cnt { display:grid; grid-template-columns:repeat(3,1fr); background:#f8fafc; border-bottom:1px solid var(--line); }
+.ltd-cnt div { padding:16px; text-align:center; border-right:1px solid var(--line); }
+.ltd-cnt div:last-child { border-right:0; }
+.ltd-cnt strong { display:block; font-size:1.9rem; font-weight:800; line-height:1.1; }
+.ltd-cnt span { font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.ltd-cnt .u strong { color:#dc2626; } .ltd-cnt .r strong { color:var(--g); }
+.ltd-links { padding:10px 16px; display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--line); }
+.ltd-links a { font-size:.8rem; font-weight:700; color:var(--g2); background:#eef7f1; padding:6px 12px; border-radius:99px; }
+.ltd-links a:hover { background:var(--g); color:#fff; }
+.ltd-row { display:flex; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); color:var(--ink) !important; align-items:flex-start; transition:background .12s; }
 .ltd-row:last-child { border-bottom:0; }
 .ltd-row:hover { background:#f8fafc; }
-.ltd-row.unread { background:#f0faf4; }
-.ltd-dot { width:9px; height:9px; border-radius:50%; background:#cbd5e1; margin-top:7px; flex:0 0 auto; }
-.ltd-row.unread .ltd-dot { background:#dc2626; }
+.ltd-row.unread { background:#f3fbf6; }
+.ltd-avatar { width:36px; height:36px; border-radius:50%; background:var(--g); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; flex:0 0 auto; position:relative; }
+.ltd-row.unread .ltd-avatar::after { content:''; position:absolute; top:-1px; right:-1px; width:11px; height:11px; border-radius:50%; background:#dc2626; border:2px solid #fff; }
 .ltd-row b { font-weight:700; }
 .ltd-row p { margin:2px 0 0; color:#334155; font-size:.9rem; overflow-wrap:anywhere; }
 .ltd-meta { font-size:.76rem; color:var(--muted); margin-top:3px; }
-.ltd-tag { display:inline-block; font-size:.68rem; font-weight:800; padding:2px 8px; border-radius:99px; background:#e2e8f0; color:#334155; margin-left:6px; }
+.ltd-tag { display:inline-block; font-size:.66rem; font-weight:800; padding:2px 8px; border-radius:99px; background:#e2e8f0; color:#334155; margin-left:6px; text-transform:uppercase; letter-spacing:.04em; }
 .ltd-tag.new { background:#fee2e2; color:#b91c1c; }
-.ltd-empty { padding:22px 16px; color:var(--muted); text-align:center; }
-.ltd-cnt { display:grid; grid-template-columns:repeat(3,1fr); }
-.ltd-cnt div { padding:16px; text-align:center; border-right:1px solid var(--line); }
-.ltd-cnt div:last-child { border-right:0; }
-.ltd-cnt strong { display:block; font-size:1.7rem; font-weight:800; }
-.ltd-cnt span { font-size:.8rem; color:var(--muted); }
-.ltd-cnt .u strong { color:#dc2626; } .ltd-cnt .r strong { color:var(--g); }
-.ltd-links { padding:10px 16px 14px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid var(--line); }
-.ltd-links a { font-size:.82rem; font-weight:700; color:var(--g2); background:#eef7f1; padding:6px 12px; border-radius:99px; text-decoration:none !important; }
-.ltd-chart { display:flex; align-items:flex-end; gap:6px; height:130px; padding:14px 16px 6px; }
-.ltd-chart div { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:4px; height:100%; font-size:.62rem; color:var(--muted); }
-.ltd-chart i { display:block; width:100%; background:var(--g); min-height:4px; opacity:.9; }
+.ltd-empty { padding:26px 16px; color:var(--muted); text-align:center; }
+.ltd-note { font-size:.78rem; color:var(--muted); margin-top:8px; }
+
+/* ── Graphiques ── */
+.ltd-chartbox { padding:14px 16px 12px; }
+.ltd-chart { display:flex; align-items:flex-end; gap:6px; height:120px; border-bottom:1px solid var(--line); }
+.ltd-chart div { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; gap:3px; }
+.ltd-chart i { display:block; width:100%; background:var(--g); border-radius:5px 5px 0 0; min-height:4px; opacity:.88; transition:opacity .15s; }
+.ltd-chart div:hover i { opacity:1; }
 .ltd-chart b { font-size:.7rem; color:var(--ink); }
-.ltd-mail { padding:12px 16px; font-size:.86rem; color:#334155; background:#f8fafc; border-top:1px solid var(--line); }
+.ltd-days { display:flex; gap:6px; padding-top:6px; }
+.ltd-days span { flex:1; text-align:center; font-size:.62rem; color:var(--muted); }
+.ltd-mail { padding:12px 16px; font-size:.84rem; color:#334155; background:#f8fafc; border-top:1px solid var(--line); }
 .ltd-mail i { color:var(--g); margin-right:6px; }
 </style>
 
 <div class="ltd">
-  <div class="ltd-hello">
+  <div class="ltd-hero">
     <div>
+      <div class="ltd-date">{{ dash.today }}</div>
       <h2>Bonjour {{ dash.greeting }}</h2>
       <p>Voici l'essentiel de votre site aujourd'hui.</p>
+      <span class="ltd-pill {% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
+        {% if dash.todo_total %}{{ dash.todo_total }} élément{{ dash.todo_total|pluralize }} à traiter{% else %}Tout est à jour{% endif %}</span>
     </div>
-    <span class="ltd-pill {% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
-      {% if dash.todo_total %}{{ dash.todo_total }} élément{{ dash.todo_total|pluralize }} à traiter{% else %}Tout est à jour{% endif %}</span>
+    <div class="ltd-kpis">
+      {% for k in dash.hero_kpis %}<div class="ltd-kpi {% if forloop.last and k.1 %}hot{% endif %}"><strong>{{ k.1 }}</strong><span>{{ k.0 }}</span></div>{% endfor %}
+    </div>
   </div>
 
-  <div class="ltd-bar" style="margin-top:0"><span>Actions rapides</span></div>
+  <div class="ltd-h"><h3>Actions rapides</h3></div>
   <div class="ltd-actions">
-    {% for a in dash.actions %}<a class="ltd-btn {{ a.tone }}" href="{{ a.url }}"{% if a.url == '/' %} target="_blank"{% endif %}><i class="fas {{ a.icon }}"></i> {{ a.label }}</a>{% endfor %}
+    {% for a in dash.actions %}<a class="ltd-act {{ a.tone }}" href="{{ a.url }}"{% if a.url == '/' %} target="_blank"{% endif %}><i class="fas {{ a.icon }}"></i>{{ a.label }}</a>{% endfor %}
   </div>
 
-  <div class="ltd-bar"><span>À traiter</span></div>
+  <div class="ltd-h"><h3>À traiter</h3></div>
   <div class="ltd-grid">
     {% for t in dash.todo %}
     <a class="ltd-card ltd-todo {{ t.tone }}{% if t.n %} has{% endif %}" href="{{ t.url }}">
       <span class="ltd-ico"><i class="fas {{ t.icon }}"></i></span>
-      <span><span class="ltd-n">{{ t.n }}</span><span class="ltd-l" style="display:block">{{ t.label }}</span></span>
+      <span><span class="ltd-n">{{ t.n }}</span><span class="ltd-l">{{ t.label }}</span></span>
     </a>
     {% endfor %}
   </div>
 
   <div class="ltd-two" style="margin-top:6px">
     <div>
-      <div class="ltd-bar"><span>Commentaires</span><a href="{{ dash.comments.site_url }}">Tout voir →</a></div>
+      <div class="ltd-h"><h3>Commentaires</h3><a href="{{ dash.comments.site_url }}">Tout voir →</a></div>
       <div class="ltd-panel">
         <div class="ltd-cnt">
           <div class="u"><strong>{{ dash.comments.unread }}</strong><span>non lus</span></div>
@@ -106,28 +143,28 @@
           <div><strong>{{ dash.comments.total }}</strong><span>au total</span></div>
         </div>
         <div class="ltd-links">
-          <a href="{{ dash.comments.unread_url }}"><i class="fas fa-envelope"></i> Non lus (actualités du site)</a>
+          <a href="{{ dash.comments.unread_url }}"><i class="fas fa-envelope"></i> Non lus</a>
           <a href="{{ dash.comments.site_url }}">Actualités du site</a>
           <a href="{{ dash.comments.feed_url }}">Fil emploi</a>
         </div>
         {% for c in dash.latest_comments %}
         <a class="ltd-row {% if not c.read %}unread{% endif %}" href="{{ c.url }}">
-          <span class="ltd-dot"></span>
+          <span class="ltd-avatar">{{ c.who|slice:":1"|upper }}</span>
           <span style="min-width:0"><b>{{ c.who }}</b>{% if not c.read %}<span class="ltd-tag new">Non lu</span>{% else %}<span class="ltd-tag">Lu</span>{% endif %}<span class="ltd-tag">{{ c.src }}</span>
             <p>{{ c.text|truncatechars:140 }}</p>
             <div class="ltd-meta">sur « {{ c.on|truncatechars:60 }} » · {{ c.when|timesince }}</div></span>
         </a>
         {% empty %}<div class="ltd-empty">Aucun commentaire pour le moment.</div>{% endfor %}
       </div>
-      <div style="font-size:.78rem;color:#64748b;margin-top:8px">Ouvrir un commentaire le marque automatiquement comme lu. Les commentaires ne sont jamais visibles du public.</div>
+      <div class="ltd-note">Ouvrir un commentaire le marque automatiquement comme lu. Les commentaires ne sont jamais visibles du public.</div>
     </div>
 
     <div>
-      <div class="ltd-bar"><span>Messages rapides</span><a href="{% url 'admin:Publications_quickmessage_changelist' %}">Tout voir →</a></div>
+      <div class="ltd-h"><h3>Messages rapides</h3><a href="{% url 'admin:Publications_quickmessage_changelist' %}">Tout voir →</a></div>
       <div class="ltd-panel">
         {% for m in dash.messages_latest %}
         <a class="ltd-row {% if not m.read %}unread{% endif %}" href="{{ m.url }}">
-          <span class="ltd-dot"></span>
+          <span class="ltd-avatar" style="background:var(--navy)">{{ m.who|slice:":1"|upper }}</span>
           <span style="min-width:0"><b>{{ m.who }}</b>{% if not m.read %}<span class="ltd-tag new">Non lu</span>{% endif %}
             <p>{{ m.text|truncatechars:120 }}</p>
             <div class="ltd-meta">{{ m.contact }} · {{ m.when|timesince }}</div></span>
@@ -135,22 +172,31 @@
         {% empty %}<div class="ltd-empty">Aucun message rapide.</div>{% endfor %}
       </div>
 
-      <div class="ltd-bar"><span>Nouveaux comptes · 14 jours</span></div>
+      <div class="ltd-h"><h3>Nouveaux comptes · 14 jours</h3></div>
       <div class="ltd-panel">
-        <div class="ltd-chart">
-          {% for d in dash.days %}<div title="{{ d.label }} : {{ d.n }}">{% if d.n %}<b>{{ d.n }}</b>{% endif %}<i style="height:{{ d.h }}%"></i><span>{{ d.label|slice:":2" }}</span></div>{% endfor %}
+        <div class="ltd-chartbox">
+          <div class="ltd-chart">{% for d in dash.days %}<div title="{{ d.label }} : {{ d.n }}">{% if d.n %}<b>{{ d.n }}</b>{% endif %}<i style="height:{{ d.h }}%"></i></div>{% endfor %}</div>
+          <div class="ltd-days">{% for d in dash.days %}<span>{{ d.label|slice:":2" }}</span>{% endfor %}</div>
+        </div>
+      </div>
+
+      <div class="ltd-h"><h3>Candidatures · 14 jours</h3></div>
+      <div class="ltd-panel">
+        <div class="ltd-chartbox">
+          <div class="ltd-chart">{% for d in dash.app_days %}<div title="{{ d.label }} : {{ d.n }}">{% if d.n %}<b>{{ d.n }}</b>{% endif %}<i style="height:{{ d.h }}%;background:var(--navy)"></i></div>{% endfor %}</div>
+          <div class="ltd-days">{% for d in dash.app_days %}<span>{{ d.label|slice:":2" }}</span>{% endfor %}</div>
         </div>
         <div class="ltd-mail"><i class="fas fa-lock"></i> Les e-mails du site partent toujours de <b>{{ dash.mail_from }}</b> : cette adresse d'envoi est fixe et ne se modifie pas depuis l'administration.</div>
       </div>
     </div>
   </div>
 
-  <div class="ltd-bar"><span>Chiffres clés</span></div>
+  <div class="ltd-h"><h3>Chiffres clés</h3></div>
   <div class="ltd-grid">
     {% for s in dash.stats %}
     <a class="ltd-card" href="{{ s.url }}">
       <span class="ltd-ico"><i class="fas {{ s.icon }}"></i></span>
-      <span><span class="ltd-n">{{ s.n }}</span><span class="ltd-l" style="display:block">{{ s.label }}</span>{% if s.sub %}<span class="ltd-sub">{{ s.sub }}</span>{% endif %}</span>
+      <span><span class="ltd-n">{{ s.n }}</span><span class="ltd-l">{{ s.label }}</span>{% if s.sub %}<span class="ltd-sub">{{ s.sub }}</span>{% endif %}</span>
     </a>
     {% endfor %}
   </div>

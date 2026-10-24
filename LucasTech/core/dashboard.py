@@ -117,7 +117,25 @@ def build(request):
     for d in days:
         d['h'] = max(4, round(100 * d['n'] / peak)) if d['n'] else 4
 
+    app_days = []
+    app_model = _model('Emploi.Application')
+    for i in range(13, -1, -1):
+        day = (now - timedelta(days=i)).date()
+        app_days.append({'label': day.strftime('%d/%m'), 'n': app_model.objects.filter(created_at__date=day).count() if app_model else 0})
+    app_peak = max([d['n'] for d in app_days] + [1])
+    for d in app_days:
+        d['h'] = max(4, round(100 * d['n'] / app_peak)) if d['n'] else 4
+
+    MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
+    WEEK = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+    today = f"{WEEK[now.weekday()].capitalize()} {now.day} {MONTHS[now.month - 1]} {now.year}"
+    hero_kpis = [
+        ('Comptes', User.objects.count()), ('Candidatures', _count('Emploi.Application')),
+        ('Actualités', _count('Publications.Publication', is_published=True)), ('Commentaires non lus', comments['unread']),
+    ]
+
     # ── Boutons rapides ──
+
     actions = [
         ('Publier une actualité', 'fa-newspaper', _url('Publications.Publication', add=True), 'green'),
         ('Publier dans le fil emploi', 'fa-rss', _url('Emploi.FeedPost', add=True), 'green'),
@@ -134,7 +152,7 @@ def build(request):
 
     return {
         'todo': todo, 'todo_total': total_todo, 'comments': comments, 'latest_comments': latest[:6], 'messages_latest': messages_latest,
-        'stats': stats, 'days': days, 'actions': actions,
+        'stats': stats, 'days': days, 'app_days': app_days, 'actions': actions, 'today': today, 'hero_kpis': hero_kpis,
         'mail_from': getattr(settings, 'DEFAULT_FROM_EMAIL', '') or getattr(settings, 'EMAIL_HOST_USER', ''),
         'greeting': request.user.first_name or request.user.email,
     }
