@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.http import HttpResponse
 from django.urls import path, include, re_path
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve as serve_static
 
 from Emploi.webapp import webapp
@@ -22,7 +22,9 @@ urlpatterns = [
     path('',              include('core.urls')),
     path('formations/',   include('Formations.urls', namespace='formations')),
     path('services/',     include('Services.urls', namespace='services')),
-    path('publications/', include('Publications.urls', namespace='publications')),
+    path('actualites/', include('Publications.urls', namespace='publications')),
+    # Ancienne adresse : redirection permanente (liens déjà partagés, référencement Google)
+    re_path(r'^publications/(?P<rest>.*)$', RedirectView.as_view(url='/actualites/%(rest)s', permanent=True, query_string=True)),
     path('emploi/',       include('Emploi.urls', namespace='emploi')),
     path('api/v1/',       include('Emploi.api.urls')),
     path('social-auth/',  include('social_django.urls', namespace='social')),

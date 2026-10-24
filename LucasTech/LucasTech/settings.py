@@ -317,7 +317,7 @@ JAZZMIN_SETTINGS = {
         {"name": "Boutique", "url": "/shop/", "new_window": True},
         {"name": "Formations", "url": "/formations/", "new_window": True},
         {"name": "Services", "url": "/services/", "new_window": True},
-        {"name": "Actualités", "url": "/publications/", "new_window": True},
+        {"name": "Actualités", "url": "/actualites/", "new_window": True},
     ],
 
     "custom_css": "css/admin.css",
