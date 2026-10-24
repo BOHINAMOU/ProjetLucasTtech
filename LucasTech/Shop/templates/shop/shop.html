@@ -295,7 +295,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: var(--surf2);
 }
 .sh-card-media img, .sh-card-media video {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 100%; object-fit: contain;
   transition: transform .6s cubic-bezier(.22,.68,0,1.2);
 }
 .sh-card:hover .sh-card-media img,
@@ -709,6 +709,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-stock.ok { color:#0f7a45; }
 </style>
 <style>
+.sh-card-media { height:auto !important; aspect-ratio:1/1; background:#fff !important; }
+.sh-card-media img, .sh-card-media video { object-fit:contain !important; }
+.sh-stock { margin:0 0 10px !important; }
 /* ── Bande des thèmes : tous visibles, sans défilement, style vert ── */
 .sh-cats-outer { position:static !important; box-shadow:none !important; background:transparent !important; border-bottom:0 !important; }
 .sh-cats-wrap { flex-wrap:wrap !important; gap:10px 14px; padding-top:18px; padding-bottom:6px; align-items:center; }

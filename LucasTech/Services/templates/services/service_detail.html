@@ -60,7 +60,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   animation: fadeUp .5s ease both;
 }
 .sd-media img, .sd-media video {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 100%; object-fit: contain;
   transition: transform .7s cubic-bezier(.22,.68,0,1.2);
 }
 .sd-media:hover img, .sd-media:hover video { transform: scale(1.04); }
@@ -270,7 +270,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .sd-related-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(10,61,36,.14); border-color: var(--accent2); }
 .sd-related-media { height: 130px; background: var(--surf2); overflow: hidden; }
-.sd-related-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+.sd-related-media img { width: 100%; height: 100%; object-fit: contain; transition: transform .5s; }
 .sd-related-card:hover .sd-related-media img { transform: scale(1.08); }
 .sd-related-body { padding: 14px 16px; }
 .sd-related-body h4 { font-size: .88rem; font-weight: 700; line-height: 1.35; }

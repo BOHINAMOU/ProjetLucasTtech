@@ -60,7 +60,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   animation: fadeUp .5s ease both;
 }
 .pd-media img, .pd-media video {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 100%; object-fit: contain;
   transition: transform .7s cubic-bezier(.22,.68,0,1.2);
 }
 .pd-media:hover img, .pd-media:hover video { transform: scale(1.04); }
@@ -80,7 +80,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   background: var(--surf); border: 2px solid transparent;
   transition: border-color .2s, opacity .2s;
 }
-.pd-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pd-thumb img { width: 100%; height: 100%; object-fit: contain; }
 .pd-thumb:hover { opacity: .85; }
 .pd-thumb.active { border-color: var(--accent); }
 
@@ -304,7 +304,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   position: relative; aspect-ratio: 1/1; background: var(--surf2);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
-.pd-related-media img { width: 100%; height: 100%; object-fit: cover; }
+.pd-related-media img { width: 100%; height: 100%; object-fit: contain; }
 .pd-related-body { padding: 16px 18px; }
 .pd-related-name {
   font-size: .92rem; font-weight: 700; color: var(--ink);

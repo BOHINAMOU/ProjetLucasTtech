@@ -57,7 +57,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   box-shadow: 0 16px 48px var(--shadow);
   animation: fadeUp .5s ease both;
 }
-.fd-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.fd-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
 .fd-img-badges { position: absolute; top: 16px; left: 16px; z-index: 2; display: flex; gap: 8px; }
 .fd-badge {
   font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
@@ -189,7 +189,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .fd-related-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px var(--shadow); }
 .fd-related-media { position: relative; aspect-ratio: 16/10; background: var(--surf2); overflow: hidden; }
-.fd-related-media img { width: 100%; height: 100%; object-fit: cover; }
+.fd-related-media img { width: 100%; height: 100%; object-fit: contain; }
 .fd-related-body { padding: 14px 16px; }
 .fd-related-name { font-size: .88rem; font-weight: 700; margin-bottom: 5px; line-height: 1.3; }
 .fd-related-price { font-size: .9rem; font-weight: 800; color: var(--indigo); }
