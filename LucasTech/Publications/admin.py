@@ -7,7 +7,7 @@ from django.utils.html import format_html
 
 from .models import (
     PublicationCategory, Publication, PublicationImage, PublicationVideo,
-    EventRegistration,
+    EventRegistration, PublicationComment, QuickMessage,
 )
 
 
@@ -229,3 +229,42 @@ class EventRegistrationAdmin(admin.ModelAdmin):
     def full_phone(self, obj):
         return obj.full_phone
     full_phone.short_description = "WhatsApp"
+
+
+# ─────────────────────────────
+# 💬 Commentaires et messages rapides
+# ─────────────────────────────
+@admin.register(PublicationComment)
+class PublicationCommentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'short_text', 'publication', 'is_hidden', 'created_at')
+    list_filter = ('is_hidden', 'publication')
+    search_fields = ('name', 'text', 'publication__title')
+    actions = ['hide', 'show']
+
+    @admin.display(description="Commentaire")
+    def short_text(self, obj):
+        return obj.text[:80]
+
+    @admin.action(description="Masquer les commentaires choisis")
+    def hide(self, request, queryset):
+        queryset.update(is_hidden=True)
+
+    @admin.action(description="Réafficher les commentaires choisis")
+    def show(self, request, queryset):
+        queryset.update(is_hidden=False)
+
+
+@admin.register(QuickMessage)
+class QuickMessageAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contact', 'short_message', 'publication', 'is_read', 'created_at')
+    list_filter = ('is_read',)
+    list_editable = ('is_read',)
+    search_fields = ('name', 'contact', 'message')
+    readonly_fields = ('publication', 'name', 'contact', 'message', 'created_at')
+
+    @admin.display(description="Message")
+    def short_message(self, obj):
+        return obj.message[:80]
+
+    def has_add_permission(self, request):
+        return False

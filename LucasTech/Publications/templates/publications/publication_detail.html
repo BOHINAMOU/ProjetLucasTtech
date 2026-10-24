@@ -386,6 +386,21 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .nd-layout .pd-content-body img { max-width:100%; height:auto; }
 .nd-bottom { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:26px 0; }
 .nd-bottom a { height:46px; color:#fff; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:1.3rem; }
+.nd-feedback { margin:34px 0 10px; display:flex; flex-direction:column; gap:26px; }
+.nd-feedback h2 { background:#0f7a45; border-left:6px solid #c9a84c; color:#fff; font-family:var(--font); font-size:.95rem; font-weight:800; text-transform:uppercase; letter-spacing:.3px; padding:8px 16px; margin:0 0 14px; }
+.nd-comment { padding:12px 14px; border-bottom:1px solid var(--border); overflow-wrap:anywhere; }
+.nd-comment b { color:#0f7a45; } .nd-comment small { color:#8a8a8a; margin-left:8px; }
+.nd-comment p { margin:4px 0 0; white-space:pre-line; color:#111; }
+.nd-form { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+.nd-form input[type=text], .nd-form textarea { width:100%; border:1px solid #cfcfcf; padding:11px 12px; font:inherit; background:#fff; border-radius:0; }
+.nd-form textarea { min-height:96px; resize:vertical; }
+.nd-form input:focus, .nd-form textarea:focus { outline:2px solid #0f7a45; border-color:#0f7a45; }
+.nd-form button { align-self:flex-start; background:#0f7a45; color:#fff; border:0; padding:11px 22px; font-weight:800; cursor:pointer; }
+.nd-form button:hover { background:#0b6137; }
+.nd-hp { position:absolute; left:-9999px; height:0; overflow:hidden; }
+.nd-flash { padding:10px 14px; font-weight:600; }
+.nd-flash.success { background:#dcfce7; color:#14532d; } .nd-flash.error { background:#fee2e2; color:#7f1d1d; }
+.nd-quick { background:#f1f4f8; padding:16px; border:1px solid var(--border); }
 .nd-in { background:#0e76a8; } .nd-mail { background:#8a8a8a; }
 .nd-side { margin-top:24px; display:flex; flex-direction:column; gap:22px; min-width:0; }
 .nd-bar { background:#0f7a45; border-left:6px solid #c9a84c; color:#fff; padding:9px 14px; font-weight:800; font-size:1.05rem; text-transform:uppercase; line-height:1.2; }
@@ -484,6 +499,34 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <a class="nd-in" href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.scheme }}://{{ request.get_host }}{{ request.path|urlencode }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       <a class="nd-mail" href="mailto:?subject={{ publication.title|urlencode }}&body={{ request.scheme }}://{{ request.get_host }}{{ request.path }}" aria-label="E-mail"><i class="fas fa-envelope"></i></a>
     </div>
+  <!-- ══ COMMENTAIRES ET MESSAGE RAPIDE ══ -->
+  <section class="nd-feedback" id="commentaires">
+    {% for m in messages %}<div class="nd-flash {{ m.tags }}">{{ m }}</div>{% endfor %}
+    <div>
+      <h2>Commentaires ({{ comments|length }})</h2>
+      {% for c in comments %}
+      <div class="nd-comment"><b>{{ c.name }}</b><small>{{ c.created_at|date:"d M Y H:i" }}</small><p>{{ c.text }}</p></div>
+      {% empty %}<p style="color:#8a8a8a">Soyez le premier à commenter.</p>{% endfor %}
+      <form class="nd-form" method="post" action="{% url 'publications:publication_comment' publication.slug %}">{% csrf_token %}
+        <div class="nd-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        {% if not user.is_authenticated %}<input type="text" name="name" maxlength="80" placeholder="Votre nom" required>{% endif %}
+        <textarea name="text" maxlength="1000" placeholder="Votre commentaire…" required></textarea>
+        <button type="submit"><i class="fas fa-comment"></i> Commenter</button>
+      </form>
+    </div>
+    <div class="nd-quick" id="message-rapide">
+      <h2 style="margin-top:-16px;margin-left:-16px;margin-right:-16px">Un message rapide pour nous ?</h2>
+      <p style="margin:0;color:#334155">Une question, une remarque ? Laissez-nous un mot, nous vous répondons.</p>
+      <form class="nd-form" method="post" action="{% url 'publications:publication_quick_message' publication.slug %}">{% csrf_token %}
+        <div class="nd-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        <input type="text" name="name" maxlength="80" placeholder="Votre nom" value="{% if user.is_authenticated %}{{ user.public_name }}{% endif %}" required>
+        <input type="text" name="contact" maxlength="120" placeholder="Votre e-mail ou téléphone (pour vous répondre)" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" required>
+        <textarea name="message" maxlength="1500" placeholder="Votre message…" required></textarea>
+        <button type="submit"><i class="fas fa-paper-plane"></i> Envoyer</button>
+      </form>
+    </div>
+  </section>
+
   <!-- ══ GALERIE D'IMAGES SUPPLÉMENTAIRES ══ -->
   {% with images=publication.images.all %}
   {% if images %}

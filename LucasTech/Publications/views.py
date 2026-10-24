@@ -6,9 +6,13 @@ from django.contrib import messages
 from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
+from django.urls import reverse
 
 from core.countries import COUNTRIES, DIAL_CODE_CHOICES
-from .models import Publication, PublicationCategory, EventRegistration
+from django.core.cache import cache
+from django.views.decorators.http import require_POST
+
+from .models import Publication, PublicationCategory, EventRegistration, PublicationComment, QuickMessage
 
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
@@ -78,6 +82,7 @@ def publication_detail(request, slug):
     return render(request, 'publications/publication_detail.html', {
         'publication': publication,
         'related':     related,
+        'comments':    publication.comments.filter(is_hidden=False).select_related('user'),
     })
 
 
@@ -164,3 +169,69 @@ def publication_register_success(request, slug):
     return render(request, 'publications/publication_register_success.html', {
         'publication': publication,
     })
+
+
+# ─────────────────────────────
+# 💬 COMMENTAIRE ET MESSAGE RAPIDE
+# ─────────────────────────────
+def _client_ip(request):
+    return (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or '?').split(',')[0].strip()
+
+
+def _too_many(request, action, limit, seconds=3600):
+    """Anti-spam : au plus `limit` envois par heure et par adresse IP."""
+    key = f"pub-{action}-{_client_ip(request)}"
+    count = cache.get(key, 0)
+    if count >= limit:
+        return True
+    cache.set(key, count + 1, seconds)
+    return False
+
+
+@require_POST
+def publication_comment(request, slug):
+    publication = get_object_or_404(Publication, slug=slug, is_published=True)
+    back = redirect(reverse('publications:publication_detail', args=[slug]) + '#commentaires')
+    if request.POST.get('website'):  # champ piège invisible : seuls les robots le remplissent
+        return back
+    text = request.POST.get('text', '').strip()[:1000]
+    user = request.user if request.user.is_authenticated else None
+    name = (user.public_name if user else request.POST.get('name', '').strip())[:80]
+    if not text or not name:
+        messages.error(request, "Écrivez votre nom et votre commentaire.")
+        return back
+    if _too_many(request, 'comment', 6):
+        messages.error(request, "Trop de commentaires en peu de temps. Réessayez dans un moment.")
+        return back
+    PublicationComment.objects.create(publication=publication, user=user, name=name, text=text)
+    messages.success(request, "✓ Merci, votre commentaire est publié.")
+    return back
+
+
+@require_POST
+def publication_quick_message(request, slug):
+    publication = get_object_or_404(Publication, slug=slug, is_published=True)
+    back = redirect('publications:publication_detail', slug=slug)
+    if request.POST.get('website'):
+        return back
+    name = request.POST.get('name', '').strip()[:80]
+    contact = request.POST.get('contact', '').strip()[:120]
+    text = request.POST.get('message', '').strip()[:1500]
+    if request.user.is_authenticated:
+        name = name or request.user.public_name[:80]
+        contact = contact or request.user.email
+    if not (name and contact and text):
+        messages.error(request, "Indiquez votre nom, un moyen de vous répondre (e-mail ou téléphone) et votre message.")
+        return back
+    if _too_many(request, 'message', 3):
+        messages.error(request, "Trop de messages en peu de temps. Réessayez dans un moment.")
+        return back
+    qm = QuickMessage.objects.create(publication=publication, name=name, contact=contact, message=text)
+    try:  # l'équipe est prévenue sur le site, par e-mail et sur l'application
+        from Emploi.services import notify_staff
+        notify_staff(f"Message rapide de {name} (« {publication.title[:60]} ») : {text[:120]}",
+                     f"/lantanteAdminTech/Publications/quickmessage/{qm.pk}/change/")
+    except Exception:
+        pass
+    messages.success(request, "✓ Message envoyé. Nous vous répondons très vite.")
+    return back

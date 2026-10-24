@@ -184,3 +184,42 @@ class EventRegistration(models.Model):
     @property
     def full_phone(self):
         return f"{self.phone_code} {self.phone_number}".strip()
+
+# ─────────────────────────────
+# 💬 COMMENTAIRES ET MESSAGES RAPIDES
+# ─────────────────────────────
+class PublicationComment(models.Model):
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='comments', verbose_name="Actualité")
+    user        = models.ForeignKey('Users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='publication_comments',
+                                    verbose_name="Compte (si connecté)")
+    name        = models.CharField(max_length=80, verbose_name="Nom")
+    text        = models.TextField(max_length=1000, verbose_name="Commentaire")
+    is_hidden   = models.BooleanField(default=False, verbose_name="Masqué (modération)")
+    created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Posté le")
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = "Commentaire"
+        verbose_name_plural = "Commentaires"
+
+    def __str__(self):
+        return f"{self.name} : {self.text[:40]}"
+
+
+class QuickMessage(models.Model):
+    """Message rapide laissé à Lantante depuis une actualité (sans avoir besoin de compte)."""
+    publication = models.ForeignKey(Publication, on_delete=models.SET_NULL, null=True, blank=True, related_name='quick_messages',
+                                    verbose_name="Actualité concernée")
+    name        = models.CharField(max_length=80, verbose_name="Nom")
+    contact     = models.CharField(max_length=120, verbose_name="E-mail ou téléphone")
+    message     = models.TextField(max_length=1500, verbose_name="Message")
+    is_read     = models.BooleanField(default=False, verbose_name="Traité")
+    created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Reçu le")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Message rapide"
+        verbose_name_plural = "Messages rapides"
+
+    def __str__(self):
+        return f"{self.name} — {self.message[:40]}"
