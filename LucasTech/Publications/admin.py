@@ -234,13 +234,35 @@ class EventRegistrationAdmin(admin.ModelAdmin):
 # ─────────────────────────────
 # 💬 Commentaires et messages rapides
 # ─────────────────────────────
+
+
+class MarkReadOnOpenMixin:
+    """Ouvrir une fiche dans l'administration la marque comme lue."""
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if request.method == 'GET':
+            self.model.objects.filter(pk=object_id, is_read=False).update(is_read=True)
+        return super().change_view(request, object_id, form_url, extra_context)
+
+    @admin.action(description="Marquer comme lu")
+    def mark_read(self, request, queryset):
+        queryset.update(is_read=True)
+
+    @admin.action(description="Marquer comme non lu")
+    def mark_unread(self, request, queryset):
+        queryset.update(is_read=False)
 @admin.register(PublicationComment)
-class PublicationCommentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'short_text', 'publication', 'etat', 'created_at')
-    list_filter = ('is_hidden', 'publication')
+class PublicationCommentAdmin(MarkReadOnOpenMixin, admin.ModelAdmin):
+    list_display = ('lu', 'name', 'short_text', 'publication', 'etat', 'created_at')
+    list_display_links = ('name', 'short_text')
+    list_filter = ('is_read', 'is_hidden', 'publication')
     ordering = ('-created_at',)
     search_fields = ('name', 'text', 'publication__title')
-    actions = ['show', 'hide']
+    actions = ['mark_read', 'mark_unread', 'show', 'hide']
+
+    @admin.display(description="", ordering='is_read')
+    def lu(self, obj):
+        from django.utils.safestring import mark_safe
+        return mark_safe('<span class="badge badge-success">Lu</span>') if obj.is_read else mark_safe('<span class="badge badge-danger">Non lu</span>')
 
     @admin.display(description="État", boolean=False)
     def etat(self, obj):
@@ -260,10 +282,11 @@ class PublicationCommentAdmin(admin.ModelAdmin):
 
 
 @admin.register(QuickMessage)
-class QuickMessageAdmin(admin.ModelAdmin):
+class QuickMessageAdmin(MarkReadOnOpenMixin, admin.ModelAdmin):
     list_display = ('name', 'contact', 'short_message', 'publication', 'is_read', 'created_at')
     list_filter = ('is_read',)
     list_editable = ('is_read',)
+    actions = ['mark_read', 'mark_unread']
     search_fields = ('name', 'contact', 'message')
     readonly_fields = ('publication', 'name', 'contact', 'message', 'created_at')
 

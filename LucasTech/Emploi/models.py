@@ -1121,6 +1121,7 @@ class FeedComment(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Auteur")
     text = models.TextField(max_length=1000, verbose_name="Commentaire")
     is_hidden = models.BooleanField(default=False, verbose_name="Masqué / en attente de validation")
+    is_read = models.BooleanField(default=False, verbose_name="Lu")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date")
 
     class Meta:

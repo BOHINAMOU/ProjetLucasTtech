@@ -714,14 +714,36 @@ class CommentInline(admin.TabularInline):
     fields = ('author', 'text', 'is_hidden')
 
 
+class MarkReadOnOpenMixin:
+    """Ouvrir une fiche dans l'administration la marque comme lue."""
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if request.method == 'GET':
+            self.model.objects.filter(pk=object_id, is_read=False).update(is_read=True)
+        return super().change_view(request, object_id, form_url, extra_context)
+
+    @admin.action(description="Marquer comme lu")
+    def mark_read(self, request, queryset):
+        queryset.update(is_read=True)
+
+    @admin.action(description="Marquer comme non lu")
+    def mark_unread(self, request, queryset):
+        queryset.update(is_read=False)
+
+
 @admin.register(FeedComment)
-class FeedCommentAdmin(admin.ModelAdmin):
+class FeedCommentAdmin(MarkReadOnOpenMixin, admin.ModelAdmin):
     """Les commentaires du fil attendent votre validation avant d'être visibles."""
-    list_display = ('short_text', 'author', 'post', 'etat', 'created_at')
-    list_filter = ('is_hidden',)
+    list_display = ('lu', 'short_text', 'author', 'post', 'etat', 'created_at')
+    list_display_links = ('short_text',)
+    list_filter = ('is_read', 'is_hidden')
     search_fields = ('text', 'author__email', 'author__first_name', 'author__last_name')
     ordering = ('-created_at',)
-    actions = ['publish', 'hide']
+    actions = ['mark_read', 'mark_unread', 'publish', 'hide']
+
+    @admin.display(description="", ordering='is_read')
+    def lu(self, obj):
+        from django.utils.safestring import mark_safe
+        return mark_safe('<span class="badge badge-success">Lu</span>') if obj.is_read else mark_safe('<span class="badge badge-danger">Non lu</span>')
 
     @admin.display(description="Commentaire")
     def short_text(self, obj):

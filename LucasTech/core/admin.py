@@ -150,3 +150,19 @@ class TeamMemberAdmin(admin.ModelAdmin):
     list_editable = ('order',)
     list_filter = ('is_founder',)
     search_fields = ('name', 'role')
+
+# ─────────────────────────────
+# 🏠 Accueil de l'administration : tableau de bord (chiffres, actions rapides, commentaires lus / non lus)
+# ─────────────────────────────
+from .dashboard import build as _build_dashboard  # noqa: E402
+
+_original_index = admin.site.index
+
+
+def _dashboard_index(request, extra_context=None):
+    extra = dict(extra_context or {})
+    extra['dash'] = _build_dashboard(request)
+    return _original_index(request, extra)
+
+
+admin.site.index = _dashboard_index

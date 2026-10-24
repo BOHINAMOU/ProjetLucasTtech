@@ -195,6 +195,7 @@ class PublicationComment(models.Model):
     name        = models.CharField(max_length=80, verbose_name="Nom")
     text        = models.TextField(max_length=1000, verbose_name="Commentaire")
     is_hidden   = models.BooleanField(default=False, verbose_name="Masqué (modération)")
+    is_read     = models.BooleanField(default=False, verbose_name="Lu")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Posté le")
 
     class Meta:
@@ -213,7 +214,7 @@ class QuickMessage(models.Model):
     name        = models.CharField(max_length=80, verbose_name="Nom")
     contact     = models.CharField(max_length=120, verbose_name="E-mail ou téléphone")
     message     = models.TextField(max_length=1500, verbose_name="Message")
-    is_read     = models.BooleanField(default=False, verbose_name="Traité")
+    is_read     = models.BooleanField(default=False, verbose_name="Lu / traité")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Reçu le")
 
     class Meta:
