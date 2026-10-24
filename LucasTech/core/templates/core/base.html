@@ -356,22 +356,19 @@
 </section>
 
 <!-- ── CTA FINAL ── -->
-<div class="cta-section reveal">
-  <h2 class="cta-title">
-    Prêt à démarrer<br>
-    <strong>votre projet</strong>
-    <em>avec nous ?</em>
-  </h2>
-  <p class="cta-sub">Contactez-nous dès aujourd'hui.Lantante Technologie disponible pour vous accompagner dans vos projets.</p>
-  <div class="cta-btns">
-    <a href="{% url 'services:services' %}" class="btn-cta-white">
-      <i class="fa fa-rocket"></i> Démarrer maintenant
-    </a>
-    <a href="{% url 'shop:shop' %}" class="btn-cta-outline">
-      <i class="fa fa-shopping-bag"></i> Voir la boutique
-    </a>
+<section class="cta-section reveal">
+  <div class="cta-inner">
+    <div class="cta-text">
+      <h2 class="cta-title">Un projet en tête ? Parlons-en.</h2>
+      <p class="cta-sub">Services numériques, formations, boutique : notre équipe vous répond et vous accompagne, de la première idée à la réalisation.</p>
+    </div>
+    <div class="cta-btns">
+      {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}" class="btn-cta-white" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Nous écrire sur WhatsApp</a>{% endif %}
+      <a href="{% url 'services:services' %}" class="btn-cta-outline"><i class="fa fa-wrench"></i> Nos services</a>
+      <a href="{% url 'shop:shop' %}" class="btn-cta-outline"><i class="fa fa-shopping-bag"></i> La boutique</a>
+    </div>
   </div>
-</div>
+</section>
 
 {% endblock %}
 </main>
