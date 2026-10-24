@@ -278,6 +278,29 @@ header { position: sticky; top: 0; z-index: 400; }
   .navbar__burger { display: flex; margin-left: auto; }
 }
 
+/* ══ Menu du haut sur téléphone : logo et nom plus petits, bouton menu toujours visible ══ */
+.navbar__brand { min-width: 0; flex-shrink: 1; }
+.navbar__burger { flex-shrink: 0; }
+@media (max-width: 768px) {
+  :root { --nav-h: 68px; }
+  .navbar { padding: 0 14px; gap: .5rem; }
+  .navbar__brand { gap: 10px; }
+  .brand-logo-wrap { width: 42px; height: 42px; }
+  .brand-logo-bg { border-radius: 11px; }
+  .brand-name { font-size: 1.3rem; white-space: nowrap; }
+  .brand-tagline { font-size: .56rem; letter-spacing: .12em; white-space: nowrap; }
+  .navbar__burger { padding: .75rem; margin-left: auto; }
+  .navbar__burger span { width: 24px; }
+}
+@media (max-width: 380px) {
+  .brand-name { font-size: 1.12rem; }
+  .brand-tagline { font-size: .5rem; letter-spacing: .08em; }
+  .brand-logo-wrap { width: 38px; height: 38px; }
+}
+
+.drawer-auth__login { background: #0f7a45 !important; color: #fff !important; justify-content: center; font-weight: 700 !important; }
+.navbar__drawer ul a { font-size: 1.05rem; }
+
 /* ══ HERO ══ */
 .hero {
   position: relative;
