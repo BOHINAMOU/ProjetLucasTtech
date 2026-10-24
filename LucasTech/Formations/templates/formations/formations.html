@@ -464,4 +464,19 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .fl-card { background:transparent; border:0; border-radius:0; box-shadow:none; }
 @media (max-width:640px) { .fl-card { grid-template-columns:minmax(0,1fr); } }
 </style>
+<style>
+/* ── Bande des thèmes : tous visibles, sans défilement, style vert ── */
+.fl-cats-outer { position:static !important; box-shadow:none !important; background:transparent !important; border-bottom:0 !important; }
+.fl-cats-wrap { flex-wrap:wrap !important; gap:10px 14px; padding-top:18px; padding-bottom:6px; align-items:center; }
+.fl-cats-label { color:#0f7a45 !important; border-right:0 !important; margin-right:0 !important; padding-right:0 !important; }
+.fl-cats-viewport { overflow:visible !important; flex:1 1 100% !important; }
+.fl-cats-track, .fl-cats-track[class*="scroll"] { animation:none !important; transform:none !important; width:auto !important; flex-wrap:wrap !important; gap:10px !important; padding:0 !important; }
+.fl-cats-fade { display:none !important; }
+.fl-cat-btn[aria-hidden="true"] { display:none !important; }
+.fl-cat-pinned { margin-right:0 !important; }
+.fl-cat-btn { background:#fff !important; border:1px solid rgba(15,122,69,.4) !important; color:#0f7a45 !important; border-radius:0 !important; box-shadow:none !important; padding:9px 16px !important; font-weight:700 !important; }
+.fl-cat-btn:hover { background:rgba(15,122,69,.08) !important; transform:none !important; box-shadow:none !important; border-color:#0f7a45 !important; }
+.fl-cat-btn.active, .fl-cat-btn.all.active { background:#0f7a45 !important; border-color:#0f7a45 !important; color:#fff !important; box-shadow:none !important; }
+.fl-cat-btn i { color:inherit !important; }
+</style>
 {% endblock %}

@@ -732,4 +732,19 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sv-card-title { font-family:var(--font); font-weight:800; color:#0f7a45; letter-spacing:0; }
 .sv-card-media { height:auto; aspect-ratio:1.85/1; }
 </style>
+<style>
+/* ── Bande des thèmes : tous visibles, sans défilement, style vert ── */
+.sv-cats-outer { position:static !important; box-shadow:none !important; background:transparent !important; border-bottom:0 !important; }
+.sv-cats-wrap { flex-wrap:wrap !important; gap:10px 14px; padding-top:18px; padding-bottom:6px; align-items:center; }
+.sv-cats-label { color:#0f7a45 !important; border-right:0 !important; margin-right:0 !important; padding-right:0 !important; }
+.sv-cats-viewport { overflow:visible !important; flex:1 1 100% !important; }
+.sv-cats-track, .sv-cats-track[class*="scroll"] { animation:none !important; transform:none !important; width:auto !important; flex-wrap:wrap !important; gap:10px !important; padding:0 !important; }
+.sv-cats-fade { display:none !important; }
+.sv-cat-btn[aria-hidden="true"] { display:none !important; }
+.sv-cat-pinned { margin-right:0 !important; }
+.sv-cat-btn { background:#fff !important; border:1px solid rgba(15,122,69,.4) !important; color:#0f7a45 !important; border-radius:0 !important; box-shadow:none !important; padding:9px 16px !important; font-weight:700 !important; }
+.sv-cat-btn:hover { background:rgba(15,122,69,.08) !important; transform:none !important; box-shadow:none !important; border-color:#0f7a45 !important; }
+.sv-cat-btn.active, .sv-cat-btn.all.active { background:#0f7a45 !important; border-color:#0f7a45 !important; color:#fff !important; box-shadow:none !important; }
+.sv-cat-btn i { color:inherit !important; }
+</style>
 {% endblock %}

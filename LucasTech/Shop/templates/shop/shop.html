@@ -708,4 +708,19 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .sh-vendor-ticker { border-radius:0; }
 .sh-stock.ok { color:#0f7a45; }
 </style>
+<style>
+/* ── Bande des thèmes : tous visibles, sans défilement, style vert ── */
+.sh-cats-outer { position:static !important; box-shadow:none !important; background:transparent !important; border-bottom:0 !important; }
+.sh-cats-wrap { flex-wrap:wrap !important; gap:10px 14px; padding-top:18px; padding-bottom:6px; align-items:center; }
+.sh-cats-label { color:#0f7a45 !important; border-right:0 !important; margin-right:0 !important; padding-right:0 !important; }
+.sh-cats-viewport { overflow:visible !important; flex:1 1 100% !important; }
+.sh-cats-track, .sh-cats-track[class*="scroll"] { animation:none !important; transform:none !important; width:auto !important; flex-wrap:wrap !important; gap:10px !important; padding:0 !important; }
+.sh-cats-fade { display:none !important; }
+.sh-cat-btn[aria-hidden="true"] { display:none !important; }
+.sh-cat-pinned { margin-right:0 !important; }
+.sh-cat-btn { background:#fff !important; border:1px solid rgba(15,122,69,.4) !important; color:#0f7a45 !important; border-radius:0 !important; box-shadow:none !important; padding:9px 16px !important; font-weight:700 !important; }
+.sh-cat-btn:hover { background:rgba(15,122,69,.08) !important; transform:none !important; box-shadow:none !important; border-color:#0f7a45 !important; }
+.sh-cat-btn.active, .sh-cat-btn.all.active { background:#0f7a45 !important; border-color:#0f7a45 !important; color:#fff !important; box-shadow:none !important; }
+.sh-cat-btn i { color:inherit !important; }
+</style>
 {% endblock %}
