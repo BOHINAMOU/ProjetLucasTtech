@@ -353,6 +353,19 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 </style>
 
 <style>
+/* ── « Continuer à lire » : même présentation que la liste des actualités ── */
+.pd-related { background:transparent; padding:34px 16px 50px; }
+.pd-related-inner { max-width:1180px; }
+.pd-related-title { background:#0f7a45; border-left:6px solid #c9a84c; color:#fff; font-family:var(--font); font-size:.95rem; font-weight:800; text-transform:uppercase; letter-spacing:.3px; padding:8px 16px; margin:0 0 26px; }
+.pd-related-sub { display:none; }
+.pd-related-grid { grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:30px 24px; }
+.pd-rel-card { background:transparent; border:0; border-radius:0; box-shadow:none; transform:none; }
+.pd-rel-card:hover { transform:none; box-shadow:none; border:0; }
+.pd-rel-card-media { height:auto; aspect-ratio:1.85/1; border:1px solid var(--border); border-radius:0; }
+.pd-rel-card-body { padding:12px 0 0; gap:8px; }
+.pd-rel-card-cat { display:inline-block; align-self:flex-start; background:#0f7a45; color:#fff; padding:3px 9px; font-size:.65rem; letter-spacing:.1em; }
+.pd-rel-card-title { font-family:var(--font); font-size:1.12rem; font-weight:800; line-height:1.25; color:#0f7a45; display:flex; gap:10px; justify-content:space-between; -webkit-line-clamp:unset; overflow:visible; letter-spacing:0; }
+.pd-rel-card-meta { border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:7px 0; color:#334155; font-size:.88rem; }
 /* ── Page d'une actualité : présentation « journal » ── */
 .pd-breadcrumb { max-width:1180px; padding-left:16px; padding-right:16px; }
 .nd-layout { max-width:1180px; margin:0 auto; padding:0 16px 20px; display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:34px; align-items:start; }
@@ -558,9 +571,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
           {% if pub.category %}
             <span class="pd-rel-card-cat">{{ pub.category.name }}</span>
           {% endif %}
-          <h3 class="pd-rel-card-title">{{ pub.title }}</h3>
+          <h3 class="pd-rel-card-title"><span>{{ pub.title }}</span><i class="far fa-circle-right" style="flex:0 0 auto;font-size:1.25rem;color:#334155;margin-top:2px"></i></h3>
           <div class="pd-rel-card-meta">
-            <span><i class="fa fa-calendar"></i> {{ pub.created_at|date:"d M Y" }}</span>
+            <span>Publié le {{ pub.created_at|date:"d M Y" }}</span>
           </div>
         </div>
       </a>
