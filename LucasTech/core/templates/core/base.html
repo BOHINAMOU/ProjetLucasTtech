@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{% block meta_description %}Lantante Technologie – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
+  <meta name="description" content="{% block meta_description %}Lantante Technologie – Formations, services numériques, boutique et actualités tech au Togo.{% endblock %}">
   <meta name="keywords" content="{% block meta_keywords %}Lantante Technologie, Togo, formations, services numériques, boutique tech, Lomé{% endblock %}">
   <title>{% block title %}Lantante Technologie — Technologie & Formation{% endblock %}</title>
 
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Lantante Technologie">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{% block og_title %}Lantante Technologie — Technologie & Formation{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Lantante Technologie – Formations, services numériques, boutique et publications tech au Togo.{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Lantante Technologie – Formations, services numériques, boutique et actualités tech au Togo.{% endblock %}">
   <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta name="twitter:card" content="summary_large_image">
@@ -82,7 +82,7 @@
       <li><a href="{% url 'formations:formations' %}">Formations</a></li>
       <li><a href="{% url 'services:services' %}">Services</a></li>
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
-      <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+      <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
       <li><a href="{% url 'core:projects' %}">Projets</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
       <li><a href="{% url 'core:team' %}">Équipe</a></li>
@@ -111,7 +111,7 @@
       <li><a href="{% url 'formations:formations' %}">Formations</a></li>
       <li><a href="{% url 'services:services' %}">Services</a></li>
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
-      <li><a href="{% url 'publications:publications' %}">Publications</a></li>
+      <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
       <li><a href="{% url 'core:projects' %}">Projets réalisés</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
       <li><a href="{% url 'core:team' %}">Équipe</a></li>
@@ -234,7 +234,7 @@
     </div>
   </div>
   <div class="promo-media">
-    <img src="{% static 'core/images/image4.png' %}" alt="Publications Lantante Technologie">
+    <img src="{% static 'core/images/image4.png' %}" alt="Actualités Lantante Technologie">
   </div>
 </section>
 
@@ -294,12 +294,12 @@
 </div>
 
 <!-- ── PUBLICATIONS ── -->
-<section class="pub-section reveal" aria-label="Dernières publications">
+<section class="pub-section reveal" aria-label="Dernières actualités">
   <div class="services-header">
     <div>
       <p class="section-eyebrow">Restez informé</p>
       <h2 class="section-title">
-        Nos dernières<br><strong><em>publications.</em></strong>
+        Nos dernières<br><strong><em>actualités.</em></strong>
       </h2>
     </div>
     <a href="{% url 'publications:publications' %}" class="section-link">

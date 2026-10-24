@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block title %}Actualités — Lantante Technologie{% endblock %}
-{% block meta_description %}Actualités et publications Lantante Technologie : guides, tendances et retours d'expérience tech pensés pour l'Afrique.{% endblock %}
+{% block meta_description %}Actualités Lantante Technologie : guides, tendances et retours d'expérience tech pensés pour l'Afrique.{% endblock %}
 {% block og_title %}Actualités — Lantante Technologie{% endblock %}
 {% block og_description %}Guides, tendances et retours d'expérience tech, publiés régulièrement par notre équipe.{% endblock %}
 
@@ -396,7 +396,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <div class="pb-hero-inner">
     <p class="pb-hero-eyebrow">Lantante Technologie — Actualités</p>
     <h1 class="pb-hero-title">
-      Restez informé, lisez nos <em>publications.</em>
+      Restez informé, lisez nos <em>actualités.</em>
     </h1>
 
     <div class="pb-search-wrap">
@@ -484,7 +484,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <span>
         {% if active_category %}Thème
         {% elif search_query %}Recherche
-        {% else %}Toutes les publications{% endif %}
+        {% else %}Toutes les actualités{% endif %}
       </span>
       {% if active_category %}{{ active_category.name }}
       {% elif search_query %}"{{ search_query }}"
@@ -528,7 +528,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% empty %}
     <div class="pb-empty">
       <span class="pb-empty-icon">📭</span>
-      <p>Aucune publication trouvée.</p>
+      <p>Aucune actualité trouvée.</p>
       <a href="{% url 'publications:publications' %}">Voir toutes les publications</a>
     </div>
     {% endfor %}

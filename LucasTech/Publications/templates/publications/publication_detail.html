@@ -354,7 +354,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 <!-- Breadcrumb -->
 <nav class="pd-breadcrumb">
-  <a href="{% url 'publications:publications' %}">Publications</a>
+  <a href="{% url 'publications:publications' %}">Actualités</a>
   <span>›</span>
   {% if publication.category %}
     <a href="{% url 'publications:publications' %}?category={{ publication.category.slug }}">{{ publication.category.name }}</a>
@@ -468,7 +468,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <!-- Pied article -->
   <div class="pd-footer" style="justify-content:flex-end;">
     <a href="{% url 'publications:publications' %}" class="pd-back">
-      <i class="fa fa-arrow-left"></i> Retour aux publications
+      <i class="fa fa-arrow-left"></i> Retour aux actualités
     </a>
   </div>
 
@@ -513,7 +513,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <div class="pd-explore-row">
     <a href="{% url 'publications:publications' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#b8420a,#20140a);">
       <span class="pd-explore-overlay"></span>
-      <span class="pd-explore-label"><i class="fa fa-newspaper"></i> Toutes les publications</span>
+      <span class="pd-explore-label"><i class="fa fa-newspaper"></i> Toutes les actualités</span>
     </a>
     <a href="{% url 'services:services' %}" class="pd-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
       <span class="pd-explore-overlay"></span>
