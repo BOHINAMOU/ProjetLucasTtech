@@ -104,7 +104,7 @@ export function PostDetail({ post: initial, canInteract = true }: { post: Post; 
       <ShareRow post={item} />
       <Row style={{ padding: space.md, paddingHorizontal: space.lg, borderTopWidth: 1, borderTopColor: colors.border }} gap={8}>
         <Ionicons name="chatbubbles-outline" size={20} color={colors.navy} />
-        <T weight="700" color={colors.navy}>Commentaires ({item.comments.length})</T>
+        <T weight="700" color={colors.navy}>{item.comments.length ? `Commentaires reçus (${item.comments.length})` : 'Laisser un commentaire'}</T>
       </Row>
       <Comments item={item} onChange={setItem} canInteract={canInteract} />
     </Card>
@@ -158,7 +158,6 @@ export function PostCard({ post: p }: { post: Post; canInteract?: boolean }) {
         {p.sponsored ? <Badge label="Sponsorisé" tone="gold" /> : p.featured ? <Badge label="À la une" tone="gold" icon="star" /> : null}
         {p.kind === 'product' ? <Badge label="Nouveau produit" tone="green" /> : null}
         <View style={{ flex: 1 }} />
-        <Ionicons name="chatbubble-outline" size={13} color={colors.muted} /><Muted size={12}>{p.comments.length} commentaire{p.comments.length > 1 ? 's' : ''}</Muted>
       </Row>
     </View>
   );
@@ -183,7 +182,7 @@ function Comments({ item, onChange, canInteract }: { item: Post; onChange: (p: P
       const res = await post<Post & { comment_pending?: boolean }>(`feed/${item.id}/comments`, { text: text.trim() });
       onChange(res);
       setText('');
-      if (res.comment_pending) notice('Merci !', 'Votre commentaire sera publié après validation par notre équipe.');
+      if (res.comment_pending) notice('Merci !', 'Votre commentaire a bien été envoyé à notre équipe.');
     } catch {
       /* le message reste dans le champ pour réessayer */
     } finally {

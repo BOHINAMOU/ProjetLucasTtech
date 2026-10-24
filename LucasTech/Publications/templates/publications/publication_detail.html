@@ -503,10 +503,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   <section class="nd-feedback" id="commentaires">
     {% for m in messages %}<div class="nd-flash {{ m.tags }}">{{ m }}</div>{% endfor %}
     <div>
-      <h2>Commentaires ({{ comments|length }})</h2>
+      <h2>{% if user.is_staff %}Commentaires reçus ({{ comments|length }}) — visibles par l'équipe seulement{% else %}Laisser un commentaire{% endif %}</h2>
       {% for c in comments %}
-      <div class="nd-comment"><b>{{ c.name }}</b><small>{{ c.created_at|date:"d M Y H:i" }}</small><p>{{ c.text }}</p></div>
-      {% empty %}<p style="color:#8a8a8a">Soyez le premier à commenter.</p>{% endfor %}
+      <div class="nd-comment"><b>{{ c.name }}</b><small>{{ c.created_at|date:"d M Y H:i" }}{% if c.is_hidden %} · privé{% endif %}</small><p>{{ c.text }}</p></div>
+      {% endfor %}
       <form class="nd-form" method="post" action="{% url 'publications:publication_comment' publication.slug %}">{% csrf_token %}
         <div class="nd-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
         {% if not user.is_authenticated %}<input type="text" name="name" maxlength="80" placeholder="Votre nom" required>{% endif %}

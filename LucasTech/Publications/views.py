@@ -82,7 +82,7 @@ def publication_detail(request, slug):
     return render(request, 'publications/publication_detail.html', {
         'publication': publication,
         'related':     related,
-        'comments':    publication.comments.filter(is_hidden=False).select_related('user'),
+        'comments':    publication.comments.select_related('user') if request.user.is_staff else [],  # visibles par l'équipe seulement
     })
 
 
@@ -203,18 +203,15 @@ def publication_comment(request, slug):
     if _too_many(request, 'comment', 6):
         messages.error(request, "Trop de commentaires en peu de temps. Réessayez dans un moment.")
         return back
-    staff = bool(user and (user.is_staff or user.is_superuser))
-    comment = PublicationComment.objects.create(publication=publication, user=user, name=name, text=text, is_hidden=not staff)
-    if staff:
-        messages.success(request, "✓ Votre commentaire est publié.")
-    else:
-        messages.success(request, "✓ Merci ! Votre commentaire sera publié après validation par notre équipe.")
-        try:
-            from Emploi.services import notify_staff
-            notify_staff(f"Commentaire à valider de {name} sur « {publication.title[:60]} » : {text[:120]}",
-                         f"/lantanteAdminTech/Publications/publicationcomment/{comment.pk}/change/")
-        except Exception:
-            pass
+    # Les commentaires ne sont jamais publics : ils sont lus uniquement par l'équipe, dans l'administration.
+    comment = PublicationComment.objects.create(publication=publication, user=user, name=name, text=text, is_hidden=True)
+    messages.success(request, "✓ Merci, votre commentaire a bien été envoyé à notre équipe.")
+    try:
+        from Emploi.services import notify_staff
+        notify_staff(f"Nouveau commentaire de {name} sur « {publication.title[:60]} » : {text[:120]}",
+                     f"/lantanteAdminTech/Publications/publicationcomment/{comment.pk}/change/")
+    except Exception:
+        pass
     return back
 
 

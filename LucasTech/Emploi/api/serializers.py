@@ -156,7 +156,7 @@ def post_payload(request, p, user=None):
         'featured': bool(p.is_featured), 'likes': p.likes.count(),
         'liked': bool(user and user.is_authenticated and p.likes.filter(pk=user.pk).exists()),
         'comments': [{'id': c.pk, 'author': c.author.public_name, 'text': c.text, 'created_at': dt(c.created_at)}
-                     for c in p.comments.all() if not c.is_hidden],
+                     for c in p.comments.all()] if (user and user.is_authenticated and (user.is_staff or user.is_superuser)) else [],  # privés : équipe seulement
         'created_at': dt(p.created_at),
     }
 
