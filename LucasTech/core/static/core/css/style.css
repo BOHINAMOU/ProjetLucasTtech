@@ -908,10 +908,10 @@ header { position: sticky; top: 0; z-index: 400; }
   opacity: 0; visibility: hidden; transform: translate(-50%, 6px); transition: opacity .18s, transform .18s, visibility .18s;
 }
 .nav-dd.open .nav-dd__menu, .nav-dd:hover .nav-dd__menu, .nav-dd:focus-within .nav-dd__menu { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
-.navbar__links .nav-dd__menu a { display: flex; align-items: center; gap: .65rem; padding: .75rem 1.1rem; font-size: .95rem; background-image: none; }
-.navbar__links .nav-dd__menu a::after { display: none; }
-.navbar__links .nav-dd__menu a i { color: #0f7a45; width: 1rem; text-align: center; }
+.navbar__links .nav-dd__menu a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1.3rem; font-size: .98rem; font-weight: 600; background-image: none; }
 .navbar__links .nav-dd__menu a:hover { background: #eef7f1; color: #0b6137; }
+.navbar__links .nav-dd__menu a::after { display: inline-block !important; position: static; content: '\2192'; height: auto; background: none; transform: translateX(-4px); opacity: 0; transition: transform .2s, opacity .2s; color: #0f7a45; }
+.navbar__links .nav-dd__menu a:hover::after { transform: none; opacity: 1; }
 /* Même menu dans le tiroir mobile : un bouton qui déplie les deux pages */
 .navbar__drawer { max-height: calc(100vh - var(--nav-h)); overflow-y: auto; overscroll-behavior: contain; }
 .dr-dd__btn {
@@ -921,10 +921,16 @@ header { position: sticky; top: 0; z-index: 400; }
 .dr-dd__btn i { font-size: .8rem; transition: transform .2s; }
 .dr-dd.open .dr-dd__btn { color: #0b6137; }
 .dr-dd.open .dr-dd__btn i { transform: rotate(180deg); }
-.navbar__drawer ul.dr-dd__menu { display: none; margin: 0 0 .4rem 1rem; padding-left: .8rem; border-left: 3px solid #0f7a45; }
+.navbar__drawer ul.dr-dd__menu { display: none; margin: .2rem 0 .9rem; padding: 0; gap: .55rem; }
 .dr-dd.open ul.dr-dd__menu { display: flex; }
-.navbar__drawer .dr-dd__menu a { font-size: 1rem; font-weight: 600; }
-.navbar__drawer .dr-dd__menu a i { color: #0f7a45; width: 1.3rem; }
+.navbar__drawer .dr-dd__menu a {
+  display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem;
+  background: #eef7f1; border: 1px solid rgba(15,122,69,.14); border-radius: 14px;
+  font-size: 1.02rem; font-weight: 600; color: #0b6137; transition: background .2s, transform .2s;
+}
+.navbar__drawer .dr-dd__menu a::after { content: '\2192'; color: #0f7a45; transition: transform .2s; }
+.navbar__drawer .dr-dd__menu a:hover, .navbar__drawer .dr-dd__menu a:active { background: #dff0e6; color: #0b6137; border-bottom-color: rgba(15,122,69,.14); }
+.navbar__drawer .dr-dd__menu a:hover::after { transform: translateX(4px); }
 @media (prefers-reduced-motion: reduce) { .nav-dd__menu, .nav-dd__btn i { transition: none; } }
 
 /* Clavier : contour vert bien visible */
