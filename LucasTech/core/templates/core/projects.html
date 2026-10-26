@@ -4,418 +4,203 @@
 {% block meta_description %}Un aperçu des projets réalisés par Lantante Technologie pour ses clients et partenaires au Togo.{% endblock %}
 {% block og_title %}Projets réalisés — Lantante Technologie{% endblock %}
 {% block og_description %}Un aperçu des projets réalisés par Lantante Technologie pour ses clients et partenaires au Togo.{% endblock %}
+{% block extra_head %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
 
 {% block content %}
 <style>
-:root {
-  --bg: #f7f3ee; --surf: #ffffff; --surf2: #f1f4f8;
-  --border: rgba(15,23,42,.08); --shadow: rgba(15,23,42,.08);
-  --ink: #0f172a; --ink2: #334155; --muted: #64748b;
-  --navy: #0d3b7a; --navy2: #163a63;
-  --green: #0f7a45; --green2: #15803d;
-  --badge-bg: #dcfce7;
-  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+.pjx { --ink: #1d1d1f; --gray: #6e6e73; --bg: #fbfbfd; --card: #f5f5f7; --line: rgba(0,0,0,.09); --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 17px; line-height: 1.5; letter-spacing: -.011em;
+  color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+.pjx *, .pjx *::before, .pjx *::after { box-sizing: border-box; }
+.pjx :where(h1, h2, h3, p, ul, ol, figure) { margin: 0; padding: 0; }
+.pjx :where(ul, ol) { list-style: none; }
+.pjx a { color: inherit; }
+.pjx-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.2rem, 5vw, 2.5rem); }
+.pjx :where(section) { scroll-margin-top: calc(var(--nav-h, 96px) + 56px); }
 
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+/* Pilules */
+.pjx-pill { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 13px 26px; border-radius: 980px; font: inherit; font-size: 1.02rem; font-weight: 500; text-decoration: none; border: 1.5px solid transparent; cursor: pointer; transition: background .25s, color .25s, transform .25s; }
+.pjx-pill:hover { transform: scale(1.03); }
+.pjx-pill--solid { background: var(--g); color: #fff !important; }
+.pjx-pill--solid:hover { background: var(--g2); }
+.pjx-pill--wa { background: #25d366; color: #04301a !important; }
+.pjx-pill--wa:hover { background: #3ee07c; }
+.pjx-pill--line { border-color: rgba(255,255,255,.5); color: #fff !important; }
+.pjx-pill--line:hover { background: #fff; color: var(--gd) !important; }
+.pjx-pill--sm { padding: 7px 18px; font-size: .9rem; }
 
-/* ══ HERO (photo + overlay navy) ══ */
-.pj-hero {
-  position: relative; overflow: hidden;
-  padding: 48px clamp(1.5rem,6vw,5rem) 40px;
-  background: var(--navy);
-  text-align: center;
-}
-.pj-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 40%; opacity: .8; }
-.pj-hero-overlay { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(13,59,122,.55), rgba(9,26,54,.75)); }
-.pj-hero-blob {
-  position: absolute; border-radius: 50%; filter: blur(60px);
-  pointer-events: none; opacity: .55;
-  animation: pjFloat 15s ease-in-out infinite;
-}
-.pj-hero-blob-1 { width: 300px; height: 300px; top: -120px; left: 8%; background: radial-gradient(circle, rgba(15,122,69,.5), transparent 70%); }
-.pj-hero-blob-2 { width: 260px; height: 260px; bottom: -130px; right: 10%; background: radial-gradient(circle, rgba(242,207,107,.35), transparent 70%); animation-delay: -7s; animation-duration: 19s; }
-@keyframes pjFloat {
-  0%, 100% { transform: translate(0,0) scale(1); }
-  33%      { transform: translate(26px, -18px) scale(1.08); }
-  66%      { transform: translate(-20px, 16px) scale(.95); }
-}
-.pj-hero-inner { position: relative; z-index: 1; }
-.pj-hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 9px;
-  color: #f2cf6b; font-size: 1.05rem; font-weight: 800; letter-spacing: .22em;
-  text-transform: uppercase; margin-bottom: 18px;
-}
-.pj-hero-eyebrow .dot {
-  width: 8px; height: 8px; border-radius: 50%; background: #f2cf6b;
-  box-shadow: 0 0 0 0 rgba(242,207,107,.6);
-  animation: pjPulseDot 2s ease-in-out infinite;
-}
-@keyframes pjPulseDot {
-  0%   { box-shadow: 0 0 0 0 rgba(242,207,107,.55); }
-  70%  { box-shadow: 0 0 0 9px rgba(242,207,107,0); }
-  100% { box-shadow: 0 0 0 0 rgba(242,207,107,0); }
-}
-.pj-hero-title { font-family: var(--serif); font-size: clamp(1.9rem,4vw,2.8rem); font-weight: 800; color: #fff; }
-.pj-hero-title em {
-  font-style: italic;
-  background: linear-gradient(90deg, #d4a017, #f2cf6b);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.pj-hero-sub { margin: 14px auto 0; font-size: .96rem; color: #cfd9ea; max-width: 580px; line-height: 1.7; }
+/* Barre collante */
+.pjx-bar { position: sticky; top: var(--nav-h, 96px); z-index: 40; background: rgba(251,251,253,.82); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
+.pjx-bar-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.2rem, 5vw, 2.5rem); height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.pjx-bar-title { font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; text-decoration: none; }
+.pjx-bar-links { display: flex; align-items: center; gap: 26px; margin-left: auto; }
+.pjx-bar-links a { font-size: .85rem; color: var(--gray); text-decoration: none; transition: color .2s; white-space: nowrap; }
+.pjx-bar-links a:hover { color: var(--ink); }
+@media (max-width: 720px) { .pjx-bar-links { display: none; } }
 
-/* ══ SPOTLIGHT (fond de page, sans carte) ══ */
-.pj-spotlight { background: var(--bg); padding: 56px clamp(1.5rem,6vw,5rem) 8px; text-align: center; }
-.pj-slide { display: none; }
-.pj-slide.active { display: block; animation: pjFade .6s ease; }
-@keyframes pjFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.pj-slide-media {
-  width: min(420px, 88vw); aspect-ratio: 16/10; margin: 0 auto 28px;
-  border-radius: 18px; overflow: hidden; background: var(--surf2);
-  box-shadow: 0 20px 50px var(--shadow);
-  display: flex; align-items: center; justify-content: center;
-}
-.pj-slide-media img { width: 100%; height: 100%; object-fit: cover; }
-.pj-slide-media-placeholder { font-size: 4rem; opacity: .18; }
-.pj-slide-client { font-size: .8rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 10px; }
-.pj-slide-client i { color: var(--green); }
-.pj-slide-title {
-  font-family: var(--serif); font-size: clamp(1.4rem,2.6vw,1.9rem); font-weight: 800;
-  color: var(--ink); margin: 0 auto 18px; max-width: 620px; line-height: 1.3;
-}
-.pj-slide-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  color: var(--green); text-decoration: none; font-weight: 700; font-size: .88rem;
-  letter-spacing: .02em; transition: gap .2s, color .2s;
-}
-.pj-slide-btn:hover { gap: 12px; color: var(--green2); }
+/* Apparition au défilement */
+.pjx-rv { opacity: 0; transform: translateY(36px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
+.pjx:not(.js) .pjx-rv { opacity: 1; transform: none; }
+.pjx-rv.in { opacity: 1; transform: none; }
 
-.pj-dots { display: flex; justify-content: center; gap: 8px; margin-top: 32px; }
-.pj-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--border);
-  border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s;
-}
-.pj-dot.active { background: var(--green); transform: scale(1.3); }
+/* En-tête */
+.pjx-hero { text-align: center; padding: clamp(4rem, 9vw, 7rem) 0 clamp(2.5rem, 5vw, 4rem); }
+.pjx-kicker { font-size: 1.1rem; font-weight: 600; color: var(--g); margin-bottom: 14px; }
+.pjx-hero h1 { font-size: clamp(2.7rem, 7.4vw, 6rem); font-weight: 700; line-height: 1.02; letter-spacing: -.045em; max-width: 12ch; margin: 0 auto; text-wrap: balance; }
+.pjx-hero h1 em { font-style: normal; color: var(--g); }
+.pjx-sub { font-size: clamp(1.15rem, 2.1vw, 1.55rem); line-height: 1.4; font-weight: 500; color: var(--gray); max-width: 30em; margin: 26px auto 0; text-wrap: balance; }
+.pjx-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(2rem, 7vw, 5rem); margin-top: clamp(2.2rem, 5vw, 3.5rem); }
+.pjx-stat b { display: block; font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 700; letter-spacing: -.05em; line-height: 1; }
+.pjx-stat span { display: block; margin-top: 8px; font-size: .85rem; color: var(--gray); font-weight: 500; }
 
-/* ══ STATS (fond de page) ══ */
-.pj-stats { background: var(--bg); display: flex; justify-content: center; gap: 56px; padding: 40px clamp(1.5rem,6vw,5rem) 8px; flex-wrap: wrap; }
-.pj-stat-num { font-family: var(--serif); font-size: 2.1rem; font-weight: 800; color: var(--ink); line-height: 1; }
-.pj-stat-label { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+/* Projets */
+.pjx-sec { padding: 0 0 clamp(4rem, 9vw, 7rem); }
+.pjx-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.pjx-card { position: relative; display: flex; flex-direction: column; background: var(--card); border-radius: 30px; overflow: hidden; transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s, background .45s; }
+.pjx-card:hover { transform: translateY(-8px); background: #fff; box-shadow: 0 30px 60px rgba(0,0,0,.12); }
+.pjx-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #e8e8ed; }
+.pjx-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+.pjx-card:hover .pjx-media img { transform: scale(1.04); }
+.pjx-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: rgba(0,0,0,.18); }
+.pjx-year { position: absolute; top: 16px; right: 16px; padding: 5px 14px; border-radius: 980px; background: rgba(255,255,255,.92); font-size: .8rem; font-weight: 600; color: var(--gd); }
+.pjx-body { padding: 26px 28px 30px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.pjx-client { font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--g); }
+.pjx-title { font-size: 1.55rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
+.pjx-desc { color: var(--gray); font-size: 1rem; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pjx-tech { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.pjx-tech span { font-size: .75rem; font-weight: 500; padding: 4px 11px; border-radius: 980px; background: rgba(15,122,69,.1); color: var(--g2); }
+.pjx-go { margin-top: auto; padding-top: 14px; font-weight: 600; font-size: 1rem; color: var(--g); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; width: fit-content; transition: gap .25s; }
+.pjx-go::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+.pjx-card:hover .pjx-go { gap: 14px; }
+.pjx-empty { text-align: center; color: var(--gray); padding: 3rem 1rem; font-size: 1.1rem; }
+.pjx-grid--one { grid-template-columns: minmax(0, 560px); justify-content: center; }
 
-/* ══ GRID ══ */
-.pj-section { max-width: 1200px; margin: 0 auto; padding: 64px clamp(1.5rem,6vw,5rem) 96px; }
-.pj-section-title {
-  font-family: var(--serif); font-size: clamp(1.4rem,3vw,2rem); font-weight: 800;
-  margin-bottom: 36px; display: flex; align-items: center; gap: 18px; color: var(--ink);
-}
-.pj-section-title::after { content: ''; flex: 1; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--green), transparent); }
+/* Bande « Un projet en tête ? » */
+.pjx-cta { background: var(--gd); color: #fff; text-align: center; padding: clamp(4rem, 9vw, 7rem) 0; }
+.pjx-cta h2 { font-size: clamp(2.2rem, 5.6vw, 4.2rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.05; max-width: 14ch; margin: 0 auto; text-wrap: balance; }
+.pjx-cta p { margin: 20px auto 0; max-width: 28em; font-size: clamp(1.05rem, 1.9vw, 1.35rem); font-weight: 500; color: rgba(255,255,255,.72); text-wrap: balance; }
+.pjx-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 32px; }
 
-.pj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 28px; }
-.pj-card {
-  background: var(--surf); border: 1px solid var(--border); border-radius: 16px;
-  overflow: hidden; box-shadow: 0 4px 16px var(--shadow);
-  display: flex; flex-direction: column;
-  transition: transform .3s, box-shadow .3s, border-color .3s;
-}
-.pj-card:hover { transform: translateY(-5px); box-shadow: 0 18px 44px rgba(15,23,42,.12); border-color: rgba(15,122,69,.3); }
-.pj-media {
-  position: relative; aspect-ratio: 16/10; background: var(--surf2);
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
-}
-.pj-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
-.pj-card:hover .pj-media img { transform: scale(1.06); }
-.pj-media-placeholder { font-size: 3rem; opacity: .18; }
-.pj-media-blob {
-  position: absolute; width: 160px; height: 160px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(15,122,69,.14), transparent 70%);
-  bottom: -50px; right: -50px; pointer-events: none;
-}
-.pj-badge {
-  position: absolute; top: 14px; right: 14px; z-index: 2;
-  background: var(--badge-bg); color: var(--green2);
-  font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-  padding: 4px 12px; border-radius: 99px;
-}
-.pj-body { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; }
-.pj-client { font-size: .82rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
-.pj-client i { color: var(--green); }
-.pj-title { font-family: var(--serif); font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; line-height: 1.3; color: var(--ink); }
-.pj-desc { font-size: .88rem; color: var(--muted); line-height: 1.7; margin-bottom: 18px; flex: 1; }
-.pj-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border); }
-.pj-detail-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: .85rem; font-weight: 700; color: var(--green); text-decoration: none;
-  transition: gap .2s;
-}
-.pj-detail-btn:hover { gap: 11px; color: var(--green2); }
-/* Projet avec un site : toute la carte ouvre le site */
-.pj-card { position: relative; }
-.pj-detail-btn--ext::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
-.pj-status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--badge-bg); }
+/* Méthode */
+.pjx-way { padding: clamp(4rem, 9vw, 7rem) 0; }
+.pjx-head { text-align: center; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.pjx-h { font-size: clamp(2.1rem, 5vw, 3.6rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.05; max-width: 16ch; margin: 0 auto; text-wrap: balance; }
+.pjx-steps { max-width: 820px; margin: 0 auto; border-top: 1px solid var(--line); }
+.pjx-step { display: grid; grid-template-columns: clamp(70px, 12vw, 130px) minmax(0, 1fr); gap: clamp(1rem, 3vw, 2.5rem); align-items: center; padding: clamp(1.2rem, 2.6vw, 1.8rem) 0; border-bottom: 1px solid var(--line); }
+.pjx-step .n { font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 700; letter-spacing: -.05em; line-height: 1; color: rgba(29,29,31,.14); transition: color .6s; }
+.pjx-step.in .n { color: var(--g); }
+.pjx-step h3 { font-size: clamp(1.25rem, 2.6vw, 1.9rem); font-weight: 700; letter-spacing: -.03em; }
+.pjx-step p { color: var(--gray); margin-top: 4px; }
 
-.pj-empty { max-width: 1200px; margin: 0 auto; padding: 80px clamp(1.5rem,6vw,5rem); text-align: center; color: var(--muted); }
-
-/* ══ NOTRE MÉTHODE (bande sombre pleine largeur) ══ */
-.pj-process {
-  background: linear-gradient(135deg, #0a1f3d 0%, #0d2b52 100%);
-  position: relative; overflow: hidden;
-  margin: 0; padding: 72px clamp(1.5rem,6vw,5rem);
-}
-.pj-process-inner { max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
-.pj-process-head { max-width: 560px; margin-bottom: 48px; }
-.pj-process-eyebrow {
-  font-size: .78rem; font-weight: 700; letter-spacing: .15em;
-  text-transform: uppercase; color: #f2cf6b; margin-bottom: 10px;
-}
-.pj-process-title {
-  font-family: var(--serif); font-size: clamp(1.6rem,3vw,2.3rem);
-  font-weight: 800; color: #f5f2ee; letter-spacing: -.02em; line-height: 1.2;
-}
-.pj-process-grid {
-  display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 20px;
-}
-.pj-step {
-  background: rgba(245,242,238,.05); border: 1px solid rgba(245,242,238,.12);
-  border-radius: 16px; padding: 26px 22px;
-  transition: transform .35s cubic-bezier(.22,.68,0,1.2), background .3s, border-color .3s;
-}
-.pj-step:hover { transform: translateY(-6px); background: rgba(245,242,238,.08); border-color: rgba(34,197,94,.4); }
-.pj-step-num {
-  font-family: var(--serif); font-size: 2.1rem; font-weight: 900;
-  color: rgba(245,242,238,.18); line-height: 1; margin-bottom: 14px;
-}
-.pj-step-icon {
-  width: 42px; height: 42px; border-radius: 11px; margin-bottom: 14px;
-  background: linear-gradient(135deg, #22c55e, var(--green));
-  display: flex; align-items: center; justify-content: center;
-  color: #052e16; font-size: 1rem;
-}
-.pj-step h3 { font-size: .98rem; font-weight: 700; color: #f5f2ee; margin-bottom: 8px; }
-.pj-step p { font-size: .8rem; color: rgba(245,242,238,.6); line-height: 1.6; }
-
-@media (max-width: 900px) {
-  .pj-process-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-
-/* ══ CTA CONTACT (carte contenue, pas pleine largeur) ══ */
-.pj-cta-wrap { max-width: 1200px; margin: 0 auto; padding: 0 clamp(1.5rem,6vw,5rem) 100px; }
-.pj-cta {
-  position: relative; overflow: hidden; border-radius: 24px;
-  background: linear-gradient(135deg, #0a1f3d 0%, #0d3b7a 100%);
-  padding: 64px clamp(1.5rem,5vw,4rem);
-  text-align: center;
-}
-.pj-cta-blob {
-  position: absolute; border-radius: 50%; filter: blur(60px);
-  pointer-events: none; opacity: .5;
-  animation: pjFloat 15s ease-in-out infinite;
-}
-.pj-cta-blob-1 { width: 320px; height: 320px; top: -140px; right: -80px; background: radial-gradient(circle, rgba(15,122,69,.55), transparent 70%); }
-.pj-cta-blob-2 { width: 260px; height: 260px; bottom: -120px; left: -70px; background: radial-gradient(circle, rgba(212,160,23,.3), transparent 70%); animation-delay: -7s; animation-duration: 19s; }
-.pj-cta-inner { position: relative; z-index: 1; max-width: 620px; margin: 0 auto; }
-.pj-cta-title { font-family: var(--serif); font-size: clamp(1.6rem,3.4vw,2.3rem); font-weight: 800; color: #fff; margin-bottom: 16px; }
-.pj-cta-sub { font-size: .96rem; color: #c3d1e8; line-height: 1.7; margin-bottom: 30px; }
-.pj-cta-btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 15px 32px; border-radius: 12px; text-decoration: none;
-  font-weight: 700; font-size: .93rem; color: #fff;
-  background: linear-gradient(120deg, var(--green), #16a34a);
-  background-size: 200% 100%;
-  box-shadow: 0 10px 30px rgba(15,122,69,.4);
-  transition: transform .2s, box-shadow .2s, background-position .6s;
-}
-.pj-cta-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(15,122,69,.55); background-position: 100% 0; }
-
-@media (max-width: 640px) {
-  .pj-grid { grid-template-columns: minmax(0,1fr); }
-  .pj-stats { gap: 36px; }
-  .pj-cta { padding: 48px 24px; border-radius: 18px; }
-  .pj-process { padding: 56px 18px; }
-  .pj-process-grid { grid-template-columns: minmax(0,1fr); }
-}
+@media (max-width: 780px) { .pjx-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .pjx { font-size: 16px; } .pjx-pill { width: 100%; } .pjx-bar .pjx-pill { width: auto; } }
+@media (prefers-reduced-motion: reduce) { .pjx-rv { opacity: 1; transform: none; transition: none; } .pjx-media img { transition: none; } }
 </style>
 
-<div class="pj-hero">
-  <div class="pj-hero-bg" style="background-image:url('{% static 'core/images/projects-hero.jpg' %}')"></div>
-  <div class="pj-hero-overlay"></div>
-  <span class="pj-hero-blob pj-hero-blob-1"></span>
-  <span class="pj-hero-blob pj-hero-blob-2"></span>
-  <div class="pj-hero-inner">
-    <p class="pj-hero-eyebrow"><span class="dot"></span> Lantante Technologie</p>
-    <h1 class="pj-hero-title">Projets <em>réalisés</em></h1>
-    <p class="pj-hero-sub">Un aperçu des projets que nous avons menés pour nos clients et partenaires.</p>
-  </div>
-</div>
+<div class="pjx" id="pjx">
 
-{% if slides %}
-<div class="pj-spotlight" id="pjSlideshow">
-  {% for project in slides %}
-  <div class="pj-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
-    <div class="pj-slide-media">
-      {% if project.image %}
-        <img src="{{ project.image.url }}" alt="{{ project.title }}">
-      {% else %}
-        <div class="pj-slide-media-placeholder">🚀</div>
+  <nav class="pjx-bar" aria-label="Projets réalisés">
+    <div class="pjx-bar-in">
+      <a class="pjx-bar-title" href="#top">Projets réalisés</a>
+      <div class="pjx-bar-links">
+        <a href="#projets">Nos projets</a>
+        <a href="#methode">Notre méthode</a>
+        <a href="{% url 'core:team' %}">Notre équipe</a>
+      </div>
+      <a class="pjx-pill pjx-pill--solid pjx-pill--sm" href="#contact">Un projet ?</a>
+    </div>
+  </nav>
+
+  <!-- En-tête -->
+  <section class="pjx-hero" id="top">
+    <div class="pjx-in">
+      <p class="pjx-kicker pjx-rv">Nos réalisations</p>
+      <h1 class="pjx-rv" style="--d:.08s">Ce que nous avons <em>construit</em>.</h1>
+      <p class="pjx-sub pjx-rv" style="--d:.16s">Sites web, applications et solutions numériques réalisés pour nos clients et partenaires.</p>
+      {% if projects %}
+      <div class="pjx-stats pjx-rv" style="--d:.24s">
+        <div class="pjx-stat"><b>{{ projects|length }}</b><span>Projet{{ projects|length|pluralize }}</span></div>
+        {% if client_count %}<div class="pjx-stat"><b>{{ client_count }}</b><span>Client{{ client_count|pluralize }}</span></div>{% endif %}
+        {% if tech_count %}<div class="pjx-stat"><b>{{ tech_count }}</b><span>Technologies</span></div>{% endif %}
+      </div>
       {% endif %}
     </div>
-    {% if project.client %}<p class="pj-slide-client"><i class="fa fa-building"></i> {{ project.client }}</p>{% endif %}
-    <h2 class="pj-slide-title">{{ project.title }}</h2>
-    {% if project.link %}
-    <a href="{{ project.link }}" target="_blank" rel="noopener noreferrer" class="pj-slide-btn">
-      <i class="fa fa-arrow-up-right-from-square"></i> Visiter le site
-    </a>
-    {% else %}
-    <a href="{% url 'core:project_detail' project.pk %}" class="pj-slide-btn">
-      <i class="fa fa-arrow-right"></i> Voir le détail
-    </a>
-    {% endif %}
-  </div>
-  {% endfor %}
+  </section>
 
-  {% if slides|length > 1 %}
-  <div class="pj-dots" id="pjDots">
-    {% for project in slides %}
-    <button class="pj-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" aria-label="Slide {{ forloop.counter }}"></button>
-    {% endfor %}
-  </div>
-  {% endif %}
-</div>
-{% endif %}
-
-{% if projects %}
-<div class="pj-stats">
-  <div><div class="pj-stat-num">{{ projects|length }}</div><div class="pj-stat-label">Projets</div></div>
-  <div><div class="pj-stat-num">{{ client_count }}</div><div class="pj-stat-label">Clients</div></div>
-  {% if tech_count %}<div><div class="pj-stat-num">{{ tech_count }}</div><div class="pj-stat-label">Technologies</div></div>{% endif %}
-</div>
-{% endif %}
-
-<section class="pj-section">
-  <h2 class="pj-section-title">Tous nos projets</h2>
-  {% if projects %}
-  <div class="pj-grid">
-    {% for project in projects %}
-    <div class="pj-card reveal" style="transition-delay:{{ forloop.counter0 }}0ms">
-      <div class="pj-media">
-        <span class="pj-media-blob"></span>
-        {% if project.image %}
-          <img src="{{ project.image.url }}" alt="{{ project.title }}" loading="lazy">
-        {% else %}
-          <div class="pj-media-placeholder">🚀</div>
-        {% endif %}
-        <span class="pj-badge">{% if project.year %}{{ project.year }}{% else %}Projet{% endif %}</span>
+  <!-- Projets -->
+  <section class="pjx-sec" id="projets">
+    <div class="pjx-in">
+      {% if projects %}
+      <div class="pjx-grid {% if projects|length == 1 %}pjx-grid--one{% endif %}">
+        {% for project in projects %}
+        <article class="pjx-card pjx-rv" style="--d:{% widthratio forloop.counter0 2 1 %}0ms">
+          <div class="pjx-media">
+            {% if project.image %}<img src="{{ project.image.url }}" alt="{{ project.title }}" loading="lazy">{% else %}<div class="pjx-ph"><i class="fa fa-diagram-project"></i></div>{% endif %}
+            {% if project.year %}<span class="pjx-year">{{ project.year }}</span>{% endif %}
+          </div>
+          <div class="pjx-body">
+            {% if project.client %}<p class="pjx-client">{{ project.client }}</p>{% endif %}
+            <h3 class="pjx-title">{{ project.title }}</h3>
+            <p class="pjx-desc">{{ project.description }}</p>
+            {% if project.get_technologies %}<div class="pjx-tech">{% for t in project.get_technologies %}<span>{{ t }}</span>{% endfor %}</div>{% endif %}
+            {% if project.link %}
+            <a class="pjx-go" href="{{ project.link }}" target="_blank" rel="noopener noreferrer">Visiter le site <i class="fa fa-arrow-up-right-from-square"></i></a>
+            {% else %}
+            <a class="pjx-go" href="{% url 'core:project_detail' project.pk %}">Voir le projet <i class="fa fa-arrow-right"></i></a>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
       </div>
-      <div class="pj-body">
-        {% if project.client %}<p class="pj-client"><i class="fa fa-building"></i> {{ project.client }}</p>{% endif %}
-        <h3 class="pj-title">{{ project.title }}</h3>
-        <p class="pj-desc">{{ project.description|truncatewords:20 }}</p>
-        <div class="pj-card-footer">
-          {% if project.link %}
-          <a href="{{ project.link }}" target="_blank" rel="noopener noreferrer" class="pj-detail-btn pj-detail-btn--ext">
-            Visiter le site <i class="fa fa-arrow-up-right-from-square"></i>
-          </a>
-          {% else %}
-          <a href="{% url 'core:project_detail' project.pk %}" class="pj-detail-btn">
-            Voir le profil <i class="fa fa-arrow-right"></i>
-          </a>
-          {% endif %}
-          <span class="pj-status-dot"></span>
-        </div>
+      {% else %}
+      <p class="pjx-empty">Nos projets réalisés seront bientôt présentés ici.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Un projet en tête ? -->
+  <section class="pjx-cta" id="contact">
+    <div class="pjx-in">
+      <h2 class="pjx-rv">Un projet en tête&nbsp;?</h2>
+      <p class="pjx-rv" style="--d:.1s">Sites web, applications, réseaux, design ou marketing : parlons-en.</p>
+      <div class="pjx-btns pjx-rv" style="--d:.2s">
+        {% if site_settings.whatsapp_1 %}
+        <a class="pjx-pill pjx-pill--wa" target="_blank" rel="noopener noreferrer"
+           href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20j%27ai%20un%20projet%20%C3%A0%20vous%20pr%C3%A9senter.">
+          <i class="fab fa-whatsapp"></i> Nous écrire sur WhatsApp
+        </a>
+        {% endif %}
+        <a class="pjx-pill pjx-pill--line" href="{% url 'core:team' %}">Rencontrer l'équipe</a>
       </div>
     </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <p class="pj-empty">Nos projets réalisés seront bientôt présentés ici.</p>
-  {% endif %}
-</section>
+  </section>
 
-<!-- ══ CTA CONTACT ══ -->
-<div class="pj-cta-wrap">
-  <section class="pj-cta">
-    <div class="pj-cta-blob pj-cta-blob-1"></div>
-    <div class="pj-cta-blob pj-cta-blob-2"></div>
-    <div class="pj-cta-inner">
-      <h2 class="pj-cta-title">Un projet en tête ?</h2>
-      <p class="pj-cta-sub">Parlez-nous de votre idée : sites web, applications, réseaux, design ou marketing — notre équipe vous accompagne de A à Z.</p>
-      <a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20j%27ai%20un%20projet%20%C3%A0%20vous%20pr%C3%A9senter." target="_blank" rel="noopener noreferrer" class="pj-cta-btn">
-        <i class="fab fa-whatsapp"></i> Contactez-nous pour votre projet
-      </a>
+  <!-- Méthode -->
+  <section class="pjx-way" id="methode">
+    <div class="pjx-in">
+      <div class="pjx-head"><h2 class="pjx-h pjx-rv">Comment se déroule un projet&nbsp;?</h2></div>
+      <ol class="pjx-steps">
+        <li class="pjx-step pjx-rv"><span class="n">01</span><div><h3>Contact</h3><p>Vous nous parlez de votre besoin.</p></div></li>
+        <li class="pjx-step pjx-rv"><span class="n">02</span><div><h3>Devis</h3><p>Une proposition claire, sans surprise.</p></div></li>
+        <li class="pjx-step pjx-rv"><span class="n">03</span><div><h3>Réalisation</h3><p>Du travail avec des points réguliers avec vous.</p></div></li>
+        <li class="pjx-step pjx-rv"><span class="n">04</span><div><h3>Suivi</h3><p>Support et maintenance après la livraison.</p></div></li>
+      </ol>
     </div>
   </section>
 </div>
 
-<!-- ══ NOTRE MÉTHODE (sous le bloc « Un projet en tête ? ») ══ -->
-<section class="pj-process">
-  <div class="pj-process-inner">
-    <div class="pj-process-head">
-      <p class="pj-process-eyebrow">Notre méthode</p>
-      <h2 class="pj-process-title">Comment se déroule un projet avec nous ?</h2>
-    </div>
-    <div class="pj-process-grid">
-      <div class="pj-step">
-        <div class="pj-step-num">01</div>
-        <div class="pj-step-icon"><i class="fa fa-comments"></i></div>
-        <h3>Contact</h3>
-        <p>Vous nous contactez via WhatsApp ou le formulaire pour nous parler de votre besoin.</p>
-      </div>
-      <div class="pj-step">
-        <div class="pj-step-num">02</div>
-        <div class="pj-step-icon"><i class="fa fa-file-lines"></i></div>
-        <h3>Devis</h3>
-        <p>Nous étudions votre demande et vous proposons un devis clair, sans surprise.</p>
-      </div>
-      <div class="pj-step">
-        <div class="pj-step-num">03</div>
-        <div class="pj-step-icon"><i class="fa fa-cogs"></i></div>
-        <h3>Réalisation</h3>
-        <p>Notre équipe réalise le travail avec des points d'étape réguliers avec vous.</p>
-      </div>
-      <div class="pj-step">
-        <div class="pj-step-num">04</div>
-        <div class="pj-step-icon"><i class="fa fa-life-ring"></i></div>
-        <h3>Suivi</h3>
-        <p>Nous restons disponibles après la livraison pour le support et la maintenance.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <script>
-(function() {
-  var slideshow = document.getElementById('pjSlideshow');
-  if (!slideshow) return;
-
-  var slides = Array.from(slideshow.querySelectorAll('.pj-slide'));
-  var dots = Array.from(document.querySelectorAll('.pj-dot'));
-  var current = 0;
-  var timer = null;
-
-  function go(i) {
-    slides[current].classList.remove('active');
-    dots[current] && dots[current].classList.remove('active');
-    current = (i + slides.length) % slides.length;
-    slides[current].classList.add('active');
-    dots[current] && dots[current].classList.add('active');
-  }
-  function next() { go(current + 1); }
-  function prev() { go(current - 1); }
-  function restart() {
-    clearInterval(timer);
-    if (slides.length > 1) timer = setInterval(next, 3000);
-  }
-
-  dots.forEach(function(d) {
-    d.addEventListener('click', function() { go(parseInt(d.dataset.index, 10)); restart(); });
-  });
-  slideshow.addEventListener('mouseenter', function() { clearInterval(timer); });
-  slideshow.addEventListener('mouseleave', restart);
-
-  restart();
+(function () {
+  var root = document.getElementById('pjx');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.classList.add('js');
+  var rv = [].slice.call(root.querySelectorAll('.pjx-rv'));
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    rv.forEach(function (el) { io.observe(el); });
+  } else { rv.forEach(function (el) { el.classList.add('in'); }); }
 })();
 </script>
-
 {% endblock %}
