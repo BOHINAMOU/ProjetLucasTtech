@@ -108,12 +108,13 @@
 .ap-note { text-align: center; color: var(--gray); font-size: .98rem; max-width: 40em; margin: 34px auto 0; }
 
 /* ── WhatsApp (fond sombre) ── */
-.ap-dark { background: var(--gd); color: #fff; }
+.ap-dark { background: #0a120e center / cover no-repeat; color: #fff; }
+.ap-dark .ap-head { margin-bottom: clamp(2rem, 5vw, 3.2rem); }
 .ap-dark .ap-lead { color: rgba(255,255,255,.72); }
 .ap-wa-ico { width: 84px; height: 84px; margin: 0 auto 26px; border-radius: 50%; background: #25d366; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; box-shadow: 0 0 0 0 rgba(37,211,102,.5); animation: apPulse 2.6s ease-out infinite; }
 @keyframes apPulse { to { box-shadow: 0 0 0 28px rgba(37,211,102,0); } }
 .ap-wa-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.ap-wa-chip { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 980px; background: rgba(255,255,255,.09); font-weight: 500; font-size: 1.02rem; }
+.ap-wa-chip { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 980px; background: rgba(255,255,255,.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-weight: 500; font-size: 1.02rem; }
 .ap-wa-chip i { color: #6ee7a0; }
 
 /* ── Accompagnement : étapes ── */
@@ -134,17 +135,11 @@
 .ap-field label b, .ap-label b { color: #d70015; font-weight: 600; }
 .ap-input, .ap-select, .ap-area { width: 100%; padding: 14px 16px; border: 1.5px solid transparent; border-radius: 14px; background: var(--card); font: inherit; font-size: 1rem; color: var(--ink); outline: none; transition: border-color .2s, background .2s, box-shadow .2s; }
 .ap-input:focus, .ap-select:focus, .ap-area:focus { border-color: var(--g); background: #fff; box-shadow: 0 0 0 4px rgba(15,122,69,.13); }
-.ap-input.is-bad, .ap-select.is-bad { border-color: #d70015; background: #fff6f7; }
+.ap-input.is-bad, .ap-select.is-bad, .ap-area.is-bad { border-color: #d70015; background: #fff6f7; }
 .ap-area { min-height: 104px; resize: vertical; }
 .ap-phone { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; }
 .ap-hint { font-size: .82rem; color: var(--gray); margin-top: 7px; min-height: 1em; }
 .ap-hint.is-bad { color: #d70015; font-weight: 600; }
-.ap-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.ap-chip { position: relative; }
-.ap-chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
-.ap-chip span { display: inline-flex; align-items: center; padding: 9px 16px; border-radius: 980px; background: var(--card); font-size: .9rem; font-weight: 500; color: var(--gray); transition: all .2s; }
-.ap-chip input:checked + span { background: var(--g); color: #fff; }
-.ap-chip input:focus-visible + span { box-shadow: 0 0 0 4px rgba(15,122,69,.3); }
 .ap-send { width: 100%; margin-top: 8px; padding: 16px; font-size: 1.08rem; }
 .ap-legal { font-size: .82rem; color: var(--gray); margin-top: 14px; text-align: center; }
 .ap-msgs { margin-bottom: 18px; }
@@ -248,7 +243,8 @@
   </section>
 
   <!-- ═══ WHATSAPP ═══ -->
-  <section class="ap-sec ap-dark" id="whatsapp">
+  <section class="ap-sec ap-dark" id="whatsapp"
+           style="background-image: linear-gradient(rgba(8,14,11,.80), rgba(8,14,11,.88)), url('{% static 'core/images/monetisation-whatsapp.jpg' %}')">
     <div class="ap-in">
       <div class="ap-head">
         <div class="ap-wa-ico ap-rv"><i class="fab fa-whatsapp"></i></div>
@@ -348,15 +344,14 @@
           </div>
           <p class="ap-hint" id="mz-ph">L'indicatif se règle tout seul selon le pays, vous pouvez le changer.</p></div>
 
-        <div class="ap-field"><span class="ap-label">Réseaux concernés</span>
-          <div class="ap-chips">
-            {% for name in platform_choices %}
-            <label class="ap-chip"><input type="checkbox" name="platforms" value="{{ name }}" {% if name in selected_platforms %}checked{% endif %}><span>{{ name }}</span></label>
-            {% endfor %}
-          </div></div>
+        <div class="ap-field"><label for="mz-pl">Réseau concerné <b>*</b></label>
+          <select class="ap-select" id="mz-pl" name="platform" required>
+            <option value="">Choisissez un réseau</option>
+            {% for name in platform_choices %}<option value="{{ name }}" {% if form_data.platform == name %}selected{% endif %}>{{ name }}</option>{% endfor %}
+          </select></div>
 
-        <div class="ap-field"><label for="mz-ms">Un mot sur votre projet (facultatif)</label>
-          <textarea class="ap-area" id="mz-ms" name="message" maxlength="1500" placeholder="Votre compte, votre contenu, ce que vous souhaitez atteindre…">{{ form_data.message|default:'' }}</textarea></div>
+        <div class="ap-field"><label for="mz-ms">Un mot sur votre projet <b>*</b></label>
+          <textarea class="ap-area" id="mz-ms" name="message" maxlength="1500" required placeholder="Votre compte, votre contenu, ce que vous souhaitez atteindre…">{{ form_data.message|default:'' }}</textarea></div>
 
         <button class="ap-pill ap-pill--solid ap-send" type="submit"><i class="fa fa-paper-plane"></i> Envoyer ma demande</button>
         <p class="ap-legal">Vos informations servent uniquement à vous recontacter au sujet de la monétisation.</p>
@@ -469,7 +464,7 @@
 
   form.addEventListener('submit', function (e) {
     var bad = [];
-    ['first_name', 'last_name', 'address', 'country'].forEach(function (n) {
+    ['first_name', 'last_name', 'address', 'country', 'platform', 'message'].forEach(function (n) {
       var el = form.elements[n];
       var empty = !el.value.trim();
       el.classList.toggle('is-bad', empty);

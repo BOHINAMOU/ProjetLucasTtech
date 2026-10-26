@@ -191,7 +191,6 @@ def _monetization_context(form_data=None):
         'platforms': PLATFORMS, 'platform_choices': PLATFORM_CHOICES, 'steps': STEPS, 'whatsapp_ways': WHATSAPP_WAYS,
         'countries': [c for c in COUNTRIES if c != 'Autre'], 'dial_codes': DIAL_CODE_CHOICES,
         'dial_by_country': DIAL_CODES, 'form_data': form_data or {},
-        'selected_platforms': form_data.getlist('platforms') if form_data else [],
     }
 
 
@@ -208,7 +207,7 @@ def monetization_page(request):
     address = data.get('address', '').strip()[:200]
     country = data.get('country', '').strip()
     phone_code = data.get('phone_code', '').strip()
-    platforms = [p for p in data.getlist('platforms') if p in PLATFORM_CHOICES]
+    platform = data.get('platform', '').strip()
     message = data.get('message', '').strip()[:1500]
 
     errors = []
@@ -216,6 +215,8 @@ def monetization_page(request):
     if not last_name: errors.append("Le nom est requis.")
     if not address: errors.append("L'adresse est requise.")
     if country not in COUNTRIES or country == 'Autre': errors.append("Choisissez votre pays dans la liste.")
+    if platform not in PLATFORM_CHOICES: errors.append("Choisissez le réseau concerné.")
+    if not message: errors.append("Dites-nous un mot sur votre projet.")
     if phone_code not in {c for c, _ in DIAL_CODE_CHOICES}: errors.append("Choisissez l'indicatif de votre pays.")
     number, phone_error = clean_phone(phone_code, data.get('phone_number', ''))
     if phone_error: errors.append(phone_error)
@@ -235,7 +236,7 @@ def monetization_page(request):
 
     req = MonetizationRequest.objects.create(
         first_name=first_name, last_name=last_name, address=address, country=country,
-        phone_code=phone_code, phone_number=number, platforms=', '.join(platforms), message=message,
+        phone_code=phone_code, phone_number=number, platforms=platform, message=message,
     )
     try:  # l'équipe est prévenue sur le site, par e-mail et sur l'application
         from Emploi.services import notify_staff
