@@ -462,6 +462,18 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
   document.addEventListener('keydown',function(e){if(e.key==='Escape')all.forEach(function(dd){set(dd,false);});});
 }());
 
+/* ── Page en cours dans le tiroir mobile : lien en vert, et son groupe déplié ── */
+(function(){
+  const path=window.location.pathname;
+  document.querySelectorAll('.navbar__drawer a').forEach(function(a){
+    const h=a.getAttribute('href');
+    if(!h||h==='/'&&path!=='/'||path.indexOf(h)!==0)return;
+    a.classList.add('active');
+    const grp=a.closest('.dr-dd');
+    if(grp){grp.classList.add('open','has-active');const b=grp.querySelector('.dr-dd__btn');if(b)b.setAttribute('aria-expanded','true');}
+  });
+}());
+
 /* ── Lien actif ── */
 (function(){
   const path=window.location.pathname;

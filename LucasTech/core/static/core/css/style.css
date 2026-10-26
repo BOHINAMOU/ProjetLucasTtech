@@ -913,6 +913,36 @@ header { position: sticky; top: 0; z-index: 400; }
 .navbar__links .nav-dd__menu a:hover { background: #eef7f1; color: #0b6137; }
 .navbar__links .nav-dd__menu a::after { display: inline-block !important; position: static; content: '\2192'; height: auto; background: none; transform: translateX(-4px); opacity: 0; transition: transform .2s, opacity .2s; color: #0f7a45; }
 .navbar__links .nav-dd__menu a:hover::after { transform: none; opacity: 1; }
+/* ── Tiroir mobile : liste nette, séparateurs fins, page en cours en vert, apparition en cascade ── */
+.navbar__drawer { padding-top: 1rem; }
+.navbar__drawer > ul { gap: 0; }
+.navbar__drawer > ul > li { border-bottom: 1px solid rgba(11,46,29,.1); }
+.navbar__drawer > ul > li:last-child { border-bottom: 0; }
+.navbar__drawer > ul > li > a, .navbar__drawer .dr-dd__btn {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  padding: 1.05rem .3rem; font-size: 1.2rem; font-weight: 600; letter-spacing: -.01em; line-height: 1.2;
+  color: var(--ink); border-bottom: 0; background: none; transition: color .2s, padding .2s;
+}
+.navbar__drawer > ul > li > a::after { content: '›'; font-size: 1.6rem; line-height: 1; color: rgba(11,46,29,.28); transition: transform .2s, color .2s; }
+.navbar__drawer > ul > li > a:hover, .navbar__drawer > ul > li > a:active { color: #0b6137; border-bottom-color: transparent; padding-left: .7rem; }
+.navbar__drawer > ul > li > a:hover::after { transform: translateX(4px); color: #0f7a45; }
+.navbar__drawer > ul > li > a.active, .navbar__drawer .dr-dd.has-active > .dr-dd__btn { color: #0f7a45; box-shadow: inset 3px 0 0 #0f7a45; padding-left: .9rem; }
+.navbar__drawer .dr-dd__btn:hover { color: #0b6137; }
+.navbar__drawer .dr-dd__menu a.active { background: #0f7a45; color: #fff; border-color: #0f7a45; }
+.navbar__drawer .dr-dd__menu a.active::after { color: #fff; }
+@keyframes drIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.navbar__drawer.open > ul > li { animation: drIn .45s cubic-bezier(.2,.7,.2,1) both; }
+.navbar__drawer.open > ul > li:nth-child(1) { animation-delay: 0ms; }
+.navbar__drawer.open > ul > li:nth-child(2) { animation-delay: 40ms; }
+.navbar__drawer.open > ul > li:nth-child(3) { animation-delay: 80ms; }
+.navbar__drawer.open > ul > li:nth-child(4) { animation-delay: 120ms; }
+.navbar__drawer.open > ul > li:nth-child(5) { animation-delay: 160ms; }
+.navbar__drawer.open > ul > li:nth-child(6) { animation-delay: 200ms; }
+.navbar__drawer.open > ul > li:nth-child(7) { animation-delay: 240ms; }
+.navbar__drawer.open > ul > li:nth-child(8) { animation-delay: 280ms; }
+.navbar__drawer.open > ul > li:nth-child(9) { animation-delay: 320ms; }
+@media (prefers-reduced-motion: reduce) { .navbar__drawer.open > ul > li { animation: none; } }
+
 /* Même menu dans le tiroir mobile : un bouton qui déplie les deux pages */
 .navbar__drawer { max-height: calc(100vh - var(--nav-h)); overflow-y: auto; overscroll-behavior: contain; }
 .dr-dd__btn {

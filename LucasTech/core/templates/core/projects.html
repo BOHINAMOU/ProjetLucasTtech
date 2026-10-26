@@ -151,6 +151,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   transition: gap .2s;
 }
 .pj-detail-btn:hover { gap: 11px; color: var(--green2); }
+/* Projet avec un site : toute la carte ouvre le site */
+.pj-card { position: relative; }
+.pj-detail-btn--ext::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
 .pj-status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--badge-bg); }
 
 .pj-empty { max-width: 1200px; margin: 0 auto; padding: 80px clamp(1.5rem,6vw,5rem); text-align: center; color: var(--muted); }
@@ -260,9 +263,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     </div>
     {% if project.client %}<p class="pj-slide-client"><i class="fa fa-building"></i> {{ project.client }}</p>{% endif %}
     <h2 class="pj-slide-title">{{ project.title }}</h2>
+    {% if project.link %}
+    <a href="{{ project.link }}" target="_blank" rel="noopener noreferrer" class="pj-slide-btn">
+      <i class="fa fa-arrow-up-right-from-square"></i> Visiter le site
+    </a>
+    {% else %}
     <a href="{% url 'core:project_detail' project.pk %}" class="pj-slide-btn">
       <i class="fa fa-arrow-right"></i> Voir le détail
     </a>
+    {% endif %}
   </div>
   {% endfor %}
 
@@ -280,7 +289,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 <div class="pj-stats">
   <div><div class="pj-stat-num">{{ projects|length }}</div><div class="pj-stat-label">Projets</div></div>
   <div><div class="pj-stat-num">{{ client_count }}</div><div class="pj-stat-label">Clients</div></div>
-  <div><div class="pj-stat-num">{{ tech_count }}</div><div class="pj-stat-label">Technologies</div></div>
+  {% if tech_count %}<div><div class="pj-stat-num">{{ tech_count }}</div><div class="pj-stat-label">Technologies</div></div>{% endif %}
 </div>
 {% endif %}
 
@@ -304,9 +313,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <h3 class="pj-title">{{ project.title }}</h3>
         <p class="pj-desc">{{ project.description|truncatewords:20 }}</p>
         <div class="pj-card-footer">
+          {% if project.link %}
+          <a href="{{ project.link }}" target="_blank" rel="noopener noreferrer" class="pj-detail-btn pj-detail-btn--ext">
+            Visiter le site <i class="fa fa-arrow-up-right-from-square"></i>
+          </a>
+          {% else %}
           <a href="{% url 'core:project_detail' project.pk %}" class="pj-detail-btn">
             Voir le profil <i class="fa fa-arrow-right"></i>
           </a>
+          {% endif %}
           <span class="pj-status-dot"></span>
         </div>
       </div>
