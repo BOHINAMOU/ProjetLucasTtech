@@ -67,6 +67,10 @@ WHATSAPP_WAYS = [
 # Pour en ajouter, déposer l'image dans core/static/core/images/ et ajouter son chemin ici.
 WHATSAPP_BACKGROUNDS = [
     'core/images/monetisation-whatsapp.jpg',
+    'core/images/monetisation-whatsapp-2.jpg',
+    'core/images/monetisation-whatsapp-3.jpg',
+    'core/images/monetisation-whatsapp-4.jpg',
+    'core/images/monetisation-whatsapp-5.jpg',
 ]
 
 
