@@ -98,16 +98,13 @@
 .ap-h { font-size: clamp(2.2rem, 5.4vw, 4.2rem); font-weight: 700; line-height: 1.05; letter-spacing: -.04em; max-width: 16ch; margin: 0 auto; text-wrap: balance; }
 .ap-lead { font-size: clamp(1.1rem, 1.9vw, 1.4rem); line-height: 1.45; font-weight: 500; color: var(--gray); max-width: 34em; margin: 20px auto 0; text-wrap: balance; }
 
-/* ── Cartes des réseaux ── */
-.ap-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.ap-net { background: var(--card); border-radius: 28px; padding: 34px 30px 32px; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
-.ap-net:hover { transform: translateY(-6px) scale(1.012); background: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.1); }
-.ap-net-ico { width: 56px; height: 56px; border-radius: 16px; background: var(--c); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 22px; }
+/* ── Réseaux : logos et noms ── */
+.ap-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.ap-net { flex: 0 0 calc(25% - 12px); background: var(--card); border-radius: 28px; padding: 34px 20px 30px; text-align: center; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
+.ap-net:hover { transform: translateY(-6px) scale(1.02); background: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.1); }
+.ap-net-ico { width: 68px; height: 68px; border-radius: 20px; background: var(--c); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.9rem; margin: 0 auto 18px; }
 .ap-net-ico[data-light] { color: #111; }
-.ap-net h3 { font-size: 1.7rem; font-weight: 700; letter-spacing: -.03em; margin-bottom: 18px; }
-.ap-net dt { font-size: .78rem; font-weight: 600; letter-spacing: .02em; color: var(--g); margin-bottom: 4px; }
-.ap-net dd { margin: 0 0 16px; font-size: .98rem; line-height: 1.55; color: var(--gray); }
-.ap-net dd:last-child { margin-bottom: 0; }
+.ap-net h3 { font-size: 1.2rem; font-weight: 600; letter-spacing: -.02em; }
 .ap-note { text-align: center; color: var(--gray); font-size: .98rem; max-width: 40em; margin: 34px auto 0; }
 
 /* ── WhatsApp (fond sombre) ── */
@@ -115,26 +112,16 @@
 .ap-dark .ap-lead { color: rgba(255,255,255,.72); }
 .ap-wa-ico { width: 84px; height: 84px; margin: 0 auto 26px; border-radius: 50%; background: #25d366; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; box-shadow: 0 0 0 0 rgba(37,211,102,.5); animation: apPulse 2.6s ease-out infinite; }
 @keyframes apPulse { to { box-shadow: 0 0 0 28px rgba(37,211,102,0); } }
-.ap-wa-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
-.ap-wa-card { background: rgba(255,255,255,.07); border-radius: 24px; padding: 28px 24px; }
-.ap-wa-card i { font-size: 1.5rem; color: #6ee7a0; margin-bottom: 18px; display: block; }
-.ap-wa-card h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.025em; margin-bottom: 8px; }
-.ap-wa-card p { font-size: .95rem; line-height: 1.55; color: rgba(255,255,255,.72); }
+.ap-wa-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.ap-wa-chip { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 980px; background: rgba(255,255,255,.09); font-weight: 500; font-size: 1.02rem; }
+.ap-wa-chip i { color: #6ee7a0; }
 
 /* ── Accompagnement : étapes ── */
 .ap-steps { max-width: 860px; margin: 0 auto; border-top: 1px solid var(--line); }
-.ap-step { display: grid; grid-template-columns: clamp(70px, 12vw, 130px) minmax(0, 1fr); gap: clamp(1rem, 3vw, 2.5rem); align-items: center; padding: clamp(1.6rem, 3.4vw, 2.4rem) 0; border-bottom: 1px solid var(--line); }
+.ap-step { display: grid; grid-template-columns: clamp(70px, 12vw, 130px) minmax(0, 1fr); gap: clamp(1rem, 3vw, 2.5rem); align-items: center; padding: clamp(1.2rem, 2.6vw, 1.8rem) 0; border-bottom: 1px solid var(--line); }
 .ap-step .n { font-size: clamp(2.6rem, 7vw, 5.2rem); font-weight: 700; letter-spacing: -.05em; line-height: 1; color: rgba(29,29,31,.14); transition: color .6s; }
 .ap-step.in .n { color: var(--g); }
-.ap-step h3 { font-size: clamp(1.3rem, 2.6vw, 1.9rem); font-weight: 700; letter-spacing: -.03em; margin-bottom: 6px; }
-.ap-step p { color: var(--gray); font-size: 1.02rem; line-height: 1.55; }
-.ap-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: clamp(3rem, 6vw, 5rem); }
-.ap-card { background: var(--card); border-radius: 28px; padding: clamp(1.8rem, 3.4vw, 2.8rem); }
-.ap-card h3 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.03em; margin-bottom: 18px; }
-.ap-list { display: grid; gap: 13px; }
-.ap-list li { display: flex; gap: 12px; align-items: flex-start; line-height: 1.5; color: var(--ink); }
-.ap-list i { margin-top: 5px; font-size: .85rem; color: var(--g); }
-.ap-list .no i { color: #b06a00; }
+.ap-step h3 { font-size: clamp(1.25rem, 2.8vw, 2rem); font-weight: 700; letter-spacing: -.03em; }
 
 /* ── Contact ── */
 .ap-contact { padding: clamp(5rem, 10vw, 8rem) 0; background: var(--bg); }
@@ -165,12 +152,12 @@
 .ap-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 @media (max-width: 960px) {
-  .ap-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ap-wa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ap-net { flex-basis: calc(33.333% - 11px); }
 }
 @media (max-width: 640px) {
   .ap { font-size: 16px; }
-  .ap-grid, .ap-wa-grid, .ap-two, .ap-row { grid-template-columns: 1fr; }
+  .ap-net { flex-basis: calc(50% - 8px); }
+  .ap-row { grid-template-columns: 1fr; }
   .ap-stage { aspect-ratio: 4 / 5; border-radius: 26px; }
   .ap-tile:nth-child(1) { --x: 8%; --y: 8%; } .ap-tile:nth-child(2) { --x: 70%; --y: 6%; } .ap-tile:nth-child(3) { --x: 10%; --y: 74%; }
   .ap-tile:nth-child(4) { --x: 72%; --y: 76%; } .ap-tile:nth-child(5) { --x: 40%; --y: 16%; } .ap-tile:nth-child(6) { --x: 44%; --y: 80%; }
@@ -229,9 +216,8 @@
   <!-- ═══ COMPRENDRE ═══ -->
   <section class="ap-statement" id="comprendre">
     <div class="ap-in">
-      <p class="ap-scrub">La monétisation, c'est obtenir des <em>revenus</em> grâce à votre créativité de créateur de contenu.</p>
-      <p class="ap-scrub">Une fois votre compte accepté par la plateforme, vous gagnez de l'argent avec les publicités, les abonnements, les cadeaux, les bonus et les partenariats.</p>
-      <p class="ap-scrub">Un <em>compte monétisé</em>, c'est un compte que la plateforme a validé et autorisé à générer des revenus.</p>
+      <p class="ap-scrub">La monétisation, c'est transformer votre créativité en <em>revenus</em>.</p>
+      <p class="ap-scrub">Un <em>compte monétisé</em> est un compte que la plateforme autorise à générer de l'argent.</p>
     </div>
   </section>
 
@@ -240,7 +226,6 @@
     <img src="{% static 'core/images/monetisation-createrice.jpg' %}" alt="Une créatrice de contenu se filme dans son salon" loading="lazy" data-par>
     <div class="ap-photo-in"><div class="ap-in">
       <h2 class="ap-rv">Votre contenu mérite de rapporter.</h2>
-      <p class="ap-rv" style="--d:.1s">Un compte bien préparé, des critères atteints, et une demande qui a toutes les chances d'aboutir.</p>
     </div></div>
   </section>
 
@@ -249,21 +234,16 @@
     <div class="ap-in">
       <div class="ap-head">
         <h2 class="ap-h ap-rv">Tous vos réseaux. Un seul accompagnement.</h2>
-        <p class="ap-lead ap-rv" style="--d:.1s">Pour chaque réseau : comment on gagne de l'argent, et ce que la plateforme demande en général. Les conditions changent selon le pays et la période : nous vérifions les règles à jour pour vous.</p>
+        <p class="ap-lead ap-rv" style="--d:.1s">Nous vous aidons à atteindre les critères de monétisation de chaque plateforme.</p>
       </div>
       <div class="ap-grid">
         {% for p in platforms %}
-        <article class="ap-net ap-rv">
+        <article class="ap-net ap-rv" style="--d:{% widthratio forloop.counter0 6 1 %}0ms">
           <span class="ap-net-ico" style="--c:{{ p.color }}" {% if p.key == 'snapchat' %}data-light{% endif %}><i class="fab {{ p.icon }}"></i></span>
           <h3>{{ p.name }}</h3>
-          <dl>
-            <dt>Comment gagner</dt><dd>{{ p.earn }}</dd>
-            <dt>En général demandé</dt><dd>{{ p.needs }}</dd>
-          </dl>
         </article>
         {% endfor %}
       </div>
-      <p class="ap-note ap-rv">La décision d'accepter un compte appartient toujours à chaque plateforme. Nous vous préparons et vous guidons pour mettre toutes les chances de votre côté.</p>
     </div>
   </section>
 
@@ -273,11 +253,11 @@
       <div class="ap-head">
         <div class="ap-wa-ico ap-rv"><i class="fab fa-whatsapp"></i></div>
         <h2 class="ap-h ap-rv" style="--d:.08s">Même WhatsApp peut vous rapporter.</h2>
-        <p class="ap-lead ap-rv" style="--d:.16s">WhatsApp n'est plus seulement une messagerie : c'est un vrai outil pour générer des revenus. Nous vous montrons comment le faire correctement.</p>
+        <p class="ap-lead ap-rv" style="--d:.16s">Aujourd'hui, WhatsApp permet aussi de générer des revenus. Nous vous montrons comment.</p>
       </div>
-      <div class="ap-wa-grid">
-        {% for icon, title, text in whatsapp_ways %}
-        <article class="ap-wa-card ap-rv"><i class="fa {{ icon }}"></i><h3>{{ title }}</h3><p>{{ text }}</p></article>
+      <div class="ap-wa-row">
+        {% for icon, title in whatsapp_ways %}
+        <span class="ap-wa-chip ap-rv" style="--d:{% widthratio forloop.counter0 1 1 %}0ms"><i class="fa {{ icon }}"></i>{{ title }}</span>
         {% endfor %}
       </div>
     </div>
@@ -288,31 +268,13 @@
     <div class="ap-in">
       <div class="ap-head">
         <h2 class="ap-h ap-rv">De la création du compte aux premiers revenus.</h2>
-        <p class="ap-lead ap-rv" style="--d:.1s">Nous vous suivons à chaque étape pour atteindre les critères de monétisation, sans raccourcis risqués.</p>
       </div>
       <ol class="ap-steps">
-        {% for icon, title, text in steps %}
-        <li class="ap-step ap-rv"><span class="n">0{{ forloop.counter }}</span><div><h3>{{ title }}</h3><p>{{ text }}</p></div></li>
+        {% for icon, title in steps %}
+        <li class="ap-step ap-rv"><span class="n">0{{ forloop.counter }}</span><h3>{{ title }}</h3></li>
         {% endfor %}
       </ol>
-      <div class="ap-two">
-        <article class="ap-card ap-rv">
-          <h3>Notre engagement</h3>
-          <ul class="ap-list">
-            <li><i class="fa fa-check"></i> Des méthodes honnêtes, conformes aux règles de chaque plateforme.</li>
-            <li><i class="fa fa-check"></i> Un suivi personnalisé selon votre compte, votre pays et votre contenu.</li>
-            <li><i class="fa fa-check"></i> Des explications claires, en français, à votre rythme.</li>
-          </ul>
-        </article>
-        <article class="ap-card ap-rv" style="--d:.1s">
-          <h3>Ce que nous ne faisons pas</h3>
-          <ul class="ap-list">
-            <li class="no"><i class="fa fa-xmark"></i> Acheter de faux abonnés ou de fausses vues.</li>
-            <li class="no"><i class="fa fa-xmark"></i> Vendre ou prêter des comptes.</li>
-            <li class="no"><i class="fa fa-xmark"></i> Promettre des gains garantis : aucun sérieux ne peut le faire.</li>
-          </ul>
-        </article>
-      </div>
+      <p class="ap-note ap-rv">Aucun gain garanti : la décision finale appartient à chaque plateforme.</p>
     </div>
   </section>
 
@@ -321,7 +283,7 @@
     <img src="{% static 'core/images/monetisation-createur.jpg' %}" alt="Un créateur de contenu se filme chez lui" loading="lazy" data-par>
     <div class="ap-photo-in"><div class="ap-in">
       <h2 class="ap-rv">Prêt(e) à vous lancer&nbsp;?</h2>
-      <p class="ap-rv" style="--d:.1s">Parlez-nous de votre compte : nous étudions votre situation et vous proposons un accompagnement.</p>
+      <p class="ap-rv" style="--d:.1s">Parlez-nous de votre compte, nous vous répondons rapidement.</p>
       <div class="ap-btns ap-rv" style="--d:.2s">
         <a class="ap-pill ap-pill--light" href="#contact">Demander un accompagnement</a>
         {% if site_settings.whatsapp_1 %}
@@ -339,7 +301,7 @@
     <div class="ap-in">
       <div class="ap-head">
         <h2 class="ap-h ap-rv">Parlons de votre compte.</h2>
-        <p class="ap-lead ap-rv" style="--d:.1s">Écrivez-nous sur WhatsApp ou remplissez le formulaire : un membre de l'équipe vous recontacte pour étudier votre situation.</p>
+        <p class="ap-lead ap-rv" style="--d:.1s">Écrivez-nous sur WhatsApp ou remplissez le formulaire : nous vous recontactons.</p>
         {% if site_settings.whatsapp_1 %}
         <div class="ap-btns ap-rv" style="--d:.18s">
           <a class="ap-pill ap-pill--wa" target="_blank" rel="noopener noreferrer"
