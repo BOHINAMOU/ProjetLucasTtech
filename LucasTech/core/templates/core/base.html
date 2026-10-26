@@ -83,9 +83,9 @@
       <li><a href="{% url 'services:services' %}">Services</a></li>
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
       <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
-      <li><a href="{% url 'core:projects' %}">Projets</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
-      <li><a href="{% url 'core:team' %}">Équipe</a></li>
+      <li><a href="{% url 'core:projects_team' %}">Projets &amp; Équipe</a></li>
+      <li><a href="{% url 'core:monetization' %}">Monétisation</a></li>
     </ul>
 
     <div class="nav-auth">
@@ -112,9 +112,9 @@
       <li><a href="{% url 'services:services' %}">Services</a></li>
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
       <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
-      <li><a href="{% url 'core:projects' %}">Projets réalisés</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
-      <li><a href="{% url 'core:team' %}">Équipe</a></li>
+      <li><a href="{% url 'core:projects_team' %}">Projets &amp; Équipe</a></li>
+      <li><a href="{% url 'core:monetization' %}">Monétisation</a></li>
     </ul>
     <div class="drawer-auth">
       {% if user.is_authenticated %}

@@ -60,6 +60,7 @@ def build(request):
         ('Candidatures en attente', _count('Emploi.Application', status='received'), 'fa-handshake', _url('Emploi.Application'), 'blue'),
         ('Commandes boutique en attente', _count('Shop.ShopOrder', status='pending'), 'fa-shopping-bag', _url('Shop.ShopOrder', '?status__exact=pending'), 'blue'),
         ('Réservations en attente', _count('Shop.Reservation', status='pending'), 'fa-calendar-check', _url('Shop.Reservation', '?status__exact=pending'), 'blue'),
+        ('Demandes de monétisation à traiter', _count('core.MonetizationRequest', status='new'), 'fa-sack-dollar', _url('core.MonetizationRequest', '?status__exact=new'), 'orange'),
         ('Demandes de partenariat', _count('core.PartnerApplication', status='pending'), 'fa-ribbon', _url('core.PartnerApplication', '?status__exact=pending'), 'blue'),
     ]
     todo = [dict(label=a, n=b, icon=c, url=d, tone=e) for a, b, c, d, e in todo]

@@ -1,13 +1,7 @@
-{% extends 'core/base.html' %}
 {% load static %}
-{% block title %}Projets réalisés — Lantante Technologie{% endblock %}
-{% block meta_description %}Un aperçu des projets réalisés par Lantante Technologie pour ses clients et partenaires au Togo.{% endblock %}
-{% block og_title %}Projets réalisés — Lantante Technologie{% endblock %}
-{% block og_description %}Un aperçu des projets réalisés par Lantante Technologie pour ses clients et partenaires au Togo.{% endblock %}
-
-{% block content %}
+<div class="pj-scope" id="projets">
 <style>
-:root {
+.pj-scope {
   --bg: #f7f3ee; --surf: #ffffff; --surf2: #f1f4f8;
   --border: rgba(15,23,42,.08); --shadow: rgba(15,23,42,.08);
   --ink: #0f172a; --ink2: #334155; --muted: #64748b;
@@ -402,5 +396,4 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
   restart();
 })();
 </script>
-
-{% endblock %}
+</div>

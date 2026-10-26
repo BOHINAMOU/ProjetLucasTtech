@@ -188,6 +188,55 @@ class PartnerApplication(models.Model):
 
 
 # ─────────────────────────────
+# 💰 DEMANDES D'ACCOMPAGNEMENT À LA MONÉTISATION
+# ─────────────────────────────
+class MonetizationRequest(models.Model):
+    STATUS_CHOICES = [
+        ('new',       'Nouvelle'),
+        ('contacted', 'Contacté'),
+        ('followed',  'En accompagnement'),
+        ('done',      'Terminé'),
+        ('dropped',   'Sans suite'),
+    ]
+
+    first_name   = models.CharField(max_length=80, verbose_name="Prénom")
+    last_name    = models.CharField(max_length=80, verbose_name="Nom")
+    address      = models.CharField(max_length=200, verbose_name="Adresse")
+    country      = models.CharField(max_length=100, verbose_name="Pays")
+    phone_code   = models.CharField(max_length=8, verbose_name="Indicatif")
+    phone_number = models.CharField(max_length=20, verbose_name="Téléphone")
+    platforms    = models.CharField(max_length=200, blank=True, verbose_name="Plateformes concernées",
+                                    help_text="Séparées par des virgules.")
+    message      = models.TextField(blank=True, verbose_name="Message")
+
+    status       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='new', verbose_name="Suivi")
+    admin_note   = models.TextField(blank=True, verbose_name="Note interne")
+    is_read      = models.BooleanField(default=False, verbose_name="Lu")
+    created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Reçue le")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name        = "Demande de monétisation"
+        verbose_name_plural = "Demandes de monétisation"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.country})"
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def full_phone(self):
+        return f"{self.phone_code} {self.phone_number}".strip()
+
+    @property
+    def whatsapp_url(self):
+        digits = f"{self.phone_code}{self.phone_number}".replace('+', '')
+        return f"https://wa.me/{digits}"
+
+
+# ─────────────────────────────
 # 🚀 PROJETS RÉALISÉS
 # ─────────────────────────────
 class Project(models.Model):

@@ -1,8 +1,10 @@
 from django.contrib import admin, messages
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from django.utils.html import format_html
+from Publications.admin import MarkReadOnOpenMixin
 from .models import (
-    Partner, PartnerCategory, PartnerApplication, Project, TeamMember,
+    Partner, PartnerCategory, PartnerApplication, MonetizationRequest, Project, TeamMember,
     HeroSlide, NewsTickerItem, SiteSettings,
 )
 
@@ -123,6 +125,38 @@ class PartnerApplicationAdmin(admin.ModelAdmin):
     def reject_application(self, request, queryset):
         updated = queryset.exclude(status='rejected').update(status='rejected', reviewed_at=timezone.now())
         self.message_user(request, f"{updated} candidature(s) rejetée(s).")
+
+
+@admin.register(MonetizationRequest)
+class MonetizationRequestAdmin(MarkReadOnOpenMixin, admin.ModelAdmin):
+    list_display    = ('lu', 'full_name', 'country', 'telephone', 'platforms', 'status', 'created_at')
+    list_display_links = ('full_name',)
+    list_filter     = ('is_read', 'status', 'country')
+    list_editable   = ('status',)
+    search_fields   = ('first_name', 'last_name', 'phone_number', 'address', 'platforms', 'message')
+    actions         = ['mark_read', 'mark_unread']
+    readonly_fields = ('first_name', 'last_name', 'address', 'country', 'phone_code', 'phone_number', 'platforms',
+                       'message', 'whatsapp_link', 'created_at')
+    fieldsets = (
+        ('Demandeur', {'fields': ('first_name', 'last_name', 'address', 'country', 'phone_code', 'phone_number', 'whatsapp_link')}),
+        ('Demande', {'fields': ('platforms', 'message', 'created_at')}),
+        ('Suivi', {'fields': ('status', 'is_read', 'admin_note')}),
+    )
+
+    @admin.display(description="Lu", boolean=True, ordering='is_read')
+    def lu(self, obj):
+        return obj.is_read
+
+    @admin.display(description="Téléphone")
+    def telephone(self, obj):
+        return obj.full_phone
+
+    @admin.display(description="Écrire sur WhatsApp")
+    def whatsapp_link(self, obj):
+        return format_html('<a href="{}" target="_blank" rel="noopener">Ouvrir la conversation WhatsApp avec {}</a>', obj.whatsapp_url, obj.full_phone)
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(HeroSlide)

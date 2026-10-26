@@ -1,0 +1,409 @@
+{% extends 'core/base.html' %}
+{% block title %}Monétisation — Lantante Technologie{% endblock %}
+{% block meta_description %}Lantante Technologie vous accompagne pour monétiser vos comptes TikTok, Facebook, YouTube, Instagram et WhatsApp : critères, création de compte et demande de monétisation.{% endblock %}
+{% block og_title %}Monétisation — Lantante Technologie{% endblock %}
+{% block og_description %}Transformez votre créativité en revenus : nous vous accompagnons sur TikTok, Facebook, YouTube, Instagram, WhatsApp et plus.{% endblock %}
+
+{% block content %}
+<style>
+.mz { --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c; --soft: #eef7f1; --ink: #17231c; --mut: #5b6b62; --line: rgba(15,23,42,.10);
+  font-family: 'Outfit', sans-serif; color: var(--ink); background: #fff; }
+.mz *, .mz *::before, .mz *::after { box-sizing: border-box; }
+.mz h1, .mz h2, .mz h3, .mz p, .mz ul { margin: 0; padding: 0; }
+.mz ul { list-style: none; }
+.mz-in { max-width: 1120px; margin: 0 auto; padding: 0 clamp(1.1rem, 5vw, 2.5rem); }
+.mz-eyebrow { font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--g); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.mz-eyebrow::before { content: ''; width: 26px; height: 2px; background: var(--g); }
+.mz-h2 { font-size: clamp(1.55rem, 3.2vw, 2.2rem); font-weight: 800; letter-spacing: -.01em; line-height: 1.2; color: var(--gd); }
+.mz-lead { font-size: 1.02rem; line-height: 1.75; color: var(--mut); max-width: 700px; margin-top: 14px; }
+.mz-sec { padding: clamp(3rem, 7vw, 5rem) 0; }
+.mz-sec--soft { background: var(--soft); }
+
+/* ── En-tête ── */
+.mz-hero { background: var(--gd); color: #fff; border-bottom: 4px solid var(--gold); padding: clamp(3rem, 8vw, 5.5rem) 0 clamp(2.6rem, 6vw, 4rem); }
+.mz-hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+.mz-hero .mz-eyebrow { color: var(--gold); }
+.mz-hero .mz-eyebrow::before { background: var(--gold); }
+.mz-hero h1 { font-size: clamp(2rem, 4.8vw, 3.2rem); font-weight: 800; line-height: 1.12; letter-spacing: -.015em; }
+.mz-hero h1 span { color: var(--gold); }
+.mz-hero p.mz-sub { margin-top: 18px; font-size: 1.05rem; line-height: 1.75; color: rgba(255,255,255,.82); max-width: 560px; }
+.mz-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.mz-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: .92rem; text-decoration: none; border: 2px solid transparent; cursor: pointer; font-family: inherit; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+.mz-btn:hover { transform: translateY(-2px); }
+.mz-btn--wa { background: #25d366; color: #073b1b; }
+.mz-btn--wa:hover { background: #3ee07c; }
+.mz-btn--line { border-color: rgba(255,255,255,.55); color: #fff; }
+.mz-btn--line:hover { background: #fff; color: var(--gd); border-color: #fff; }
+.mz-btn--green { background: var(--g); color: #fff; }
+.mz-btn--green:hover { background: var(--g2); }
+.mz-hero-logos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.mz-ico { aspect-ratio: 1; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: clamp(1.5rem, 3vw, 2rem); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.25); transition: transform .25s; }
+.mz-ico:hover { transform: translateY(-4px) rotate(-3deg); }
+.mz-ico[data-light] { color: #111; }
+
+/* ── Bande défilante des réseaux ── */
+.mz-strip { background: #fff; border-bottom: 1px solid var(--line); overflow: hidden; }
+.mz-strip-track { display: flex; width: max-content; animation: mzScroll 38s linear infinite; }
+.mz-strip:hover .mz-strip-track { animation-play-state: paused; }
+.mz-strip-item { display: flex; align-items: center; gap: 10px; padding: 16px 28px; font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mut); white-space: nowrap; }
+.mz-strip-item i { font-size: 1.25rem; }
+@keyframes mzScroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .mz-strip-track { animation: none; } }
+
+/* ── Définitions ── */
+.mz-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-top: 34px; }
+.mz-card { background: #fff; border: 1px solid var(--line); border-top: 4px solid var(--g); border-radius: 10px; padding: clamp(1.4rem, 3vw, 2rem); }
+.mz-card h3 { font-size: 1.2rem; font-weight: 800; color: var(--gd); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.mz-card h3 i { color: var(--g); }
+.mz-card p { line-height: 1.75; color: var(--mut); font-size: .96rem; }
+.mz-card p + p { margin-top: 10px; }
+.mz-checks { margin-top: 16px; display: grid; gap: 10px; }
+.mz-checks li { display: flex; gap: 11px; align-items: flex-start; font-size: .95rem; line-height: 1.55; color: var(--ink); }
+.mz-checks i { color: var(--g); margin-top: 4px; font-size: .9rem; }
+.mz-ways { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.mz-ways span { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--g2); background: var(--soft); border: 1px solid rgba(15,122,69,.18); border-radius: 999px; padding: 7px 14px; }
+
+/* ── Réseaux ── */
+.mz-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 34px; }
+.mz-net { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 14px; transition: transform .25s, box-shadow .25s, border-color .25s; }
+.mz-net:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(11,46,29,.10); border-color: rgba(15,122,69,.35); }
+.mz-net-head { display: flex; align-items: center; gap: 14px; }
+.mz-net-ico { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; flex: none; }
+.mz-net-ico[data-light] { color: #111; }
+.mz-net h3 { font-size: 1.1rem; font-weight: 800; color: var(--gd); }
+.mz-net dl { margin: 0; }
+.mz-net dt { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--g); margin-bottom: 4px; }
+.mz-net dd { margin: 0 0 12px; font-size: .9rem; line-height: 1.6; color: var(--mut); }
+.mz-net dd:last-child { margin-bottom: 0; }
+.mz-note { margin-top: 26px; font-size: .88rem; color: var(--mut); line-height: 1.6; border-left: 4px solid var(--gold); padding: 4px 0 4px 16px; }
+
+/* ── WhatsApp ── */
+.mz-wa { background: var(--g2); color: #fff; }
+.mz-wa .mz-eyebrow { color: #bdf1d2; }
+.mz-wa .mz-eyebrow::before { background: #bdf1d2; }
+.mz-wa .mz-h2 { color: #fff; }
+.mz-wa .mz-lead { color: rgba(255,255,255,.85); }
+.mz-wa-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 32px; }
+.mz-wa-card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 22px; }
+.mz-wa-card i { font-size: 1.5rem; color: #bdf1d2; margin-bottom: 14px; display: block; }
+.mz-wa-card h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 8px; }
+.mz-wa-card p { font-size: .9rem; line-height: 1.6; color: rgba(255,255,255,.82); }
+
+/* ── Accompagnement ── */
+.mz-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-top: 34px; counter-reset: s; }
+.mz-step { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 24px 18px 20px; }
+.mz-step::before { counter-increment: s; content: '0' counter(s); position: absolute; top: 14px; right: 16px; font-size: .78rem; font-weight: 800; color: rgba(15,122,69,.45); letter-spacing: .06em; }
+.mz-step i { width: 44px; height: 44px; border-radius: 50%; background: var(--soft); color: var(--g); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; margin-bottom: 14px; }
+.mz-step h3 { font-size: .98rem; font-weight: 800; color: var(--gd); margin-bottom: 8px; }
+.mz-step p { font-size: .86rem; line-height: 1.6; color: var(--mut); }
+.mz-promise { margin-top: 26px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.mz-promise .mz-card { border-top-color: var(--gold); }
+.mz-promise .mz-card h3 i { color: var(--gold); }
+
+/* ── Contact ── */
+.mz-contact { background: var(--gd); color: #fff; }
+.mz-contact-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 4rem); align-items: start; }
+.mz-contact .mz-eyebrow { color: var(--gold); }
+.mz-contact .mz-eyebrow::before { background: var(--gold); }
+.mz-contact .mz-h2 { color: #fff; }
+.mz-contact .mz-lead { color: rgba(255,255,255,.8); }
+.mz-or { margin: 22px 0 6px; font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.mz-form { background: #fff; color: var(--ink); border-radius: 12px; padding: clamp(1.4rem, 3.5vw, 2.2rem); }
+.mz-form h3 { font-size: 1.2rem; font-weight: 800; color: var(--gd); margin-bottom: 4px; }
+.mz-form .mz-form-sub { font-size: .88rem; color: var(--mut); margin-bottom: 20px; }
+.mz-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.mz-field { margin-bottom: 15px; }
+.mz-field label, .mz-label { display: block; font-size: .76rem; font-weight: 700; letter-spacing: .05em; color: var(--ink); margin-bottom: 6px; }
+.mz-field label b, .mz-label b { color: #c93060; }
+.mz-in-el, .mz-select, .mz-area { width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 8px; background: #f6f8f7; font-family: inherit; font-size: .95rem; color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s, background .2s; }
+.mz-in-el:focus, .mz-select:focus, .mz-area:focus { border-color: var(--g); background: #fff; box-shadow: 0 0 0 3px rgba(15,122,69,.13); }
+.mz-in-el.is-bad { border-color: #c93060; background: #fff6f8; }
+.mz-area { min-height: 96px; resize: vertical; }
+.mz-phone { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; }
+.mz-hint { font-size: .76rem; color: var(--mut); margin-top: 6px; min-height: 1em; }
+.mz-hint.is-bad { color: #c93060; font-weight: 600; }
+.mz-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.mz-chip { position: relative; }
+.mz-chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.mz-chip span { display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border: 1.5px solid var(--line); border-radius: 999px; font-size: .82rem; font-weight: 600; color: var(--mut); background: #fff; transition: all .18s; }
+.mz-chip input:checked + span { background: var(--g); border-color: var(--g); color: #fff; }
+.mz-chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(15,122,69,.25); }
+.mz-send { width: 100%; justify-content: center; margin-top: 6px; padding: 15px; font-size: .98rem; border-radius: 8px; }
+.mz-legal { font-size: .76rem; color: var(--mut); margin-top: 12px; text-align: center; }
+.mz-msgs { margin-bottom: 16px; }
+.mz-msg { padding: 11px 14px; border-radius: 8px; font-size: .88rem; margin-bottom: 8px; background: #fff1f4; border: 1px solid rgba(201,48,96,.3); color: #a8244d; }
+.mz-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+@media (max-width: 960px) {
+  .mz-hero-grid, .mz-contact-grid { grid-template-columns: 1fr; }
+  .mz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mz-wa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mz-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .mz-two, .mz-promise, .mz-grid, .mz-wa-grid, .mz-steps, .mz-row { grid-template-columns: 1fr; }
+  .mz-hero-logos { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .mz-btn { width: 100%; justify-content: center; }
+}
+</style>
+
+<div class="mz">
+
+  <!-- ═══ EN-TÊTE ═══ -->
+  <section class="mz-hero">
+    <div class="mz-in mz-hero-grid">
+      <div>
+        <p class="mz-eyebrow">Monétisation</p>
+        <h1>Transformez votre créativité en <span>revenus</span>.</h1>
+        <p class="mz-sub">Vous créez du contenu sur TikTok, Facebook, YouTube, Instagram ou WhatsApp&nbsp;? Lantante Technologie vous accompagne pour créer vos comptes, atteindre les critères de monétisation et commencer à gagner de l'argent.</p>
+        <div class="mz-btns">
+          {% if site_settings.whatsapp_1 %}
+          <a class="mz-btn mz-btn--wa" target="_blank" rel="noopener noreferrer"
+             href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20je%20souhaite%20%C3%AAtre%20accompagn%C3%A9(e)%20pour%20la%20mon%C3%A9tisation%20de%20mon%20compte.">
+            <i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp
+          </a>
+          {% endif %}
+          <a class="mz-btn mz-btn--line" href="#contact"><i class="fa fa-pen-to-square"></i> Remplir le formulaire</a>
+        </div>
+      </div>
+      <div class="mz-hero-logos" aria-hidden="true">
+        {% for p in platforms|slice:":8" %}
+        <div class="mz-ico" style="background:{{ p.color }}" {% if p.key == 'snapchat' %}data-light{% endif %}><i class="fab {{ p.icon }}"></i></div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ BANDE DÉFILANTE ═══ -->
+  <div class="mz-strip" aria-label="Réseaux sociaux accompagnés">
+    <div class="mz-strip-track">
+      {% for n in "12" %}
+      {% for p in platforms %}
+      <span class="mz-strip-item" {% if n == "2" %}aria-hidden="true"{% endif %}><i class="fab {{ p.icon }}" style="color:{{ p.color }}"></i>{{ p.name }}</span>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ═══ DÉFINITIONS ═══ -->
+  <section class="mz-sec" id="definition">
+    <div class="mz-in">
+      <p class="mz-eyebrow">Comprendre</p>
+      <h2 class="mz-h2">La monétisation, c'est quoi&nbsp;?</h2>
+      <p class="mz-lead">C'est le processus qui permet d'obtenir des revenus grâce à votre créativité, en tant que créateur de contenu. Vous publiez, votre public grandit, et les plateformes ou les marques vous rémunèrent.</p>
+
+      <div class="mz-two">
+        <article class="mz-card">
+          <h3><i class="fa fa-coins"></i> La monétisation</h3>
+          <p>Chaque réseau social a ses propres programmes pour payer les créateurs. Une fois votre compte accepté, vous pouvez gagner de l'argent de plusieurs façons&nbsp;:</p>
+          <div class="mz-ways">
+            <span>Publicités</span><span>Abonnements</span><span>Cadeaux &amp; dons</span><span>Bonus créateurs</span><span>Partenariats</span><span>Ventes</span>
+          </div>
+        </article>
+        <article class="mz-card">
+          <h3><i class="fa fa-circle-check"></i> Un compte monétisé, c'est quoi&nbsp;?</h3>
+          <p>Un compte monétisé est un compte que la plateforme a validé et autorisé à générer des revenus.</p>
+          <ul class="mz-checks">
+            <li><i class="fa fa-check"></i> La plateforme a vérifié que vous remplissez ses conditions.</li>
+            <li><i class="fa fa-check"></i> Vous recevez une part des revenus générés par vos contenus.</li>
+            <li><i class="fa fa-check"></i> Vos gains sont versés selon les moyens de paiement disponibles dans votre pays.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ RÉSEAUX ═══ -->
+  <section class="mz-sec mz-sec--soft" id="reseaux">
+    <div class="mz-in">
+      <p class="mz-eyebrow">Les réseaux</p>
+      <h2 class="mz-h2">Tous les réseaux sociaux, un seul accompagnement</h2>
+      <p class="mz-lead">Pour chaque réseau, voici comment on gagne de l'argent et ce que la plateforme demande en général. Les conditions changent selon le pays et la période&nbsp;: nous vérifions les règles à jour pour vous.</p>
+
+      <div class="mz-grid">
+        {% for p in platforms %}
+        <article class="mz-net">
+          <div class="mz-net-head">
+            <span class="mz-net-ico" style="background:{{ p.color }}" {% if p.key == 'snapchat' %}data-light{% endif %}><i class="fab {{ p.icon }}"></i></span>
+            <h3>{{ p.name }}</h3>
+          </div>
+          <dl>
+            <dt>Comment gagner</dt><dd>{{ p.earn }}</dd>
+            <dt>En général demandé</dt><dd>{{ p.needs }}</dd>
+          </dl>
+        </article>
+        {% endfor %}
+      </div>
+      <p class="mz-note">La décision d'accepter un compte appartient toujours à chaque plateforme. Nous vous préparons et vous guidons pour mettre toutes les chances de votre côté.</p>
+    </div>
+  </section>
+
+  <!-- ═══ WHATSAPP ═══ -->
+  <section class="mz-sec mz-wa" id="whatsapp">
+    <div class="mz-in">
+      <p class="mz-eyebrow">WhatsApp</p>
+      <h2 class="mz-h2">Gagner de l'argent avec WhatsApp, c'est possible</h2>
+      <p class="mz-lead">Aujourd'hui, WhatsApp n'est plus seulement une messagerie&nbsp;: c'est un vrai outil pour générer des revenus. Nous vous montrons comment le faire correctement.</p>
+      <div class="mz-wa-grid">
+        {% for icon, title, text in whatsapp_ways %}
+        <article class="mz-wa-card"><i class="fa {{ icon }}"></i><h3>{{ title }}</h3><p>{{ text }}</p></article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ACCOMPAGNEMENT ═══ -->
+  <section class="mz-sec" id="accompagnement">
+    <div class="mz-in">
+      <p class="mz-eyebrow">Notre accompagnement</p>
+      <h2 class="mz-h2">De la création du compte aux premiers revenus</h2>
+      <p class="mz-lead">Nous vous suivons à chaque étape pour atteindre les critères de monétisation, sans raccourcis risqués.</p>
+      <div class="mz-steps">
+        {% for icon, title, text in steps %}
+        <article class="mz-step"><i class="fa {{ icon }}"></i><h3>{{ title }}</h3><p>{{ text }}</p></article>
+        {% endfor %}
+      </div>
+      <div class="mz-promise">
+        <article class="mz-card">
+          <h3><i class="fa fa-shield-halved"></i> Notre engagement</h3>
+          <ul class="mz-checks">
+            <li><i class="fa fa-check"></i> Des méthodes honnêtes, conformes aux règles de chaque plateforme.</li>
+            <li><i class="fa fa-check"></i> Un suivi personnalisé selon votre compte, votre pays et votre contenu.</li>
+            <li><i class="fa fa-check"></i> Des explications claires, en français, à votre rythme.</li>
+          </ul>
+        </article>
+        <article class="mz-card">
+          <h3><i class="fa fa-ban"></i> Ce que nous ne faisons pas</h3>
+          <ul class="mz-checks">
+            <li><i class="fa fa-xmark"></i> Acheter de faux abonnés ou de fausses vues.</li>
+            <li><i class="fa fa-xmark"></i> Vendre ou prêter des comptes.</li>
+            <li><i class="fa fa-xmark"></i> Promettre des gains garantis&nbsp;: aucun sérieux ne peut le faire.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
+  <section class="mz-sec mz-contact" id="contact">
+    <div class="mz-in mz-contact-grid">
+      <div>
+        <p class="mz-eyebrow">Contactez-nous</p>
+        <h2 class="mz-h2">Intéressé(e) ? Parlons de votre compte.</h2>
+        <p class="mz-lead">Écrivez-nous directement sur WhatsApp ou remplissez le formulaire&nbsp;: un membre de l'équipe vous recontacte pour étudier votre situation.</p>
+        {% if site_settings.whatsapp_1 %}
+        <div class="mz-btns">
+          <a class="mz-btn mz-btn--wa" target="_blank" rel="noopener noreferrer"
+             href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20je%20souhaite%20%C3%AAtre%20accompagn%C3%A9(e)%20pour%20la%20mon%C3%A9tisation%20de%20mon%20compte.">
+            <i class="fab fa-whatsapp"></i> Contactez-nous sur WhatsApp
+          </a>
+        </div>
+        {% endif %}
+        <p class="mz-or">ou par le formulaire</p>
+      </div>
+
+      <form class="mz-form" method="post" action="{% url 'core:monetization' %}#contact" id="mzForm" novalidate>
+        {% csrf_token %}
+        <h3>Demande d'accompagnement</h3>
+        <p class="mz-form-sub">Les champs marqués d'une étoile sont obligatoires.</p>
+
+        {% if messages %}
+        <div class="mz-msgs" role="alert">{% for m in messages %}<div class="mz-msg">{{ m }}</div>{% endfor %}</div>
+        {% endif %}
+
+        <div class="mz-trap" aria-hidden="true"><label>Ne pas remplir <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+        <div class="mz-row">
+          <div class="mz-field"><label for="mz-fn">Prénom <b>*</b></label>
+            <input class="mz-in-el" id="mz-fn" name="first_name" maxlength="80" autocomplete="given-name" required value="{{ form_data.first_name|default:'' }}"></div>
+          <div class="mz-field"><label for="mz-ln">Nom <b>*</b></label>
+            <input class="mz-in-el" id="mz-ln" name="last_name" maxlength="80" autocomplete="family-name" required value="{{ form_data.last_name|default:'' }}"></div>
+        </div>
+
+        <div class="mz-field"><label for="mz-ad">Adresse <b>*</b></label>
+          <input class="mz-in-el" id="mz-ad" name="address" maxlength="200" autocomplete="street-address" placeholder="Quartier, ville" required value="{{ form_data.address|default:'' }}"></div>
+
+        <div class="mz-field"><label for="mz-co">Pays <b>*</b></label>
+          <select class="mz-select" id="mz-co" name="country" required>
+            <option value="">Choisissez votre pays</option>
+            {% for c in countries %}<option value="{{ c }}" {% if form_data.country == c or not form_data.country and c == 'Togo' %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          </select></div>
+
+        <div class="mz-field"><span class="mz-label">Numéro de téléphone <b>*</b></span>
+          <div class="mz-phone">
+            <select class="mz-select" id="mz-pc" name="phone_code" aria-label="Indicatif du pays">
+              {% for code, label in dial_codes %}<option value="{{ code }}" {% if form_data.phone_code == code or not form_data.phone_code and code == '+228' %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            <input class="mz-in-el" id="mz-pn" name="phone_number" type="tel" inputmode="tel" maxlength="20" autocomplete="tel-national" placeholder="90 00 00 00" required value="{{ form_data.phone_number|default:'' }}">
+          </div>
+          <p class="mz-hint" id="mz-ph">L'indicatif se règle tout seul selon le pays, vous pouvez le changer.</p></div>
+
+        <div class="mz-field"><span class="mz-label">Réseaux concernés</span>
+          <div class="mz-chips">
+            {% for name in platform_choices %}
+            <label class="mz-chip"><input type="checkbox" name="platforms" value="{{ name }}" {% if name in selected_platforms %}checked{% endif %}><span>{{ name }}</span></label>
+            {% endfor %}
+          </div></div>
+
+        <div class="mz-field"><label for="mz-ms">Un mot sur votre projet (facultatif)</label>
+          <textarea class="mz-area" id="mz-ms" name="message" maxlength="1500" placeholder="Votre compte, votre contenu, ce que vous souhaitez atteindre…">{{ form_data.message|default:'' }}</textarea></div>
+
+        <button class="mz-btn mz-btn--green mz-send" type="submit"><i class="fa fa-paper-plane"></i> Envoyer ma demande</button>
+        <p class="mz-legal">Vos informations servent uniquement à vous recontacter au sujet de la monétisation.</p>
+      </form>
+    </div>
+  </section>
+</div>
+
+{{ dial_by_country|json_script:"mz-dials" }}
+<script>
+(function () {
+  var form = document.getElementById('mzForm');
+  if (!form) return;
+  var dials = JSON.parse(document.getElementById('mz-dials').textContent);
+  var country = document.getElementById('mz-co');
+  var code = document.getElementById('mz-pc');
+  var num = document.getElementById('mz-pn');
+  var hint = document.getElementById('mz-ph');
+  var codeTouched = false;
+
+  // L'indicatif suit le pays choisi, sauf si la personne l'a changé elle-même
+  code.addEventListener('change', function () { codeTouched = true; });
+  country.addEventListener('change', function () {
+    var d = dials[country.value];
+    if (d && !codeTouched) code.value = d;
+  });
+
+  // Seuls les chiffres (et les séparateurs usuels) sont acceptés dans le numéro
+  function cleanNumber() { num.value = num.value.replace(/[^\d\s.\-()+]/g, ''); }
+  function phoneOk() {
+    var n = num.value.replace(/\D/g, '');
+    return n.length >= 6 && n.length <= 15;
+  }
+  function showPhone(ok) {
+    num.classList.toggle('is-bad', !ok);
+    hint.classList.toggle('is-bad', !ok);
+    hint.textContent = ok ? "L'indicatif se règle tout seul selon le pays, vous pouvez le changer."
+                          : "Entrez un numéro valide, avec uniquement des chiffres (6 à 15).";
+  }
+  num.addEventListener('input', function () { cleanNumber(); if (num.classList.contains('is-bad')) showPhone(phoneOk()); });
+  num.addEventListener('blur', function () { if (num.value) showPhone(phoneOk()); });
+
+  form.addEventListener('submit', function (e) {
+    var bad = [];
+    ['first_name', 'last_name', 'address', 'country'].forEach(function (n) {
+      var el = form.elements[n];
+      var empty = !el.value.trim();
+      el.classList.toggle('is-bad', empty);
+      if (empty) bad.push(el);
+    });
+    var okPhone = phoneOk();
+    showPhone(okPhone);
+    if (!okPhone) bad.push(num);
+    if (bad.length) { e.preventDefault(); bad[0].focus(); }
+  });
+
+  if (form.querySelector('.mz-msg')) document.getElementById('contact').scrollIntoView();
+})();
+</script>
+{% endblock %}
