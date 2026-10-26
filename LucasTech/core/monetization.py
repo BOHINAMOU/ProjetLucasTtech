@@ -63,6 +63,13 @@ WHATSAPP_WAYS = [
 ]
 
 
+# Images de fond de la partie WhatsApp : elles changent toutes les 2 secondes (fichiers dans core/static/).
+# Pour en ajouter, déposer l'image dans core/static/core/images/ et ajouter son chemin ici.
+WHATSAPP_BACKGROUNDS = [
+    'core/images/monetisation-whatsapp.jpg',
+]
+
+
 def clean_phone(dial_code, raw):
     """Retourne (numéro nettoyé, None) ou (None, message d'erreur) pour un numéro saisi avec son indicatif."""
     raw = (raw or '').strip()

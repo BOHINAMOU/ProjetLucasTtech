@@ -108,7 +108,12 @@
 .ap-note { text-align: center; color: var(--gray); font-size: .98rem; max-width: 40em; margin: 34px auto 0; }
 
 /* ── WhatsApp (fond sombre) ── */
-.ap-dark { background: #0a120e center / cover no-repeat; color: #fff; }
+.ap-dark { position: relative; overflow: hidden; background: #0a120e; color: #fff; }
+.ap-bgs { position: absolute; inset: 0; z-index: 0; }
+.ap-bgs img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .9s ease; }
+.ap-bgs img.on { opacity: 1; }
+.ap-bgs::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(8,14,11,.80), rgba(8,14,11,.88)); }
+.ap-above { position: relative; z-index: 1; }
 .ap-dark .ap-head { margin-bottom: clamp(2rem, 5vw, 3.2rem); }
 .ap-dark .ap-lead { color: rgba(255,255,255,.72); }
 .ap-wa-ico { width: 84px; height: 84px; margin: 0 auto 26px; border-radius: 50%; background: #25d366; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; box-shadow: 0 0 0 0 rgba(37,211,102,.5); animation: apPulse 2.6s ease-out infinite; }
@@ -243,9 +248,11 @@
   </section>
 
   <!-- ═══ WHATSAPP ═══ -->
-  <section class="ap-sec ap-dark" id="whatsapp"
-           style="background-image: linear-gradient(rgba(8,14,11,.80), rgba(8,14,11,.88)), url('{% static 'core/images/monetisation-whatsapp.jpg' %}')">
-    <div class="ap-in">
+  <section class="ap-sec ap-dark" id="whatsapp">
+    <div class="ap-bgs" id="apBgs" aria-hidden="true">
+      {% for img in wa_backgrounds %}<img src="{% static img %}" alt="" class="{% if forloop.first %}on{% endif %}" {% if not forloop.first %}loading="lazy"{% endif %}>{% endfor %}
+    </div>
+    <div class="ap-in ap-above">
       <div class="ap-head">
         <div class="ap-wa-ico ap-rv"><i class="fab fa-whatsapp"></i></div>
         <h2 class="ap-h ap-rv" style="--d:.08s">Même WhatsApp peut vous rapporter.</h2>
@@ -392,6 +399,17 @@
     });
   }
   scr.forEach(split);
+
+  /* 2 bis. Fond de la partie WhatsApp : l'image change toutes les 2 secondes */
+  var bgs = [].slice.call(root.querySelectorAll('#apBgs img'));
+  if (bgs.length > 1 && !reduce) {
+    var cur = 0;
+    setInterval(function () {
+      bgs[cur].classList.remove('on');
+      cur = (cur + 1) % bgs.length;
+      bgs[cur].classList.add('on');
+    }, 2000);
+  }
 
   /* 3. Défilement : mots, scène qui grandit, photos en parallaxe, barre collante */
   var stage = document.getElementById('apStage');

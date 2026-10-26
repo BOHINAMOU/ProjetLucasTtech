@@ -6,7 +6,7 @@ from .models import (
     MAX_UPLOAD_SIZE_MB,
 )
 from .countries import COUNTRIES, DIAL_CODES, DIAL_CODE_CHOICES
-from .monetization import PLATFORMS, PLATFORM_CHOICES, STEPS, WHATSAPP_WAYS, clean_phone
+from .monetization import PLATFORMS, PLATFORM_CHOICES, STEPS, WHATSAPP_WAYS, WHATSAPP_BACKGROUNDS, clean_phone
 
 
 def home(request):
@@ -188,7 +188,7 @@ def _client_ip(request):
 
 def _monetization_context(form_data=None):
     return {
-        'platforms': PLATFORMS, 'platform_choices': PLATFORM_CHOICES, 'steps': STEPS, 'whatsapp_ways': WHATSAPP_WAYS,
+        'platforms': PLATFORMS, 'platform_choices': PLATFORM_CHOICES, 'steps': STEPS, 'whatsapp_ways': WHATSAPP_WAYS, 'wa_backgrounds': WHATSAPP_BACKGROUNDS,
         'countries': [c for c in COUNTRIES if c != 'Autre'], 'dial_codes': DIAL_CODE_CHOICES,
         'dial_by_country': DIAL_CODES, 'form_data': form_data or {},
     }
