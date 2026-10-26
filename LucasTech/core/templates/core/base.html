@@ -79,8 +79,13 @@
     <ul class="navbar__links">
       <li><a href="{% url 'core:home' %}">Accueil</a></li>
       <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
-      <li><a href="{% url 'formations:formations' %}">Formations</a></li>
-      <li><a href="{% url 'services:services' %}">Services</a></li>
+      <li class="nav-dd">
+        <button type="button" class="nav-dd__btn" aria-haspopup="true" aria-expanded="false">Services et Formations <i class="fa fa-chevron-down" aria-hidden="true"></i></button>
+        <ul class="nav-dd__menu">
+          <li><a href="{% url 'services:services' %}">Services</a></li>
+          <li><a href="{% url 'formations:formations' %}">Formations</a></li>
+        </ul>
+      </li>
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
       <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
@@ -114,8 +119,13 @@
     <ul>
       <li><a href="{% url 'core:home' %}">Accueil</a></li>
       <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
-      <li><a href="{% url 'formations:formations' %}">Formations</a></li>
-      <li><a href="{% url 'services:services' %}">Services</a></li>
+      <li class="dr-dd">
+        <button type="button" class="dr-dd__btn" aria-expanded="false">Services et Formations <i class="fa fa-chevron-down" aria-hidden="true"></i></button>
+        <ul class="dr-dd__menu">
+          <li><a href="{% url 'services:services' %}">Services</a></li>
+          <li><a href="{% url 'formations:formations' %}">Formations</a></li>
+        </ul>
+      </li>
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
       <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
@@ -422,25 +432,34 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
   }));
 }());
 
-/* ── Menu mobile : « Projets & Équipe » se déplie pour montrer les deux pages ── */
+/* ── Menus déroulants du tiroir mobile (« Services et Formations », « Projets et Équipe ») ── */
 (function(){
-  const btn=document.querySelector('.dr-dd__btn');
-  if(!btn)return;
-  btn.addEventListener('click',function(){
-    const open=btn.parentElement.classList.toggle('open');
-    btn.setAttribute('aria-expanded',String(open));
+  document.querySelectorAll('.dr-dd__btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      const open=btn.parentElement.classList.toggle('open');
+      btn.setAttribute('aria-expanded',String(open));
+    });
   });
 }());
 
-/* ── Menu « Projets & Équipe » : s'ouvre au clic (et au survol sur ordinateur) ── */
+/* ── Menus déroulants du menu ordinateur : s'ouvrent au clic (et au survol) ── */
 (function(){
-  const dd=document.querySelector('.nav-dd');
-  if(!dd)return;
-  const btn=dd.querySelector('.nav-dd__btn');
-  const set=(open)=>{dd.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open));};
-  btn.addEventListener('click',(e)=>{e.stopPropagation();set(!dd.classList.contains('open'));});
-  document.addEventListener('click',(e)=>{if(!dd.contains(e.target))set(false);});
-  document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){set(false);btn.focus();}});
+  const all=[].slice.call(document.querySelectorAll('.nav-dd'));
+  if(!all.length)return;
+  const set=(dd,open)=>{dd.classList.toggle('open',open);dd.querySelector('.nav-dd__btn').setAttribute('aria-expanded',String(open));};
+  all.forEach(function(dd){
+    const btn=dd.querySelector('.nav-dd__btn');
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const willOpen=!dd.classList.contains('open');
+      all.forEach(function(o){set(o,false);});
+      set(dd,willOpen);
+    });
+    // le menu de la page en cours est souligné
+    if([].some.call(dd.querySelectorAll('a'),function(a){return window.location.pathname.indexOf(a.getAttribute('href'))===0;})) btn.classList.add('active');
+  });
+  document.addEventListener('click',function(e){all.forEach(function(dd){if(!dd.contains(e.target))set(dd,false);});});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')all.forEach(function(dd){set(dd,false);});});
 }());
 
 /* ── Lien actif ── */

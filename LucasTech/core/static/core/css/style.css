@@ -899,7 +899,8 @@ header { position: sticky; top: 0; z-index: 400; }
   transition: color .2s;
 }
 .nav-dd__btn i { font-size: .65rem; transition: transform .2s; }
-.nav-dd__btn:hover, .nav-dd.open .nav-dd__btn { color: var(--ink); }
+.nav-dd__btn:hover, .nav-dd.open .nav-dd__btn, .nav-dd__btn.active { color: var(--ink); }
+.nav-dd__btn.active { box-shadow: inset 0 -2px 0 #0f7a45; }
 .nav-dd.open .nav-dd__btn i { transform: rotate(180deg); }
 .nav-dd__menu {
   position: absolute; top: 100%; left: 50%; min-width: 220px; z-index: 450;
