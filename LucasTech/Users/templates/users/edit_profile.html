@@ -1,152 +1,49 @@
 {% extends 'core/base.html' %}
 {% block title %}Modifier mon profil — Lantante Technologie{% endblock %}
+{% block extra_head %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
 
 {% block content %}
 <style>
-:root {
-  --bg: #f7f3ee; --surf: #ffffff; --surf2: #f2ede6;
-  --border: rgba(0,0,0,.1); --shadow: rgba(0,0,0,.08);
-  --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
-  --accent: #0f7a45; --accent2: #c9a84c;
-  --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--ink); }
-
-.ep-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted); max-width: 650px; margin: 32px auto 0; padding: 0 24px; }
-.ep-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
-.ep-breadcrumb span { opacity: .5; }
-
-.edit-profile {
-  max-width: 650px;
-  margin: 24px auto 80px;
-  padding: 36px clamp(1.5rem,4vw,3rem);
-  background: var(--surf);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: 0 8px 40px var(--shadow);
-  animation: fadeUp .5s ease;
-}
-
-.edit-profile h2 {
-  font-family: var(--serif);
-  color: var(--ink);
-  margin-bottom: 8px;
-  font-size: 1.7rem;
-  font-weight: 800;
-}
-.edit-profile .ep-sub { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
-
-.ep-msgs { margin-bottom: 20px; }
-.ep-msg { padding: 11px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
-.ep-msg.error { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: #c93060; }
-.ep-msg.success { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); color: #0f7a45; }
-
-/* Form layout */
-.form-group { margin-bottom: 20px; }
-
-/* Labels */
-.form-group label {
-  display: flex; align-items: center; gap: 8px;
-  font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--ink2); margin-bottom: 8px;
-}
-
-/* Inputs */
-.form-group input,
-.form-group select,
-.ep-input {
-  width: 100%;
-  padding: 13px 15px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: var(--surf2);
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: .94rem;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.ep-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(15,122,69,.15);
-}
-
-/* Button */
-.btn-save {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 10px;
-  margin-top: 10px;
-  font-family: var(--font);
-  font-size: .96rem;
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  transition: transform .15s, box-shadow .2s;
-}
-
-.btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(15,122,69,.25);
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.ep { --ink: #1d1d1f; --gray: #6e6e73; --bg: #fbfbfd; --card: #f5f5f7; --line: rgba(0,0,0,.09); --g: #0f7a45; --g2: #0b6137;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5; letter-spacing: -.011em;
+  color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; padding: clamp(2rem, 5vw, 4rem) 0 clamp(3rem, 7vw, 5rem); }
+.ep *, .ep *::before, .ep *::after { box-sizing: border-box; }
+.ep :where(h1, p) { margin: 0; padding: 0; }
+.ep-in { max-width: 600px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 2rem); }
+.ep-back { display: inline-block; color: var(--g); font-weight: 500; text-decoration: none; margin-bottom: 18px; }
+.ep-back:hover { text-decoration: underline; }
+.ep h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.05; }
+.ep-sub { color: var(--gray); font-size: 1.05rem; margin: 10px 0 26px; }
+.ep-msg { padding: 13px 18px; border-radius: 14px; margin-bottom: 14px; font-size: .95rem; background: #e8f5ee; color: var(--g2); }
+.ep-msg.error { background: #fff1f2; color: #b4001a; }
+.ep-card { background: #fff; border: 1px solid var(--line); border-radius: 28px; padding: clamp(1.5rem, 4vw, 2.4rem); box-shadow: 0 24px 50px rgba(0,0,0,.06); }
+.ep-field { margin-bottom: 20px; }
+.ep-field label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 7px; }
+.ep-field .ep-input, .ep-field input, .ep-field select { width: 100%; padding: 14px 16px; border: 1.5px solid transparent; border-radius: 14px; background: var(--card); font: inherit; font-size: 1rem; color: var(--ink); outline: none; transition: border-color .2s, background .2s, box-shadow .2s; }
+.ep-field .ep-input:focus, .ep-field input:focus, .ep-field select:focus { border-color: var(--g); background: #fff; box-shadow: 0 0 0 4px rgba(15,122,69,.13); }
+.ep-err { color: #b4001a; font-size: .85rem; margin-top: 6px; }
+.ep-save { width: 100%; padding: 16px; margin-top: 6px; border: 0; border-radius: 980px; background: var(--g); color: #fff; font: inherit; font-size: 1.05rem; font-weight: 500; cursor: pointer; transition: background .25s, transform .25s; }
+.ep-save:hover { background: var(--g2); transform: scale(1.02); }
 </style>
 
-<nav class="ep-breadcrumb">
-  <a href="{% url 'users:profile' %}">Mon profil</a>
-  <span>›</span>
-  <span>Modifier</span>
-</nav>
+<div class="ep">
+  <div class="ep-in">
+    <a class="ep-back" href="{% url 'users:profile' %}">← Mon profil</a>
+    <h1>Modifier mon profil</h1>
+    <p class="ep-sub">Mettez à jour vos informations personnelles.</p>
 
-<div class="edit-profile">
+    {% if messages %}
+    <div>{% for msg in messages %}<div class="ep-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}</div>
+    {% endif %}
 
-  <h2>Modifier mon profil</h2>
-  <p class="ep-sub">Mettez à jour vos informations personnelles.</p>
-
-  {% if messages %}
-  <div class="ep-msgs">
-    {% for msg in messages %}<div class="ep-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}
+    <form class="ep-card" method="post">
+      {% csrf_token %}
+      <div class="ep-field"><label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>{{ form.phone }}{% for e in form.phone.errors %}<p class="ep-err">{{ e }}</p>{% endfor %}</div>
+      <div class="ep-field"><label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>{{ form.country }}{% for e in form.country.errors %}<p class="ep-err">{{ e }}</p>{% endfor %}</div>
+      <div class="ep-field"><label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>{{ form.city }}{% for e in form.city.errors %}<p class="ep-err">{{ e }}</p>{% endfor %}</div>
+      <div class="ep-field"><label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>{{ form.date_of_birth }}{% for e in form.date_of_birth.errors %}<p class="ep-err">{{ e }}</p>{% endfor %}</div>
+      <button type="submit" class="ep-save">Enregistrer les modifications</button>
+    </form>
   </div>
-  {% endif %}
-
-  <form method="post">
-    {% csrf_token %}
-
-    <div class="form-group">
-      <label><i class="fa fa-phone"></i> {{ form.phone.label }}</label>
-      {{ form.phone }}
-    </div>
-
-    <div class="form-group">
-      <label><i class="fa fa-globe"></i> {{ form.country.label }}</label>
-      {{ form.country }}
-    </div>
-
-    <div class="form-group">
-      <label><i class="fa fa-map-marker-alt"></i> {{ form.city.label }}</label>
-      {{ form.city }}
-    </div>
-
-    <div class="form-group">
-      <label><i class="fa fa-calendar"></i> {{ form.date_of_birth.label }}</label>
-      {{ form.date_of_birth }}
-    </div>
-
-    <button type="submit" class="btn-save">
-      <i class="fa fa-check"></i> Enregistrer les modifications
-    </button>
-
-  </form>
-
 </div>
 {% endblock %}

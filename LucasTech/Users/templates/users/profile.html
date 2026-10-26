@@ -1,261 +1,126 @@
 {% extends 'core/base.html' %}
-{% block title %}Mon Profil  Lantante Technologie{% endblock %}
+{% block title %}Mon profil — Lantante Technologie{% endblock %}
+{% block extra_head %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
 
 {% block content %}
 <style>
-:root {
-  --bg:#f7f3ee; --surf:#ffffff; --surf2:#f2ede6;
-  --border: rgba(0,0,0,.1); --shadow: rgba(0,0,0,.08);
-  --accent:#0f7a45; --accent2:#c9a84c; --green:#0f7a45;
-  --ink:#1c1814; --ink2:#3a3530; --muted:#8a8078;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Outfit', sans-serif;background:var(--bg);color:var(--ink);}
+.pf { --ink: #1d1d1f; --gray: #6e6e73; --bg: #fbfbfd; --card: #f5f5f7; --line: rgba(0,0,0,.09); --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5; letter-spacing: -.011em;
+  color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(3rem, 7vw, 5rem); }
+.pf *, .pf *::before, .pf *::after { box-sizing: border-box; }
+.pf :where(h1, h2, h3, p, ul, dl, dd, dt) { margin: 0; padding: 0; }
+.pf :where(ul) { list-style: none; }
+.pf a { color: inherit; text-decoration: none; }
+.pf-in { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 2rem); }
 
-.profile-page {
-  max-width:900px; margin:48px auto 80px; padding:0 24px;
-  animation:fadeUp .5s ease both;
-}
+.pf-msg { padding: 13px 18px; border-radius: 14px; margin-bottom: 14px; font-size: .95rem; background: #e8f5ee; color: var(--g2); }
+.pf-msg.error { background: #fff1f2; color: #b4001a; }
 
-/* ── HEADER ── */
-.profile-header {
-  position:relative; overflow:hidden;
-  display:flex; align-items:center; gap:26px; margin-bottom:32px;
-  background:linear-gradient(160deg,#1c1814,#3a2e22);
-  border-radius:20px; padding:36px 40px; box-shadow:0 16px 44px var(--shadow);
-}
-.profile-header::before {
-  content:''; position:absolute; inset:0;
-  background:
-    radial-gradient(circle at 12% 20%, rgba(15,122,69,.35), transparent 55%),
-    radial-gradient(circle at 90% 85%, rgba(201,168,76,.28), transparent 55%);
-}
-.profile-avatar-ring {
-  position:relative; z-index:1; flex-shrink:0;
-  width:96px; height:96px; border-radius:50%; padding:4px;
-  overflow:hidden;
-}
-.profile-avatar-ring::before {
-  content:''; position:absolute; inset:-60%; z-index:0;
-  background:conic-gradient(from 0deg, var(--accent), var(--accent2), #6b8f5e, var(--accent));
-  animation:profSpin 7s linear infinite;
-}
-@keyframes profSpin { to { transform:rotate(360deg); } }
-.profile-avatar {
-  position:relative; z-index:1;
-  width:100%; height:100%; border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex; align-items:center; justify-content:center;
-  font-family:'Cormorant Garamond', serif; font-size:2.1rem; font-weight:800; color:#fff;
-}
-.profile-info { position:relative; z-index:1; }
-.profile-info h1 {
-  font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:800;
-  letter-spacing:-.02em; margin-bottom:6px; color:#fff; word-break:break-all;
-}
-.profile-info p { font-size:.85rem; color:#cbbfae; }
-.profile-badge {
-  position:relative; z-index:1; margin-left:auto; flex-shrink:0;
-  display:inline-flex; align-items:center; gap:6px;
-  font-size:.75rem; font-weight:700; color:#6ee7b7;
-  border:1px solid rgba(110,231,183,.35); background:rgba(110,231,183,.1);
-  padding:6px 14px; border-radius:99px; white-space:nowrap;
-}
-.profile-badge .dot {
-  width:6px; height:6px; border-radius:50%; background:#6ee7b7;
-  animation:dotPulse 2s ease-in-out infinite;
-}
-@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.75);}}
+/* ── En-tête ── */
+.pf-head { display: flex; align-items: center; gap: clamp(1rem, 3vw, 1.8rem); background: var(--gd); color: #fff; border-radius: 28px; padding: clamp(1.4rem, 4vw, 2.2rem); }
+.pf-avatar { flex: none; width: clamp(72px, 14vw, 96px); aspect-ratio: 1; border-radius: 50%; background: var(--gold); color: var(--gd); display: flex; align-items: center; justify-content: center; font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 700; overflow: hidden; border: 3px solid rgba(255,255,255,.25); }
+.pf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pf-who { min-width: 0; }
+.pf-who h1 { font-size: clamp(1.4rem, 3.6vw, 2.1rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.1; overflow-wrap: anywhere; }
+.pf-who p { margin-top: 6px; color: rgba(255,255,255,.72); font-size: .95rem; overflow-wrap: anywhere; }
+.pf-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.pf-tag { display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; border-radius: 980px; background: rgba(255,255,255,.12); font-size: .8rem; font-weight: 500; }
+.pf-tag::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #5fd08c; }
+.pf-tag--off::before { background: rgba(255,255,255,.4); }
 
-/* ── GRILLE INFOS ── */
-.profile-grid {
-  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:28px;
-}
-@media(max-width:600px){.profile-grid{grid-template-columns:minmax(0,1fr);} .profile-header{flex-direction:column;text-align:center;padding:32px 24px;} .profile-badge{margin-left:0;}}
+/* ── Titres de blocs ── */
+.pf-h { font-size: 1.35rem; font-weight: 700; letter-spacing: -.03em; margin: clamp(1.8rem, 4vw, 2.6rem) 0 12px 4px; }
 
-.profile-card {
-  display:flex; align-items:flex-start; gap:14px;
-  background:var(--surf); border:1px solid var(--border);
-  border-radius:14px; padding:20px 22px; box-shadow:0 4px 16px var(--shadow);
-  transition:border-color .2s, transform .2s, box-shadow .2s;
-}
-.profile-card:hover { border-color:rgba(15,122,69,.3); transform:translateY(-3px); box-shadow:0 12px 28px var(--shadow); }
-.profile-card-icon {
-  flex-shrink:0; width:38px; height:38px; border-radius:11px;
-  display:flex; align-items:center; justify-content:center; font-size:.95rem;
-}
-.profile-card.c-1 .profile-card-icon { background:rgba(15,122,69,.12); color:var(--accent); }
-.profile-card.c-2 .profile-card-icon { background:rgba(15,122,69,.12); color:#0f7a45; }
-.profile-card.c-3 .profile-card-icon { background:rgba(13,59,122,.12); color:#0d3b7a; }
-.profile-card.c-4 .profile-card-icon { background:rgba(11,97,55,.12); color:#0b6137; }
-.profile-card.c-5 .profile-card-icon { background:rgba(201,168,76,.18); color:#a5761f; }
-.profile-card.c-6 .profile-card-icon { background:rgba(14,165,233,.12); color:#0ea5e9; }
-.profile-card-label {
-  font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--muted); margin-bottom:6px;
-}
-.profile-card-value { font-size:.98rem; color:var(--ink); font-weight:600; word-break:break-word; }
-.profile-card-value.empty { color:var(--muted); font-style:italic; font-weight:400; }
+/* ── Informations : une liste propre ── */
+.pf-list { background: var(--card); border-radius: 22px; overflow: hidden; }
+.pf-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 22px; }
+.pf-row + .pf-row { border-top: 1px solid var(--line); }
+.pf-row dt { color: var(--gray); font-size: .92rem; flex: none; }
+.pf-row dd { font-weight: 500; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.pf-row dd.empty { color: #a1a1a6; font-weight: 400; }
+.pf-row dd.empty a { color: var(--g); font-weight: 500; margin-left: 8px; }
+.pf-row dd.empty a:hover { text-decoration: underline; }
+.ok { color: var(--g); } .off { color: var(--gray); }
 
-/* ── ACTIONS ── */
-.profile-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
-.btn-action {
-  display:inline-flex; align-items:center; gap:10px;
-  padding:9px 20px 9px 9px; border-radius:99px;
-  font-family:'Outfit', sans-serif; font-size:.87rem; font-weight:700;
-  cursor:pointer; text-decoration:none; transition:transform .18s, box-shadow .2s, background .2s;
-  border:1px solid var(--border); background:var(--surf); color:var(--ink2);
-}
-.btn-action .btn-action-icon {
-  width:30px; height:30px; border-radius:50%; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; font-size:.82rem;
-  background:var(--surf2); color:var(--ink2); transition:background .2s, color .2s;
-}
-.btn-action:hover { transform:translateY(-2px); box-shadow:0 10px 22px var(--shadow); }
-.btn-primary-action {
-  background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border-color:transparent;
-}
-.btn-primary-action .btn-action-icon { background:rgba(255,255,255,.22); color:#fff; }
-.btn-primary-action:hover { box-shadow:0 12px 26px rgba(15,122,69,.3); }
-.btn-secondary-action:hover { border-color:rgba(15,122,69,.3); color:var(--accent); }
-.btn-secondary-action:hover .btn-action-icon { background:rgba(15,122,69,.14); color:var(--accent); }
-.btn-danger-action {
-  background:rgba(201,48,96,.06); border-color:rgba(201,48,96,.22); color:#c93060;
-}
-.btn-danger-action .btn-action-icon { background:rgba(201,48,96,.12); color:#c93060; }
-.btn-danger-action:hover { background:rgba(201,48,96,.14); box-shadow:0 10px 22px rgba(201,48,96,.18); }
+/* ── Accès rapides ── */
+.pf-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pf-tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: 22px; padding: 20px 22px; transition: transform .3s cubic-bezier(.2,.7,.2,1), background .3s, box-shadow .3s; }
+.pf-tile:hover { transform: translateY(-3px); background: #fff; box-shadow: 0 14px 30px rgba(0,0,0,.08); }
+.pf-tile b { display: block; font-size: 1.05rem; font-weight: 600; letter-spacing: -.02em; }
+.pf-tile small { display: block; margin-top: 2px; color: var(--gray); font-size: .86rem; }
+.pf-tile::after { content: '→'; color: var(--g); font-size: 1.2rem; transition: transform .25s; flex: none; }
+.pf-tile:hover::after { transform: translateX(4px); }
+.pf-tile--main { background: var(--g); color: #fff; }
+.pf-tile--main small { color: rgba(255,255,255,.8); }
+.pf-tile--main::after { color: #fff; }
+.pf-tile--main:hover { background: var(--g2); }
 
-/* Messages */
-.profile-msgs { margin-bottom:20px; }
-.profile-msg { padding:11px 14px; border-radius:8px; font-size:.85rem; margin-bottom:8px; }
-.profile-msg.success { background:rgba(15,122,69,.1); border:1px solid rgba(15,122,69,.3); color:#0f7a45; }
-.profile-msg.error   { background:rgba(201,48,96,.1);  border:1px solid rgba(201,48,96,.3);  color:#c93060; }
+.pf-out { margin-top: 26px; text-align: center; }
+.pf-out button { font: inherit; font-weight: 500; padding: 12px 28px; border-radius: 980px; border: 1.5px solid rgba(215,0,21,.35); background: transparent; color: #c4001a; cursor: pointer; transition: background .2s, color .2s; }
+.pf-out button:hover { background: #c4001a; color: #fff; }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@media (max-width: 560px) {
+  .pf-head { flex-direction: column; text-align: center; }
+  .pf-tags { justify-content: center; }
+  .pf-tiles { grid-template-columns: 1fr; }
+  .pf-row { padding: 14px 18px; }
+}
 </style>
 
-<div class="profile-page">
+<div class="pf">
+  <div class="pf-in">
 
-  <!-- Messages -->
-  {% if messages %}
-  <div class="profile-msgs">
-    {% for msg in messages %}
-      <div class="profile-msg {{ msg.tags }}">{{ msg }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
+    {% if messages %}
+    <div>{% for msg in messages %}<div class="pf-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}</div>
+    {% endif %}
 
-  <!-- Header -->
-  <div class="profile-header">
-    <div class="profile-avatar-ring">
-      <div class="profile-avatar">
-        {{ user.email|slice:":1"|upper }}
+    <!-- En-tête -->
+    <section class="pf-head">
+      <div class="pf-avatar">
+        {% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% else %}{{ user.email|slice:":1"|upper }}{% endif %}
       </div>
-    </div>
-    <div class="profile-info">
-      <h1>{{ user.email }}</h1>
-      <p>Membre depuis {{ user.created_at|date:"d M Y" }}</p>
-    </div>
-    <span class="profile-badge">
-      <span class="dot"></span>
-      {% if user.is_premium %}Premium{% else %}Compte actif{% endif %}
-    </span>
-  </div>
-
-  <!-- Grille d'informations -->
-  <div class="profile-grid">
-
-    <div class="profile-card c-1">
-      <div class="profile-card-icon"><i class="fa fa-envelope"></i></div>
-      <div>
-        <div class="profile-card-label">Email</div>
-        <div class="profile-card-value">{{ user.email }}</div>
-      </div>
-    </div>
-
-    <div class="profile-card c-2">
-      <div class="profile-card-icon"><i class="fa fa-phone"></i></div>
-      <div>
-        <div class="profile-card-label">Téléphone</div>
-        <div class="profile-card-value {% if not user.phone %}empty{% endif %}">
-          {{ user.phone|default:"Non renseigné" }}
+      <div class="pf-who">
+        <h1>{% if user.get_full_name %}{{ user.get_full_name }}{% else %}Mon profil{% endif %}</h1>
+        <p>{{ user.email }}</p>
+        <p>Membre depuis le {{ user.created_at|date:"j F Y" }}</p>
+        <div class="pf-tags">
+          <span class="pf-tag">{% if user.is_premium %}Premium{% else %}Compte actif{% endif %}</span>
+          <span class="pf-tag {% if not user.is_verified %}pf-tag--off{% endif %}">{% if user.is_verified %}Vérifié{% else %}Non vérifié{% endif %}</span>
         </div>
       </div>
+    </section>
+
+    <!-- Informations -->
+    <h2 class="pf-h">Mes informations</h2>
+    <dl class="pf-list">
+      <div class="pf-row"><dt>E-mail</dt><dd>{{ user.email }}</dd></div>
+      <div class="pf-row"><dt>Téléphone</dt>
+        {% if user.phone %}<dd>{{ user.phone }}</dd>{% else %}<dd class="empty">Non renseigné<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
+      <div class="pf-row"><dt>Pays</dt>
+        {% if user.country %}<dd>{{ user.country }}</dd>{% else %}<dd class="empty">Non renseigné<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
+      <div class="pf-row"><dt>Ville</dt>
+        {% if user.city %}<dd>{{ user.city }}</dd>{% else %}<dd class="empty">Non renseignée<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
+      <div class="pf-row"><dt>Date de naissance</dt>
+        {% if user.date_of_birth %}<dd>{{ user.date_of_birth|date:"j F Y" }}</dd>{% else %}<dd class="empty">Non renseignée<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
+      <div class="pf-row"><dt>Compte</dt>
+        <dd>{% if user.is_premium %}<span class="ok">Premium</span>{% else %}<span class="off">Gratuit</span>{% endif %}</dd></div>
+    </dl>
+
+    <!-- Accès rapides -->
+    <h2 class="pf-h">Accès rapides</h2>
+    <div class="pf-tiles">
+      <a class="pf-tile pf-tile--main" href="{% url 'users:edit_profile' %}"><span><b>Modifier le profil</b><small>Téléphone, pays, ville…</small></span></a>
+      <a class="pf-tile" href="{% url 'emploi:dashboard' %}"><span><b>Mon espace</b><small>Emploi, candidatures, actualités</small></span></a>
+      <a class="pf-tile" href="{% url 'formations:formations' %}"><span><b>Mes formations</b><small>Voir les formations</small></span></a>
+      <a class="pf-tile" href="{% url 'formations:cart' %}"><span><b>Mon panier</b><small>Vos articles en attente</small></span></a>
+      <a class="pf-tile" href="{% url 'users:password_reset' %}"><span><b>Mot de passe</b><small>Le changer en toute sécurité</small></span></a>
     </div>
 
-    <div class="profile-card c-3">
-      <div class="profile-card-icon"><i class="fa fa-globe"></i></div>
-      <div>
-        <div class="profile-card-label">Pays</div>
-        <div class="profile-card-value {% if not user.country %}empty{% endif %}">
-          {{ user.country|default:"Non renseigné" }}
-        </div>
-      </div>
-    </div>
-
-    <div class="profile-card c-4">
-      <div class="profile-card-icon"><i class="fa fa-map-marker-alt"></i></div>
-      <div>
-        <div class="profile-card-label">Ville</div>
-        <div class="profile-card-value {% if not user.city %}empty{% endif %}">
-          {{ user.city|default:"Non renseigné" }}
-        </div>
-      </div>
-    </div>
-
-    <div class="profile-card c-5">
-      <div class="profile-card-icon"><i class="fa fa-calendar"></i></div>
-      <div>
-        <div class="profile-card-label">Date de naissance</div>
-        <div class="profile-card-value {% if not user.date_of_birth %}empty{% endif %}">
-          {{ user.date_of_birth|date:"d M Y"|default:"Non renseignée" }}
-        </div>
-      </div>
-    </div>
-
-    <div class="profile-card c-6">
-      <div class="profile-card-icon"><i class="fa fa-shield-alt"></i></div>
-      <div>
-        <div class="profile-card-label">Statut</div>
-        <div class="profile-card-value">
-          {% if user.is_verified %}
-            <span style="color:var(--green);">✓ Vérifié</span>
-          {% else %}
-            <span style="color:var(--muted);">Non vérifié</span>
-          {% endif %}
-          &nbsp;·&nbsp;
-          {% if user.is_premium %}
-            <span style="color:var(--accent);">Premium</span>
-          {% else %}
-            <span style="color:var(--muted);">Gratuit</span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Actions -->
-  <div class="profile-actions">
-    <a href="{% url 'formations:formations' %}" class="btn-action btn-secondary-action">
-      <span class="btn-action-icon"><i class="fa fa-graduation-cap"></i></span> Mes formations
-    </a>
-    <a href="{% url 'formations:cart' %}" class="btn-action btn-secondary-action">
-      <span class="btn-action-icon"><i class="fa fa-shopping-cart"></i></span> Mon panier
-    </a>
-    <a href="{% url 'users:edit_profile' %}" class="btn-action btn-primary-action">
-      <span class="btn-action-icon"><i class="fa fa-user-edit"></i></span> Modifier le profil
-    </a>
-    <a href="{% url 'users:password_reset' %}" class="btn-action btn-secondary-action">
-      <span class="btn-action-icon"><i class="fa fa-key"></i></span> Changer le mot de passe
-    </a>
-    <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
+    <form class="pf-out" method="post" action="{% url 'users:logout' %}">
       {% csrf_token %}
-      <button type="submit" class="btn-action btn-danger-action">
-        <span class="btn-action-icon"><i class="fa fa-sign-out-alt"></i></span> Se déconnecter
-      </button>
+      <button type="submit">Se déconnecter</button>
     </form>
-  </div>
 
+  </div>
 </div>
 {% endblock %}
