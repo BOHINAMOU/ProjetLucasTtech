@@ -139,23 +139,19 @@ def partner_apply_success(request):
     return render(request, 'core/partner_apply_success.html')
 
 
-def projects_team_page(request):
-    """Une seule page pour « Projets réalisés » et « Notre équipe » (menu : Projets & Équipe)."""
+def projects_page(request):
     projects = Project.objects.all()
+
     clients = {p.client.strip() for p in projects if p.client and p.client.strip()}
     techs = set()
     for p in projects:
         techs.update(p.get_technologies())
 
-    members = TeamMember.objects.all()
-    founder = members.filter(is_founder=True).first()
-    return render(request, 'core/projects_team.html', {
+    return render(request, 'core/projects.html', {
         'projects': projects,
         'slides': projects.exclude(image=''),
         'client_count': len(clients),
         'tech_count': len(techs),
-        'founder': founder,
-        'members': members.exclude(pk=founder.pk) if founder else members,
     })
 
 
@@ -165,6 +161,15 @@ def project_detail(request, pk):
     return render(request, 'core/project_detail.html', {
         'project': project,
         'related': related,
+    })
+
+
+def team_page(request):
+    members = TeamMember.objects.all()
+    founder = members.filter(is_founder=True).first()
+    return render(request, 'core/team.html', {
+        'founder': founder,
+        'members': members.exclude(pk=founder.pk) if founder else members,
     })
 
 

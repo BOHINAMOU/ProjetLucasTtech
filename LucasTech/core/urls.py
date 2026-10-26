@@ -1,5 +1,4 @@
 from django.urls import path
-from django.views.generic import RedirectView
 from . import views
 
 app_name = 'core'
@@ -10,11 +9,9 @@ urlpatterns = [
     path('partenaires/devenir-partenaire/', views.partner_apply, name='partner_apply'),
     path('partenaires/devenir-partenaire/merci/', views.partner_apply_success, name='partner_apply_success'),
     path('partenaires/<int:pk>/', views.partner_detail, name='partner_detail'),
-    path('projets-equipe/', views.projects_team_page, name='projects_team'),
-    # Anciennes adresses : les deux pages sont réunies en une seule (liens déjà partagés, référencement Google)
-    path('projets/', RedirectView.as_view(pattern_name='core:projects_team', permanent=True, query_string=True), name='projects'),
-    path('equipe/', RedirectView.as_view(url='/projets-equipe/#equipe', permanent=True), name='team'),
+    path('projets/', views.projects_page, name='projects'),
     path('projets/<int:pk>/', views.project_detail, name='project_detail'),
+    path('equipe/', views.team_page, name='team'),
     path('equipe/<int:pk>/', views.team_member_detail, name='team_member_detail'),
     path('monetisation/', views.monetization_page, name='monetization'),
     path('monetisation/merci/', views.monetization_thanks, name='monetization_thanks'),

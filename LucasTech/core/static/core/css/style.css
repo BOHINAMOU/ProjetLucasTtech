@@ -891,6 +891,42 @@ header { position: sticky; top: 0; z-index: 400; }
 .navbar__links a { background-image: linear-gradient(#0f7a45, #0f7a45); background-repeat: no-repeat; background-position: 0 100%; background-size: 0 2px; transition: background-size .25s, color .2s; }
 .navbar__links a:hover { background-size: 100% 2px; }
 
+/* Menu déroulant « Projets & Équipe » */
+.nav-dd { position: relative; }
+.nav-dd__btn {
+  display: inline-flex; align-items: center; gap: .45rem; padding: .6rem .8rem;
+  font: inherit; font-size: 1rem; font-weight: 700; color: var(--ink2); background: none; border: 0; cursor: pointer; white-space: nowrap;
+  transition: color .2s;
+}
+.nav-dd__btn i { font-size: .65rem; transition: transform .2s; }
+.nav-dd__btn:hover, .nav-dd.open .nav-dd__btn { color: var(--ink); }
+.nav-dd.open .nav-dd__btn i { transform: rotate(180deg); }
+.nav-dd__menu {
+  position: absolute; top: 100%; left: 50%; min-width: 220px; z-index: 450;
+  background: #fff; border: 1px solid var(--border); border-top: 3px solid #0f7a45; border-radius: 0 0 8px 8px;
+  box-shadow: 0 14px 30px rgba(11,46,29,.14); padding: .4rem 0; list-style: none; margin: 0;
+  opacity: 0; visibility: hidden; transform: translate(-50%, 6px); transition: opacity .18s, transform .18s, visibility .18s;
+}
+.nav-dd.open .nav-dd__menu, .nav-dd:hover .nav-dd__menu, .nav-dd:focus-within .nav-dd__menu { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.navbar__links .nav-dd__menu a { display: flex; align-items: center; gap: .65rem; padding: .75rem 1.1rem; font-size: .95rem; background-image: none; }
+.navbar__links .nav-dd__menu a::after { display: none; }
+.navbar__links .nav-dd__menu a i { color: #0f7a45; width: 1rem; text-align: center; }
+.navbar__links .nav-dd__menu a:hover { background: #eef7f1; color: #0b6137; }
+/* Même menu dans le tiroir mobile : un bouton qui déplie les deux pages */
+.navbar__drawer { max-height: calc(100vh - var(--nav-h)); overflow-y: auto; overscroll-behavior: contain; }
+.dr-dd__btn {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; padding: .9rem 1rem;
+  font: inherit; font-size: 1.1rem; font-weight: 700; color: var(--ink2); background: none; border: 0; cursor: pointer; text-align: left;
+}
+.dr-dd__btn i { font-size: .8rem; transition: transform .2s; }
+.dr-dd.open .dr-dd__btn { color: #0b6137; }
+.dr-dd.open .dr-dd__btn i { transform: rotate(180deg); }
+.navbar__drawer ul.dr-dd__menu { display: none; margin: 0 0 .4rem 1rem; padding-left: .8rem; border-left: 3px solid #0f7a45; }
+.dr-dd.open ul.dr-dd__menu { display: flex; }
+.navbar__drawer .dr-dd__menu a { font-size: 1rem; font-weight: 600; }
+.navbar__drawer .dr-dd__menu a i { color: #0f7a45; width: 1.3rem; }
+@media (prefers-reduced-motion: reduce) { .nav-dd__menu, .nav-dd__btn i { transition: none; } }
+
 /* Clavier : contour vert bien visible */
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #0f7a45; outline-offset: 2px; }
 

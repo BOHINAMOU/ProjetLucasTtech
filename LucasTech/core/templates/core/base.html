@@ -84,7 +84,13 @@
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
       <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
-      <li><a href="{% url 'core:projects_team' %}">Projets &amp; Équipe</a></li>
+      <li class="nav-dd">
+        <button type="button" class="nav-dd__btn" aria-haspopup="true" aria-expanded="false">Projets &amp; Équipe <i class="fa fa-chevron-down" aria-hidden="true"></i></button>
+        <ul class="nav-dd__menu">
+          <li><a href="{% url 'core:projects' %}"><i class="fa fa-diagram-project" aria-hidden="true"></i> Projets réalisés</a></li>
+          <li><a href="{% url 'core:team' %}"><i class="fa fa-users" aria-hidden="true"></i> Notre équipe</a></li>
+        </ul>
+      </li>
       <li><a href="{% url 'core:monetization' %}">Monétisation</a></li>
     </ul>
 
@@ -113,7 +119,13 @@
       <li><a href="{% url 'emploi:home' %}">Emploi</a></li>
       <li><a href="{% url 'publications:publications' %}">Actualités</a></li>
       <li><a href="{% url 'core:partners' %}">Partenaires</a></li>
-      <li><a href="{% url 'core:projects_team' %}">Projets &amp; Équipe</a></li>
+      <li class="dr-dd">
+        <button type="button" class="dr-dd__btn" aria-expanded="false">Projets &amp; Équipe <i class="fa fa-chevron-down" aria-hidden="true"></i></button>
+        <ul class="dr-dd__menu">
+          <li><a href="{% url 'core:projects' %}"><i class="fa fa-diagram-project" aria-hidden="true"></i> Projets réalisés</a></li>
+          <li><a href="{% url 'core:team' %}"><i class="fa fa-users" aria-hidden="true"></i> Notre équipe</a></li>
+        </ul>
+      </li>
       <li><a href="{% url 'core:monetization' %}">Monétisation</a></li>
     </ul>
     <div class="drawer-auth">
@@ -408,6 +420,27 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
     btn.classList.remove('open');
     btn.setAttribute('aria-expanded','false');
   }));
+}());
+
+/* ── Menu mobile : « Projets & Équipe » se déplie pour montrer les deux pages ── */
+(function(){
+  const btn=document.querySelector('.dr-dd__btn');
+  if(!btn)return;
+  btn.addEventListener('click',function(){
+    const open=btn.parentElement.classList.toggle('open');
+    btn.setAttribute('aria-expanded',String(open));
+  });
+}());
+
+/* ── Menu « Projets & Équipe » : s'ouvre au clic (et au survol sur ordinateur) ── */
+(function(){
+  const dd=document.querySelector('.nav-dd');
+  if(!dd)return;
+  const btn=dd.querySelector('.nav-dd__btn');
+  const set=(open)=>{dd.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open));};
+  btn.addEventListener('click',(e)=>{e.stopPropagation();set(!dd.classList.contains('open'));});
+  document.addEventListener('click',(e)=>{if(!dd.contains(e.target))set(false);});
+  document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){set(false);btn.focus();}});
 }());
 
 /* ── Lien actif ── */

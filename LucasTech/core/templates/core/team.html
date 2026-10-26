@@ -1,12 +1,19 @@
-<div class="tm-scope" id="equipe">
+{% extends 'core/base.html' %}
+{% block title %}Notre équipe — Lantante Technologie{% endblock %}
+{% block meta_description %}Découvrez l'équipe Lantante Technologie : fondateur, rôles, technologies maîtrisées et expérience.{% endblock %}
+{% block og_title %}Notre équipe — Lantante Technologie{% endblock %}
+
+{% block content %}
 <style>
-.tm-scope {
+:root {
   --bg: #f7f3ee; --surf: #faf8f5; --surf2: #f2ede6;
   --border: rgba(0,0,0,.085); --shadow: rgba(0,0,0,.07);
   --ink: #1c1814; --ink2: #3a3530; --muted: #8a8078;
   --accent: #0f7a45; --accent2: #c9a84c;
   --font: 'Outfit', sans-serif; --serif: 'Cormorant Garamond', serif;
 }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 
 .tm-hero {
   position: relative; overflow: hidden;
@@ -258,4 +265,4 @@
   {% endif %}
 
 </div>
-</div>
+{% endblock %}

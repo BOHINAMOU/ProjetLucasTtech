@@ -107,7 +107,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 </style>
 
 <nav class="pd-breadcrumb">
-  <a href="{% url 'core:projects_team' %}">Projets réalisés</a>
+  <a href="{% url 'core:projects' %}">Projets réalisés</a>
   <span>›</span>
   <span>{{ project.title|truncatechars:40 }}</span>
 </nav>
@@ -148,7 +148,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </a>
     </div>
 
-    <a href="{% url 'core:projects_team' %}" class="pd-back"><i class="fa fa-arrow-left"></i> Retour aux projets</a>
+    <a href="{% url 'core:projects' %}" class="pd-back"><i class="fa fa-arrow-left"></i> Retour aux projets</a>
   </div>
 </div>
 
@@ -175,7 +175,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-wrench"></i> Nos services</span>
     </a>
-    <a href="{% url 'core:projects_team' %}#equipe" class="pd-explore-tile" style="background:linear-gradient(135deg,#163a63,#0a1f3d);">
+    <a href="{% url 'core:team' %}" class="pd-explore-tile" style="background:linear-gradient(135deg,#163a63,#0a1f3d);">
       <span class="pd-explore-overlay"></span>
       <span class="pd-explore-label"><i class="fa fa-users"></i> Notre équipe</span>
     </a>

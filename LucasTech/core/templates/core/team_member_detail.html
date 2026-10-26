@@ -89,7 +89,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 </style>
 
 <nav class="md-breadcrumb">
-  <a href="{% url 'core:projects_team' %}#equipe">Équipe</a>
+  <a href="{% url 'core:team' %}">Équipe</a>
   <span>›</span>
   <span>{{ member.name }}</span>
 </nav>
@@ -139,13 +139,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </div>
       {% endif %}
 
-      <a href="{% url 'core:projects_team' %}#equipe" class="md-back"><i class="fa fa-arrow-left"></i> Retour à l'équipe</a>
+      <a href="{% url 'core:team' %}" class="md-back"><i class="fa fa-arrow-left"></i> Retour à l'équipe</a>
 
       <div class="md-explore">
         <h3 class="md-explore-title">Explorer aussi</h3>
         <div class="md-explore-row">
-          <a href="{% url 'core:projects_team' %}#equipe" class="md-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#14100c);"><span><i class="fa fa-users"></i> Toute l'équipe</span></a>
-          <a href="{% url 'core:projects_team' %}" class="md-explore-tile" style="background:linear-gradient(135deg,#0d3b7a,#14100c);"><span><i class="fa fa-diagram-project"></i> Projets réalisés</span></a>
+          <a href="{% url 'core:team' %}" class="md-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#14100c);"><span><i class="fa fa-users"></i> Toute l'équipe</span></a>
+          <a href="{% url 'core:projects' %}" class="md-explore-tile" style="background:linear-gradient(135deg,#0d3b7a,#14100c);"><span><i class="fa fa-diagram-project"></i> Projets réalisés</span></a>
           <a href="{% url 'core:partners' %}" class="md-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#14100c);"><span><i class="fa fa-handshake"></i> Nos partenaires</span></a>
         </div>
       </div>
