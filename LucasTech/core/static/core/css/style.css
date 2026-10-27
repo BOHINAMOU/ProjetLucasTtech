@@ -944,7 +944,9 @@ header { position: sticky; top: 0; z-index: 400; }
 @media (prefers-reduced-motion: reduce) { .navbar__drawer.open > ul > li { animation: none; } }
 
 /* Même menu dans le tiroir mobile : un bouton qui déplie les deux pages */
-.navbar__drawer { max-height: calc(100vh - var(--nav-h)); overflow-y: auto; overscroll-behavior: contain; }
+/* Le menu prend toute la hauteur sous l'en-tête avec un fond plein : on ne voit plus la page de derrière. Il défile seul si besoin. */
+.navbar__drawer { bottom: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; background: #f7f3ee; -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom: 0; padding-bottom: 2.5rem; }
+body.menu-open .lt-footer__totop { display: none !important; }
 .dr-dd__btn {
   display: flex; align-items: center; justify-content: space-between; width: 100%; padding: .9rem 1rem;
   font: inherit; font-size: 1.1rem; font-weight: 700; color: var(--ink2); background: none; border: 0; cursor: pointer; text-align: left;

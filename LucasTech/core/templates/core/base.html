@@ -410,22 +410,25 @@ window.addEventListener('scroll',()=>{
 const nav = document.getElementById('navbar');
 window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>60));
 
-/* ── Burger ── */
+/* ── Burger : le menu couvre tout l'écran sous l'en-tête ── */
 (function(){
   const btn=document.getElementById('burgerBtn');
   const drawer=document.getElementById('navDrawer');
+  const navbar=document.getElementById('navbar');
   if(!btn||!drawer)return;
-  btn.addEventListener('click',function(){
-    const open=drawer.classList.toggle('open');
+  function fit(){drawer.style.top=Math.max(0,Math.round(navbar.getBoundingClientRect().bottom))+'px';}
+  function setOpen(open){
+    if(open)fit();
+    drawer.classList.toggle('open',open);
     btn.classList.toggle('open',open);
+    document.body.classList.toggle('menu-open',open);
     btn.setAttribute('aria-expanded',String(open));
     drawer.setAttribute('aria-hidden',String(!open));
-  });
-  drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
-    drawer.classList.remove('open');
-    btn.classList.remove('open');
-    btn.setAttribute('aria-expanded','false');
-  }));
+  }
+  btn.addEventListener('click',function(){setOpen(!drawer.classList.contains('open'));});
+  drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setOpen(false)));
+  window.addEventListener('resize',function(){if(drawer.classList.contains('open'))fit();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&drawer.classList.contains('open'))setOpen(false);});
 }());
 
 /* ── Menus déroulants du tiroir mobile (« Services et Formations », « Projets et Équipe ») ── */
