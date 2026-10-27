@@ -86,6 +86,24 @@ class Publication(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def seo_description(self):
+        """Courte description propre (une ligne, 155 caractères) pour Google et les aperçus WhatsApp/Facebook :
+        sans balises, sans les lignes « Catégorie / Date / Rédaction / Source » du début de l'article."""
+        import html
+        from django.utils.html import strip_tags
+        skip = ('Catégorie :', 'Date de publication', 'Rédaction :', 'Source :')
+        parts = []
+        for chunk in self.content.split('</p>'):
+            text = ' '.join(html.unescape(strip_tags(chunk)).split())
+            if not text or text.startswith(skip):
+                continue
+            parts.append(text)
+            if sum(len(x) for x in parts) >= 155:
+                break
+        text = ' '.join(parts) or ' '.join(html.unescape(strip_tags(self.content)).split())
+        return text if len(text) <= 155 else text[:154].rstrip() + '…'
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.title)
