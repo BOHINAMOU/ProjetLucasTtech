@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ profile.full_name }} — {{ profile.title }}{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ profile.title }} : {{ profile.tagline }}.{% endblock %}">
-  <meta name="theme-color" content="#070b17">
+  <meta name="theme-color" content="#f7f3ee">
   <link rel="canonical" href="{{ request.build_absolute_uri }}">
 
   <meta property="og:site_name" content="{{ profile.full_name }}">
@@ -20,21 +20,19 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/devicon@2.16.0/devicon.min.css">
   <link rel="stylesheet" href="{% static 'portfolio/portfolio.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 <body class="pf-body">
 <a class="pf-skip" href="#main">Aller au contenu</a>
-<div class="pf-bg" aria-hidden="true"><span class="orb orb-1"></span><span class="orb orb-2"></span><span class="grid"></span></div>
 
 <header class="pf-nav" id="pfNav">
   <div class="pf-nav-in">
     <a class="pf-brand" href="{% url 'portfolio:home' %}" aria-label="Accueil du portfolio">
-      <span class="pf-brand-mark">{{ profile.initials }}</span>
-      <span class="pf-brand-text"><b>{{ profile.full_name }}</b><small>Portfolio professionnel</small></span>
+      <span class="pf-brand-text">{{ profile.full_name }}</span>
     </a>
     <nav class="pf-links" id="pfLinks" aria-label="Sections du portfolio">
       {% block nav_links %}{% endblock %}
@@ -58,7 +56,7 @@
 <footer class="pf-footer">
   <div class="pf-in">
     <p><b>{{ profile.full_name }}</b> · {{ profile.title }}</p>
-    <p class="pf-footer-sub">© {% now "Y" %} · Portfolio hébergé sur <a href="/">Lantante Technologie</a></p>
+    <p class="pf-footer-sub">© {% now "Y" %} · Portfolio hébergé par <a href="/">Lantante Technologie</a></p>
   </div>
 </footer>
 
