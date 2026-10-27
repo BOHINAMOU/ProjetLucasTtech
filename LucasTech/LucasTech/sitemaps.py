@@ -14,7 +14,7 @@ class StaticViewSitemap(Sitemap):
     def items(self):
         return ['core:home', 'core:projects', 'core:team', 'core:partners', 'core:monetization',
                 'shop:shop', 'formations:formations', 'services:services',
-                'publications:publications', 'emploi:home', 'emploi:offer_list']
+                'publications:publications', 'emploi:home', 'emploi:offer_list', 'portfolio:home']
 
     def location(self, item):
         return reverse(item)
@@ -112,6 +112,18 @@ class TeamMemberSitemap(Sitemap):
         return reverse('core:team_member_detail', args=[obj.pk])
 
 
+class PortfolioProjectSitemap(Sitemap):
+    changefreq = 'monthly'
+    priority = 0.4
+
+    def items(self):
+        from Portfolio.models import Project as PortfolioProject
+        return PortfolioProject.objects.filter(is_published=True)
+
+    def location(self, obj):
+        return reverse('portfolio:project_detail', args=[obj.slug])
+
+
 sitemaps = {
     'static': StaticViewSitemap,
     'products': ProductSitemap,
@@ -121,4 +133,5 @@ sitemaps = {
     'projects': ProjectSitemap,
     'partners': PartnerSitemap,
     'team': TeamMemberSitemap,
+    'portfolio_projects': PortfolioProjectSitemap,
 }

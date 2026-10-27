@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'Publications',
     'Emploi',
     'core',
+    'Portfolio',
 
     'social_django',
 
@@ -341,6 +342,17 @@ JAZZMIN_SETTINGS = {
         "Emploi.feedpost": "fas fa-newspaper",
         "Emploi.notification": "fas fa-bell",
         "Emploi.skill": "fas fa-tags",
+        "Portfolio": "fas fa-user-tie",
+        "Portfolio.profile": "fas fa-id-card",
+        "Portfolio.skill": "fas fa-code",
+        "Portfolio.project": "fas fa-diagram-project",
+        "Portfolio.service": "fas fa-briefcase",
+        "Portfolio.certificate": "fas fa-award",
+        "Portfolio.collaborator": "fas fa-people-group",
+        "Portfolio.experience": "fas fa-timeline",
+        "Portfolio.engagement": "fas fa-hand-holding-heart",
+        "Portfolio.stat": "fas fa-chart-simple",
+        "Portfolio.contactmessage": "fas fa-envelope",
     },
 }
 

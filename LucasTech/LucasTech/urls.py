@@ -25,6 +25,7 @@ urlpatterns = [
     path('actualites/', include('Publications.urls', namespace='publications')),
     # Ancienne adresse : redirection permanente (liens déjà partagés, référencement Google)
     re_path(r'^publications/(?P<rest>.*)$', RedirectView.as_view(url='/actualites/%(rest)s', permanent=True, query_string=True)),
+    path('bohinamou/',    include('Portfolio.urls', namespace='portfolio')),
     path('emploi/',       include('Emploi.urls', namespace='emploi')),
     path('api/v1/',       include('Emploi.api.urls')),
     path('social-auth/',  include('social_django.urls', namespace='social')),

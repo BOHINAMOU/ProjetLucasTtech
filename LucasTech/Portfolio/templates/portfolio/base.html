@@ -1,0 +1,68 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ profile.full_name }} — {{ profile.title }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ profile.title }} : {{ profile.tagline }}.{% endblock %}">
+  <meta name="theme-color" content="#070b17">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <meta property="og:site_name" content="{{ profile.full_name }}">
+  <meta property="og:type" content="{% block og_type %}profile{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ profile.full_name }} — {{ profile.title }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ profile.tagline }}{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% block og_image_tag %}{% if photo_url %}<meta property="og:image" content="{{ photo_url }}">{% endif %}{% endblock %}
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
+  <link rel="stylesheet" href="{% static 'portfolio/portfolio.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="pf-body">
+<a class="pf-skip" href="#main">Aller au contenu</a>
+<div class="pf-bg" aria-hidden="true"><span class="orb orb-1"></span><span class="orb orb-2"></span><span class="grid"></span></div>
+
+<header class="pf-nav" id="pfNav">
+  <div class="pf-nav-in">
+    <a class="pf-brand" href="{% url 'portfolio:home' %}" aria-label="Accueil du portfolio">
+      <span class="pf-brand-mark">{{ profile.initials }}</span>
+      <span class="pf-brand-text"><b>{{ profile.full_name }}</b><small>Portfolio professionnel</small></span>
+    </a>
+    <nav class="pf-links" id="pfLinks" aria-label="Sections du portfolio">
+      {% block nav_links %}{% endblock %}
+    </nav>
+    <button class="pf-burger" id="pfBurger" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+
+<!-- Fenêtre de détail (compétences, certificats, images) -->
+<div class="pf-modal" id="pfModal" hidden>
+  <div class="pf-modal-box" role="dialog" aria-modal="true" aria-label="Détails">
+    <button class="pf-modal-close" type="button" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    <div id="pfModalBody"></div>
+  </div>
+</div>
+
+<footer class="pf-footer">
+  <div class="pf-in">
+    <p><b>{{ profile.full_name }}</b> · {{ profile.title }}</p>
+    <p class="pf-footer-sub">© {% now "Y" %} · Portfolio hébergé sur <a href="/">Lantante Technologie</a></p>
+  </div>
+</footer>
+
+<script src="{% static 'portfolio/portfolio.js' %}" defer></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

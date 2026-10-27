@@ -1,0 +1,59 @@
+{% extends 'portfolio/base.html' %}
+
+{% block title %}{{ person.full_name }} — collaborateur de {{ profile.full_name }}{% endblock %}
+{% block meta_description %}{{ person.full_name }}{% if person.role %}, {{ person.role }}{% endif %}.{% endblock %}
+{% block og_title %}{{ person.full_name }}{% if person.role %} — {{ person.role }}{% endif %}{% endblock %}
+{% block og_description %}Collaborateur de {{ profile.full_name }}{% endblock %}
+{% block og_image_tag %}{% if image_url %}<meta property="og:image" content="{{ image_url }}">{% endif %}{% endblock %}
+
+{% block nav_links %}
+  <a href="{% url 'portfolio:home' %}#collaborateurs">← Tous les collaborateurs</a>
+  <a class="pf-cta" href="{% url 'portfolio:home' %}#contact">Me contacter</a>
+{% endblock %}
+
+{% block content %}
+<section class="pf-page-hero pf-person">
+  <div class="pf-in">
+    <p class="pf-crumb rv"><a href="{% url 'portfolio:home' %}">Portfolio</a> / <a href="{% url 'portfolio:home' %}#collaborateurs">Collaborateurs</a></p>
+    <div class="pf-person-photo rv" style="--d:.05s">
+      <span class="ring"></span>
+      <div class="pf-photo-in">{% if person.photo %}<img src="{{ person.photo.url }}" alt="{{ person.full_name }}" data-zoom>{% else %}<span class="ini">{{ person.initials }}</span>{% endif %}</div>
+    </div>
+    <h1 class="rv" style="--d:.1s">{{ person.full_name }}</h1>
+    {% if person.role %}<p class="pf-lead rv" style="--d:.15s">{{ person.role }}</p>{% endif %}
+    {% if person.expertise_list %}<ul class="pf-chips pf-chips--center rv" style="--d:.2s">{% for e in person.expertise_list %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    {% if person.links %}<ul class="pf-socials pf-socials--center rv" style="--d:.25s">{% for name, icon, url in person.links %}<li><a href="{{ url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ name }}" title="{{ name }}"><i class="{{ icon }}"></i></a></li>{% endfor %}</ul>{% endif %}
+  </div>
+</section>
+
+{% if person.bio_paragraphs or person.common_projects_list %}
+<section class="pf-sec pf-tight">
+  <div class="pf-in pf-narrow">
+    {% if person.bio_paragraphs %}
+    <div class="pf-prose rv"><h2>Présentation</h2>{% for para in person.bio_paragraphs %}<p>{{ para }}</p>{% endfor %}</div>
+    {% endif %}
+    {% if person.common_projects_list %}
+    <div class="pf-prose rv"><h2>Projets réalisés ensemble</h2>
+      <ul class="pf-checks">{% for item in person.common_projects_list %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if others %}
+<section class="pf-sec pf-tight">
+  <div class="pf-in">
+    <h2 class="pf-h2 rv">Autres collaborateurs</h2>
+    <div class="col-grid">
+      {% for c in others %}
+      <a class="col rv" href="{% url 'portfolio:collaborator_detail' c.pk %}">
+        <span class="col-photo">{% if c.photo %}<img src="{{ c.photo.url }}" alt="{{ c.full_name }}" loading="lazy">{% else %}<span class="ini">{{ c.initials }}</span>{% endif %}</span>
+        <b>{{ c.full_name }}</b>{% if c.role %}<small>{{ c.role }}</small>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

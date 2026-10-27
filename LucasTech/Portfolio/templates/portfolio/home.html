@@ -1,0 +1,270 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block nav_links %}
+  {% if profile.bio_paragraphs or experiences %}<a href="#qui">Qui suis-je</a>{% endif %}
+  {% if groups %}<a href="#competences">Compétences</a>{% endif %}
+  {% if projects %}<a href="#projets">Projets</a>{% endif %}
+  {% if services %}<a href="#services">Services</a>{% endif %}
+  {% if certificates %}<a href="#certificats">Certificats</a>{% endif %}
+  {% if collaborators %}<a href="#collaborateurs">Collaborateurs</a>{% endif %}
+  {% if engagements %}<a href="#engagement">Engagement</a>{% endif %}
+  <a class="pf-cta" href="#contact">Me contacter</a>
+{% endblock %}
+
+{% block content %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"{{ profile.full_name|escapejs }}","jobTitle":"{{ profile.title|escapejs }}","url":"{{ request.build_absolute_uri }}"{% if photo_url %},"image":"{{ photo_url }}"{% endif %}{% if profile.socials %},"sameAs":[{% for n, i, u in profile.socials %}"{{ u|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]{% endif %}}
+</script>
+
+<!-- ═══════════ ACCUEIL ═══════════ -->
+<section class="pf-hero" id="accueil">
+  <div class="pf-in pf-hero-grid">
+    <div class="pf-hero-text">
+      <p class="pf-kicker rv">{{ profile.full_name }}</p>
+      <h1 class="rv" style="--d:.08s">{{ profile.title }}</h1>
+      {% if profile.tagline_list %}
+      <ul class="pf-domains rv" style="--d:.16s">{% for t in profile.tagline_list %}<li>{{ t }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% if profile.intro %}<p class="pf-intro rv" style="--d:.22s">{{ profile.intro }}</p>{% endif %}
+      <div class="pf-btns rv" style="--d:.3s">
+        {% if profile.bio_paragraphs or experiences %}<a class="pf-btn pf-btn--main" href="#qui">Découvrir mon parcours</a>{% endif %}
+        {% if projects %}<a class="pf-btn pf-btn--line" href="#projets">Voir mes projets</a>{% endif %}
+        {% if profile.cv %}<a class="pf-btn pf-btn--line" href="{{ profile.cv.url }}" target="_blank" rel="noopener"><i class="fa-solid fa-file-arrow-down"></i> Mon CV</a>{% endif %}
+      </div>
+      {% if profile.socials %}
+      <ul class="pf-socials rv" style="--d:.38s">{% for name, icon, url in profile.socials %}<li><a href="{{ url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ name }}" title="{{ name }}"><i class="{{ icon }}"></i></a></li>{% endfor %}</ul>
+      {% endif %}
+      {% if profile.availability %}<p class="pf-avail rv" style="--d:.44s"><span class="dot"></span>{{ profile.availability }}</p>{% endif %}
+    </div>
+
+    <div class="pf-photo rv" style="--d:.12s">
+      <span class="ring"></span>
+      <div class="pf-photo-in">
+        {% if profile.photo %}<img src="{{ profile.photo.url }}" alt="{{ profile.full_name }}" width="520" height="520" fetchpriority="high">{% else %}<span class="ini">{{ profile.initials }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if stats %}
+  <div class="pf-in"><ul class="pf-stats rv">{% for s in stats %}<li><b>{{ s.value }}</b><span>{{ s.label }}</span></li>{% endfor %}</ul></div>
+  {% endif %}
+  <a class="pf-down" href="#{% if profile.bio_paragraphs or experiences %}qui{% else %}competences{% endif %}" aria-label="Descendre"><i class="fa-solid fa-chevron-down"></i></a>
+</section>
+
+<!-- ═══════════ QUI EST … ? ═══════════ -->
+{% if profile.bio_paragraphs or experiences %}
+<section class="pf-sec" id="qui">
+  <div class="pf-in">
+    <div class="who" id="who">
+      <button class="who-btn" id="whoBtn" type="button" aria-controls="whoPanel" aria-expanded="false">
+        <span class="who-q">Qui est <em>{{ profile.full_name }}</em> ?</span>
+        <span class="who-hint">Cliquez pour découvrir mon histoire <i class="fa-solid fa-arrow-down"></i></span>
+      </button>
+
+      <div class="who-panel" id="whoPanel">
+        {% if profile.bio_paragraphs %}
+        <div class="who-text" id="whoText">{% for para in profile.bio_paragraphs %}<p>{{ para }}</p>{% endfor %}</div>
+        <button class="who-skip" id="whoSkip" type="button">Tout afficher</button>
+        {% endif %}
+
+        {% if experiences %}
+        <div class="who-more">
+          <h3 class="pf-sub">Mon parcours</h3>
+          <ol class="timeline">
+            {% for e in experiences %}
+            <li class="tl-item">
+              <span class="tl-dot"></span>
+              <div class="tl-card">
+                {% if e.period %}<small class="tl-period">{{ e.period }}</small>{% endif %}
+                <h4>{{ e.title }}</h4>
+                {% if e.organization %}<p class="tl-org">{{ e.organization }}</p>{% endif %}
+                {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ COMPÉTENCES ═══════════ -->
+{% if groups %}
+<section class="pf-sec" id="competences">
+  <div class="pf-in">
+    <div class="pf-head">
+      <p class="pf-eyebrow rv">Compétences</p>
+      <h2 class="rv" style="--d:.06s">Mes compétences techniques</h2>
+      <p class="pf-lead rv" style="--d:.12s">Cliquez sur une technologie pour savoir de quoi il s'agit et comment je l'utilise.</p>
+    </div>
+    {% for g in groups %}
+    <h3 class="pf-group rv">{{ g.label }}</h3>
+    <div class="skill-grid">
+      {% for s in g.skills %}
+      <button class="skill rv" type="button" data-skill="{{ s.pk }}" style="--d:{% widthratio forloop.counter0 1 1 %}0ms">
+        <span class="skill-logo">{% if s.logo %}<img src="{{ s.logo.url }}" alt="" loading="lazy">{% elif s.icon_class %}<i class="{{ s.icon_class }}" aria-hidden="true"></i>{% else %}<span class="skill-ini">{{ s.name|slice:":2" }}</span>{% endif %}</span>
+        <b>{{ s.name }}</b>
+        {% if s.level %}<small>{{ s.get_level_display }}</small>{% endif %}
+      </button>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ PROJETS ═══════════ -->
+{% if projects %}
+<section class="pf-sec" id="projets">
+  <div class="pf-in">
+    <div class="pf-head">
+      <p class="pf-eyebrow rv">Réalisations</p>
+      <h2 class="rv" style="--d:.06s">Mes projets réalisés</h2>
+      <p class="pf-lead rv" style="--d:.12s">Cliquez sur un projet pour voir les détails et, quand il est disponible, le lien du site.</p>
+    </div>
+    <div class="proj-grid">
+      {% for p in projects %}
+      <a class="proj rv" href="{% url 'portfolio:project_detail' p.slug %}" style="--d:{% widthratio forloop.counter0 2 1 %}0ms">
+        <span class="proj-media">{% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.title }}" loading="lazy">{% else %}<span class="proj-ph">{{ p.title|slice:":1" }}</span>{% endif %}{% if p.year %}<em class="proj-year">{{ p.year }}</em>{% endif %}</span>
+        <span class="proj-body">
+          {% if p.client %}<small>{{ p.client }}</small>{% endif %}
+          <b>{{ p.title }}</b>
+          <span class="proj-sum">{{ p.summary }}</span>
+          {% if p.skills.all %}<span class="proj-tech">{% for s in p.skills.all|slice:":5" %}<i class="{{ s.icon_class }}" title="{{ s.name }}"></i>{% endfor %}</span>{% endif %}
+          <span class="proj-go">Voir le projet <i class="fa-solid fa-arrow-right"></i></span>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ CE QUE JE SAIS FAIRE ═══════════ -->
+{% if services %}
+<section class="pf-sec" id="services">
+  <div class="pf-in">
+    <div class="pf-head">
+      <p class="pf-eyebrow rv">Services</p>
+      <h2 class="rv" style="--d:.06s">Ce que je sais faire</h2>
+    </div>
+    <div class="svc-grid">
+      {% for s in services %}
+      <article class="svc rv" style="--d:{% widthratio forloop.counter0 3 1 %}0ms">
+        <span class="svc-ico"><i class="{{ s.icon }}"></i></span>
+        <h3>{{ s.title }}</h3>
+        <p>{{ s.description }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ CERTIFICATS ═══════════ -->
+{% if certificates %}
+<section class="pf-sec" id="certificats">
+  <div class="pf-in">
+    <div class="pf-head">
+      <p class="pf-eyebrow rv">Formations</p>
+      <h2 class="rv" style="--d:.06s">Certificats et attestations</h2>
+      <p class="pf-lead rv" style="--d:.12s">Cliquez sur un document pour le voir en grand.</p>
+    </div>
+    <div class="cert-grid">
+      {% for c in certificates %}
+      <button class="cert rv" type="button" data-cert="{{ c.pk }}">
+        <span class="cert-media">{% if c.image %}<img src="{{ c.image.url }}" alt="{{ c.title }}" loading="lazy">{% else %}<i class="fa-solid fa-award"></i>{% endif %}</span>
+        <span class="cert-body"><small>{{ c.get_kind_display }}{% if c.date %} · {{ c.date|date:"Y" }}{% endif %}</small><b>{{ c.title }}</b>{% if c.organization %}<span>{{ c.organization }}</span>{% endif %}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ COLLABORATEURS ═══════════ -->
+{% if collaborators %}
+<section class="pf-sec" id="collaborateurs">
+  <div class="pf-in">
+    <div class="pf-head">
+      <p class="pf-eyebrow rv">Équipe</p>
+      <h2 class="rv" style="--d:.06s">Mes collaborateurs</h2>
+      <p class="pf-lead rv" style="--d:.12s">Ceux avec qui je construis des projets. Cliquez pour découvrir leur profil.</p>
+    </div>
+    <div class="col-grid">
+      {% for c in collaborators %}
+      <a class="col rv" href="{% url 'portfolio:collaborator_detail' c.pk %}" style="--d:{% widthratio forloop.counter0 4 1 %}0ms">
+        <span class="col-photo">{% if c.photo %}<img src="{{ c.photo.url }}" alt="{{ c.full_name }}" loading="lazy">{% else %}<span class="ini">{{ c.initials }}</span>{% endif %}</span>
+        <b>{{ c.full_name }}</b>
+        {% if c.role %}<small>{{ c.role }}</small>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ ENGAGEMENT ═══════════ -->
+{% if engagements %}
+<section class="pf-sec" id="engagement">
+  <div class="pf-in">
+    <div class="pf-head">
+      <p class="pf-eyebrow rv">Engagement</p>
+      <h2 class="rv" style="--d:.06s">Associations et communauté</h2>
+    </div>
+    <div class="eng-grid">
+      {% for e in engagements %}
+      <article class="eng rv" style="--d:{% widthratio forloop.counter0 2 1 %}0ms">
+        {% if e.period %}<small>{{ e.period }}</small>{% endif %}
+        <h3>{{ e.title }}</h3>
+        {% if e.organization or e.role %}<p class="eng-org">{{ e.organization }}{% if e.organization and e.role %} · {% endif %}{{ e.role }}</p>{% endif %}
+        {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+        {% if e.link %}<a href="{{ e.link }}" target="_blank" rel="noopener noreferrer">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════ CONTACT ═══════════ -->
+<section class="pf-sec pf-contact" id="contact">
+  <div class="pf-in pf-contact-grid">
+    <div>
+      <p class="pf-eyebrow rv">Contact</p>
+      <h2 class="rv" style="--d:.06s">Travaillons ensemble</h2>
+      <p class="pf-lead rv" style="--d:.12s">Un projet, une collaboration, une question ? Écrivez-moi, je vous réponds rapidement.</p>
+      <ul class="pf-info rv" style="--d:.18s">
+        {% if profile.email %}<li><i class="fa-solid fa-envelope"></i><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></li>{% endif %}
+        {% if profile.phone %}<li><i class="fa-solid fa-phone"></i><a href="tel:{{ profile.phone }}">{{ profile.phone }}</a></li>{% endif %}
+        {% if profile.city %}<li><i class="fa-solid fa-location-dot"></i>{{ profile.city }}</li>{% endif %}
+        {% if profile.availability %}<li><i class="fa-solid fa-circle-check"></i>{{ profile.availability }}</li>{% endif %}
+      </ul>
+      {% if profile.socials %}
+      <ul class="pf-socials rv" style="--d:.24s">{% for name, icon, url in profile.socials %}<li><a href="{{ url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ name }}" title="{{ name }}"><i class="{{ icon }}"></i></a></li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+
+    <form class="pf-form rv" method="post" action="{% url 'portfolio:contact' %}" style="--d:.1s">
+      {% csrf_token %}
+      <h3>Envoyer un message</h3>
+      {% if messages %}{% for m in messages %}<div class="pf-msg {{ m.tags }}" role="alert">{{ m }}</div>{% endfor %}{% endif %}
+      <div class="pf-trap" aria-hidden="true"><label>Ne pas remplir <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label for="pf-name">Nom</label>
+      <input id="pf-name" name="name" maxlength="100" autocomplete="name" required>
+      <label for="pf-contact">E-mail ou téléphone</label>
+      <input id="pf-contact" name="contact" maxlength="150" autocomplete="email" required>
+      <label for="pf-msg">Message</label>
+      <textarea id="pf-msg" name="message" maxlength="2000" rows="5" required></textarea>
+      <button class="pf-btn pf-btn--main" type="submit"><i class="fa-solid fa-paper-plane"></i> Envoyer</button>
+    </form>
+  </div>
+</section>
+
+{{ skills_data|json_script:"skillsData" }}
+{{ certificates_data|json_script:"certsData" }}
+{% endblock %}

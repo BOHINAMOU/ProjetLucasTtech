@@ -1,0 +1,83 @@
+{% extends 'portfolio/base.html' %}
+
+{% block title %}{{ project.title }} — {{ profile.full_name }}{% endblock %}
+{% block meta_description %}{{ project.summary }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ project.title }} — {{ profile.full_name }}{% endblock %}
+{% block og_description %}{{ project.summary }}{% endblock %}
+{% block og_image_tag %}{% if image_url %}<meta property="og:image" content="{{ image_url }}">{% endif %}{% endblock %}
+
+{% block nav_links %}
+  <a href="{% url 'portfolio:home' %}#projets">← Tous les projets</a>
+  <a class="pf-cta" href="{% url 'portfolio:home' %}#contact">Me contacter</a>
+{% endblock %}
+
+{% block content %}
+<section class="pf-page-hero">
+  <div class="pf-in">
+    <p class="pf-crumb rv"><a href="{% url 'portfolio:home' %}">Portfolio</a> / <a href="{% url 'portfolio:home' %}#projets">Projets</a></p>
+    <p class="pf-eyebrow rv">{% if project.client %}{{ project.client }}{% endif %}{% if project.client and project.year %} · {% endif %}{% if project.year %}{{ project.year }}{% endif %}</p>
+    <h1 class="rv" style="--d:.06s">{{ project.title }}</h1>
+    <p class="pf-lead rv" style="--d:.12s">{{ project.summary }}</p>
+    <div class="pf-btns rv" style="--d:.18s">
+      {% if project.link %}<a class="pf-btn pf-btn--main" href="{{ project.link }}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visiter le site</a>{% endif %}
+      <a class="pf-btn pf-btn--line" href="{% url 'portfolio:home' %}#projets"><i class="fa-solid fa-arrow-left"></i> Retour aux projets</a>
+    </div>
+  </div>
+</section>
+
+{% if project.image %}
+<div class="pf-in"><figure class="pf-cover rv"><img src="{{ project.image.url }}" alt="{{ project.title }}" data-zoom></figure></div>
+{% endif %}
+
+<section class="pf-sec pf-tight">
+  <div class="pf-in pf-detail-grid">
+    <div class="pf-prose rv">
+      {% if project.description_paragraphs %}
+        <h2>À propos du projet</h2>
+        {% for para in project.description_paragraphs %}<p>{{ para }}</p>{% endfor %}
+      {% else %}
+        <p>{{ project.summary }}</p>
+      {% endif %}
+    </div>
+    <aside class="pf-aside rv" style="--d:.1s">
+      {% if project.role %}<div class="pf-fact"><small>Mon rôle</small><b>{{ project.role }}</b></div>{% endif %}
+      {% if project.client %}<div class="pf-fact"><small>Client</small><b>{{ project.client }}</b></div>{% endif %}
+      {% if project.year %}<div class="pf-fact"><small>Année</small><b>{{ project.year }}</b></div>{% endif %}
+      {% if project.skills.all %}
+      <div class="pf-fact"><small>Technologies</small>
+        <ul class="pf-chips">{% for s in project.skills.all %}<li>{% if s.icon_class %}<i class="{{ s.icon_class }}"></i>{% endif %}{{ s.name }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if project.link %}<a class="pf-btn pf-btn--main pf-full" href="{{ project.link }}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visiter le site</a>{% endif %}
+    </aside>
+  </div>
+</section>
+
+{% if project.images.all %}
+<section class="pf-sec pf-tight">
+  <div class="pf-in">
+    <h2 class="pf-h2 rv">Aperçus</h2>
+    <div class="pf-gallery">
+      {% for img in project.images.all %}<figure class="rv"><img src="{{ img.image.url }}" alt="{{ img.caption|default:project.title }}" loading="lazy" data-zoom>{% if img.caption %}<figcaption>{{ img.caption }}</figcaption>{% endif %}</figure>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if others %}
+<section class="pf-sec pf-tight">
+  <div class="pf-in">
+    <h2 class="pf-h2 rv">Autres projets</h2>
+    <div class="proj-grid">
+      {% for p in others %}
+      <a class="proj rv" href="{% url 'portfolio:project_detail' p.slug %}">
+        <span class="proj-media">{% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.title }}" loading="lazy">{% else %}<span class="proj-ph">{{ p.title|slice:":1" }}</span>{% endif %}</span>
+        <span class="proj-body"><b>{{ p.title }}</b><span class="proj-sum">{{ p.summary }}</span><span class="proj-go">Voir le projet <i class="fa-solid fa-arrow-right"></i></span></span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
