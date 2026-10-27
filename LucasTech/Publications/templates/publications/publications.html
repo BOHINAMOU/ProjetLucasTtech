@@ -138,16 +138,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 }
 .pb-featured-meta span { display: flex; align-items: center; gap: 5px; }
 
-/* Ordinateur : la photo « À la une » s'affiche en entier (visages et bâtiment non coupés), le titre est placé dessous.
-   Sur téléphone, l'affichage reste celui d'avant. */
+/* Ordinateur : la photo « À la une » prend toute la largeur, cadrée sur les visages (le bas de la photo peut être coupé).
+   Le titre est placé dessous. Sur téléphone, l'affichage reste celui d'avant. */
 .pb-featured-media { display: contents; }
 .pb-featured-bg { display: none; }
 @media (min-width: 641px) {
   .pb-featured { height: auto; display: flex; flex-direction: column; background: #0b2e1d; }
-  .pb-featured-media { display: block; position: relative; height: clamp(320px, 44vw, 580px); overflow: hidden; background: #101a14; }
-  .pb-featured-bg { display: block; position: absolute; inset: -30px; background-size: cover; background-position: center; filter: blur(30px) brightness(.55); }
-  .pb-featured .pb-featured-media img, .pb-featured .pb-featured-media video { position: relative; width: 100%; height: 100%; object-fit: contain; object-position: center; }
-  .pb-featured:hover .pb-featured-media img, .pb-featured:hover .pb-featured-media video { transform: scale(1.015); }
+  .pb-featured-media { display: block; position: relative; height: clamp(420px, 54vw, 760px); overflow: hidden; background: #101a14; }
+  .pb-featured .pb-featured-media img, .pb-featured .pb-featured-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 38%; }
+  .pb-featured:hover .pb-featured-media img, .pb-featured:hover .pb-featured-media video { transform: scale(1.03); }
   .pb-featured-overlay { display: none; }
   .pb-featured-content { position: static; padding: 22px 36px 28px; }
 }
@@ -440,7 +439,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     {% if featured.cover_video %}
       <video src="{{ featured.cover_video.url }}" autoplay muted loop playsinline></video>
     {% elif featured.cover_image %}
-      <span class="pb-featured-bg" style="background-image:url('{{ featured.cover_image.url }}')"></span>
       <img src="{{ featured.cover_image.url }}" alt="{{ featured.title }}">
     {% else %}
       <div style="width:100%;height:100%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.2;">📰</div>
