@@ -48,10 +48,11 @@
     rv.forEach(function (n) { io.observe(n); });
   } else { rv.forEach(function (n) { n.classList.add('in'); }); }
 
-  /* ── Qui suis-je : les mots s'éclairent au fil du défilement ── */
-  $$('[data-reveal-words]').forEach(function (box) {
+  /* ── « Qui est … ? » : le texte s'écrit petit à petit au clic ── */
+  var who = $('#who'), whoBtn = $('#whoBtn'), whoText = $('#whoText'), whoSkip = $('#whoSkip'), whoMore = $('.who-more');
+  if (who && whoBtn) {
     var words = [];
-    (function split(node) {
+    function split(node) {
       [].slice.call(node.childNodes).forEach(function (c) {
         if (c.nodeType === 3) {
           var frag = document.createDocumentFragment();
@@ -63,53 +64,28 @@
           c.parentNode.replaceChild(frag, c);
         } else if (c.nodeType === 1) { split(c); }
       });
-    })(box);
-    if (reduce || !words.length) { words.forEach(function (w) { w.classList.add('on'); }); return; }
-    var lit = -1, ticking = false;
-    function update() {
-      ticking = false;
-      var r = box.getBoundingClientRect(), vh = window.innerHeight;
-      // de 0 (haut du texte aux 3/4 de l'écran) à 1 (bas du texte au milieu)
-      var p = (vh * 0.78 - r.top) / (r.height + vh * 0.28);
-      var n = Math.round(Math.max(0, Math.min(1, p)) * words.length);
-      if (n === lit) return;
-      words.forEach(function (w, i) { w.classList.toggle('on', i < n); });
-      lit = n;
     }
-    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-  });
+    if (whoText) split(whoText);
 
-  /* ── Accueil : les écrans des projets grandissent légèrement au défilement ── */
-  var shots = $('.stage-shots');
-  if (shots && !reduce) {
-    var tick = false;
-    function grow() {
-      tick = false;
-      var r = shots.getBoundingClientRect(), vh = window.innerHeight;
-      var p = Math.max(0, Math.min(1, (vh - r.top) / (vh * 0.9)));
-      shots.style.setProperty('--s', (0.9 + p * 0.1).toFixed(3));
+    var timer = null;
+    function finish() {
+      clearInterval(timer);
+      words.forEach(function (w) { w.classList.add('on'); });
+      if (whoSkip) whoSkip.hidden = true;
+      if (whoMore) whoMore.classList.add('in');
     }
-    window.addEventListener('scroll', function () { if (!tick) { tick = true; requestAnimationFrame(grow); } }, { passive: true });
-    grow();
-  }
-
-  /* ── Réalisations : carrousel avec flèches ── */
-  var rail = $('#projRail');
-  if (rail) {
-    var btns = $$('[data-rail]');
-    function step() { var it = $('.rail-item', rail); return it ? it.getBoundingClientRect().width + 22 : rail.clientWidth * 0.8; }
-    function syncBtns() {
-      var max = rail.scrollWidth - rail.clientWidth - 2;
-      btns.forEach(function (b) { b.disabled = b.getAttribute('data-rail') === '-1' ? rail.scrollLeft <= 2 : rail.scrollLeft >= max; });
+    function start() {
+      who.classList.add('open');
+      whoBtn.setAttribute('aria-expanded', 'true');
+      if (!words.length || reduce) { finish(); return; }
+      var i = 0, step = Math.max(18, Math.min(70, 9000 / words.length));
+      timer = setInterval(function () {
+        words[i].classList.add('on'); i++;
+        if (i >= words.length) { finish(); }
+      }, step);
     }
-    btns.forEach(function (b) {
-      b.addEventListener('click', function () { rail.scrollBy({ left: step() * Number(b.getAttribute('data-rail')), behavior: reduce ? 'auto' : 'smooth' }); });
-    });
-    rail.addEventListener('scroll', syncBtns, { passive: true });
-    window.addEventListener('resize', syncBtns);
-    syncBtns();
+    whoBtn.addEventListener('click', start);
+    if (whoSkip) whoSkip.addEventListener('click', finish);
   }
 
   /* ── Fenêtre de détail ── */
