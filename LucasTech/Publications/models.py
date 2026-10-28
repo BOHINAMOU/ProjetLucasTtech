@@ -92,7 +92,7 @@ class Publication(models.Model):
         sans balises, sans les lignes « Catégorie / Date / Rédaction / Source » du début de l'article."""
         import html
         from django.utils.html import strip_tags
-        skip = ('Catégorie :', 'Date de publication', 'Rédaction :', 'Source :')
+        skip = ('Catégorie :', 'Date de publication', 'Rédaction :', 'Source :', 'Sources :')
         parts = []
         for chunk in self.content.split('</p>'):
             text = ' '.join(html.unescape(strip_tags(chunk)).split())
