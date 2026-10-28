@@ -557,7 +557,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </form>
     </div>
     <div class="nd-quick" id="message-rapide">
-      <h2 style="margin-top:-16px;margin-left:-16px;margin-right:-16px">Un message rapide pour nous ?</h2>
+      <h2 style="margin-top:-16px;margin-left:-16px;margin-right:-16px">Une actualité ou un message à partager ? Contactez-nous</h2>
       <p style="margin:0;color:#334155">Une question, une remarque ? Laissez-nous un mot, nous vous répondons.</p>
       <form class="nd-form" method="post" action="{% url 'publications:publication_quick_message' publication.slug %}">{% csrf_token %}
         <div class="nd-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
