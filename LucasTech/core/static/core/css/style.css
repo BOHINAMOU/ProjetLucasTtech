@@ -819,14 +819,14 @@ header { position: sticky; top: 0; z-index: 400; }
   .about-content { padding: 1.8rem 1.4rem 2.2rem; }
 }
 
-/* ══ FONDATEUR : deux photos en haut, texte centré dessous ══ */
+/* ══ FONDATEUR : photo en haut, texte centré dessous ══ */
 .founder-band {
   background: #f5eeda; text-align: center;
   padding: clamp(3.5rem, 7vw, 6rem) clamp(1.25rem, 5vw, 3rem);
 }
 .founder-photos {
   display: flex; justify-content: center; gap: clamp(.8rem, 2vw, 1.4rem);
-  margin: 0 auto clamp(2rem, 4vw, 2.8rem); max-width: 620px;
+  margin: 0 auto clamp(2rem, 4vw, 2.8rem); max-width: 280px;
 }
 .founder-photo {
   margin: 0; flex: 1 1 0; max-width: 300px; aspect-ratio: 4 / 5;
