@@ -312,27 +312,24 @@
 </div>
 
 <!-- ── FONDATEUR ── -->
-<section class="founder-band reveal" aria-label="Le fondateur de Lantante Technologie">
-  <div class="founder-content">
-    <p class="section-eyebrow">Le fondateur</p>
-    <h2 class="founder-name">BOHINAMOU M. <em>Lucas</em></h2>
+<section class="promo-band promo-band--sand founder-band reveal" aria-label="Le fondateur de Lantante Technologie">
+  <div>
+    <p class="promo-eyebrow">Le fondateur</p>
+    <h2 class="promo-title">BOHINAMOU M. Lucas</h2>
     <p class="founder-role">Initiateur de Lantante Technologie</p>
-    <p class="founder-text">
+    <p class="promo-desc">
       Ingénieur des travaux informatiques, il a lancé Lantante Technologie à Lomé avec une
       conviction : rendre la technologie accessible, utile et humaine, pour les particuliers
       comme pour les entreprises.
     </p>
     <div class="promo-cta">
-      <a href="{% url 'portfolio:home' %}" class="btn-pill">Découvrir son parcours</a>
-      <a href="{% url 'core:team' %}" class="btn-ghost">Voir l'équipe <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'portfolio:home' %}" class="btn-ghost">Découvrir son parcours <i class="fa fa-arrow-right"></i></a>
+      <a href="{% url 'core:team' %}" class="btn-pill">Voir l'équipe</a>
     </div>
   </div>
-  <div class="founder-visual">
-    <figure class="founder-photo">
-      <img src="{% static 'core/images/fondateur-bohinamou.jpg' %}" alt="BOHINAMOU M. Lucas, fondateur de Lantante Technologie" width="900" height="1170" loading="lazy">
-    </figure>
-    <img class="founder-avatar" src="{% static 'core/images/fondateur-bohinamou-portrait.jpg' %}" alt="" width="360" height="360" loading="lazy">
-  </div>
+  <figure class="founder-photo">
+    <img src="{% static 'core/images/fondateur-bohinamou.jpg' %}" alt="BOHINAMOU M. Lucas, fondateur de Lantante Technologie" width="620" height="775" loading="lazy">
+  </figure>
 </section>
 
 <!-- ── PUBLICATIONS ── -->
