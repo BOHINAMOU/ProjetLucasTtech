@@ -174,7 +174,6 @@
         <p class="tm-role ap-rv" style="--d:.12s">{{ founder.role }}</p>
         {% if founder.bio %}<div class="tm-bio ap-rv" style="--d:.18s">{{ founder.bio|linebreaks }}</div>{% endif %}
         <div class="ap-btns ap-rv" style="--d:.3s">
-          <a class="ap-pill ap-pill--light" href="{% url 'core:team_member_detail' founder.pk %}">Voir le profil</a>
           {% if founder.whatsapp %}
           <a class="ap-pill ap-pill--wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/{{ founder.whatsapp }}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
           {% endif %}
