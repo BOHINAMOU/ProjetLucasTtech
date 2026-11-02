@@ -2,13 +2,13 @@
 {% block title %}Notre équipe — Lantante Technologie{% endblock %}
 {% block meta_description %}Découvrez l'équipe Lantante Technologie : le fondateur, ses valeurs et les personnes qui font avancer la technologie en Afrique.{% endblock %}
 {% block og_title %}Notre équipe — Lantante Technologie{% endblock %}
+{% block extra_head %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
 
 {% block content %}
 <style>
-/* Mise en page inspirée de Monétisation, aux couleurs et polices du site */
-.ap { --ink: #1c1814; --gray: #7a7068; --bg: #f7f3ee; --card: #fffdf9; --line: rgba(28,24,20,.1); --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c; --gold2: #a8862f;
-  --serif: 'Cormorant Garamond', Georgia, serif;
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 17px; line-height: 1.5; letter-spacing: -.011em;
+/* Même langage visuel que la page Monétisation */
+.ap { --ink: #1d1d1f; --gray: #6e6e73; --bg: #fbfbfd; --card: #f5f5f7; --line: rgba(0,0,0,.09); --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 17px; line-height: 1.5; letter-spacing: -.011em;
   color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; overflow-x: clip; }
 .ap *, .ap *::before, .ap *::after { box-sizing: border-box; }
 .ap :where(h1, h2, h3, p, ul, ol, dl, dd, figure) { margin: 0; padding: 0; }
@@ -30,9 +30,9 @@
 .ap-pill--sm { padding: 7px 18px; font-size: .9rem; }
 
 /* ── Barre collante ── */
-.ap-bar { position: sticky; top: var(--nav-h, 96px); z-index: 40; background: rgba(247,243,238,.86); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
+.ap-bar { position: sticky; top: var(--nav-h, 96px); z-index: 40; background: rgba(251,251,253,.82); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
 .ap-bar-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.2rem, 5vw, 2.5rem); height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.ap-bar-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; letter-spacing: 0; text-decoration: none; }
+.ap-bar-title { font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; text-decoration: none; }
 .ap-bar-links { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 30px); margin-left: auto; }
 .ap-bar-links a { font-size: .85rem; color: var(--gray); text-decoration: none; transition: color .2s; white-space: nowrap; }
 .ap-bar-links a:hover, .ap-bar-links a.on { color: var(--ink); }
@@ -45,71 +45,71 @@
 
 /* ── En-tête ── */
 .ap-hero { text-align: center; padding: clamp(4rem, 9vw, 7rem) 0 clamp(2.5rem, 5vw, 4rem); }
-.ap-kicker { font-size: .85rem; font-weight: 600; color: var(--gold2); letter-spacing: .18em; text-transform: uppercase; margin-bottom: 14px; }
-.ap-hero h1 { font-family: var(--serif); font-size: clamp(3rem, 7.6vw, 6.4rem); font-weight: 700; line-height: 1; letter-spacing: -.01em; max-width: 13ch; margin: 0 auto; text-wrap: balance; }
-.ap-hero h1 em { font-style: italic; color: var(--g); }
-.ap-hero .ap-sub { font-size: clamp(1.1rem, 1.9vw, 1.4rem); line-height: 1.5; font-weight: 400; color: var(--gray); max-width: 34em; margin: 26px auto 0; text-wrap: balance; }
+.ap-kicker { font-size: 1.1rem; font-weight: 600; color: var(--g); letter-spacing: -.01em; margin-bottom: 14px; }
+.ap-hero h1 { font-size: clamp(2.7rem, 7.4vw, 6.2rem); font-weight: 700; line-height: 1.02; letter-spacing: -.045em; max-width: 13ch; margin: 0 auto; text-wrap: balance; }
+.ap-hero h1 em { font-style: normal; color: var(--g); }
+.ap-hero .ap-sub { font-size: clamp(1.15rem, 2.1vw, 1.6rem); line-height: 1.4; font-weight: 500; color: var(--gray); max-width: 34em; margin: 26px auto 0; text-wrap: balance; }
 .ap-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 34px; }
 
 /* ── Fondateur : grande scène verte avec le portrait ── */
 .tm-stage { position: relative; width: min(1100px, 92vw); margin: clamp(1rem, 3vw, 2rem) auto 0; border-radius: 34px; overflow: hidden;
-  background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 40px 80px rgba(28,24,20,.12);
+  background: radial-gradient(120% 100% at 30% 0%, #17603a 0%, #0b2e1d 62%); color: #fff; box-shadow: 0 40px 80px rgba(11,46,29,.28);
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: stretch;
   transform: scale(calc(.92 + var(--p, 1) * .08)); transform-origin: 50% 0; will-change: transform; }
 .ap:not(.js) .tm-stage { transform: none; }
 .tm-portrait { position: relative; min-height: clamp(420px, 52vw, 640px); overflow: hidden; }
 .tm-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 40% 18%; }
 .tm-portrait-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: 700; color: rgba(255,255,255,.25); }
+.tm-portrait::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11,46,29,0) 62%, rgba(11,46,29,.55) 100%); }
 .tm-founder { padding: clamp(2rem, 5vw, 4rem); display: flex; flex-direction: column; justify-content: center; }
-.tm-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 7px 15px; border-radius: 980px; background: rgba(201,168,76,.14); border: 1px solid rgba(201,168,76,.45); color: var(--gold2); font-size: .78rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
-.tm-founder h2 { font-family: var(--serif); font-size: clamp(2.4rem, 4.8vw, 4rem); font-weight: 700; line-height: 1; letter-spacing: 0; margin-top: 20px; text-wrap: balance; }
-.tm-role { font-size: clamp(1rem, 1.6vw, 1.15rem); font-weight: 500; color: var(--g); margin-top: 10px; }
-.tm-bio { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); color: #4a423b; font-size: clamp(1rem, 1.5vw, 1.1rem); line-height: 1.6; }
+.tm-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 7px 15px; border-radius: 980px; background: rgba(201,168,76,.16); border: 1px solid rgba(201,168,76,.5); color: #f1d58c; font-size: .82rem; font-weight: 600; letter-spacing: .02em; }
+.tm-founder h2 { font-size: clamp(2.1rem, 4.6vw, 3.8rem); font-weight: 700; line-height: 1.02; letter-spacing: -.04em; margin-top: 20px; text-wrap: balance; }
+.tm-role { font-size: clamp(1.05rem, 1.8vw, 1.3rem); font-weight: 500; color: #8fe3b4; margin-top: 10px; }
+.tm-bio { margin-top: 22px; color: rgba(255,255,255,.82); font-size: clamp(1rem, 1.5vw, 1.1rem); line-height: 1.6; }
 .tm-bio p + p { margin-top: .8em; }
 .tm-founder .ap-btns { justify-content: flex-start; margin-top: 30px; }
 .tm-social { display: flex; gap: 10px; margin-top: 22px; }
-.tm-social a { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ink); background: var(--bg); border: 1px solid var(--line); text-decoration: none; transition: background .25s, transform .25s; }
-.tm-social a:hover { background: var(--gold); color: #fff; transform: translateY(-2px); }
+.tm-social a { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); text-decoration: none; transition: background .25s, transform .25s; }
+.tm-social a:hover { background: rgba(255,255,255,.22); transform: translateY(-2px); }
 
 /* ── Grande phrase qui s'éclaircit en défilant ── */
 .ap-statement { padding: clamp(5rem, 12vw, 10rem) 0 clamp(4rem, 9vw, 7rem); }
-.ap-scrub { font-family: var(--serif); font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 600; line-height: 1.12; letter-spacing: 0; text-align: center; max-width: 18em; margin: 0 auto 1.3em; text-wrap: balance; }
+.ap-scrub { font-size: clamp(1.75rem, 4.6vw, 3.5rem); font-weight: 700; line-height: 1.14; letter-spacing: -.035em; text-align: center; max-width: 18em; margin: 0 auto 1.3em; text-wrap: balance; }
 .ap-scrub:last-child { margin-bottom: 0; }
-.ap-scrub .w { color: rgba(28,24,20,.15); transition: color .45s ease; }
+.ap-scrub .w { color: rgba(29,29,31,.17); transition: color .45s ease; }
 .ap-scrub .w.on { color: var(--ink); }
-.ap-scrub em { font-style: italic; }
+.ap-scrub em { font-style: normal; }
 .ap-scrub em .w.on { color: var(--g); }
 .ap:not(.js) .ap-scrub { color: var(--ink); }
 
 /* ── Sections ── */
 .ap-sec { padding: clamp(5rem, 10vw, 8rem) 0; }
 .ap-head { text-align: center; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
-.ap-h { font-family: var(--serif); font-size: clamp(2.4rem, 5.6vw, 4.4rem); font-weight: 700; line-height: 1.04; letter-spacing: 0; max-width: 16ch; margin: 0 auto; text-wrap: balance; }
+.ap-h { font-size: clamp(2.2rem, 5.4vw, 4.2rem); font-weight: 700; line-height: 1.05; letter-spacing: -.04em; max-width: 16ch; margin: 0 auto; text-wrap: balance; }
 .ap-lead { font-size: clamp(1.1rem, 1.9vw, 1.4rem); line-height: 1.45; font-weight: 500; color: var(--gray); max-width: 34em; margin: 20px auto 0; text-wrap: balance; }
 
 /* ── Valeurs ── */
 .tm-values { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.tm-val { background: var(--card); border: 1px solid var(--line); border-radius: 28px; padding: 34px 24px 30px; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
+.tm-val { background: var(--card); border-radius: 28px; padding: 34px 24px 30px; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
 .tm-val:hover { transform: translateY(-6px) scale(1.02); background: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.1); }
 .tm-val-ico { width: 60px; height: 60px; border-radius: 18px; background: var(--c, var(--g)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px; }
-.tm-val h3 { font-family: var(--serif); font-size: 1.6rem; font-weight: 700; }
+.tm-val h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; }
 .tm-val p { color: var(--gray); font-size: .98rem; margin-top: 8px; }
 
 /* ── Membres ── */
 .tm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.tm-card { display: block; text-decoration: none; background: var(--card); border: 1px solid var(--line); border-radius: 28px; overflow: hidden; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
+.tm-card { display: block; text-decoration: none; background: var(--card); border-radius: 28px; overflow: hidden; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
 .tm-card:hover { transform: translateY(-6px); background: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.1); }
 .tm-card-img { aspect-ratio: 4 / 5; background: #e8e8ed; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 700; color: rgba(0,0,0,.18); }
 .tm-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
 .tm-card:hover .tm-card-img img { transform: scale(1.05); }
 .tm-card-body { padding: 18px 20px 22px; }
-.tm-card-body h3 { font-family: var(--serif); font-size: 1.45rem; font-weight: 700; }
+.tm-card-body h3 { font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; }
 .tm-card-body p { color: var(--g); font-size: .92rem; font-weight: 500; margin-top: 3px; }
 
 /* ── Rejoindre (fond sombre) ── */
-.ap-dark { background: var(--ink); color: #f7f3ee; border-top: 3px solid var(--gold); }
-.ap-dark .ap-h em { font-style: italic; color: var(--gold); }
-.ap-dark .ap-lead { color: rgba(247,243,238,.72); }
+.ap-dark { background: radial-gradient(120% 100% at 50% 0%, #17603a 0%, #0b2e1d 62%); color: #fff; }
+.ap-dark .ap-lead { color: rgba(255,255,255,.75); }
 
 @media (max-width: 960px) {
   .tm-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -152,7 +152,7 @@
   <section class="ap-hero" id="top">
     <div class="ap-in">
       <p class="ap-kicker ap-rv">Notre équipe</p>
-      <h1 class="ap-rv" style="--d:.08s">Les personnes derrière <em>Lantante</em></h1>
+      <h1 class="ap-rv" style="--d:.08s">Les personnes derrière <em>Lantante</em>.</h1>
       <p class="ap-sub ap-rv" style="--d:.16s">Ceux qui font avancer Lantante Technologie, construisent l'Afrique de demain et font progresser la technologie et l'informatique.</p>
     </div>
   </section>
@@ -174,7 +174,7 @@
         <p class="tm-role ap-rv" style="--d:.12s">{{ founder.role }}</p>
         {% if founder.bio %}<div class="tm-bio ap-rv" style="--d:.18s">{{ founder.bio|linebreaks }}</div>{% endif %}
         <div class="ap-btns ap-rv" style="--d:.3s">
-          <a class="ap-pill ap-pill--solid" href="{% url 'core:team_member_detail' founder.pk %}">Voir le profil</a>
+          <a class="ap-pill ap-pill--light" href="{% url 'core:team_member_detail' founder.pk %}">Voir le profil</a>
           {% if founder.whatsapp %}
           <a class="ap-pill ap-pill--wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/{{ founder.whatsapp }}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
           {% endif %}
@@ -196,7 +196,7 @@
   <section class="ap-statement">
     <div class="ap-in">
       <p class="ap-scrub">Nous créons des solutions numériques <em>utiles</em>, pensées pour l'Afrique.</p>
-      <p class="ap-scrub">Former, accompagner et construire, c'est ce qui nous fait <em>avancer</em>.</p>
+      <p class="ap-scrub">Former, accompagner et construire&nbsp;: c'est ce qui nous fait <em>avancer</em>.</p>
     </div>
   </section>
 
@@ -209,8 +209,8 @@
       <div class="tm-values">
         <article class="tm-val ap-rv"><span class="tm-val-ico" style="--c:#0f7a45"><i class="fa fa-lightbulb"></i></span><h3>Innovation</h3><p>Des idées neuves et des outils modernes au service de nos clients.</p></article>
         <article class="tm-val ap-rv" style="--d:60ms"><span class="tm-val-ico" style="--c:#c9a84c"><i class="fa fa-graduation-cap"></i></span><h3>Transmission</h3><p>Former et partager nos savoirs pour faire grandir chacun.</p></article>
-        <article class="tm-val ap-rv" style="--d:120ms"><span class="tm-val-ico" style="--c:#1c1814"><i class="fa fa-handshake"></i></span><h3>Proximité</h3><p>Écouter, conseiller et rester disponibles pour vous.</p></article>
-        <article class="tm-val ap-rv" style="--d:180ms"><span class="tm-val-ico" style="--c:#0b6137"><i class="fa fa-gem"></i></span><h3>Exigence</h3><p>Un travail soigné, livré avec sérieux et dans les délais.</p></article>
+        <article class="tm-val ap-rv" style="--d:120ms"><span class="tm-val-ico" style="--c:#0d3b7a"><i class="fa fa-handshake"></i></span><h3>Proximité</h3><p>Écouter, conseiller et rester disponibles pour vous.</p></article>
+        <article class="tm-val ap-rv" style="--d:180ms"><span class="tm-val-ico" style="--c:#c93060"><i class="fa fa-gem"></i></span><h3>Exigence</h3><p>Un travail soigné, livré avec sérieux et dans les délais.</p></article>
       </div>
     </div>
   </section>
@@ -238,7 +238,7 @@
   <section class="ap-sec ap-dark" id="rejoindre">
     <div class="ap-in">
       <div class="ap-head" style="margin-bottom:0">
-        <h2 class="ap-h ap-rv">Envie de construire <em>avec nous</em>&nbsp;?</h2>
+        <h2 class="ap-h ap-rv">Envie de construire avec nous&nbsp;?</h2>
         <p class="ap-lead ap-rv" style="--d:.1s">Projet, partenariat ou candidature : écrivez-nous, nous vous répondons rapidement.</p>
         <div class="ap-btns ap-rv" style="--d:.18s">
           {% if site_settings.whatsapp_1 %}
