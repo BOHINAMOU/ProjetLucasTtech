@@ -1,7 +1,8 @@
 import re
 
 from django.contrib import admin
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, HttpResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
 
@@ -172,6 +173,10 @@ class PublicationAdmin(admin.ModelAdmin):
 
     def export_registrations_view(self, request, pk):
         publication = self.get_object(request, pk)
+        if publication is None:
+            raise Http404
+        if not self.has_view_permission(request, publication):
+            raise PermissionDenied
         wb = _build_registrations_workbook(
             EventRegistration.objects.filter(publication=publication),
             sheet_title=publication.title,

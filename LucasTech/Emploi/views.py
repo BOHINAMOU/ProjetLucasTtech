@@ -620,7 +620,9 @@ def post_comment(request, pk):
 @require_POST
 def post_delete(request, pk):
     post = get_object_or_404(FeedPost, pk=pk)
-    if post.author_id == request.user.pk or is_staff(request.user):
+    # L'auteur peut supprimer sa publication ; pour l'équipe, il faut la permission Django de suppression
+    # (le rôle « Administrateur » ne l'a pas : il masque, il ne supprime pas).
+    if post.author_id == request.user.pk or request.user.has_perm('Emploi.delete_feedpost'):
         post.delete()
     return redirect('emploi:feed')
 

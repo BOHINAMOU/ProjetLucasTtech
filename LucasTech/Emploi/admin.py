@@ -1049,6 +1049,10 @@ class SanctionViewsMixin:
         target = get_object_or_404(get_user_model(), pk=user_id)
         if kind not in ('warn', 'ban') or not request.user.is_staff or not can_sanction(target):
             raise PermissionDenied
+        # Avertir = créer un avertissement ; bannir = bloquer un compte : chacun exige sa permission Django.
+        needed = 'Emploi.add_moderationwarning' if kind == 'warn' else 'Emploi.add_accountban'
+        if not request.user.has_perm(needed):
+            raise PermissionDenied
         back = request.GET.get('next') or reverse('admin:Emploi_moderationwarning_changelist')
         if request.method == 'POST':
             reason = request.POST.get('reason', '').strip()
@@ -1123,7 +1127,8 @@ class AccountBanAdmin(admin.ModelAdmin):
             return
         super().save_model(request, obj, form, change)
 
-    @admin.action(description="✓ Lever le bannissement (réactive le compte, remet les avertissements à zéro)")
+    @admin.action(description="✓ Lever le bannissement (réactive le compte, remet les avertissements à zéro)",
+                  permissions=['change'])
     def lift_ban(self, request, queryset):
         count = 0
         for ban in queryset.filter(lifted_at__isnull=True):
