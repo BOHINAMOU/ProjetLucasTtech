@@ -102,6 +102,37 @@
 .ltd-days span { flex:1; text-align:center; font-size:.62rem; color:var(--muted); }
 .ltd-mail { padding:12px 16px; font-size:.84rem; color:#334155; background:#f8fafc; border-top:1px solid var(--line); }
 .ltd-mail i { color:var(--g); margin-right:6px; }
+/* ── Responsive (tablette / mobile) ── */
+.ltd-hero > div:first-child { min-width:0; }
+@media (max-width:991.98px) {
+  .ltd-kpis { width:100%; }
+  .ltd-kpi { flex:1 1 0; padding:4px 10px; }
+}
+@media (max-width:767.98px) {
+  .ltd-hero { padding:20px 18px; border-radius:14px; gap:16px; }
+  .ltd-hero h2 { font-size:1.55rem; }
+  .ltd-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .ltd-kpi { border-left:0; background:rgba(255,255,255,.07); border-radius:12px; padding:10px 6px; }
+  .ltd-kpi strong { font-size:1.5rem; }
+  .ltd-kpi span { font-size:.66rem; letter-spacing:.05em; }
+  .ltd-h { margin:24px 0 10px; }
+  .ltd-actions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .ltd-act { padding:14px 8px; font-size:.8rem; min-height:96px; }
+  .ltd-act i { width:40px; height:40px; font-size:1rem; }
+  .ltd-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .ltd-card { flex-direction:column; align-items:flex-start; gap:8px; padding:14px 14px 14px 16px; }
+  .ltd-ico { width:36px; height:36px; border-radius:10px; font-size:.9rem; }
+  .ltd-n { font-size:1.45rem; }
+  .ltd-l { font-size:.76rem; }
+  .ltd-cnt strong { font-size:1.5rem; }
+  .ltd-cnt div { padding:12px 6px; }
+  .ltd-chart { gap:3px; }
+  .ltd-days { gap:3px; }
+  .ltd-days span { font-size:.55rem; }
+}
+@media (max-width:359.98px) {
+  .ltd-actions, .ltd-grid { grid-template-columns:minmax(0,1fr); }
+}
 </style>
 
 <div class="ltd">
