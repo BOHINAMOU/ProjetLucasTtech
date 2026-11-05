@@ -10,6 +10,7 @@
       {% for s in target.skills.all %}<span class="badge badge-info">{{ s.name }}</span> {% empty %}—{% endfor %}
     </p>
     <p class="text-muted">Score = domaine (40) + compétences (40) + ville (20). « Proposer » crée la mise en relation et prévient le candidat.</p>
+    <div class="table-responsive">
     <table class="table table-striped">
       <thead><tr><th>Candidat</th><th>Titre</th><th>Ville</th><th>Expérience</th><th>Score</th><th>Pourquoi</th><th></th></tr></thead>
       <tbody>
@@ -33,6 +34,7 @@
       {% endfor %}
       </tbody>
     </table>
+    </div>
   </div>
 </div>
 {% endblock %}

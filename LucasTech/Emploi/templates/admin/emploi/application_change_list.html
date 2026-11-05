@@ -24,7 +24,7 @@
   {% endif %}
   {% if stats.companies %}
   <details class="mb-2"><summary style="cursor:pointer;font-weight:600;color:#0d3b7a">Suivi par entreprise (origine des offres)</summary>
-  <div class="card mt-2"><div class="card-body p-2">
+  <div class="card mt-2"><div class="card-body p-2 table-responsive">
     <table class="table table-sm mb-0">
       <thead><tr><th>Entreprise</th><th class="text-center">Total</th><th class="text-center">En attente</th><th class="text-center">Présélectionnés</th><th class="text-center">Terminées</th></tr></thead>
       <tbody>{% for row in stats.companies %}<tr><td>{{ row.name }}</td><td class="text-center">{{ row.total }}</td><td class="text-center">{{ row.pending }}</td><td class="text-center">{{ row.progress }}</td><td class="text-center">{{ row.treated }}</td></tr>{% endfor %}</tbody>
