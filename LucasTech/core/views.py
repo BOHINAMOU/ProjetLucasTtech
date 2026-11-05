@@ -16,7 +16,10 @@ def home(request):
         'hero_slides': HeroSlide.objects.filter(is_active=True),
         'news_items': NewsTickerItem.objects.filter(is_active=True),
         'home_products': (
+            # Accueil : on met en avant le matériel et les autres articles, pas les livres / annales
             Product.objects.filter(is_available=True)
+            .exclude(category__slug='livres')
+            .exclude(name__icontains='annale')
             .select_related('category')
             .order_by('-is_featured', '-created_at')[:8]
         ),
