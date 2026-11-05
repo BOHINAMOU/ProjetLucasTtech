@@ -1,0 +1,278 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'core/css/home.css' %}{% if cache_bust %}?v={{ cache_bust }}{% endif %}">
+<link rel="preload" as="image" href="{% static 'core/images/home/hero-site-web.jpg' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lx">
+
+{% if news_items %}
+<div class="news-ticker" aria-label="Actualités Lantante Technologie">
+  <div class="news-ticker__track">
+    {% for item in news_items %}
+    <a href="{{ item.link_url }}" class="news-chip"><span class="news-chip__date">{{ item.label }}</span> {{ item.message }}</a>
+    {% endfor %}
+    {% for item in news_items %}
+    <a href="{{ item.link_url }}" class="news-chip" aria-hidden="true" tabindex="-1"><span class="news-chip__date">{{ item.label }}</span> {{ item.message }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ═════════ 1. HERO : grandes photos qui défilent, le mot change avec la photo ═════════ -->
+<section class="hx" id="hx" aria-label="Lantante Technologie">
+  <div class="hx__slides" aria-hidden="true">
+    <div class="hx__slide is-on" style="--x:68%;--y:22%;background-image:url('{% static 'core/images/home/hero-site-web.jpg' %}')"></div>
+    <div class="hx__slide" style="--x:62%;--y:20%;background-image:url('{% static 'core/images/home/hero-appli.jpg' %}')"></div>
+    <div class="hx__slide" style="--x:58%;--y:18%;background-image:url('{% static 'core/images/home/hero-facebook.jpg' %}')"></div>
+    <div class="hx__slide" style="--x:45%;--y:8%;background-image:url('{% static 'core/images/home/hero-video.jpg' %}')"></div>
+  </div>
+  <div class="hx__shade" aria-hidden="true"></div>
+
+  <div class="hx__copy">
+    <h1 class="hx__title">
+      Nous créons votre
+      <span class="hx__rot">
+        <span class="hx__word is-on">site web.</span>
+        <span class="hx__word">application mobile.</span>
+        <span class="hx__word">page Facebook qui vend.</span>
+        <span class="hx__word">vidéo publicitaire.</span>
+      </span>
+    </h1>
+    <p class="hx__sub">Sites, applis, réseaux sociaux et vidéos pour votre entreprise.</p>
+    <div class="hx__cta">
+      <a href="#services" class="lx-btn lx-btn--green">Nos services</a>
+      {% if site_settings.whatsapp_1 %}
+      <a href="https://wa.me/{{ site_settings.whatsapp_1 }}" class="lx-btn lx-btn--glass" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Devis gratuit</a>
+      {% else %}
+      <a href="{% url 'services:services' %}" class="lx-btn lx-btn--glass">Devis gratuit</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ 4. LES SERVICES EN GRAND ═════════ -->
+<div id="services"></div>
+
+<section class="lx-scene" data-scene>
+  <div class="lx-scene__sticky">
+    <div class="lx-scene__media">
+      <img src="{% static 'core/images/home/site-web.jpg' %}" alt="Développeurs au travail sur un site web" loading="lazy">
+    </div>
+    <div class="lx-scene__copy">
+      <p class="lx-label"><span>01</span> Création de sites web</p>
+      <h2>Un site qui vend, même la nuit.</h2>
+      <p>Vitrine ou boutique en ligne, rapide et bien placé sur Google.</p>
+      <a href="{% url 'services:services' %}" class="lx-link">Lancer mon site <i class="fa fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<section class="lx-scene lx-scene--flip" data-scene>
+  <div class="lx-scene__sticky">
+    <div class="lx-scene__media">
+      <img src="{% static 'core/images/home/appli-mobile.jpg' %}" alt="Jeune homme qui montre une application sur son téléphone" loading="lazy">
+    </div>
+    <div class="lx-scene__copy">
+      <p class="lx-label"><span>02</span> Applications mobiles</p>
+      <h2>Votre entreprise dans leur poche.</h2>
+      <p>Applis Android et iPhone, du design jusqu'à la publication.</p>
+      <a href="{% url 'services:services' %}" class="lx-link">Parler de mon appli <i class="fa fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<section class="lx-scene" data-scene>
+  <div class="lx-scene__sticky">
+    <div class="lx-scene__media">
+      <img src="{% static 'core/images/home/community.jpg' %}" alt="Community manager qui gère une page sur son téléphone" loading="lazy">
+    </div>
+    <div class="lx-scene__copy">
+      <p class="lx-label"><span>03</span> Community manager</p>
+      <h2>Une page qui vit, des clients qui écrivent.</h2>
+      <p>On gère vos pages Facebook, Instagram et TikTok chaque semaine.</p>
+      <a href="{% url 'services:services' %}" class="lx-link">Confier ma page <i class="fa fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<section class="lx-scene lx-scene--flip" data-scene>
+  <div class="lx-scene__sticky">
+    <div class="lx-scene__media">
+      <img src="{% static 'core/images/home/video-pub.jpg' %}" alt="Vidéaste en tournage d'une publicité" loading="lazy">
+      <span class="ui-rec" aria-hidden="true"><i></i> REC 00:15</span>
+      <div class="ui-timeline" aria-hidden="true"><span></span><span></span><span></span><span></span><i></i></div>
+    </div>
+    <div class="lx-scene__copy">
+      <p class="lx-label"><span>04</span> Vidéos publicitaires</p>
+      <h2>15 secondes pour donner envie.</h2>
+      <p>Tournage et montage de vidéos courtes pour vos réseaux.</p>
+      <a href="{% url 'services:services' %}" class="lx-link">Commander une vidéo <i class="fa fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<section class="lx-scene" data-scene>
+  <div class="lx-scene__sticky">
+    <div class="lx-scene__media">
+      <img src="{% static 'core/images/home/monetisation.jpg' %}" alt="Créatrice de contenu filmée dans la rue" loading="lazy">
+    </div>
+    <div class="lx-scene__copy">
+      <p class="lx-label"><span>05</span> Monétisation</p>
+      <h2>Vos vues peuvent vous payer.</h2>
+      <p>YouTube, Facebook, TikTok : on active la monétisation de vos comptes.</p>
+      <a href="{% url 'core:monetization' %}" class="lx-link">Monétiser mes comptes <i class="fa fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ 5. ET AUSSI ═════════ -->
+<section class="lx-more">
+  <header class="lx-head">
+    <h2>Et aussi.</h2>
+    <a href="{% url 'services:services' %}" class="lx-link">Tous les services <i class="fa fa-arrow-right"></i></a>
+  </header>
+  <div class="lx-cards">
+    <a href="{% url 'services:services' %}" class="lx-card lx-card--big" data-tilt>
+      <img src="{% static 'core/images/home/embarque.jpg' %}" alt="" loading="lazy">
+      <div class="lx-card__txt"><span class="lx-card__tag">Électronique</span><h3>Systèmes embarqués</h3><p>Arduino, ESP32, objets connectés.</p></div>
+    </a>
+    <a href="{% url 'publications:publications' %}" class="lx-card" data-tilt>
+      <img src="{% static 'core/images/home/actu-tech.jpg' %}" alt="" loading="lazy">
+      <div class="lx-card__txt"><span class="lx-card__tag">Médias</span><h3>Actualité tech</h3><p>La tech expliquée simplement.</p></div>
+    </a>
+    <a href="{% url 'formations:formations' %}" class="lx-card" data-tilt>
+      <img src="{% static 'core/images/home/formation.jpg' %}" alt="" loading="lazy">
+      <div class="lx-card__txt"><span class="lx-card__tag">Apprendre</span><h3>Formations</h3><p>Web, réseaux sociaux, bureautique.</p></div>
+    </a>
+    <a href="{% url 'services:services' %}" class="lx-card" data-tilt>
+      <img src="{% static 'core/images/home/code.jpg' %}" alt="" loading="lazy">
+      <div class="lx-card__txt"><span class="lx-card__tag">Support</span><h3>Maintenance &amp; dépannage</h3><p>Ordinateurs, réseaux, sécurité.</p></div>
+    </a>
+    <a href="{% url 'shop:shop' %}" class="lx-card lx-card--shop" data-tilt>
+      <div class="lx-card__icons" aria-hidden="true"><i class="fa fa-mobile-screen"></i><i class="fa fa-laptop"></i><i class="fa fa-headphones"></i></div>
+      <div class="lx-card__txt"><span class="lx-card__tag">E-commerce</span><h3>Boutique en ligne</h3><p>Matériel tech livré au Togo.</p></div>
+    </a>
+  </div>
+</section>
+
+<!-- ═════════ 6. LA BOUTIQUE (vrais produits) ═════════ -->
+{% if home_products %}
+<section class="lx-shop">
+  <header class="lx-head lx-head--dark">
+    <h2>La boutique.</h2>
+    <a href="{% url 'shop:shop' %}" class="lx-link">Toute la boutique <i class="fa fa-arrow-right"></i></a>
+  </header>
+  <div class="lx-rail" data-rail>
+    {% for p in home_products %}
+    <a href="{% url 'shop:product_detail' p.pk %}" class="lx-prod">
+      <div class="lx-prod__img">
+        {% if p.is_on_sale %}<span class="lx-prod__tag">-{{ p.discount_percent }}%</span>{% elif p.is_featured %}<span class="lx-prod__tag lx-prod__tag--new">Coup de cœur</span>{% endif %}
+        {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy">{% else %}<i class="fa fa-box-open"></i>{% endif %}
+      </div>
+      <div class="lx-prod__body">
+        <h3>{{ p.name }}</h3>
+        <p>{{ p.card_description }}</p>
+        <div class="lx-prod__price">
+          <strong>{{ p.price|floatformat:"0g" }} FCFA</strong>
+          {% if p.is_on_sale %}<s>{{ p.old_price|floatformat:"0g" }}</s>{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  <div class="lx-rail-nav">
+    <button type="button" class="lx-rail-btn" data-rail-prev aria-label="Produits précédents"><i class="fa fa-chevron-left"></i></button>
+    <button type="button" class="lx-rail-btn" data-rail-next aria-label="Produits suivants"><i class="fa fa-chevron-right"></i></button>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═════════ 7. L'ÉQUIPE + CHIFFRES ═════════ -->
+<section class="lx-team">
+  <div class="lx-team__photo"><img src="{% static 'core/images/home/equipe.jpg' %}" alt="Une équipe souriante" loading="lazy"></div>
+  <div class="lx-team__txt">
+    <p class="lx-label">Qui sommes-nous</p>
+    <h2>Une équipe d'ici.</h2>
+    <p>Développeurs, créateurs et vidéastes basés à Lomé.</p>
+    <div class="lx-numbers">
+      <div><strong data-count="70">0</strong><span>+</span><p>clients accompagnés</p></div>
+      <div><strong data-count="50">0</strong><span>+</span><p>projets livrés</p></div>
+      <div><strong>7j/7</strong><p>sur WhatsApp</p></div>
+    </div>
+    <a href="{% url 'core:team' %}" class="lx-link">Rencontrer l'équipe <i class="fa fa-arrow-right"></i></a>
+  </div>
+</section>
+
+<!-- ═════════ 8. À LA UNE (diapos gérées dans l'admin) ═════════ -->
+{% if hero_slides %}
+<section class="lx-slides-wrap">
+  <section class="hero-slider" id="heroSlider" aria-label="À la une">
+    {% for slide in hero_slides %}
+    <a href="{{ slide.link_url }}" class="hs-slide{% if forloop.first %} is-active{% endif %}" style="background-image:url('{{ slide.image.url }}')">
+      <div class="hs-overlay"></div>
+      <div class="hs-content">
+        {% if slide.tag %}<p class="hs-tag">{{ slide.tag }}</p>{% endif %}
+        <h2 class="hs-title">{{ slide.title|safe }}</h2>
+        {% if slide.subtitle %}<p class="hs-sub">{{ slide.subtitle }}</p>{% endif %}
+        <span class="btn-pill btn-pill--solid">{{ slide.link_text }} <i class="fa fa-arrow-right"></i></span>
+      </div>
+    </a>
+    {% endfor %}
+    {% if hero_slides|length > 1 %}
+    <div class="hs-dots">
+      {% for slide in hero_slides %}
+      <button type="button" class="hs-dot{% if forloop.first %} is-active{% endif %}" data-slide="{{ forloop.counter0 }}" aria-label="Diapo {{ forloop.counter }}"></button>
+      {% endfor %}
+    </div>
+    <button type="button" class="hs-arrow hs-arrow--prev" aria-label="Diapo précédente"><i class="fa fa-chevron-left"></i></button>
+    <button type="button" class="hs-arrow hs-arrow--next" aria-label="Diapo suivante"><i class="fa fa-chevron-right"></i></button>
+    {% endif %}
+  </section>
+</section>
+{% endif %}
+
+<!-- ═════════ 9. ACTUALITÉS ═════════ -->
+{% if home_posts %}
+<section class="lx-news">
+  <header class="lx-head">
+    <h2>Actualité tech.</h2>
+    <a href="{% url 'publications:publications' %}" class="lx-link">Tous les articles <i class="fa fa-arrow-right"></i></a>
+  </header>
+  <div class="lx-news__grid">
+    {% for post in home_posts %}
+    <a href="{% url 'publications:publication_detail' post.slug %}" class="lx-post">
+      <div class="lx-post__img">
+        {% if post.cover_image %}<img src="{{ post.cover_image.url }}" alt="" loading="lazy">{% else %}<img src="{% static 'core/images/home/actu-tech.jpg' %}" alt="" loading="lazy">{% endif %}
+      </div>
+      <p class="lx-post__meta">{% if post.category %}{{ post.category.name }} · {% endif %}{{ post.created_at|date:"j F Y" }}</p>
+      <h3>{{ post.title }}</h3>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ═════════ 10. CONTACT ═════════ -->
+<section class="lx-final">
+  <div class="lx-final__photo"><img src="{% static 'core/images/home/equipe-dehors.jpg' %}" alt="Une équipe souriante en plein air" loading="lazy"></div>
+  <div class="lx-final__in">
+    <h2>Un projet ? <span>Écrivez-nous.</span></h2>
+    <p>Réponse rapide, devis gratuit.</p>
+    <div class="hx__cta">
+      {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}" class="lx-btn lx-btn--green" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Écrire sur WhatsApp</a>{% endif %}
+      <a href="{% url 'services:services' %}" class="lx-btn lx-btn--glass">Voir les services</a>
+    </div>
+  </div>
+</section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'core/js/home.js' %}{% if cache_bust %}?v={{ cache_bust }}{% endif %}" defer></script>
+{% endblock %}

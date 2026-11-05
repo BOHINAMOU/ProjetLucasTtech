@@ -1,0 +1,24 @@
+Photos de la page d'accueil — Unsplash (licence Unsplash : usage commercial gratuit, sans attribution obligatoire).
+Source : https://images.unsplash.com/photo-<id>
+
+hero-site-web.jpg     1528901166007-3784c7dd3653
+hero-appli.jpg        1605896163420-830698e44fb1
+hero-facebook.jpg     1680879275304-bbe20f7e28fb
+hero-video.jpg        1648977910041-f263fda3f0fe
+site-web.jpg          1531482615713-2afd69097998
+appli-mobile.jpg      1676151216180-730ba55119f5
+community.jpg         1739271933163-8dcc7c8e8a3e
+video-pub.jpg         1758146869763-d3df94a61b0e
+monetisation.jpg      1695866648623-2b5ff0430414
+embarque.jpg          1603732551658-5fabbafa84eb
+actu-tech.jpg         1675250719891-37d4747c9e3d
+equipe.jpg            1739298061757-7a3339cee982
+equipe-dehors.jpg     1755705152670-0cfe7829fd0e
+code.jpg              1710770563074-6d9cc0d3e338
+formation.jpg         1594077810908-9ffd89d704ac
+
+slides/slide-lantante.jpg    1573167101669-476636b96cea
+slides/slide-formations.jpg  1653566031587-114b636e182b
+slides/slide-boutique.jpg    1758612215034-02c23a576afc
+partenaires-hero.jpg  1653566031535-bcf33e1c2893
+partenaires-cta.jpg   1573496267526-08a69e46a409

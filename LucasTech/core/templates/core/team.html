@@ -1,231 +1,134 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Notre équipe — Lantante Technologie{% endblock %}
 {% block meta_description %}Découvrez l'équipe Lantante Technologie : le fondateur, ses valeurs et les personnes qui font avancer la technologie en Afrique.{% endblock %}
 {% block og_title %}Notre équipe — Lantante Technologie{% endblock %}
-{% block extra_head %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Page Équipe — même style que l'accueil : Roboto, vert du logo, noir / blanc / gris */
+.eq { --ink: #0e110f; --ink2: #3d433f; --muted: #6b726d; --paper: #f4f1ea; --green: #0f7a45; --line: rgba(0,0,0,.08);
+  font-family: 'Roboto', Arial, sans-serif; color: var(--ink); background: var(--paper); }
+.eq h1, .eq h2, .eq h3 { font-family: 'Roboto', Arial, sans-serif; font-weight: 700; letter-spacing: 0; }
+.eq-wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem); }
+.eq-label { font-size: 1rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--green); margin: 0 0 .9rem; }
+.eq-btn { display: inline-flex; align-items: center; gap: .55rem; background: var(--green); color: #fff; padding: .9rem 1.5rem; border-radius: 999px; font-weight: 700; text-decoration: none; transition: background .2s, transform .2s; }
+.eq-btn:hover { background: #0b6137; transform: translateY(-2px); }
+.eq-btn--line { background: transparent; color: var(--ink); border: 1px solid rgba(0,0,0,.2); }
+.eq-btn--line:hover { background: #fff; }
+
+/* En-tête */
+.eq-head { background: #fff; text-align: center; padding: clamp(3rem, 8vh, 4.5rem) 0 clamp(2.5rem, 6vh, 3.5rem); }
+.eq-head h1 { font-size: clamp(2.1rem, 4.2vw, 3.2rem); line-height: 1.12; margin: 0 0 .9rem; }
+.eq-head p.lead { font-size: 1.12rem; color: var(--ink2); margin: 0 auto; max-width: 560px; line-height: 1.6; }
+
+/* Fondateur */
+.eq-founder { padding: clamp(3rem, 8vh, 4.5rem) 0; }
+.eq-founder .eq-wrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+.eq-photo { border-radius: 26px; overflow: hidden; aspect-ratio: 4 / 5; background: #e8e5de; max-width: 460px; width: 100%; justify-self: center; }
+.eq-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.eq-photo span { display: grid; place-items: center; height: 100%; font-size: 5rem; font-weight: 700; color: #b9bdb9; }
+.eq-founder h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1.15; margin: 0 0 .35rem; }
+.eq-role { color: var(--muted); font-size: 1.1rem; margin: 0 0 1.3rem; }
+.eq-bio { color: var(--ink2); font-size: 1.06rem; line-height: 1.7; margin: 0 0 1.6rem; max-width: 520px; }
+.eq-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; }
+.eq-social { display: flex; gap: .45rem; }
+.eq-social a { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); color: var(--ink); display: grid; place-items: center; text-decoration: none; transition: background .2s, color .2s, border-color .2s; }
+.eq-social a:hover { background: var(--green); border-color: var(--green); color: #fff; }
+
+/* Valeurs */
+.eq-values { background: #fff; padding: clamp(3rem, 8vh, 4.5rem) 0; }
+.eq-values h2, .eq-members h2 { font-size: clamp(1.8rem, 3.2vw, 2.4rem); margin: 0 0 1.8rem; }
+.eq-vgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.eq-val { background: var(--paper); border-radius: 20px; padding: 24px; }
+.eq-val i { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--green); color: #fff; font-size: 1.1rem; margin-bottom: 1rem; }
+.eq-val h3 { font-size: 1.15rem; margin: 0 0 .4rem; }
+.eq-val p { color: var(--ink2); margin: 0; line-height: 1.55; }
+
+/* Membres */
+.eq-members { padding: clamp(3rem, 8vh, 4.5rem) 0; }
+.eq-mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.eq-card { background: #fff; border-radius: 20px; overflow: hidden; text-decoration: none; color: inherit; transition: transform .3s, box-shadow .3s; }
+.eq-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.08); }
+.eq-card__img { aspect-ratio: 4 / 5; background: #e8e5de; }
+.eq-card__img img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.eq-card__img span { display: grid; place-items: center; height: 100%; font-size: 3rem; font-weight: 700; color: #b9bdb9; }
+.eq-card__body { padding: 14px 16px 18px; }
+.eq-card__body h3 { font-size: 1.05rem; margin: 0 0 .2rem; }
+.eq-card__body p { color: var(--muted); margin: 0; font-size: .93rem; }
+
+/* Nous rejoindre */
+.eq-join { background: #fff; text-align: center; padding: clamp(3.5rem, 9vh, 5rem) 0; }
+.eq-join h2 { font-size: clamp(1.8rem, 3.2vw, 2.4rem); margin: 0 0 .7rem; }
+.eq-join p { color: var(--ink2); font-size: 1.08rem; margin: 0 auto 1.6rem; max-width: 480px; }
+.eq-join .eq-actions { justify-content: center; }
+
+@media (max-width: 900px) { .eq-vgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .eq-founder .eq-wrap { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .eq-vgrid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
 
 {% block content %}
-<style>
-/* Même langage visuel que la page Monétisation */
-.ap { --ink: #1d1d1f; --gray: #6e6e73; --bg: #fbfbfd; --card: #f5f5f7; --line: rgba(0,0,0,.09); --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 17px; line-height: 1.5; letter-spacing: -.011em;
-  color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; overflow-x: clip; }
-.ap *, .ap *::before, .ap *::after { box-sizing: border-box; }
-.ap :where(h1, h2, h3, p, ul, ol, dl, dd, figure) { margin: 0; padding: 0; }
-.ap :where(ul, ol) { list-style: none; }
-.ap a { color: inherit; }
-.ap-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.2rem, 5vw, 2.5rem); }
-.ap :where(section) { scroll-margin-top: calc(var(--nav-h, 96px) + 56px); }
+<div class="eq">
 
-/* ── Boutons « pilule » ── */
-.ap-pill { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 13px 26px; border-radius: 980px; font: inherit; font-size: 1.02rem; font-weight: 500; letter-spacing: -.01em; text-decoration: none; border: 1.5px solid transparent; cursor: pointer; transition: background .25s, color .25s, border-color .25s, transform .25s; }
-.ap-pill:hover { transform: scale(1.03); }
-.ap-pill--solid { background: var(--g); color: #fff !important; }
-.ap-pill--solid:hover { background: var(--g2); }
-.ap-pill--ghost { border-color: var(--g); color: var(--g2) !important; }
-.ap-pill--ghost:hover { background: var(--g); color: #fff !important; }
-.ap-pill--wa { background: #25d366; color: #04301a !important; }
-.ap-pill--wa:hover { background: #3ee07c; }
-.ap-pill--light { background: #fff; color: var(--gd) !important; }
-.ap-pill--sm { padding: 7px 18px; font-size: .9rem; }
-
-/* ── Barre collante ── */
-.ap-bar { position: sticky; top: var(--nav-h, 96px); z-index: 40; background: rgba(251,251,253,.82); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
-.ap-bar-in { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.2rem, 5vw, 2.5rem); height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.ap-bar-title { font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; text-decoration: none; }
-.ap-bar-links { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 30px); margin-left: auto; }
-.ap-bar-links a { font-size: .85rem; color: var(--gray); text-decoration: none; transition: color .2s; white-space: nowrap; }
-.ap-bar-links a:hover, .ap-bar-links a.on { color: var(--ink); }
-@media (max-width: 720px) { .ap-bar-links { display: none; } }
-
-/* ── Apparition au défilement ── */
-.ap-rv { opacity: 0; transform: translateY(36px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
-.ap:not(.js) .ap-rv { opacity: 1; transform: none; }
-.ap-rv.in { opacity: 1; transform: none; }
-
-/* ── En-tête ── */
-.ap-hero { text-align: center; padding: clamp(4rem, 9vw, 7rem) 0 clamp(2.5rem, 5vw, 4rem); }
-.ap-kicker { font-size: 1.1rem; font-weight: 600; color: var(--g); letter-spacing: -.01em; margin-bottom: 14px; }
-.ap-hero h1 { font-size: clamp(2.7rem, 7.4vw, 6.2rem); font-weight: 700; line-height: 1.02; letter-spacing: -.045em; max-width: 13ch; margin: 0 auto; text-wrap: balance; }
-.ap-hero h1 em { font-style: normal; color: var(--g); }
-.ap-hero .ap-sub { font-size: clamp(1.15rem, 2.1vw, 1.6rem); line-height: 1.4; font-weight: 500; color: var(--gray); max-width: 34em; margin: 26px auto 0; text-wrap: balance; }
-.ap-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 34px; }
-
-/* ── Fondateur : grande scène verte avec le portrait ── */
-.tm-stage { position: relative; width: min(1100px, 92vw); margin: clamp(1rem, 3vw, 2rem) auto 0; border-radius: 34px; overflow: hidden;
-  background: radial-gradient(120% 100% at 30% 0%, #17603a 0%, #0b2e1d 62%); color: #fff; box-shadow: 0 40px 80px rgba(11,46,29,.28);
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: stretch;
-  transform: scale(calc(.92 + var(--p, 1) * .08)); transform-origin: 50% 0; will-change: transform; }
-.ap:not(.js) .tm-stage { transform: none; }
-.tm-portrait { position: relative; min-height: clamp(420px, 52vw, 640px); overflow: hidden; }
-.tm-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 40% 18%; }
-.tm-portrait-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: 700; color: rgba(255,255,255,.25); }
-.tm-portrait::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11,46,29,0) 62%, rgba(11,46,29,.55) 100%); }
-.tm-founder { padding: clamp(2rem, 5vw, 4rem); display: flex; flex-direction: column; justify-content: center; }
-.tm-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 7px 15px; border-radius: 980px; background: rgba(201,168,76,.16); border: 1px solid rgba(201,168,76,.5); color: #f1d58c; font-size: .82rem; font-weight: 600; letter-spacing: .02em; }
-.tm-founder h2 { font-size: clamp(2.1rem, 4.6vw, 3.8rem); font-weight: 700; line-height: 1.02; letter-spacing: -.04em; margin-top: 20px; text-wrap: balance; }
-.tm-role { font-size: clamp(1.05rem, 1.8vw, 1.3rem); font-weight: 500; color: #8fe3b4; margin-top: 10px; }
-.tm-bio { margin-top: 22px; color: rgba(255,255,255,.82); font-size: clamp(1rem, 1.5vw, 1.1rem); line-height: 1.6; }
-.tm-bio p + p { margin-top: .8em; }
-.tm-founder .ap-btns { justify-content: flex-start; margin-top: 30px; }
-.tm-social { display: flex; gap: 10px; margin-top: 22px; }
-.tm-social a { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); text-decoration: none; transition: background .25s, transform .25s; }
-.tm-social a:hover { background: rgba(255,255,255,.22); transform: translateY(-2px); }
-
-/* ── Grande phrase qui s'éclaircit en défilant ── */
-.ap-statement { padding: clamp(5rem, 12vw, 10rem) 0 clamp(4rem, 9vw, 7rem); }
-.ap-scrub { font-size: clamp(1.75rem, 4.6vw, 3.5rem); font-weight: 700; line-height: 1.14; letter-spacing: -.035em; text-align: center; max-width: 18em; margin: 0 auto 1.3em; text-wrap: balance; }
-.ap-scrub:last-child { margin-bottom: 0; }
-.ap-scrub .w { color: rgba(29,29,31,.17); transition: color .45s ease; }
-.ap-scrub .w.on { color: var(--ink); }
-.ap-scrub em { font-style: normal; }
-.ap-scrub em .w.on { color: var(--g); }
-.ap:not(.js) .ap-scrub { color: var(--ink); }
-
-/* ── Sections ── */
-.ap-sec { padding: clamp(5rem, 10vw, 8rem) 0; }
-.ap-head { text-align: center; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
-.ap-h { font-size: clamp(2.2rem, 5.4vw, 4.2rem); font-weight: 700; line-height: 1.05; letter-spacing: -.04em; max-width: 16ch; margin: 0 auto; text-wrap: balance; }
-.ap-lead { font-size: clamp(1.1rem, 1.9vw, 1.4rem); line-height: 1.45; font-weight: 500; color: var(--gray); max-width: 34em; margin: 20px auto 0; text-wrap: balance; }
-
-/* ── Valeurs ── */
-.tm-values { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.tm-val { background: var(--card); border-radius: 28px; padding: 34px 24px 30px; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
-.tm-val:hover { transform: translateY(-6px) scale(1.02); background: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.1); }
-.tm-val-ico { width: 60px; height: 60px; border-radius: 18px; background: var(--c, var(--g)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px; }
-.tm-val h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; }
-.tm-val p { color: var(--gray); font-size: .98rem; margin-top: 8px; }
-
-/* ── Membres ── */
-.tm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.tm-card { display: block; text-decoration: none; background: var(--card); border-radius: 28px; overflow: hidden; transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s; }
-.tm-card:hover { transform: translateY(-6px); background: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.1); }
-.tm-card-img { aspect-ratio: 4 / 5; background: #e8e8ed; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 700; color: rgba(0,0,0,.18); }
-.tm-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
-.tm-card:hover .tm-card-img img { transform: scale(1.05); }
-.tm-card-body { padding: 18px 20px 22px; }
-.tm-card-body h3 { font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; }
-.tm-card-body p { color: var(--g); font-size: .92rem; font-weight: 500; margin-top: 3px; }
-
-/* ── Rejoindre (fond sombre) ── */
-.ap-dark { background: radial-gradient(120% 100% at 50% 0%, #17603a 0%, #0b2e1d 62%); color: #fff; }
-.ap-dark .ap-lead { color: rgba(255,255,255,.75); }
-
-@media (max-width: 960px) {
-  .tm-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 760px) {
-  .tm-stage { grid-template-columns: 1fr; border-radius: 26px; }
-  .tm-portrait { min-height: 0; aspect-ratio: 4 / 5; }
-  .tm-portrait::after { background: linear-gradient(180deg, rgba(11,46,29,0) 70%, rgba(11,46,29,.7) 100%); }
-}
-@media (max-width: 640px) {
-  .ap { font-size: 16px; }
-  .tm-values { grid-template-columns: 1fr; }
-  .ap-pill { width: 100%; }
-  .ap-bar .ap-pill { width: auto; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ap-rv { opacity: 1; transform: none; transition: none; }
-  .tm-stage { transform: none; }
-  .ap-scrub .w { color: var(--ink); transition: none; }
-}
-</style>
-
-<div class="ap" id="ap">
-
-  <!-- ═══ BARRE COLLANTE ═══ -->
-  <nav class="ap-bar" aria-label="Équipe">
-    <div class="ap-bar-in">
-      <a class="ap-bar-title" href="#top">Équipe</a>
-      <div class="ap-bar-links">
-        {% if founder %}<a href="#fondateur">Fondateur</a>{% endif %}
-        <a href="#valeurs">Nos valeurs</a>
-        {% if members %}<a href="#equipe">L'équipe</a>{% endif %}
-        <a href="#rejoindre">Nous rejoindre</a>
-      </div>
-      <a class="ap-pill ap-pill--solid ap-pill--sm" href="#rejoindre">Nous contacter</a>
-    </div>
-  </nav>
-
-  <!-- ═══ EN-TÊTE ═══ -->
-  <section class="ap-hero" id="top">
-    <div class="ap-in">
-      <p class="ap-kicker ap-rv">Notre équipe</p>
-      <h1 class="ap-rv" style="--d:.08s">Les personnes derrière <em>Lantante</em>.</h1>
-      <p class="ap-sub ap-rv" style="--d:.16s">Ceux qui font avancer Lantante Technologie, construisent l'Afrique de demain et font progresser la technologie et l'informatique.</p>
+  <section class="eq-head">
+    <div class="eq-wrap">
+      <p class="eq-label">Notre équipe</p>
+      <h1>Les personnes derrière Lantante.</h1>
+      <p class="lead">Une équipe d'ici qui construit des solutions numériques utiles pour l'Afrique.</p>
     </div>
   </section>
 
-  <!-- ═══ FONDATEUR ═══ -->
   {% if founder %}
-  <section id="fondateur">
-    <div class="tm-stage" id="tmStage">
-      <div class="tm-portrait">
-        {% if founder.photo %}
-          <img src="{{ founder.photo.url }}" alt="{{ founder.name }}, {{ founder.role }} de Lantante Technologie">
-        {% else %}
-          <span class="tm-portrait-ph">{{ founder.name|slice:":1" }}</span>
-        {% endif %}
+  <section class="eq-founder" id="fondateur">
+    <div class="eq-wrap">
+      <div class="eq-photo">
+        {% if founder.photo %}<img src="{{ founder.photo.url }}" alt="{{ founder.name }}, {{ founder.role }}">{% else %}<span>{{ founder.name|slice:":1" }}</span>{% endif %}
       </div>
-      <div class="tm-founder">
-        <span class="tm-badge ap-rv"><i class="fa fa-star"></i> Fondateur</span>
-        <h2 class="ap-rv" style="--d:.06s">{{ founder.name }}</h2>
-        <p class="tm-role ap-rv" style="--d:.12s">{{ founder.role }}</p>
-        {% if founder.bio %}<div class="tm-bio ap-rv" style="--d:.18s">{{ founder.bio|linebreaks }}</div>{% endif %}
-        <div class="ap-btns ap-rv" style="--d:.3s">
-          {% if founder.whatsapp %}
-          <a class="ap-pill ap-pill--wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/{{ founder.whatsapp }}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-          {% endif %}
+      <div>
+        <p class="eq-label">Fondateur</p>
+        <h2>{{ founder.name }}</h2>
+        <p class="eq-role">{{ founder.role }}</p>
+        {% if founder.bio %}<p class="eq-bio">{{ founder.bio|striptags|truncatewords:70 }}</p>{% endif %}
+        <div class="eq-actions">
+          {% if founder.whatsapp %}<a class="eq-btn" target="_blank" rel="noopener" href="https://wa.me/{{ founder.whatsapp }}"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+          <div class="eq-social">
+            {% if founder.linkedin %}<a href="{{ founder.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>{% endif %}
+            {% if founder.facebook %}<a href="{{ founder.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>{% endif %}
+            {% if founder.instagram %}<a href="{{ founder.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+            {% if founder.email %}<a href="mailto:{{ founder.email }}" aria-label="E-mail"><i class="fa fa-envelope"></i></a>{% endif %}
+          </div>
         </div>
-        {% if founder.linkedin or founder.facebook or founder.instagram or founder.email %}
-        <div class="tm-social ap-rv" style="--d:.36s">
-          {% if founder.linkedin %}<a href="{{ founder.linkedin }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>{% endif %}
-          {% if founder.facebook %}<a href="{{ founder.facebook }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>{% endif %}
-          {% if founder.instagram %}<a href="{{ founder.instagram }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
-          {% if founder.email %}<a href="mailto:{{ founder.email }}" aria-label="Email"><i class="fa fa-envelope"></i></a>{% endif %}
-        </div>
-        {% endif %}
       </div>
     </div>
   </section>
   {% endif %}
 
-  <!-- ═══ MISSION ═══ -->
-  <section class="ap-statement">
-    <div class="ap-in">
-      <p class="ap-scrub">Nous créons des solutions numériques <em>utiles</em>, pensées pour l'Afrique.</p>
-      <p class="ap-scrub">Former, accompagner et construire&nbsp;: c'est ce qui nous fait <em>avancer</em>.</p>
-    </div>
-  </section>
-
-  <!-- ═══ VALEURS ═══ -->
-  <section class="ap-sec" id="valeurs" style="padding-top:0">
-    <div class="ap-in">
-      <div class="ap-head">
-        <h2 class="ap-h ap-rv">Ce qui nous guide.</h2>
-      </div>
-      <div class="tm-values">
-        <article class="tm-val ap-rv"><span class="tm-val-ico" style="--c:#0f7a45"><i class="fa fa-lightbulb"></i></span><h3>Innovation</h3><p>Des idées neuves et des outils modernes au service de nos clients.</p></article>
-        <article class="tm-val ap-rv" style="--d:60ms"><span class="tm-val-ico" style="--c:#c9a84c"><i class="fa fa-graduation-cap"></i></span><h3>Transmission</h3><p>Former et partager nos savoirs pour faire grandir chacun.</p></article>
-        <article class="tm-val ap-rv" style="--d:120ms"><span class="tm-val-ico" style="--c:#0d3b7a"><i class="fa fa-handshake"></i></span><h3>Proximité</h3><p>Écouter, conseiller et rester disponibles pour vous.</p></article>
-        <article class="tm-val ap-rv" style="--d:180ms"><span class="tm-val-ico" style="--c:#c93060"><i class="fa fa-gem"></i></span><h3>Exigence</h3><p>Un travail soigné, livré avec sérieux et dans les délais.</p></article>
+  <section class="eq-values" id="valeurs">
+    <div class="eq-wrap">
+      <p class="eq-label">Nos valeurs</p>
+      <h2>Ce qui nous guide.</h2>
+      <div class="eq-vgrid">
+        <article class="eq-val"><i class="fa fa-lightbulb"></i><h3>Innovation</h3><p>Des outils modernes au service de nos clients.</p></article>
+        <article class="eq-val"><i class="fa fa-graduation-cap"></i><h3>Transmission</h3><p>Former et partager pour faire grandir chacun.</p></article>
+        <article class="eq-val"><i class="fa fa-handshake"></i><h3>Proximité</h3><p>Écouter, conseiller, rester disponibles.</p></article>
+        <article class="eq-val"><i class="fa fa-gem"></i><h3>Exigence</h3><p>Un travail soigné, livré dans les délais.</p></article>
       </div>
     </div>
   </section>
 
-  <!-- ═══ MEMBRES ═══ -->
   {% if members %}
-  <section class="ap-sec" id="equipe" style="padding-top:0">
-    <div class="ap-in">
-      <div class="ap-head">
-        <h2 class="ap-h ap-rv">L'équipe.</h2>
-      </div>
-      <div class="tm-grid">
+  <section class="eq-members" id="equipe">
+    <div class="eq-wrap">
+      <p class="eq-label">L'équipe</p>
+      <h2>Ils travaillent avec nous.</h2>
+      <div class="eq-mgrid">
         {% for member in members %}
-        <a class="tm-card ap-rv" style="--d:{% widthratio forloop.counter0 1 60 %}ms" href="{% url 'core:team_member_detail' member.pk %}">
-          <div class="tm-card-img">{% if member.photo %}<img src="{{ member.photo.url }}" alt="{{ member.name }}" loading="lazy">{% else %}{{ member.name|slice:":1" }}{% endif %}</div>
-          <div class="tm-card-body"><h3>{{ member.name }}</h3><p>{{ member.role }}</p></div>
+        <a class="eq-card" href="{% url 'core:team_member_detail' member.pk %}">
+          <div class="eq-card__img">{% if member.photo %}<img src="{{ member.photo.url }}" alt="{{ member.name }}" loading="lazy">{% else %}<span>{{ member.name|slice:":1" }}</span>{% endif %}</div>
+          <div class="eq-card__body"><h3>{{ member.name }}</h3><p>{{ member.role }}</p></div>
         </a>
         {% endfor %}
       </div>
@@ -233,87 +136,16 @@
   </section>
   {% endif %}
 
-  <!-- ═══ NOUS REJOINDRE ═══ -->
-  <section class="ap-sec ap-dark" id="rejoindre">
-    <div class="ap-in">
-      <div class="ap-head" style="margin-bottom:0">
-        <h2 class="ap-h ap-rv">Envie de construire avec nous&nbsp;?</h2>
-        <p class="ap-lead ap-rv" style="--d:.1s">Projet, partenariat ou candidature : écrivez-nous, nous vous répondons rapidement.</p>
-        <div class="ap-btns ap-rv" style="--d:.18s">
-          {% if site_settings.whatsapp_1 %}
-          <a class="ap-pill ap-pill--wa" target="_blank" rel="noopener noreferrer"
-             href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20je%20souhaite%20contacter%20l%27%C3%A9quipe%20Lantante%20Technologie.">
-            <i class="fab fa-whatsapp"></i> Écrire sur WhatsApp
-          </a>
-          {% endif %}
-          <a class="ap-pill ap-pill--light" href="{% url 'core:partner_apply' %}">Devenir partenaire</a>
-        </div>
+  <section class="eq-join" id="rejoindre">
+    <div class="eq-wrap">
+      <h2>Envie de construire avec nous ?</h2>
+      <p>Projet, partenariat ou candidature : écrivez-nous.</p>
+      <div class="eq-actions">
+        {% if site_settings.whatsapp_1 %}<a class="eq-btn" target="_blank" rel="noopener" href="https://wa.me/{{ site_settings.whatsapp_1 }}"><i class="fab fa-whatsapp"></i> Écrire sur WhatsApp</a>{% endif %}
+        <a class="eq-btn eq-btn--line" href="{% url 'core:partner_apply' %}">Devenir partenaire</a>
       </div>
     </div>
   </section>
+
 </div>
-
-<script>
-(function () {
-  var root = document.getElementById('ap');
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  root.classList.add('js');
-
-  /* 1. Apparition en douceur au défilement */
-  var rv = [].slice.call(root.querySelectorAll('.ap-rv'));
-  if ('IntersectionObserver' in window && !reduce) {
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-    rv.forEach(function (el) { io.observe(el); });
-  } else { rv.forEach(function (el) { el.classList.add('in'); }); }
-
-  /* 2. Les grandes phrases s'éclaircissent mot à mot */
-  var scr = [].slice.call(root.querySelectorAll('.ap-scrub'));
-  function split(node) {
-    [].slice.call(node.childNodes).forEach(function (c) {
-      if (c.nodeType === 3) {
-        var frag = document.createDocumentFragment();
-        c.nodeValue.split(/(\s+)/).forEach(function (t) {
-          if (!t) return;
-          if (/^\s+$/.test(t)) { frag.appendChild(document.createTextNode(' ')); return; }
-          var s = document.createElement('span'); s.className = 'w'; s.textContent = t; frag.appendChild(s);
-        });
-        c.parentNode.replaceChild(frag, c);
-      } else if (c.nodeType === 1) { split(c); }
-    });
-  }
-  scr.forEach(split);
-
-  /* 3. Défilement : mots, scène du fondateur qui grandit, barre collante */
-  var stage = document.getElementById('tmStage');
-  var links = [].slice.call(root.querySelectorAll('.ap-bar-links a'));
-  var ids = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
-  var ticking = false;
-  function clamp(v) { return Math.max(0, Math.min(1, v)); }
-
-  function frame() {
-    ticking = false;
-    var vh = window.innerHeight;
-    scr.forEach(function (p) {
-      var ws = p.querySelectorAll('.w'); if (!ws.length) return;
-      var r = p.getBoundingClientRect();
-      var prog = reduce ? 1 : clamp((vh * 0.82 - r.top) / (r.height + vh * 0.28));
-      var n = Math.round(prog * ws.length);
-      for (var i = 0; i < ws.length; i++) ws[i].classList.toggle('on', i < n);
-    });
-    if (stage && !reduce) {
-      var sr = stage.getBoundingClientRect();
-      stage.style.setProperty('--p', clamp((vh - sr.top) / (vh * 0.8)).toFixed(3));
-    }
-    var cur = -1;
-    ids.forEach(function (s, i) { if (s && s.getBoundingClientRect().top < vh * 0.4) cur = i; });
-    links.forEach(function (a, i) { a.classList.toggle('on', i === cur); });
-  }
-  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  frame();
-})();
-</script>
 {% endblock %}

@@ -41,8 +41,14 @@ class CategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'old_price', 'stock', 'is_available', 'is_featured')
     list_filter = ('category', 'is_available', 'is_featured')
-    search_fields = ('name', 'description')
+    search_fields = ('name', 'short_description', 'description')
     inlines = [ProductImageInline]
+    fieldsets = (
+        (None, {'fields': ('category', 'name', 'short_description', 'description')}),
+        ('Prix', {'fields': ('price', 'old_price', 'bulk_price', 'bulk_min_qty')}),
+        ('Photos et vidéo', {'fields': ('image', 'video')}),
+        ('Stock et affichage', {'fields': ('stock', 'is_available', 'is_featured', 'contact_whatsapp')}),
+    )
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):

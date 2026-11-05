@@ -1,8 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import Q, Case, When, Value, IntegerField, Count, Min, Max
 import urllib.parse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import (
     Product, Category, ShopCart, ShopCartItem,
@@ -59,14 +60,41 @@ def shop(request):
     if search_query:
         products = products.filter(
             Q(name__icontains=search_query) |
+            Q(short_description__icontains=search_query) |
             Q(description__icontains=search_query)
         )
+
+    # Filtre par prix (FCFA)
+    def _num(v):
+        try:
+            return int(str(v).replace(' ', '')) if str(v).strip() else None
+        except ValueError:
+            return None
+    price_min = _num(request.GET.get('min', ''))
+    price_max = _num(request.GET.get('max', ''))
+    if price_min is not None:
+        products = products.filter(price__gte=price_min)
+    if price_max is not None:
+        products = products.filter(price__lte=price_max)
 
     active_category = None
     if category_slug:
         active_category = Category.objects.filter(slug=category_slug).first()
 
+    available = Product.objects.filter(is_available=True)
+    cat_counts = dict(
+        available.values_list('category_id').annotate(n=Count('id')).values_list('category_id', 'n')
+    )
+    categories_with_count = [(cat, cat_counts.get(cat.pk, 0)) for cat in categories]
+    bounds = available.aggregate(lo=Min('price'), hi=Max('price'))
+
     return render(request, 'shop/shop.html', {
+        'categories_with_count': categories_with_count,
+        'total_count':     available.count(),
+        'price_min':       price_min,
+        'price_max':       price_max,
+        'price_lo':        int(bounds['lo'] or 0),
+        'price_hi':        int(bounds['hi'] or 0),
         'products':        products,
         'categories':      categories,
         'nav_categories':  nav_categories,
@@ -83,6 +111,8 @@ def shop(request):
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk, is_available=True)
     reviews = product.reviews.all()
+    ratings = [r.rating for r in reviews]
+    avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else None
     related_products = Product.objects.filter(
         category=product.category, is_available=True
     ).exclude(pk=product.pk)[:4] if product.category else Product.objects.none()
@@ -97,6 +127,7 @@ def product_detail(request, pk):
     return render(request, 'shop/product_detail.html', {
         'product': product,
         'reviews': reviews,
+        'avg_rating': avg_rating,
         'related_products': related_products,
         'category_tile_image': category_tile_image,
     })
@@ -114,9 +145,13 @@ def add_to_cart(request, pk):
         item, created = ShopCartItem.objects.get_or_create(cart=cart, product=product)
         item.quantity = item.quantity + quantity if not created else quantity
         item.save()
-        messages.success(request, f'✓ "{product.name}" ajouté au panier.')
+        messages.success(request, f'« {product.name} » a été ajouté au panier.')
         if request.POST.get('buy_now'):
             return redirect('shop:checkout')
+        # Depuis la boutique ou la fiche produit : on reste sur la page, un message confirme l'ajout
+        next_url = request.POST.get('next', '')
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            return redirect(next_url)
     return redirect('shop:cart')
 
 

@@ -10,9 +10,21 @@ from .monetization import PLATFORMS, PLATFORM_CHOICES, STEPS, WHATSAPP_WAYS, WHA
 
 
 def home(request):
-    return render(request, 'core/base.html', {
+    from Shop.models import Product
+    from Publications.models import Publication
+    return render(request, 'core/home.html', {
         'hero_slides': HeroSlide.objects.filter(is_active=True),
         'news_items': NewsTickerItem.objects.filter(is_active=True),
+        'home_products': (
+            Product.objects.filter(is_available=True)
+            .select_related('category')
+            .order_by('-is_featured', '-created_at')[:8]
+        ),
+        'home_posts': (
+            Publication.objects.filter(is_published=True)
+            .select_related('category')
+            .order_by('-is_featured', '-created_at')[:3]
+        ),
     })
 
 

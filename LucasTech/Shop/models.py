@@ -68,7 +68,17 @@ class Category(models.Model):
 class Product(models.Model):
     category     = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products', verbose_name="Catégorie")
     name         = models.CharField(max_length=255, db_index=True, verbose_name="Nom")  # 🔥 index pour recherche rapide
-    description  = models.TextField(verbose_name="Description")
+    short_description = models.CharField(
+        max_length=160, blank=True, verbose_name="Description courte",
+        help_text="Une phrase affichée sur la carte du produit dans la boutique "
+                  "(ex : « Charge 2 téléphones à la fois, autonomie 4 jours »). "
+                  "Laisser vide pour reprendre le début de la description complète."
+    )
+    description  = models.TextField(
+        verbose_name="Description complète",
+        help_text="Texte détaillé affiché sur la page du produit (caractéristiques, contenu du carton, garantie...). "
+                  "Sautez une ligne pour faire un nouveau paragraphe."
+    )
     price        = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
     old_price    = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Ancien prix",
@@ -98,6 +108,15 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def card_description(self):
+        """Phrase courte de la carte boutique (description courte, sinon début de la description complète)."""
+        if self.short_description:
+            return self.short_description
+        from django.utils.html import strip_tags
+        from django.utils.text import Truncator
+        return Truncator(strip_tags(self.description)).chars(110)
 
     @property
     def is_in_stock(self):
