@@ -32,12 +32,6 @@
 .pa-stats span { color: var(--muted); font-size: .92rem; }
 
 /* Bande de logos qui défile */
-.pa-logos { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; padding: 1.6rem 0; }
-.pa-logos__track { display: flex; align-items: center; gap: 3.5rem; width: max-content; animation: paMarq 35s linear infinite; }
-.pa-logos:hover .pa-logos__track { animation-play-state: paused; }
-.pa-logos img { height: 52px; width: auto; max-width: 150px; object-fit: contain; filter: grayscale(1); opacity: .7; transition: filter .3s, opacity .3s; }
-.pa-logos img:hover { filter: none; opacity: 1; }
-@keyframes paMarq { to { transform: translateX(-50%); } }
 
 /* Filtres */
 .pa-list { padding: clamp(3rem, 8vh, 4.5rem) 0 clamp(3.5rem, 9vh, 5rem); }
@@ -82,7 +76,6 @@
   .pa-stats { gap: 1.6rem; }
   .pa-hero__btns .pa-btn { width: 100%; justify-content: center; }
 }
-@media (prefers-reduced-motion: reduce) { .pa-logos__track { animation: none; } }
 </style>
 {% endblock %}
 
@@ -114,18 +107,6 @@
     </div>
   </section>
 
-  <!-- Logos qui défilent -->
-  {% if slides %}
-  <div class="pa-logos" aria-label="Logos de nos partenaires">
-    <div class="pa-logos__track">
-      {% for i in "12" %}
-      {% for p in slides %}
-      <a href="{% url 'core:partner_detail' p.pk %}"{% if i == "2" %} aria-hidden="true" tabindex="-1"{% endif %}><img src="{{ p.logo.url }}" alt="{{ p.name }}" loading="lazy"></a>
-      {% endfor %}
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
 
   <!-- Liste -->
   <section class="pa-list" id="liste">
