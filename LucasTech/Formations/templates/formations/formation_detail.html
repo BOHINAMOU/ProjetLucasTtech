@@ -26,7 +26,7 @@
       <div class="pp-info">
         {% if formation.category %}<a class="pp-cat" href="{% url 'formations:formations' %}?category={{ formation.category.slug }}">{{ formation.category.name }}</a>{% endif %}
         <h1 class="pp-name">{{ formation.title }}</h1>
-        <p class="pp-short">{{ formation.description|striptags|truncatewords:28 }}</p>
+        <p class="pp-short">{{ formation.description|striptags|truncatewords:16 }}</p>
 
         <div class="pp-buy">
           <div class="pp-price">
@@ -36,9 +36,9 @@
           <ul class="ct-facts">
             <li><i class="fa fa-signal"></i>Niveau {{ formation.get_level_display|lower }}</li>
             {% if formation.duration %}<li><i class="fa fa-clock"></i>{{ formation.duration }}</li>{% endif %}
-            {% if formation.formation_type == 'numerique' %}<li><i class="fa fa-file-arrow-down"></i>Document à télécharger juste après le paiement</li>
-            {% elif formation.formation_type == 'inscription' %}<li><i class="fab fa-whatsapp"></i>Cours dans un groupe WhatsApp</li>
-            {% else %}<li><i class="fa fa-laptop"></i>Formation en ligne, suivie avec un formateur</li>{% endif %}
+            {% if formation.formation_type == 'numerique' %}<li><i class="fa fa-file-arrow-down"></i>PDF téléchargé après paiement</li>
+            {% elif formation.formation_type == 'inscription' %}<li><i class="fab fa-whatsapp"></i>Groupe WhatsApp</li>
+            {% else %}<li><i class="fa fa-laptop"></i>En ligne, avec un formateur</li>{% endif %}
             {% if formation.students_count %}<li><i class="fa fa-users"></i>{{ formation.students_count }} inscrit{{ formation.students_count|pluralize }}</li>{% endif %}
           </ul>
 
@@ -55,7 +55,7 @@
             {% endif %}
           </div>
           {% if formation.can_pay_online %}
-          <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay : Mobile Money ou carte. Avec ou sans compte.</p>
+          <p class="ct-secure"><i class="fa fa-shield-halved"></i> Paiement Mobile Money sécurisé</p>
           {% endif %}
         </div>
       </div>

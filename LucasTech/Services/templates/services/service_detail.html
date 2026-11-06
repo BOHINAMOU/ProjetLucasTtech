@@ -31,7 +31,7 @@
       <div class="pp-info">
         {% if service.category %}<a class="pp-cat" href="{% url 'services:services' %}?category={{ service.category.slug }}">{{ service.category.name }}</a>{% endif %}
         <h1 class="pp-name">{{ service.title }}</h1>
-        <p class="pp-short">{{ service.description|striptags|truncatewords:28 }}</p>
+        <p class="pp-short">{{ service.description|striptags|truncatewords:16 }}</p>
 
         <div class="pp-buy">
           <div class="pp-price">
@@ -49,11 +49,10 @@
             <a href="#contact" class="pp-btn pp-btn--alt"><i class="fa fa-envelope"></i> Être rappelé</a>
           </div>
           {% if service.price %}
-          <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay : Mobile Money (Flooz, Mix by Yas, MTN, Moov…) ou carte.{% if service.file %} Votre document PDF se télécharge juste après le paiement.{% endif %}</p>
+          <p class="ct-secure"><i class="fa fa-shield-halved"></i> Paiement Mobile Money sécurisé</p>
           {% endif %}
           <ul class="pp-perks">
-            <li><i class="fa fa-bolt"></i><span><strong>Réponse rapide</strong>Nous revenons vers vous dans la journée.</span></li>
-            <li><i class="fa fa-handshake"></i><span><strong>Accompagnement</strong>Du premier échange jusqu'à la livraison.</span></li>
+            <li><i class="fa fa-bolt"></i><span><strong>Réponse dans la journée</strong></span></li>
             {% if service.phone %}<li><i class="fa fa-phone"></i><span><strong>Téléphone</strong><a href="tel:{{ service.phone }}">{{ service.phone }}</a></span></li>{% endif %}
           </ul>
         </div>
@@ -74,15 +73,15 @@
             <div class="ct-field"><label for="cName">Nom</label><input id="cName" name="name" required value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}"></div>
             <div class="ct-field"><label for="cPhone">Téléphone</label><input id="cPhone" name="phone" inputmode="tel" required value="{% if user.is_authenticated %}{{ user.phone|default:'' }}{% endif %}"></div>
           </div>
-          <div class="ct-field"><label for="cMsg">Votre besoin</label><textarea id="cMsg" name="message" required placeholder="Décrivez votre projet en quelques mots"></textarea></div>
+          <div class="ct-field"><label for="cMsg">Votre besoin</label><textarea id="cMsg" name="message" required placeholder="Votre projet en quelques mots"></textarea></div>
           <button type="submit" class="pp-btn pp-btn--main">Envoyer</button>
         </form>
         <div class="ct-box">
           <h2 style="margin-bottom:.6rem">Comment ça marche ?</h2>
           <ul class="ct-learn">
-            <li>Vous nous expliquez votre besoin (formulaire, WhatsApp ou paiement direct).</li>
-            <li>Nous vous rappelons pour préciser le projet et le délai.</li>
-            <li>Nous réalisons, vous validez, nous livrons.</li>
+            <li>Vous expliquez votre besoin.</li>
+            <li>Nous vous rappelons.</li>
+            <li>Nous réalisons et livrons.</li>
           </ul>
         </div>
       </div>

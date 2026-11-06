@@ -11,7 +11,7 @@
   <section class="ct-hero" style="background-image:url('{% static 'core/images/home/site-web.jpg' %}');background-position:60% 30%">
     <div class="bq-wrap">
       <h1>Services.</h1>
-      <p>Sites web, applications, réseaux sociaux et vidéos pour faire grandir votre activité.</p>
+      <p>Sites, applis, réseaux sociaux et vidéos.</p>
       <div class="ct-hero__cta">
         {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je voudrais un devis.'|urlencode }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Devis gratuit</a>{% endif %}
         <a href="#liste" class="ct-pill ct-pill--glass">Voir les services</a>
@@ -55,7 +55,7 @@
     {% endif %}
 
     <div class="ct-cta">
-      <div><h2>Un projet en tête ?</h2><p>Expliquez-nous votre besoin, on vous répond vite avec un devis clair.</p></div>
+      <div><h2>Un projet en tête ?</h2><p>Devis gratuit et rapide.</p></div>
       {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Nous écrire sur WhatsApp</a>{% endif %}
     </div>
   </div>

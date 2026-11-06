@@ -251,3 +251,14 @@
 .ct-result .ct-box { text-align: left; box-shadow: 0 18px 50px rgba(17,20,18,.06); }
 .ct-result .ct-learn { margin: 0; }
 @media (max-width: 600px) { .ct-choice { grid-template-columns: 1fr; } .ct-pay__title { font-size: 1.35rem !important; } }
+
+/* ════════ Fiches : plus aérées ════════ */
+.pp-name { letter-spacing: -.03em; }
+.pp-short { font-size: 1.05rem; color: var(--bq-muted); }
+.pp-buy { box-shadow: 0 18px 50px rgba(17,20,18,.06); border: 1px solid rgba(0,0,0,.04); }
+.pp-buy .pp-btn--main { padding: 1.05rem; border-radius: 18px; box-shadow: 0 12px 28px rgba(15,122,69,.25); }
+.ct-facts li { font-size: .95rem; }
+.ct-evdesc { padding: 0; background: none; font-size: 1rem; margin-bottom: 1.2rem; color: var(--bq-ink2); }
+.ct-hero p { font-size: clamp(1rem, 1.5vw, 1.15rem); }
+.ct-cta h2 { font-size: clamp(1.3rem, 2.4vw, 1.8rem); }
+.ct-card .bq-card__desc { -webkit-line-clamp: 2; }
