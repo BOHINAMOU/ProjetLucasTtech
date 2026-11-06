@@ -8,69 +8,89 @@
 
 {% block content %}
 <div class="bq">
-  <div class="bq-wrap">
-    <div class="pp-bar">
-      <a href="{% url 'events:list' %}" class="pp-back"><i class="fa fa-arrow-left"></i> Événements</a>
-      {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Paiement en mode test</span>{% endif %}
-    </div>
-
-    <div class="pp-main">
-      <div class="pp-gallery">
-        <div class="ct-cover">{% if event.cover %}<img src="{{ event.cover.url }}" alt="{{ event.title }}">{% else %}<i class="fa fa-calendar-days"></i>{% endif %}</div>
-        <ul class="ct-facts" style="margin-top:1.2rem">
-          <li><i class="fa fa-calendar"></i>{{ event.starts_at|date:"l j F Y" }}</li>
-          <li><i class="fa fa-clock"></i>{{ event.starts_at|date:"H\hi" }}{% if event.ends_at %} – {% if event.ends_at|date:"Ymd" != event.starts_at|date:"Ymd" %}{{ event.ends_at|date:"j F, H\hi" }}{% else %}{{ event.ends_at|date:"H\hi" }}{% endif %}{% endif %}</li>
-          <li><i class="fa fa-location-dot"></i>{% if event.map_url %}<a href="{{ event.map_url }}" target="_blank" rel="noopener" style="color:inherit">{{ event.location }} <i class="fa fa-arrow-up-right-from-square" style="width:auto;height:auto;background:none;font-size:.75rem"></i></a>{% else %}{{ event.location }}{% endif %}</li>
-        </ul>
+  <!-- ═══ Bandeau photo ═══ -->
+  <section class="ev-hero"{% if event.cover %} style="background-image:url('{{ event.cover.url }}')"{% endif %}>
+    <div class="bq-wrap ev-hero__in">
+      <div class="ev-hero__top">
+        <a href="{% url 'events:list' %}" class="ev-chip ev-chip--glass"><i class="fa fa-arrow-left"></i> Événements</a>
+        {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
       </div>
-
-      <div class="pp-info">
-        <h1 class="pp-name">{{ event.title }}</h1>
-        <div class="pp-desc ct-evdesc">{{ event.description|linebreaks }}</div>
-
-        <div class="pp-buy" id="tickets">
-          {% if event.is_past %}
-            <h2 style="font-size:1.3rem">Cet événement est terminé.</h2>
-            <p style="color:var(--bq-muted);margin-top:.4rem">Merci à toutes et à tous !</p>
-          {% elif not event.ticket_types.all %}
-            <h2 style="font-size:1.3rem">Billetterie bientôt ouverte.</h2>
-            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="margin-top:1rem"><i class="fab fa-whatsapp"></i> Être prévenu sur WhatsApp</a>{% endif %}
-          {% else %}
-          <form method="post" class="ct-form wz-form" novalidate id="ticketForm" data-order-label="" data-order-total="">
-            {% csrf_token %}
-            <h2 style="font-size:1.3rem">Tickets</h2>
-            <div>
-              {% for tt in event.ticket_types.all %}
-              <div class="ct-tt">
-                <div>
-                  <h3>{{ tt.name }}</h3>
-                  {% if tt.description %}<p>{{ tt.description }}</p>{% endif %}
-                  <strong>{% if tt.price %}{{ tt.price|floatformat:"0g" }} FCFA{% else %}Gratuit{% endif %}</strong>
-                  {% if tt.remaining and tt.remaining <= 10 %}<p style="color:#c46a0c">Plus que {{ tt.remaining }} place{{ tt.remaining|pluralize }}</p>{% endif %}
-                </div>
-                {% if tt.remaining %}
-                <select name="qty_{{ tt.pk }}" data-price="{{ tt.price }}" data-name="{{ tt.name }}" aria-label="Nombre de tickets {{ tt.name }}">
-                  {% for n in tt.choice_range %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
-                </select>
-                {% else %}<span class="soldout">Complet</span>{% endif %}
-              </div>
-              {% endfor %}
-            </div>
-            <div class="ct-total"><span>Total</span><strong id="ttTotal">0 FCFA</strong></div>
-
-            {% if enabled %}
-            <p class="wz-pick" id="ttPick">Choisissez vos tickets pour continuer.</p>
-            <div id="buyer" hidden>{% include 'payments/_customer_fields.html' %}</div>
-            {% else %}
-            <p class="ct-note" style="text-align:left">Réservation sur WhatsApp.</p>
-            {% endif %}
-            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
-            <p class="ct-secure"><i class="fa fa-shield-halved"></i> Sans compte · reçu immédiat · Mobile Money</p>
-          </form>
-          {% endif %}
+      <div>
+        <div class="ev-date"><b>{{ event.starts_at|date:"j" }}</b><span>{{ event.starts_at|date:"M" }}</span></div>
+        <h1>{{ event.title }}</h1>
+        <div class="ev-meta">
+          <span><i class="fa fa-calendar"></i> {{ event.starts_at|date:"l j F" }}</span>
+          <span><i class="fa fa-clock"></i> {{ event.starts_at|date:"H\hi" }}{% if event.ends_at %} – {{ event.ends_at|date:"H\hi" }}{% endif %}</span>
+          {% if event.map_url %}<a href="{{ event.map_url }}" target="_blank" rel="noopener"><i class="fa fa-location-dot"></i> {{ event.location }}</a>{% else %}<span><i class="fa fa-location-dot"></i> {{ event.location }}</span>{% endif %}
         </div>
       </div>
     </div>
+  </section>
+
+  <div class="bq-wrap" id="tickets">
+    {% if event.is_past %}
+      <div class="ev-empty"><i class="fa fa-flag-checkered"></i><p>Cet événement est terminé. Merci à tous !</p></div>
+    {% elif not event.ticket_types.all %}
+      <div class="ev-empty"><i class="fa fa-ticket"></i><p>Billetterie bientôt ouverte.</p>
+        {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Être prévenu</a>{% endif %}</div>
+    {% else %}
+    <form method="post" novalidate id="ticketForm" class="ct-form wz-form ev-layout" data-order-label="" data-order-total="">
+      {% csrf_token %}
+      <div class="ev-main">
+        <h2 class="ev-h">Choisissez vos tickets</h2>
+        <div class="ev-tickets">
+          {% for tt in event.ticket_types.all %}
+          <article class="tk{% if not tt.remaining %} is-out{% endif %}" data-tk>
+            <div class="tk__img"{% if tt.cover %} style="background-image:url('{{ tt.cover.url }}')"{% endif %}>
+              <span class="tk__name">{{ tt.name }}</span>
+              <span class="tk__price">{% if tt.price %}{{ tt.price|floatformat:"0g" }} <small>FCFA</small>{% else %}Gratuit{% endif %}</span>
+              {% if not tt.remaining %}<span class="tk__out">Complet</span>{% endif %}
+            </div>
+            <div class="tk__cut" aria-hidden="true"></div>
+            <div class="tk__body">
+              <div class="tk__info">
+                {% if tt.description %}<p>{{ tt.description }}</p>{% endif %}
+                {% if tt.remaining and tt.remaining <= 10 %}<small class="tk__left">Plus que {{ tt.remaining }} place{{ tt.remaining|pluralize }}</small>
+                {% elif tt.remaining %}<small class="tk__ok"><i class="fa fa-circle-check"></i> Disponible</small>{% endif %}
+              </div>
+              {% if tt.remaining %}
+              <div class="tk__qty">
+                <button type="button" data-tk-step="-1" aria-label="Moins">−</button>
+                <input type="number" name="qty_{{ tt.pk }}" value="0" min="0" max="{{ tt.max_choice }}" inputmode="numeric"
+                       data-price="{{ tt.price }}" data-name="{{ tt.name }}" aria-label="Nombre de tickets {{ tt.name }}">
+                <button type="button" data-tk-step="1" aria-label="Plus">+</button>
+              </div>
+              {% endif %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+
+        {% if event.description %}
+        <h2 class="ev-h" style="margin-top:2.4rem">À propos</h2>
+        <div class="ev-about">{{ event.description|linebreaks }}</div>
+        {% endif %}
+      </div>
+
+      <aside class="ev-side">
+        <div class="wz-card ev-cart">
+          <div class="ev-cart__head">
+            <span>Votre commande</span>
+            <strong id="ttTotal">0 FCFA</strong>
+          </div>
+          <ul class="ev-cart__lines" id="ttLines"></ul>
+          {% if enabled %}
+          <p class="wz-pick" id="ttPick"><i class="fa fa-ticket"></i> Ajoutez un ticket pour continuer.</p>
+          <div id="buyer" hidden>{% include 'payments/_customer_fields.html' %}</div>
+          {% else %}
+          <p class="wz-pick">Réservation sur WhatsApp.</p>
+          {% endif %}
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
+        </div>
+        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Sans compte · reçu immédiat · Mobile Money</p>
+      </aside>
+    </form>
+    {% endif %}
   </div>
   {{ selected|json_script:"ttSelected" }}
   {% include 'core/_toasts.html' %}
@@ -81,20 +101,28 @@
 <script>
 (function(){
   var form=document.getElementById('ticketForm'); if(!form) return;
-  var sel=form.querySelectorAll('select[data-price]'), total=document.getElementById('ttTotal'),
+  var inputs=form.querySelectorAll('input[data-price]'), total=document.getElementById('ttTotal'), lines=document.getElementById('ttLines'),
       buyer=document.getElementById('buyer'), pick=document.getElementById('ttPick'), pay=document.getElementById('payBtn');
   var prev={}; try{prev=JSON.parse(document.getElementById('ttSelected').textContent)||{};}catch(e){}
-  sel.forEach(function(s){var id=s.name.slice(4); if(prev[id]) s.value=prev[id];});
+  inputs.forEach(function(i){var id=i.name.slice(4); if(prev[id]) i.value=prev[id];});
   function fmt(n){return n.toLocaleString('fr-FR').replace(/ | /g,' ');}
+  function clamp(i){var v=parseInt(i.value,10)||0; i.value=Math.max(0,Math.min(+i.max||99,v));}
   function sync(){
-    var sum=0,count=0; sel.forEach(function(s){var q=+s.value; count+=q; sum+=q*(+s.dataset.price);});
+    var sum=0,count=0,parts=[]; lines.innerHTML='';
+    inputs.forEach(function(i){clamp(i); var q=+i.value, p=+i.dataset.price;
+      i.closest('[data-tk]').classList.toggle('is-picked',q>0);
+      if(q){count+=q; sum+=q*p; parts.push(q+' × '+i.dataset.name);
+        var li=document.createElement('li'); li.innerHTML='<span></span><b></b>';
+        li.firstChild.textContent=q+' × '+i.dataset.name; li.lastChild.textContent=p?fmt(q*p)+' FCFA':'Gratuit'; lines.appendChild(li);}});
     total.textContent=count?(sum?fmt(sum)+' FCFA':'Gratuit'):'0 FCFA';
     if(buyer) buyer.hidden=!count; if(pick) pick.hidden=!!count;
-    var parts=[]; sel.forEach(function(s){var q=+s.value; if(q) parts.push(q+' × '+s.dataset.name);});
     form.dataset.orderLabel=parts.join(', '); form.dataset.orderTotal=sum?fmt(sum)+' FCFA':'Gratuit';
-    if(pay){pay.querySelector('span').textContent=sum?'Payer '+fmt(sum)+' FCFA':'Réserver';}
+    if(pay) pay.querySelector('span').textContent=sum?'Payer '+fmt(sum)+' FCFA':'Réserver';
   }
-  sel.forEach(function(s){s.addEventListener('change',sync);}); sync();
+  form.querySelectorAll('[data-tk-step]').forEach(function(b){b.addEventListener('click',function(){
+    var i=b.parentNode.querySelector('input'); i.value=(+i.value||0)+(+b.dataset.tkStep); sync();});});
+  inputs.forEach(function(i){i.addEventListener('input',sync); i.addEventListener('change',sync);});
+  sync();
   if(Object.keys(prev).length) document.getElementById('tickets').scrollIntoView({block:'start'});
 })();
 </script>

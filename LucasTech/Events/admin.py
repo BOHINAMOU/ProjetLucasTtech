@@ -6,7 +6,7 @@ from .models import Event, Ticket, TicketType
 class TicketTypeInline(admin.TabularInline):
     model = TicketType
     extra = 1
-    fields = ['name', 'description', 'price', 'quantity', 'max_per_order', 'order', 'sold_display']
+    fields = ['name', 'image', 'description', 'price', 'quantity', 'max_per_order', 'order', 'sold_display']
     readonly_fields = ['sold_display']
 
     @admin.display(description="Vendus")

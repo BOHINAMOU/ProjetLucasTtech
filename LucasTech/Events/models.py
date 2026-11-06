@@ -61,7 +61,10 @@ class TicketType(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='ticket_types',
                               verbose_name="Événement")
     name = models.CharField(max_length=100, verbose_name="Nom", help_text="Ex : Standard, VIP, Étudiant")
-    description = models.CharField(max_length=200, blank=True, verbose_name="Détail (optionnel)")
+    description = models.CharField(max_length=200, blank=True, verbose_name="Détail (optionnel)",
+                                   help_text="Ex : accès zone VIP, boisson offerte")
+    image = models.ImageField(upload_to='events/tickets/', blank=True, null=True, verbose_name="Photo du ticket",
+                              help_text="Photo de couverture du lot (sinon, celle de l'événement).")
     price = models.PositiveIntegerField(verbose_name="Prix (FCFA)", help_text="0 = gratuit")
     quantity = models.PositiveIntegerField(verbose_name="Nombre de places")
     max_per_order = models.PositiveIntegerField(default=10, verbose_name="Maximum par commande")
@@ -94,6 +97,10 @@ class TicketType(models.Model):
     @property
     def remaining(self):
         return max(0, self.quantity - self.sold - self.held())
+
+    @property
+    def cover(self):
+        return self.image or self.event.cover
 
     def max_choice(self):
         return min(self.remaining, self.max_per_order)
