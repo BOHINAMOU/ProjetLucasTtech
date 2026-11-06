@@ -1,14 +1,14 @@
 {% if form.non_field_errors %}<div class="ct-errors" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 {{ form.submission }}
-<h3 class="ct-step"><span>1</span> Vos informations</h3>
+<h3 class="ct-step"><span>1</span> Vos coordonnées</h3>
 <div class="row">
   <div class="ct-field"><label for="id_first_name">Prénom</label>{{ form.first_name }}{% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
   <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
 </div>
 {% if form.whatsapp.is_hidden %}{{ form.whatsapp }}{% endif %}{% if form.address.is_hidden %}{{ form.address }}{% endif %}
 <div class="row">
-  {% if not form.whatsapp.is_hidden %}<div class="ct-field"><label for="id_whatsapp"><i class="fab fa-whatsapp" style="color:#128c4a"></i> Numéro WhatsApp</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}<span class="help">Nous vous appelons ou écrivons sur ce numéro.</span></div>{% endif %}
-  <div class="ct-field"><label for="id_email">Email{% if not form.email.field.required %} <small style="color:var(--bq-muted);font-weight:400">(facultatif)</small>{% endif %}</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}{% if form.email.help_text %}<span class="help">{{ form.email.help_text }}</span>{% endif %}</div>
+  {% if not form.whatsapp.is_hidden %}<div class="ct-field"><label for="id_whatsapp">WhatsApp</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>{% endif %}
+  <div class="ct-field"><label for="id_email">Email{% if not form.email.field.required %} <small style="color:var(--bq-muted);font-weight:400">(facultatif)</small>{% endif %}</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
 </div>
 {% if not form.address.is_hidden %}
 <div class="ct-field"><label for="id_address">Adresse de livraison</label>{{ form.address }}{% for e in form.address.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
@@ -16,24 +16,23 @@
 
 {% if form.has_account_choice %}
 <div class="ct-field">
-  <label>Compte</label>
   <div class="ct-choice" id="accChoice">{% for r in form.account %}<label>{{ r.tag }} <span>{{ r.choice_label }}</span></label>{% endfor %}</div>
-  <span class="help">Déjà inscrit ? <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" style="color:var(--bq-green);font-weight:600">Se connecter</a></span>
+  <span class="help">Déjà client ? <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" style="color:var(--bq-green);font-weight:600">Se connecter</a></span>
 </div>
 <div class="row" id="accPwd">
   <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
   <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
 </div>
 {% elif user.is_authenticated %}
-<p class="ct-note" style="text-align:left;margin-top:0"><i class="fa fa-user-check"></i> Connecté : {{ user.email }}. L'achat sera ajouté à votre compte.</p>
+<p class="ct-note" style="text-align:left;margin-top:0"><i class="fa fa-user-check"></i> {{ user.email }}</p>
 {% endif %}
 
-<h3 class="ct-step"><span>2</span> Paiement Mobile Money</h3>
+<h3 class="ct-step"><span>2</span> Mobile Money</h3>
 <div class="row">
   <div class="ct-field"><label for="id_country">Pays</label>{{ form.country }}{% for e in form.country.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-  <div class="ct-field"><label for="id_operator">Moyen de paiement</label>{{ form.operator }}{% for e in form.operator.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <div class="ct-field"><label for="id_operator">Opérateur</label>{{ form.operator }}{% for e in form.operator.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
 </div>
-<div class="ct-field"><label for="id_phone">Numéro Mobile Money</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}<span class="help">{{ form.phone.help_text }}</span></div>
+<div class="ct-field"><label for="id_phone">Numéro à débiter</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}<span class="help">Vous validerez avec votre code secret.</span></div>
 
 {{ pay_js|json_script:"payJs" }}
 <script>

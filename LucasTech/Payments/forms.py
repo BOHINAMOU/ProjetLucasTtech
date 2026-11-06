@@ -10,8 +10,8 @@ from . import mobile_money
 User = get_user_model()
 
 ACCOUNT_CHOICES = [
-    ('guest', "Continuer sans compte"),
-    ('create', "Créer un compte (retrouver mes achats plus tard)"),
+    ('guest', "Sans compte"),
+    ('create', "Créer un compte"),
 ]
 
 
@@ -61,11 +61,11 @@ class CustomerForm(forms.Form):
 
         if purpose == 'ticket':
             self.fields['whatsapp'].required = True
-            self.fields['email'].help_text = "Facultatif : pour recevoir le reçu par email."
+            self.fields['email'].help_text = ""
         elif purpose == 'produit':
             self.fields['whatsapp'].required = True
             self.fields['address'].required = True
-            self.fields['email'].help_text = "Facultatif : pour recevoir le reçu par email."
+            self.fields['email'].help_text = ""
         else:
             self.fields['email'].required = True
             self.fields['email'].help_text = "Votre reçu et votre lien de téléchargement y seront envoyés."

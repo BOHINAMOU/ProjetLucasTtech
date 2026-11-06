@@ -8,30 +8,27 @@
     <div class="ct-result">
       {% if p.is_paid %}
         <div class="ct-result__icon ok"><i class="fa fa-check"></i></div>
-        <h1>Merci {{ p.first_name }}, paiement confirmé.</h1>
-        <p class="lead">{{ p.description }} · <strong>{{ p.amount|floatformat:"0g" }} FCFA</strong> · référence {{ p.reference }}.</p>
+        <h1>Paiement réussi</h1>
+        <p class="lead">Merci {{ p.first_name }} · <strong>{{ p.amount|floatformat:"0g" }} FCFA</strong> · {{ p.reference }}</p>
 
         {% url 'payments:receipt' p.reference as receipt_url %}
         <div class="ct-box" style="margin-top:1.4rem">
           {% if has_file %}
           <h2><i class="fa fa-file-pdf" style="color:var(--bq-green)"></i> Votre document</h2>
-          <p style="color:var(--bq-ink2)">Le téléchargement démarre automatiquement. Sinon, cliquez ici :</p>
-          <a href="{% url 'payments:download' p.reference %}?t={{ p.access_token }}" class="pp-btn pp-btn--main" id="dlBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le PDF</a>
-          <a href="{{ receipt_url }}?t={{ p.access_token }}&telecharger=1" class="pp-btn pp-btn--alt"><i class="fa fa-receipt"></i> Télécharger le reçu</a>
+                    <a href="{% url 'payments:download' p.reference %}?t={{ p.access_token }}" class="pp-btn pp-btn--main" id="dlBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le PDF</a>
+          <a href="{{ receipt_url }}?t={{ p.access_token }}&telecharger=1" class="pp-btn pp-btn--alt"><i class="fa fa-receipt"></i> Reçu</a>
           {% else %}
           <h2><i class="fa fa-receipt" style="color:var(--bq-green)"></i> Votre reçu</h2>
-          <p style="color:var(--bq-ink2)">Votre reçu a été téléchargé automatiquement. Conservez-le{% if p.kind == 'ticket' %} : il vous sera demandé à l'entrée{% else %} : il vous sera demandé en cas de réclamation{% endif %}.</p>
-          <a href="{{ receipt_url }}?t={{ p.access_token }}&telecharger=1" class="pp-btn pp-btn--main" id="rcBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le reçu (PDF)</a>
-          <a href="{{ receipt_url }}?t={{ p.access_token }}" target="_blank" rel="noopener" class="pp-btn pp-btn--alt"><i class="fa fa-eye"></i> Voir le reçu</a>
+                    <a href="{{ receipt_url }}?t={{ p.access_token }}&telecharger=1" class="pp-btn pp-btn--main" id="rcBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le reçu</a>
+          <a href="{{ receipt_url }}?t={{ p.access_token }}" target="_blank" rel="noopener" class="pp-btn pp-btn--alt"><i class="fa fa-eye"></i> Voir</a>
           {% endif %}
         </div>
 
         {% if p.kind == 'ticket' %}
         <div class="ct-box" style="margin-top:1rem">
-          <h2>Et maintenant ?</h2>
           <ul class="ct-learn">
-            <li>Nous vous appelons au <strong>{{ p.whatsapp|default:p.phone_display }}</strong> pour la livraison de vos tickets.</li>
-            <li>Le jour de l'événement, présentez votre reçu ou donnez simplement votre nom à l'entrée.</li>
+            <li>Nous vous appelons pour vos tickets.</li>
+            <li>Le jour J : montrez le reçu ou donnez votre nom.</li>
           </ul>
         </div>
         {% if tickets %}
@@ -50,38 +47,34 @@
         </div>
         {% endif %}
         {% elif p.kind == 'product' or p.kind == 'shop' %}
-        <p class="lead" style="margin-top:1rem">Nous vous appelons au <strong>{{ p.whatsapp|default:p.phone_display }}</strong> pour la livraison{% if p.address %} ({{ p.address }}){% endif %}.</p>
+        <p class="lead" style="margin-top:1rem"><i class="fa fa-truck" style="color:var(--bq-green)"></i> Nous vous appelons pour la livraison.</p>
         {% endif %}
 
       {% elif p.status == 'pending' %}
         <div class="pay-wait" role="status" aria-live="polite">
           <div class="pay-orbit" aria-hidden="true"><span class="pay-ring"></span><span class="pay-ring pay-ring-2"></span><span class="pay-phone"><i class="fa fa-mobile-screen-button"></i></span></div>
           <p class="pay-progress">Paiement en cours<span class="pay-dots"><i>.</i><i>.</i><i>.</i></span></p>
-          <h1>Validez le paiement sur votre téléphone</h1>
+          <h1>Validez sur votre téléphone</h1>
           <div class="pay-summary">
             <div><span>Montant</span><b>{{ p.amount|floatformat:"0g" }} FCFA</b></div>
             <div><span>Numéro</span><b>{{ p.phone_display }}</b></div>
             {% if p.operator_label %}<div><span>Moyen</span><b>{{ p.operator_label }}</b></div>{% endif %}
           </div>
           {% if direct %}
-          <ol class="pay-steps">
-            <li>Un message {{ p.operator_label|default:"Mobile Money" }} s'affiche sur votre téléphone.</li>
-            <li>Saisissez votre <strong>code secret</strong> pour confirmer.</li>
-            <li>Restez sur cette page : elle se met à jour toute seule.</li>
-          </ol>
-          {% if ussd %}<p class="ct-note">Pas de message ? Composez <strong>{{ ussd }}</strong> puis ouvrez vos paiements en attente.</p>{% endif %}
+          <p class="lead">Entrez votre <strong>code secret</strong> {{ p.operator_label }}.<br>Cette page se met à jour toute seule.</p>
+          {% if ussd %}<p class="ct-note">Pas de message ? Composez <strong>{{ ussd }}</strong>.</p>{% endif %}
           {% elif p.payment_url %}
-          <p class="lead">Terminez le paiement sur la page sécurisée FedaPay, puis revenez ici.</p>
+          <p class="lead">Terminez sur la page FedaPay.</p>
           <a href="{{ p.payment_url }}" class="ct-pill ct-pill--green" style="margin-top:1rem">Ouvrir la page de paiement</a>
           {% endif %}
           <p class="ct-note" data-payment-status="{% url 'payments:status' p.reference %}?t={{ p.access_token }}">Réf. {{ p.reference }}</p>
-          <p class="ct-note" data-payment-slow hidden>Toujours en attente ? Sans validation sur le téléphone, la demande expire et <strong>aucun montant n'est débité</strong>.
+          <p class="ct-note" data-payment-slow hidden>Sans validation, rien n'est débité.
             {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" style="color:var(--bq-green)">Besoin d'aide ?</a>{% endif %}</p>
         </div>
       {% else %}
         <div class="ct-result__icon ko"><i class="fa fa-xmark"></i></div>
-        <h1>Le paiement n'a pas abouti.</h1>
-        <p class="lead">{{ p.failure_reason|default:"Aucun montant n'a été débité. Vous pouvez réessayer." }}</p>
+        <h1>Paiement non abouti</h1>
+        <p class="lead">{{ p.failure_reason|default:"Rien n'a été débité." }}</p>
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
           {% if p.service %}<a href="{% url 'payments:checkout' 'service' p.service.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
           {% elif p.formation %}<a href="{% url 'payments:checkout' 'formation' p.formation.pk %}" class="ct-pill ct-pill--green">Réessayer</a>

@@ -38,8 +38,7 @@ def refresh(payment):
     elif status in fedapay.FAILED_STATUSES:
         Payment.objects.filter(pk=payment.pk, status='pending').update(
             status='canceled' if status == 'canceled' else 'declined',
-            failure_reason="Le paiement n'a pas été validé sur le téléphone (refusé, annulé ou expiré). "
-                           "Aucun montant n'a été débité.")
+            failure_reason="Paiement non validé sur le téléphone. Rien n'a été débité.")
         _release(payment)
     payment.refresh_from_db()
     return payment

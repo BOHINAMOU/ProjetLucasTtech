@@ -8,36 +8,36 @@
   <div class="bq-wrap">
     <div class="pp-bar">
       <a href="{{ back_url }}" class="pp-back"><i class="fa fa-arrow-left"></i> Retour</a>
-      {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test : aucun argent réel</span>{% endif %}
+      {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
     </div>
 
     <div class="ct-pay">
       <div class="ct-box">
         {% if enabled %}
-        <h2>Finaliser le paiement</h2>
+        <h2 class="ct-pay__title">Paiement</h2>
         <form method="post" class="ct-form" novalidate>
           {% csrf_token %}
           {% if kind == 'produit' %}<input type="hidden" name="qty" value="{{ qty }}">{% endif %}
           {% include 'payments/_customer_fields.html' %}
-          <button type="submit" class="pp-btn pp-btn--main" data-pay-submit><i class="fa fa-lock"></i> <span>Payer {{ amount|floatformat:"0g" }} FCFA</span></button>
-          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Plutôt nous contacter sur WhatsApp</a>{% endif %}
+          <button type="submit" class="pp-btn pp-btn--main ct-paybtn" data-pay-submit><i class="fa fa-lock"></i> <span>Payer {{ amount|floatformat:"0g" }} FCFA</span></button>
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
         </form>
-        <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé par FedaPay. Vous restez sur le site : la demande arrive sur votre téléphone, vous la validez avec votre code secret. Nous ne voyons jamais votre code.</p>
+        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay</p>
         {% else %}
         <h2>Paiement en ligne bientôt disponible</h2>
-        <p style="color:var(--bq-ink2);line-height:1.6">Pour commander dès maintenant, écrivez-nous sur WhatsApp : nous vous envoyons les instructions de paiement.</p>
+        <p style="color:var(--bq-ink2)">Commandez dès maintenant sur WhatsApp.</p>
         {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="margin-top:1rem"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>{% endif %}
         {% endif %}
       </div>
 
       <aside class="ct-box ct-sum">
-        <h2>Récapitulatif</h2>
+        <h2>Votre commande</h2>
         <div class="ct-sum__item">
           {% if obj.image %}<img src="{{ obj.image.url }}" alt="">{% endif %}
           <div><strong>{% if kind == 'produit' %}{{ obj.name }}{% else %}{{ obj.title|default:description }}{% endif %}</strong>
             <div style="color:var(--bq-muted);font-size:.88rem;margin-top:.2rem">
-              {% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% elif kind == 'produit' %}Quantité : {{ qty }} · livraison après paiement{% else %}Commande boutique{% endif %}
-              {% if has_file %} · PDF téléchargeable après paiement{% endif %}
+              {% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% elif kind == 'produit' %}Quantité : {{ qty }}{% else %}Commande boutique{% endif %}
+              {% if has_file %} · PDF inclus{% endif %}
             </div>
           </div>
         </div>
@@ -45,7 +45,7 @@
           {% for it in obj.items.all %}<div class="ct-sum__line"><span>{{ it.product.name }} × {{ it.quantity }}</span><span>{{ it.total_price|floatformat:"0g" }} FCFA</span></div>{% endfor %}
         {% endif %}
         <div class="ct-sum__total"><span>Total</span><strong>{{ amount|floatformat:"0g" }} FCFA</strong></div>
-        <div class="ct-methods"><span>Mixx by Yas</span><span>Moov Money</span><span>MTN MoMo</span><span>Wave</span><span>Celtiis</span></div>
+        <div class="ct-methods"><span>Mixx by Yas</span><span>Moov</span><span>MTN</span><span>Wave</span></div>
       </aside>
     </div>
   </div>
