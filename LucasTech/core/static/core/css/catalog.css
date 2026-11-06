@@ -376,3 +376,22 @@
 
 @media (max-width: 960px) { .ev-layout { grid-template-columns: 1fr; } .ev-side { position: static; } }
 @media (max-width: 600px) { .ev-tickets { grid-template-columns: 1fr; } .tk__img { aspect-ratio: 16 / 8; } }
+
+/* ════════ Typographie et couleurs harmonisées (Roboto, échelle standard, un seul vert) ════════ */
+.bq, .bq input, .bq select, .bq textarea, .bq button { font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; }
+.bq { font-size: 16px; line-height: 1.55; color: #1a1d1b; -webkit-font-smoothing: antialiased; }
+.bq h1, .bq h2, .bq h3 { font-family: 'Roboto', system-ui, sans-serif; font-weight: 700; color: inherit; }
+.ct-hero h1, .ev-hero h1 { font-size: clamp(2rem, 4.2vw, 3rem); letter-spacing: -.01em; line-height: 1.1; }
+.ct-hero p { font-size: 1.05rem; font-weight: 400; }
+.pp-name { font-size: clamp(1.7rem, 3vw, 2.25rem); letter-spacing: -.01em; line-height: 1.15; }
+.ev-h, .bq-sec-title h2, .ct-group__head h2, .pp-section > h2 { font-size: clamp(1.3rem, 2vw, 1.6rem); letter-spacing: -.005em; }
+.bq-card__name, .tk__name { letter-spacing: 0; }
+.bq-card__name { font-size: 1.05rem; font-weight: 600; }
+.tk__price { font-size: 1.6rem; letter-spacing: -.01em; }
+.wz-order__price, .ev-cart__head strong, .ct-sum__total strong { letter-spacing: -.01em; }
+.ct-step, .ct-sum h2 { letter-spacing: .04em; }
+/* Couleurs : vert de la marque partout (WhatsApp compris), orange discret pour « plus que X places » */
+.ct-walink, .wz-foot a, .bq-btn--wa, .pp-btn--wa { color: var(--bq-green) !important; }
+.bq-btn--wa, .pp-btn--wa { border-color: rgba(15,122,69,.3) !important; }
+.tk__left { color: #b45309; }
+.ct-badge--test { background: #fef3c7; color: #92400e; }
