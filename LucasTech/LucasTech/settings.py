@@ -292,6 +292,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # ══════════════════════════════════════
 # Sans clé secrète : mode démo en local (DEBUG), paiement désactivé en production.
 FEDAPAY_SECRET_KEY = os.getenv("FEDAPAY_SECRET_KEY", "")
+FEDAPAY_PUBLIC_KEY = os.getenv("FEDAPAY_PUBLIC_KEY", "")
 FEDAPAY_ENV = os.getenv("FEDAPAY_ENV", "sandbox")  # sandbox (test) ou live (réel)
 SITE_URL = os.getenv("SITE_URL", "https://lantantetechnologie.com")
 
