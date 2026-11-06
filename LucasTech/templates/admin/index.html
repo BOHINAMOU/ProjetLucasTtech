@@ -176,7 +176,6 @@
         <div class="ltd-links">
           <a href="{{ dash.comments.unread_url }}"><i class="fas fa-envelope"></i> Non lus</a>
           <a href="{{ dash.comments.site_url }}">Actualités du site</a>
-          <a href="{{ dash.comments.feed_url }}">Fil emploi</a>
         </div>
         {% for c in dash.latest_comments %}
         <a class="ltd-row {% if not c.read %}unread{% endif %}" href="{{ c.url }}">
@@ -211,7 +210,7 @@
         </div>
       </div>
 
-      <div class="ltd-h"><h3>Candidatures · 14 jours</h3></div>
+      <div class="ltd-h"><h3>Paiements en ligne · 14 jours</h3></div>
       <div class="ltd-panel">
         <div class="ltd-chartbox">
           <div class="ltd-chart">{% for d in dash.app_days %}<div title="{{ d.label }} : {{ d.n }}">{% if d.n %}<b>{{ d.n }}</b>{% endif %}<i style="height:{{ d.h }}%;background:var(--navy)"></i></div>{% endfor %}</div>

@@ -1,0 +1,27 @@
+<article class="bq-card ct-card">
+  <a href="{% url 'services:service_detail' s.pk %}" class="bq-card__link" aria-label="Voir {{ s.title }}"></a>
+  <div class="bq-card__img">
+    {% if s.is_featured %}<span class="bq-tag bq-tag--star">Populaire</span>{% endif %}
+    {% if s.image %}<img src="{{ s.image.url }}" alt="{{ s.title }}" loading="lazy">
+    {% elif s.video %}<video src="{{ s.video.url }}" autoplay muted loop playsinline></video>
+    {% else %}<i class="fa {{ s.icon_class }}" aria-hidden="true"></i>{% endif %}
+  </div>
+  <div class="bq-card__body">
+    {% if s.category %}<span class="bq-card__cat">{{ s.category.name }}</span>{% endif %}
+    <h3 class="bq-card__name">{{ s.title }}</h3>
+    <p class="bq-card__desc">{{ s.description|striptags|truncatechars:170 }}</p>
+  </div>
+  <div class="bq-card__price">
+    {% if s.price %}<strong>{{ s.price|floatformat:"0g" }} FCFA</strong>
+    {% elif s.price_from %}<small>À partir de</small> <strong>{{ s.price_from|floatformat:"0g" }} FCFA</strong>
+    {% else %}<small>Prix sur devis</small>{% endif %}
+  </div>
+  <div class="bq-card__actions">
+    {% if s.price %}
+    <a href="{% url 'payments:checkout' 'service' s.pk %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> Payer</a>
+    {% else %}
+    <a href="https://wa.me/{% if s.whatsapp %}{{ s.whatsapp }}{% else %}{{ site_settings.whatsapp_1 }}{% endif %}?text={{ 'Bonjour, je suis intéressé(e) par le service : '|urlencode }}{{ s.title|urlencode }}" target="_blank" rel="noopener" class="bq-btn bq-btn--wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+    {% endif %}
+    <a href="{% url 'services:service_detail' s.pk %}" class="bq-btn bq-btn--dark">Voir détails</a>
+  </div>
+</article>

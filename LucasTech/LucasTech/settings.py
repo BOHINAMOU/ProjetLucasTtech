@@ -89,6 +89,8 @@ INSTALLED_APPS = [
     'Emploi',
     'core',
     'Portfolio',
+    'Payments',
+    'Events',
 
     'social_django',
 
@@ -286,6 +288,15 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # ══════════════════════════════════════
+# FEDAPAY (paiement en ligne)
+# ══════════════════════════════════════
+# Sans clé secrète : mode démo en local (DEBUG), paiement désactivé en production.
+FEDAPAY_SECRET_KEY = os.getenv("FEDAPAY_SECRET_KEY", "")
+FEDAPAY_ENV = os.getenv("FEDAPAY_ENV", "sandbox")  # sandbox (test) ou live (réel)
+SITE_URL = os.getenv("SITE_URL", "https://lantantetechnologie.com")
+
+
+# ══════════════════════════════════════
 # MISC
 # ══════════════════════════════════════
 PASSWORD_RESET_TIMEOUT = 300
@@ -321,6 +332,7 @@ JAZZMIN_SETTINGS = {
         {"name": "Actualités", "url": "/actualites/", "new_window": True},
     ],
 
+    "hide_apps": ["Emploi"],
     "custom_css": "css/admin.css",
     "custom_js": "js/admin-mobile.js",
 
@@ -385,6 +397,11 @@ JAZZMIN_SETTINGS = {
         "Shop.reservation": "fas fa-calendar-days",
         "Shop.review": "fas fa-star",
         "Shop.shoporder": "fas fa-bag-shopping",
+        "Payments": "fas fa-credit-card",
+        "Payments.payment": "fas fa-credit-card",
+        "Events": "fas fa-calendar-days",
+        "Events.event": "fas fa-calendar-days",
+        "Events.ticket": "fas fa-ticket",
         "Users": "fas fa-users",
         "Users.user": "fas fa-user",
         "auth": "fas fa-shield-halved",

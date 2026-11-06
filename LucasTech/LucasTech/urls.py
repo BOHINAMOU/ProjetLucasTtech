@@ -15,6 +15,8 @@ urlpatterns = [
         'googlef89010971d315902.html',
         lambda request: HttpResponse("google-site-verification: googlef89010971d315902.html", content_type="text/html"),
     ),
+    # Module Emploi retiré du site (nov. 2026) : ses anciennes adresses renvoient à l'accueil.
+    re_path(r'^(?:emploi|app)(?:/.*)?$', RedirectView.as_view(url='/', permanent=False)),
     re_path(r'^app/(?P<path>.*)$', webapp, name='webapp'),
     path('users/',        include('Users.urls', namespace='users')),
     path('lantanteAdminTech/', admin.site.urls),
@@ -25,6 +27,8 @@ urlpatterns = [
     path('actualites/', include('Publications.urls', namespace='publications')),
     # Ancienne adresse : redirection permanente (liens déjà partagés, référencement Google)
     re_path(r'^publications/(?P<rest>.*)$', RedirectView.as_view(url='/actualites/%(rest)s', permanent=True, query_string=True)),
+    path('paiement/',     include('Payments.urls', namespace='payments')),
+    path('evenements/',   include('Events.urls', namespace='events')),
     path('bohinamou/',    include('Portfolio.urls', namespace='portfolio')),
     path('emploi/',       include('Emploi.urls', namespace='emploi')),
     path('api/v1/',       include('Emploi.api.urls')),

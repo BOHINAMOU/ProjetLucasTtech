@@ -268,21 +268,9 @@ def payment(request, pk):
             messages.success(request, "Votre commande en espèces a été enregistrée ! Notre équipe vous contactera bientôt.")
             return redirect('shop:order_history')
 
-        elif payment_method in ('flooz', 'tmoney', 'wave'):
-            # Simuler la réception du paiement.
-            # En prod : intégrer les API Flooz / TMoney / Wave ici.
-            transaction_id = request.POST.get('transaction_id', '').strip()
-            if not transaction_id:
-                messages.error(request, 'Veuillez entrer votre numéro de transaction.')
-                return render(request, 'shop/payment.html', {
-                    'order': order,
-                    'whatsapp_number': _cart_whatsapp_number(order.items.select_related('product').all()),
-                })
-
-            order.status = 'paid'
-            order.save()
-            messages.success(request, f'✓ Paiement confirmé ! Commande #{order.receipt_number}')
-            return redirect('shop:order_receipt', pk=order.pk)
+        elif payment_method == 'fedapay':
+            # Mobile Money / carte : le paiement n'est validé qu'après vérification chez FedaPay.
+            return redirect('payments:checkout', kind='boutique', pk=order.pk)
 
         else:
             messages.error(request, "Veuillez sélectionner une méthode de paiement valide.")

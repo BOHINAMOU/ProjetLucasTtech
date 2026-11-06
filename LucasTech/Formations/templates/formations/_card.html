@@ -1,0 +1,31 @@
+<article class="bq-card ct-card">
+  <a href="{% url 'formations:formation_detail' f.pk %}" class="bq-card__link" aria-label="Voir {{ f.title }}"></a>
+  <div class="bq-card__img">
+    {% if f.is_on_sale %}<span class="bq-tag bq-tag--sale">-{{ f.discount_percent }}%</span>
+    {% elif f.is_featured %}<span class="bq-tag bq-tag--star">Populaire</span>{% endif %}
+    {% if f.image %}<img src="{{ f.image.url }}" alt="{{ f.title }}" loading="lazy">{% else %}<i class="fa fa-graduation-cap" aria-hidden="true"></i>{% endif %}
+  </div>
+  <div class="bq-card__body">
+    {% if f.category %}<span class="bq-card__cat">{{ f.category.name }}</span>{% endif %}
+    <h3 class="bq-card__name">{{ f.title }}</h3>
+    <p class="bq-card__desc">{{ f.description|striptags|truncatechars:150 }}</p>
+    <div class="ct-meta">
+      <span><i class="fa fa-signal"></i>{{ f.get_level_display }}</span>
+      {% if f.duration %}<span><i class="fa fa-clock"></i>{{ f.duration }}</span>{% endif %}
+      {% if f.formation_type == 'numerique' %}<span><i class="fa fa-file-pdf"></i>À télécharger</span>{% elif f.formation_type == 'inscription' %}<span><i class="fab fa-whatsapp"></i>Sur inscription</span>{% endif %}
+    </div>
+  </div>
+  <div class="bq-card__price">
+    {% if f.price %}<strong>{{ f.price|floatformat:"0g" }} FCFA</strong>{% if f.is_on_sale %}<s>{{ f.old_price|floatformat:"0g" }} FCFA</s>{% endif %}{% else %}<strong>Gratuit</strong>{% endif %}
+  </div>
+  <div class="bq-card__actions">
+    {% if f.can_pay_online %}
+    <a href="{% url 'payments:checkout' 'formation' f.pk %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> Payer</a>
+    {% elif f.formation_type == 'inscription' %}
+    <a href="{% url 'formations:formation_register' f.pk %}" class="bq-btn bq-btn--green">S'inscrire</a>
+    {% else %}
+    <a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je suis intéressé(e) par la formation : '|urlencode }}{{ f.title|urlencode }}" target="_blank" rel="noopener" class="bq-btn bq-btn--wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+    {% endif %}
+    <a href="{% url 'formations:formation_detail' f.pk %}" class="bq-btn bq-btn--dark">Voir détails</a>
+  </div>
+</article>

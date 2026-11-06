@@ -49,15 +49,9 @@ def build(request):
     # ── À traiter : tout ce qui attend une action de l'équipe ──
     todo = [
         ('Commentaires du site non lus', _count('Publications.PublicationComment', is_read=False), 'fa-comment-dots', _url('Publications.PublicationComment', '?is_read__exact=0'), 'red'),
-        ('Commentaires du fil emploi non lus', _count('Emploi.FeedComment', is_read=False), 'fa-comments', _url('Emploi.FeedComment', '?is_read__exact=0'), 'red'),
         ('Messages rapides non lus', _count('Publications.QuickMessage', is_read=False), 'fa-envelope', _url('Publications.QuickMessage', '?is_read__exact=0'), 'red'),
         ('Contacts des services non lus', _count('Services.ServiceContact', is_read=False), 'fa-phone-volume', _url('Services.ServiceContact', '?is_read__exact=0'), 'red'),
-        ('Service client : nouveaux messages', _count('Emploi.Conversation', kind='support', status='new'), 'fa-headset', _url('Emploi.Conversation', '?status__exact=new'), 'orange'),
-        ('Entreprises à analyser', _count('Emploi.EmployerProfile', status='pending'), 'fa-building', _url('Emploi.EmployerProfile', '?status__exact=pending'), 'orange'),
-        ('Paiements à vérifier', _count('Emploi.PublicationOrder', status='payment_declared'), 'fa-money-bill-wave', _url('Emploi.PublicationOrder', '?status__exact=payment_declared'), 'orange'),
-        ('Actualités payées à valider', _count('Emploi.PublicationOrder', status='in_review'), 'fa-clipboard-check', _url('Emploi.PublicationOrder', '?status__exact=in_review'), 'orange'),
-        ('Offres d\'emploi à valider', _count('Emploi.JobOffer', status='pending'), 'fa-bullhorn', _url('Emploi.JobOffer', '?status__exact=pending'), 'orange'),
-        ('Candidatures en attente', _count('Emploi.Application', status='received'), 'fa-handshake', _url('Emploi.Application'), 'blue'),
+        ('Paiements en ligne en attente', _count('Payments.Payment', status='pending'), 'fa-credit-card', _url('Payments.Payment', '?status__exact=pending'), 'blue'),
         ('Commandes boutique en attente', _count('Shop.ShopOrder', status='pending'), 'fa-shopping-bag', _url('Shop.ShopOrder', '?status__exact=pending'), 'blue'),
         ('Réservations en attente', _count('Shop.Reservation', status='pending'), 'fa-calendar-check', _url('Shop.Reservation', '?status__exact=pending'), 'blue'),
         ('Demandes de monétisation à traiter', _count('core.MonetizationRequest', status='new'), 'fa-sack-dollar', _url('core.MonetizationRequest', '?status__exact=new'), 'orange'),
@@ -68,14 +62,14 @@ def build(request):
     total_todo = sum(t['n'] for t in todo)
 
     # ── Commentaires : lus / non lus / publiés ──
-    pc, fc = _model('Publications.PublicationComment'), _model('Emploi.FeedComment')
+    pc, fc = _model('Publications.PublicationComment'), None  # module Emploi retiré
     pc_all = pc.objects.count() if pc else 0
     fc_all = fc.objects.count() if fc else 0
     pc_unread = pc.objects.filter(is_read=False).count() if pc else 0
     fc_unread = fc.objects.filter(is_read=False).count() if fc else 0
     comments = {
         'total': pc_all + fc_all, 'unread': pc_unread + fc_unread, 'read': pc_all + fc_all - pc_unread - fc_unread,
-        'site_url': _url('Publications.PublicationComment'), 'feed_url': _url('Emploi.FeedComment'),
+        'site_url': _url('Publications.PublicationComment'), 'feed_url': '',
         'unread_url': _url('Publications.PublicationComment', '?is_read__exact=0'),
     }
     latest = []
@@ -96,12 +90,9 @@ def build(request):
     views = (pub.objects.aggregate(v=Sum('views_count'))['v'] or 0) if pub else 0
     stats = [
         ('Comptes utilisateurs', User.objects.count(), f"+{User.objects.filter(date_joined__gte=week).count()} cette semaine", 'fa-users', _url('Users.User')),
-        ('Candidats', _count('Emploi.CandidateProfile'), '', 'fa-user-graduate', _url('Emploi.CandidateProfile')),
-        ('Entreprises acceptées', _count('Emploi.EmployerProfile', status='approved'), '', 'fa-building', _url('Emploi.EmployerProfile')),
-        ('Offres publiées', _count('Emploi.JobOffer', status='published'), '', 'fa-bullhorn', _url('Emploi.JobOffer')),
-        ('Candidatures reçues', _count('Emploi.Application'), f"+{_count('Emploi.Application', created_at__gte=week)} cette semaine", 'fa-handshake', _url('Emploi.Application')),
         ('Actualités du site', _count('Publications.Publication', is_published=True), f"{views} lectures", 'fa-newspaper', _url('Publications.Publication')),
-        ('Actualités du fil emploi', _count('Emploi.FeedPost', is_hidden=False), '', 'fa-rss', _url('Emploi.FeedPost')),
+        ('Paiements en ligne reçus', _count('Payments.Payment', status='approved'), '', 'fa-credit-card', _url('Payments.Payment', '?status__exact=approved')),
+        ('Événements', _count('Events.Event'), f"{_count('Events.Ticket')} tickets vendus", 'fa-calendar-days', _url('Events.Event')),
         ('Produits en boutique', _count('Shop.Product'), '', 'fa-store', _url('Shop.Product')),
         ('Formations', _count('Formations.Formation'), f"{_count('Formations.Registration')} inscriptions", 'fa-graduation-cap', _url('Formations.Formation')),
         ('Services', _count('Services.Service', is_active=True), '', 'fa-wrench', _url('Services.Service')),
@@ -120,10 +111,10 @@ def build(request):
         d['h'] = max(4, round(100 * d['n'] / peak)) if d['n'] else 4
 
     app_days = []
-    app_model = _model('Emploi.Application')
+    app_model = _model('Payments.Payment')
     for i in range(13, -1, -1):
         day = (now - timedelta(days=i)).date()
-        app_days.append({'label': day.strftime('%d/%m'), 'n': app_model.objects.filter(created_at__date=day).count() if app_model else 0})
+        app_days.append({'label': day.strftime('%d/%m'), 'n': app_model.objects.filter(status='approved', paid_at__date=day).count() if app_model else 0})
     app_peak = max([d['n'] for d in app_days] + [1])
     for d in app_days:
         d['h'] = max(4, round(100 * d['n'] / app_peak)) if d['n'] else 4
@@ -132,7 +123,6 @@ def build(request):
     WEEK = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
     today = f"{WEEK[now.weekday()].capitalize()} {now.day} {MONTHS[now.month - 1]} {now.year}"
     hero_kpis = [
-        ('Comptes', User.objects.count()), ('Candidatures', _count('Emploi.Application')),
         ('Actualités', _count('Publications.Publication', is_published=True)), ('Commentaires non lus', comments['unread']),
     ]
 
@@ -140,8 +130,7 @@ def build(request):
 
     actions = [
         ('Publier une actualité', 'fa-newspaper', _url('Publications.Publication', add=True), 'green'),
-        ('Publier dans le fil emploi', 'fa-rss', _url('Emploi.FeedPost', add=True), 'green'),
-        ('Nouvelle offre d\'emploi', 'fa-bullhorn', _url('Emploi.JobOffer', add=True), 'green'),
+        ('Créer un événement', 'fa-calendar-plus', _url('Events.Event', add=True), 'green'),
         ('Ajouter un produit', 'fa-store', _url('Shop.Product', add=True), 'navy'),
         ('Ajouter une formation', 'fa-graduation-cap', _url('Formations.Formation', add=True), 'navy'),
         ('Ajouter un service', 'fa-wrench', _url('Services.Service', add=True), 'navy'),

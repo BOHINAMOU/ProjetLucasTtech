@@ -1,408 +1,99 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% block title %}{{ formation.title }} — Lantante Technologie{% endblock %}
+{% block title %}{{ formation.title }} — Formations Lantante Technologie{% endblock %}
 {% block meta_description %}{{ formation.description|striptags|truncatechars:155 }}{% endblock %}
 {% block og_title %}{{ formation.title }} — Lantante Technologie{% endblock %}
 {% block og_description %}{{ formation.description|striptags|truncatechars:155 }}{% endblock %}
 {% block og_image %}{% if formation.image %}{{ formation.image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}{% endblock %}
 
 {% block content %}
-<style>
-
-:root {
-  --bg:     #f7f3ee;
-  --surf:   #faf8f5;
-  --surf2:  #f2ede6;
-  --ink:    #1c1814;
-  --ink2:   #3a3530;
-  --muted:  #8a8078;
-  --border: rgba(0,0,0,.085);
-  --shadow: rgba(0,0,0,.08);
-  --indigo: #0f7a45;
-  --indigo2:#0b6137;
-  --rose:   #c93060;
-  --r:      16px;
-  --font:   'Outfit', sans-serif;
-  --serif:  'Cormorant Garamond', serif;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--ink); }
-
-/* ── BREADCRUMB ── */
-.fd-breadcrumb {
-  max-width: 1180px; margin: 0 auto; padding: 24px clamp(1.2rem,5vw,3rem) 0;
-  display: flex; align-items: center; gap: 8px;
-  font-size: .82rem; color: var(--muted);
-}
-.fd-breadcrumb a { color: var(--indigo); text-decoration: none; font-weight: 600; }
-.fd-breadcrumb a:hover { text-decoration: underline; }
-.fd-breadcrumb span { opacity: .5; }
-
-/* ── LAYOUT ── */
-.fd-wrapper {
-  max-width: 1180px; margin: 24px auto 0;
-  padding: 0 clamp(1.2rem,5vw,3rem);
-  display: grid;
-  grid-template-columns: minmax(0,1fr) 360px;
-  gap: 48px;
-  align-items: start;
-}
-
-/* ── IMAGE ── */
-.fd-img-wrap {
-  position: relative;
-  border-radius: var(--r); overflow: hidden;
-  aspect-ratio: 16/10;
-  box-shadow: 0 16px 48px var(--shadow);
-  animation: fadeUp .5s ease both;
-}
-.fd-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
-.fd-img-badges { position: absolute; top: 16px; left: 16px; z-index: 2; display: flex; gap: 8px; }
-.fd-badge {
-  font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-  padding: 6px 13px; border-radius: 99px;
-}
-.fd-badge.level { background: rgba(20,20,20,.6); color: #fff; backdrop-filter: blur(4px); }
-.fd-badge.sale { background: var(--rose); color: #fff; }
-
-/* ── MESSAGES ── */
-.fd-msgs { margin-top: 16px; }
-.fd-msg { padding: 11px 16px; border-radius: 10px; font-size: .88rem; margin-bottom: 8px; }
-.fd-msg.success { background: rgba(45,122,95,.1); border: 1px solid rgba(45,122,95,.3); color: #2c5f4a; }
-.fd-msg.error   { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.25); color: var(--rose); }
-
-/* ── META BAR ── */
-.fd-meta-bar { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 20px; }
-.fd-meta-item { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink2); font-weight: 600; }
-.fd-meta-item i { color: var(--indigo); }
-
-/* ── TEXT ── */
-.fd-title {
-  font-family: var(--serif);
-  font-size: clamp(1.7rem, 3vw, 2.5rem);
-  font-weight: 800; line-height: 1.2; letter-spacing: -.02em;
-  margin: 14px 0 12px;
-}
-.fd-desc { font-size: .96rem; color: var(--ink2); line-height: 1.78; margin-bottom: 28px; }
-
-/* ── Ce que vous allez apprendre ── */
-.fd-learn {
-  margin-top: 8px; padding-top: 28px; border-top: 1px solid var(--border);
-}
-.fd-learn-title { font-family: var(--serif); font-size: 1.25rem; font-weight: 800; margin-bottom: 16px; }
-.fd-learn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 12px; }
-.fd-learn-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: .88rem; color: var(--ink2); line-height: 1.5;
-  background: var(--surf); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
-}
-.fd-learn-item i { color: #2c5f4a; margin-top: 2px; flex-shrink: 0; }
-
-/* ── SIDEBAR CARD ── */
-.fd-card {
-  position: sticky; top: 28px;
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: var(--r); padding: 28px 26px;
-  box-shadow: 0 8px 40px var(--shadow);
-  animation: fadeUp .5s .08s ease both;
-}
-.fd-price-old { font-size: 1.05rem; color: var(--muted); text-decoration: line-through; margin-bottom: 2px; }
-.fd-price {
-  font-family: var(--serif); font-size: 2.2rem; font-weight: 900; letter-spacing: -.02em;
-  color: var(--ink); display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
-}
-.fd-price sub { font-family: var(--font); font-size: .82rem; font-weight: 500; color: var(--muted); }
-.fd-price-save {
-  font-family: var(--font); font-size: .74rem; font-weight: 800; color: #fff;
-  background: var(--rose); padding: 3px 10px; border-radius: 99px;
-}
-.fd-price-note { font-size: .78rem; color: var(--muted); margin-top: 6px; }
-
-.fd-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
-.fd-qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.fd-qty-label { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); flex: 1; }
-.fd-qty-input {
-  width: 68px; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-  background: var(--surf2); font-family: var(--font); font-size: 1rem; color: var(--ink);
-  text-align: center; outline: none; transition: border-color .2s;
-}
-.fd-qty-input:focus { border-color: var(--indigo); }
-
-.btn-buy-now {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 15px; background: var(--indigo); color: #fff; border: none; border-radius: 10px;
-  font-family: var(--font); font-size: .95rem; font-weight: 700; cursor: pointer;
-  transition: background .2s, transform .15s; margin-bottom: 10px;
-}
-.btn-buy-now:hover { background: var(--indigo2); transform: translateY(-2px); }
-
-.btn-primary {
-  display: block; width: 100%; padding: 14px; text-align: center;
-  background: var(--ink); color: #fff; border: none; border-radius: 10px;
-  font-family: var(--font); font-size: .92rem; font-weight: 600; cursor: pointer;
-  transition: background .2s, transform .15s;
-}
-.btn-primary:hover { background: var(--ink2); transform: translateY(-1px); }
-
-.btn-whatsapp {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 13px; background: rgba(37,211,102,.1); border: 1.5px solid rgba(37,211,102,.3);
-  color: #1a8040; text-decoration: none; border-radius: 10px;
-  font-family: var(--font); font-size: .88rem; font-weight: 600; transition: background .2s;
-}
-.btn-whatsapp:hover { background: rgba(37,211,102,.2); }
-
-.fd-cart-link { display: block; text-align: center; margin-top: 12px; font-size: .82rem; color: var(--indigo); text-decoration: none; font-weight: 600; }
-.fd-cart-link:hover { text-decoration: underline; }
-
-.fd-info { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-.fd-info-row { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--muted); }
-.fd-info-row i { color: var(--indigo); width: 14px; text-align: center; }
-
-/* ── Explorer / similaires (réutilisé du modèle Boutique, en pleine largeur) ── */
-.fd-full {
-  max-width: 1180px; margin: 56px auto 88px; padding: 0 clamp(1.2rem,5vw,3rem);
-  padding-top: 40px; border-top: 1px solid var(--border);
-}
-.fd-full-title { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-.fd-explore-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 4px; }
-.fd-explore-tile {
-  position: relative; overflow: hidden; border-radius: 14px; flex-shrink: 0;
-  width: 220px; height: 120px; display: flex; align-items: flex-end;
-  background-size: cover; background-position: center; text-decoration: none;
-  transition: transform .25s, box-shadow .25s;
-}
-.fd-explore-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
-.fd-explore-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,8,6,.75) 0%, rgba(10,8,6,0) 45%); }
-.fd-explore-label { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 14px; font-size: .85rem; font-weight: 700; color: #fff; }
-.fd-explore-label i { color: #c9a84c; font-size: .88rem; }
-
-.fd-related { max-width: 1180px; margin: 0 auto 96px; padding: 0 clamp(1.2rem,5vw,3rem); }
-.fd-related-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; }
-.fd-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 18px; }
-.fd-related-card {
-  display: block; text-decoration: none; color: inherit;
-  background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-  transition: transform .25s, box-shadow .25s;
-}
-.fd-related-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px var(--shadow); }
-.fd-related-media { position: relative; aspect-ratio: 16/10; background: var(--surf2); overflow: hidden; }
-.fd-related-media img { width: 100%; height: 100%; object-fit: contain; }
-.fd-related-body { padding: 14px 16px; }
-.fd-related-name { font-size: .88rem; font-weight: 700; margin-bottom: 5px; line-height: 1.3; }
-.fd-related-price { font-size: .9rem; font-weight: 800; color: var(--indigo); }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 860px) {
-  .fd-wrapper { grid-template-columns: minmax(0,1fr); gap: 28px; }
-  .fd-card { position: static; }
-}
-
-@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-</style>
-
-<!-- Breadcrumb -->
-<nav class="fd-breadcrumb">
-  <a href="{% url 'formations:formations' %}">Formations</a>
-  <span>›</span>
-  <span>{{ formation.title }}</span>
-</nav>
-
-<div class="fd-wrapper">
-
-  <!-- ══ GAUCHE ══ -->
-  <div>
-    <div class="fd-img-wrap">
-      <div class="fd-img-badges">
-        <span class="fd-badge level">{{ formation.get_level_display }}</span>
-        {% if formation.is_on_sale %}<span class="fd-badge sale">-{{ formation.discount_percent }}%</span>{% endif %}
-      </div>
-      {% if formation.image %}
-        <img src="{{ formation.image.url }}" alt="{{ formation.title }}">
-      {% else %}
-        <div style="width:100%;height:100%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:.25;">🎓</div>
-      {% endif %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="pp-bar">
+      <a href="{% url 'formations:formations' %}" class="pp-back"><i class="fa fa-arrow-left"></i> Formations</a>
+      <nav class="pp-crumbs" aria-label="Fil d'Ariane">
+        <a href="{% url 'core:home' %}">Accueil</a><span>/</span><a href="{% url 'formations:formations' %}">Formations</a>
+        {% if formation.category %}<span>/</span><a href="{% url 'formations:formations' %}?category={{ formation.category.slug }}">{{ formation.category.name }}</a>{% endif %}
+      </nav>
     </div>
 
-    {% if messages %}
-    <div class="fd-msgs">
-      {% for msg in messages %}
-        <div class="fd-msg {{ msg.tags }}">{{ msg }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <div class="fd-meta-bar">
-      {% if formation.duration %}<span class="fd-meta-item"><i class="fa fa-clock-o"></i> {{ formation.duration }}</span>{% endif %}
-      {% if formation.students_count %}<span class="fd-meta-item"><i class="fa fa-users"></i> {{ formation.students_count }} inscrits</span>{% endif %}
-      <span class="fd-meta-item"><i class="fa fa-signal"></i> {{ formation.get_level_display }}</span>
-    </div>
-
-    <h1 class="fd-title">{{ formation.title }}</h1>
-    <p class="fd-desc">{{ formation.description }}</p>
-
-    {% with points=formation.learn_points %}
-    {% if points %}
-    <div class="fd-learn">
-      <h2 class="fd-learn-title">Ce que vous allez apprendre</h2>
-      <div class="fd-learn-grid">
-        {% for point in points %}
-        <div class="fd-learn-item"><i class="fa fa-check-circle"></i> {{ point }}</div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-    {% endwith %}
-  </div>
-
-  <!-- ══ DROITE — carte ══ -->
-  <aside class="fd-card">
-
-    {% if formation.formation_type == 'inscription' %}
-      <!-- ── Inscription par formulaire ── -->
-      <p class="fd-price-note" style="margin-bottom:16px;">
-        <i class="fa fa-users"></i> Inscription gratuite via formulaire — rejoignez le groupe WhatsApp de la formation.
-      </p>
-      <a href="{% url 'formations:formation_register' formation.pk %}" class="btn-buy-now" style="text-decoration:none;">
-        <i class="fa fa-pen"></i> S'inscrire à cette formation
-      </a>
-
-      <hr class="fd-divider">
-
-      <a class="btn-whatsapp"
-         href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20formation%20:{{ formation.title|urlencode }}"
-         target="_blank" rel="noopener noreferrer">
-        <i class="fab fa-whatsapp"></i> Une question ? Contactez-nous
-      </a>
-
-      <div class="fd-info">
-        <div class="fd-info-row"><i class="fa fa-envelope"></i> Confirmation par email après inscription</div>
-        <div class="fd-info-row"><i class="fa fa-whatsapp"></i> Lien du groupe WhatsApp inclus</div>
+    <div class="pp-main">
+      <div class="pp-gallery">
+        <div class="ct-cover">{% if formation.image %}<img src="{{ formation.image.url }}" alt="{{ formation.title }}">{% else %}<i class="fa fa-graduation-cap"></i>{% endif %}</div>
       </div>
 
-    {% elif formation.formation_type == 'numerique' and has_purchased %}
-      <!-- ── Formation numérique déjà achetée : téléchargement ── -->
-      <p class="fd-price-note" style="color:#2c5f4a;font-weight:700;margin-bottom:16px;">
-        <i class="fa fa-check-circle"></i> Vous avez déjà acheté cette formation
-      </p>
-      <a href="{% url 'formations:formation_download' formation.pk %}" class="btn-buy-now" style="text-decoration:none;background:#2c5f4a;">
-        <i class="fa fa-download"></i> Télécharger le fichier
-      </a>
-      <p class="fd-price-note" style="margin-top:12px;">Vous pouvez retélécharger ce fichier autant de fois que vous le souhaitez.</p>
+      <div class="pp-info">
+        {% if formation.category %}<a class="pp-cat" href="{% url 'formations:formations' %}?category={{ formation.category.slug }}">{{ formation.category.name }}</a>{% endif %}
+        <h1 class="pp-name">{{ formation.title }}</h1>
+        <p class="pp-short">{{ formation.description|striptags|truncatewords:28 }}</p>
 
-    {% else %}
-      <!-- ── Formation payante en ligne / numérique (panier) ── -->
-      {% if formation.formation_type == 'numerique' %}
-        <p class="fd-price-note" style="margin-bottom:10px;"><i class="fa fa-file"></i> Formation numérique (PDF / Word / Excel)</p>
-      {% endif %}
-      {% if formation.is_on_sale %}<div class="fd-price-old">{{ formation.old_price }} FCFA</div>{% endif %}
-      <div class="fd-price">
-        {{ formation.price }} <sub>FCFA</sub>
-        {% if formation.is_on_sale %}<span class="fd-price-save">-{{ formation.discount_percent }}%</span>{% endif %}
-      </div>
-      <p class="fd-price-note">
-        {% if formation.formation_type == 'numerique' %}Téléchargement après paiement confirmé{% else %}Accès à vie{% endif %} · Prix TTC
-      </p>
+        <div class="pp-buy">
+          <div class="pp-price">
+            {% if formation.price %}<strong>{{ formation.price|floatformat:"0g" }} FCFA</strong>{% else %}<strong>Gratuit</strong>{% endif %}
+            {% if formation.is_on_sale %}<s>{{ formation.old_price|floatformat:"0g" }} FCFA</s><span class="pp-save">-{{ formation.discount_percent }}%</span>{% endif %}
+          </div>
+          <ul class="ct-facts">
+            <li><i class="fa fa-signal"></i>Niveau {{ formation.get_level_display|lower }}</li>
+            {% if formation.duration %}<li><i class="fa fa-clock"></i>{{ formation.duration }}</li>{% endif %}
+            {% if formation.formation_type == 'numerique' %}<li><i class="fa fa-file-arrow-down"></i>Document à télécharger juste après le paiement</li>
+            {% elif formation.formation_type == 'inscription' %}<li><i class="fab fa-whatsapp"></i>Cours dans un groupe WhatsApp</li>
+            {% else %}<li><i class="fa fa-laptop"></i>Formation en ligne, suivie avec un formateur</li>{% endif %}
+            {% if formation.students_count %}<li><i class="fa fa-users"></i>{{ formation.students_count }} inscrit{{ formation.students_count|pluralize }}</li>{% endif %}
+          </ul>
 
-      <hr class="fd-divider">
-
-      <form method="post" action="{% url 'formations:formation_detail' formation.pk %}">
-        {% csrf_token %}
-        {% if formation.formation_type != 'numerique' %}
-        <div class="fd-qty-row">
-          <span class="fd-qty-label">Quantité</span>
-          <input class="fd-qty-input" type="number" name="quantity" min="1" value="1">
+          <div style="margin-top:1.3rem">
+            {% if has_purchased and formation.file %}
+              <a href="{% url 'formations:formation_download' formation.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-download"></i> Télécharger ma formation</a>
+            {% elif formation.formation_type == 'inscription' %}
+              <a href="{% url 'formations:formation_register' formation.pk %}" class="pp-btn pp-btn--main">S'inscrire</a>
+            {% elif formation.can_pay_online %}
+              <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Payer en ligne</a>
+            {% endif %}
+            {% if site_settings.whatsapp_1 %}
+            <a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je suis intéressé(e) par la formation : '|urlencode }}{{ formation.title|urlencode }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>
+            {% endif %}
+          </div>
+          {% if formation.can_pay_online %}
+          <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay : Mobile Money ou carte. Avec ou sans compte.</p>
+          {% endif %}
         </div>
-        {% endif %}
-        <button type="submit" name="buy_now" value="1" class="btn-buy-now">
-          <i class="fa fa-bolt"></i> {% if formation.formation_type == 'numerique' %}Acheter maintenant{% else %}S'inscrire maintenant{% endif %}
-        </button>
-        <button type="submit" class="btn-primary">🛒 Ajouter au panier</button>
-      </form>
-
-      <a href="{% url 'formations:cart' %}" class="fd-cart-link">🧺 Voir mon panier</a>
-
-      <hr class="fd-divider">
-
-      <a class="btn-whatsapp"
-         href="https://wa.me/{{ site_settings.whatsapp_1 }}?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20formation%20:{{ formation.title|urlencode }}"
-         target="_blank" rel="noopener noreferrer">
-        <i class="fab fa-whatsapp"></i> Contacter via WhatsApp
-      </a>
-
-      <div class="fd-info">
-        <div class="fd-info-row"><i class="fa fa-lock"></i> Connexion requise avant l'achat</div>
-        {% if formation.formation_type == 'numerique' %}
-        <div class="fd-info-row"><i class="fa fa-download"></i> Téléchargement débloqué une fois la commande marquée payée</div>
-        {% endif %}
-        <div class="fd-info-row"><i class="fa fa-shield"></i> Paiement 100% sécurisé</div>
       </div>
+    </div>
+
+    {% if formation.learn_points %}
+    <section class="pp-section">
+      <h2>Ce que vous allez apprendre</h2>
+      <div class="pp-desc"><ul class="ct-learn">{% for p in formation.learn_points %}<li>{{ p }}</li>{% endfor %}</ul></div>
+    </section>
     {% endif %}
-  </aside>
 
-</div>
+    <section class="pp-section">
+      <h2>Description</h2>
+      <div class="pp-desc">{{ formation.description|linebreaks }}</div>
+    </section>
 
-<!-- ══ EXPLORER (pleine largeur) ══ -->
-<div class="fd-full">
-  <p class="fd-full-title">Explorer</p>
-  <div class="fd-explore-row">
-    <a href="{% url 'formations:formations' %}" class="fd-explore-tile" style="background-image:url('{% if formation.image %}{{ formation.image.url }}{% else %}{% static 'core/images/image2.png' %}{% endif %}')">
-      <span class="fd-explore-overlay"></span>
-      <span class="fd-explore-label"><i class="fa fa-th-large"></i> Toutes les formations</span>
-    </a>
-    <a href="{% url 'shop:shop' %}" class="fd-explore-tile" style="background-image:url('{% if shop_tile_image %}{{ shop_tile_image }}{% else %}{% static 'core/images/image3.png' %}{% endif %}')">
-      <span class="fd-explore-overlay"></span>
-      <span class="fd-explore-label"><i class="fa fa-store"></i> Boutique</span>
-    </a>
-    <a href="{% url 'services:services' %}" class="fd-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
-      <span class="fd-explore-overlay"></span>
-      <span class="fd-explore-label"><i class="fa fa-code"></i> Nos services</span>
-    </a>
-    <a href="{% url 'publications:publications' %}" class="fd-explore-tile" style="background-image:url('{% if pub_tile_image %}{{ pub_tile_image }}{% else %}{% static 'core/images/image4.png' %}{% endif %}')">
-      <span class="fd-explore-overlay"></span>
-      <span class="fd-explore-label"><i class="fa fa-newspaper"></i> Actualités</span>
-    </a>
+    {% if related_formations %}
+    <section class="pp-section">
+      <h2>Vous aimerez aussi</h2>
+      <div class="ct-grid">{% for f in related_formations %}{% include 'formations/_card.html' %}{% endfor %}</div>
+    </section>
+    {% endif %}
   </div>
-</div>
 
-{% if related_formations %}
-<div class="fd-related">
-  <h2 class="fd-related-title">Formations similaires</h2>
-  <div class="fd-related-grid">
-    {% for rf in related_formations %}
-    <a href="{% url 'formations:formation_detail' rf.pk %}" class="fd-related-card">
-      <div class="fd-related-media">
-        {% if rf.image %}<img src="{{ rf.image.url }}" alt="{{ rf.title }}">{% endif %}
-      </div>
-      <div class="fd-related-body">
-        <div class="fd-related-name">{{ rf.title }}</div>
-        <div class="fd-related-price">{{ rf.price }} FCFA</div>
-      </div>
-    </a>
-    {% endfor %}
+  {% if formation.can_pay_online and not has_purchased %}
+  <div class="pp-sticky" id="ppSticky">
+    <div><strong>{{ formation.price|floatformat:"0g" }} FCFA</strong><small>{{ formation.title }}</small></div>
+    <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main">Payer</a>
   </div>
+  {% endif %}
+  {% include 'core/_toasts.html' %}
 </div>
-{% endif %}
+{% endblock %}
 
-<style>
-/* ── Pages de détail : même présentation que les actualités (titres verts, barres vertes, boutons carrés) ── */
-.fd-title, .sd-title, .pd-title { font-family:var(--font) !important; font-weight:800 !important; letter-spacing:0 !important; color:#0f7a45 !important; line-height:1.2 !important; font-size:clamp(1.6rem,3.2vw,2.3rem) !important; }
-.fd-learn-title, .fd-related-title, .sd-related-title, .pd-related-title, .pd-desc-block-title, .pd-full-side-title, .sd-form-title, .fd-full-title {
-  background:#0f7a45; border-left:6px solid #c9a84c; color:#fff !important; font-family:var(--font) !important; font-size:.95rem !important;
-  font-weight:800 !important; text-transform:uppercase; letter-spacing:.3px !important; padding:8px 14px; margin-bottom:16px; }
-.fd-card, .pd-buy-card { border-radius:4px !important; box-shadow:0 2px 14px rgba(0,0,0,.06) !important; }
-.fd-price, .pd-price { font-family:var(--font) !important; color:#0f7a45 !important; letter-spacing:0 !important; }
-.fd-qty-input, .pd-qty-input { border-radius:0 !important; }
-.btn-buy-now, .btn-submit, .btn-form-toggle { background:#0f7a45 !important; color:#fff !important; border:2px solid #0f7a45 !important; border-radius:0 !important; box-shadow:none !important; clip-path:none !important; transform:none !important; }
-.btn-buy-now:hover, .btn-submit:hover, .btn-form-toggle:hover { background:#0b6137 !important; border-color:#0b6137 !important; transform:none !important; }
-.btn-primary, .btn-add-cart { background:#fff !important; color:#0f7a45 !important; border:2px solid #0f7a45 !important; border-radius:0 !important; clip-path:none !important; box-shadow:none !important; transform:none !important; }
-.btn-primary:hover, .btn-add-cart:hover { background:#eef7f1 !important; transform:none !important; }
-.btn-whatsapp { border-radius:0 !important; }
-.fd-learn-item, .fd-related-card, .sd-related-card, .pd-related-card, .fd-img-wrap, .sd-media, .pd-media { border-radius:0 !important; }
-.fd-learn-item i { color:#0f7a45 !important; }
-.fd-related-price, .pd-related-price, .fd-cart-link, .pd-cart-link { color:#0f7a45 !important; }
-.fd-breadcrumb a, .sd-breadcrumb a, .pd-breadcrumb a { color:#0f7a45 !important; }
-</style>
+{% block extra_scripts %}
+<script>
+(function(){var s=document.getElementById('ppSticky');if(!s)return;
+window.addEventListener('scroll',function(){s.classList.toggle('is-on',window.scrollY>520);},{passive:true});})();
+</script>
 {% endblock %}

@@ -1,485 +1,55 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block title %}Formations — Lantante Technologie{% endblock %}
-{% block meta_description %}Formations professionnelles Lantante Technologie : développement web, e-commerce, réseaux sociaux, systèmes et réseaux. Progressez avec des formateurs qui construisent de vrais projets.{% endblock %}
+{% block meta_description %}Formations en informatique, numérique et entrepreneuriat : en ligne, sur inscription ou à télécharger, avec Lantante Technologie.{% endblock %}
 {% block og_title %}Formations — Lantante Technologie{% endblock %}
-{% block og_description %}Des programmes professionnels pour progresser vite : développement, e-commerce, réseaux sociaux, systèmes.{% endblock %}
+{% block og_description %}Apprenez le numérique avec Lantante Technologie : formations en ligne et documents à télécharger.{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}{% endblock %}
 
 {% block content %}
-<style>
+<div class="bq">
+  <section class="ct-hero" style="background-image:url('{% static 'core/images/home/formation.jpg' %}');background-position:50% 30%">
+    <div class="bq-wrap">
+      <h1>Formations.</h1>
+      <p>Apprenez un métier du numérique, à votre rythme : cours en ligne, groupes WhatsApp et guides PDF.</p>
+      <div class="ct-hero__cta">
+        <a href="#liste" class="ct-pill ct-pill--green">Voir les formations</a>
+        {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je voudrais des informations sur vos formations.'|urlencode }}" target="_blank" rel="noopener" class="ct-pill ct-pill--glass"><i class="fab fa-whatsapp"></i> Poser une question</a>{% endif %}
+      </div>
+    </div>
+  </section>
 
-:root {
-  --bg:      #f7f3ee;
-  --surf:    #faf8f5;
-  --surf2:   #f2ede6;
-  --border:  rgba(0,0,0,.085);
-  --shadow:  rgba(0,0,0,.07);
-  --ink:     #1c1814;
-  --ink2:    #3a3530;
-  --muted:   #8a8078;
-  --accent:  #0f7a45;
-  --accent2: #c9a84c;
-  --green:   #2c5f4a;
-  --r:       16px;
-  --font:    'Outfit', sans-serif;
-  --serif:   'Cormorant Garamond', serif;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--ink); }
-
-/* ══ HERO ══ */
-.fl-hero {
-  position: relative; overflow: hidden;
-  padding: 40px clamp(1.5rem,6vw,5rem) 36px;
-  background: var(--ink);
-}
-.fl-hero-bg {
-  position: absolute; inset: 0;
-  background-image: url('{% static "core/images/image7.png" %}');
-  background-size: cover; background-position: center;
-}
-.fl-hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(100deg, rgba(10,8,6,.92) 0%, rgba(10,8,6,.78) 45%, rgba(10,8,6,.5) 100%);
-}
-.fl-hero-inner {
-  position: relative; z-index: 1;
-  max-width: 1300px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.fl-hero-eyebrow {
-  font-size: .72rem; font-weight: 700; letter-spacing: .15em;
-  text-transform: uppercase; color: var(--accent);
-  animation: fadeUp .45s ease both;
-}
-.fl-hero-title {
-  font-family: var(--serif);
-  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
-  font-weight: 800; line-height: 1.15;
-  letter-spacing: -.02em; color: #f5f2ee;
-  animation: fadeUp .5s .08s ease both;
-}
-.fl-hero-title em { font-style: italic; font-weight: 300; color: var(--accent); }
-.fl-hero-sub {
-  font-size: .9rem; color: rgba(245,242,238,.6);
-  max-width: 480px; line-height: 1.6;
-  animation: fadeUp .5s .14s ease both;
-}
-
-/* ── Recherche ── */
-.fl-search-wrap { animation: fadeUp .5s .2s ease both; max-width: 580px; margin-top: 22px; }
-.fl-search {
-  display: flex; align-items: center;
-  background: rgba(245,242,238,.08);
-  border: 1.5px solid rgba(245,242,238,.18);
-  border-radius: 14px; overflow: hidden;
-  backdrop-filter: blur(8px);
-  transition: border-color .2s, box-shadow .2s;
-}
-.fl-search:focus-within {
-  border-color: var(--accent2);
-  box-shadow: 0 0 0 4px rgba(201,168,76,.18);
-}
-.fl-search i { padding: 0 18px; color: rgba(245,242,238,.45); font-size: .92rem; flex-shrink: 0; }
-.fl-search input {
-  flex: 1; min-width: 0; background: none; border: none; outline: none;
-  padding: 14px 0; color: #f5f2ee;
-  font-family: var(--font); font-size: .92rem;
-}
-.fl-search input::placeholder { color: rgba(245,242,238,.4); }
-.fl-search-btn {
-  flex-shrink: 0; white-space: nowrap;
-  padding: 10px 22px; margin: 5px;
-  background: var(--accent); color: #fff; border: none; border-radius: 9px;
-  font-family: var(--font); font-size: .85rem; font-weight: 700; cursor: pointer;
-  transition: background .2s;
-}
-.fl-search-btn:hover { background: #0b6137; }
-.fl-search-result { margin-top: 12px; font-size: .82rem; color: rgba(245,242,238,.6); }
-.fl-search-result strong { color: var(--accent2); }
-
-/* ══ SECTION ══ */
-.fl-section {
-  max-width: 1300px; margin: 48px auto 96px;
-  padding: 0 clamp(1.5rem,6vw,5rem);
-}
-.fl-section-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 32px; gap: 16px;
-}
-.fl-section-title {
-  font-family: var(--serif);
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  font-weight: 700; letter-spacing: -.02em;
-}
-.fl-section-title span {
-  display: block; font-size: .78rem; font-weight: 600;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--muted); font-family: var(--font); margin-bottom: 6px;
-}
-.fl-count {
-  font-size: .8rem; font-weight: 600; color: var(--muted);
-  background: var(--surf); border: 1px solid var(--border);
-  padding: 5px 14px; border-radius: 99px; white-space: nowrap;
-}
-
-/* ══ LISTE — cartes horizontales (différent de la grille Boutique) ══ */
-.fl-grid {
-  display: flex; flex-direction: column; gap: 20px;
-}
-
-/* ── Card ── */
-.fl-card {
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: var(--r); overflow: hidden;
-  display: grid; grid-template-columns: 300px minmax(0,1fr);
-  transition: transform .3s cubic-bezier(.22,.68,0,1.2),
-              box-shadow .3s, border-color .25s;
-  animation: fadeUp .5s ease both;
-  text-decoration: none; color: inherit;
-}
-.fl-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0,0,0,.1);
-  border-color: var(--accent2);
-}
-
-/* Image */
-.fl-img {
-  position: relative; overflow: hidden;
-  background: var(--surf2);
-}
-.fl-img img {
-  width: 100%; height: 100%; object-fit: contain;
-  transition: transform .6s cubic-bezier(.22,.68,0,1.2);
-}
-.fl-card:hover .fl-img img { transform: scale(1.06); }
-.fl-img-placeholder {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 3.5rem; opacity: .2;
-}
-
-/* Badges */
-.fl-badges { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; gap: 8px; }
-.fl-badge {
-  font-size: .66rem; font-weight: 800; letter-spacing: .08em;
-  text-transform: uppercase; padding: 5px 11px; border-radius: 99px;
-}
-.fl-badge.level { background: rgba(20,20,20,.55); color: #fff; backdrop-filter: blur(4px); }
-.fl-badge.sale { background: var(--rose, #c93060); color: #fff; }
-
-/* Body */
-.fl-body {
-  padding: 22px 26px; flex: 1;
-  display: flex; flex-direction: column; gap: 10px; min-width: 0;
-}
-
-.fl-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.fl-meta-item {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: .78rem; color: var(--muted); font-weight: 600;
-}
-.fl-meta-item i { color: var(--accent2); }
-
-.fl-title {
-  font-family: var(--serif); font-size: 1.35rem; font-weight: 800;
-  line-height: 1.25; letter-spacing: -.01em; color: var(--ink);
-}
-.fl-desc {
-  font-size: .87rem; color: var(--muted); line-height: 1.65;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
-}
-
-/* Footer carte */
-.fl-footer {
-  margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
-}
-.fl-price-wrap { display: flex; align-items: baseline; gap: 8px; }
-.fl-price-old { font-size: .85rem; color: var(--muted); text-decoration: line-through; }
-.fl-price {
-  font-family: var(--serif); font-size: 1.35rem; font-weight: 900;
-  color: var(--ink); letter-spacing: -.03em; line-height: 1;
-}
-.fl-price small {
-  font-family: var(--font); font-size: .7rem; font-weight: 500;
-  color: var(--muted); margin-left: 3px;
-}
-
-/* Bouton Voir */
-.fl-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 20px; background: var(--ink); color: #fff;
-  text-decoration: none; border-radius: 10px;
-  font-size: .85rem; font-weight: 800;
-  transition: background .2s, transform .2s, box-shadow .2s;
-  white-space: nowrap;
-}
-.fl-btn:hover {
-  background: var(--accent2); transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(15,122,69,.25);
-}
-.fl-btn i { font-size: .8rem; transition: transform .2s; }
-.fl-card:hover .fl-btn i { transform: translateX(3px); }
-
-@media (max-width: 640px) {
-  .fl-card { grid-template-columns: minmax(0,1fr); }
-  .fl-img { height: 180px; }
-}
-
-/* Empty */
-.fl-empty {
-  grid-column: 1 / -1; text-align: center;
-  padding: 100px 0; color: var(--muted);
-}
-.fl-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 20px; opacity: .3; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 640px) {
-  .fl-grid { gap: 14px; }
-  .fl-section { padding: 0 18px 60px; }
-  .fl-hero { padding: 28px 18px 24px; }
-}
-
-/* ══ CATÉGORIES (sticky) ══ */
-.fl-cats-outer {
-  background: var(--surf); border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 2px 12px var(--shadow);
-}
-.fl-cats-wrap {
-  max-width: 1300px; margin: 0 auto;
-  padding: 0 clamp(1.5rem,6vw,5rem);
-  display: flex; align-items: center;
-}
-.fl-cats-label {
-  font-size: .72rem; font-weight: 700; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--muted);
-  white-space: nowrap; padding-right: 20px;
-  border-right: 1px solid var(--border); margin-right: 16px;
-  flex-shrink: 0;
-  position: relative; z-index: 2;
-}
-.fl-cats-viewport { position: relative; overflow: hidden; flex: 1; min-width: 0; }
-.fl-cats-track {
-  display: flex; gap: 8px; padding: 16px 4px; width: max-content;
-}
-.fl-cats-track.fl-cats-scroll {
-  animation: fl-cats-loop 26s linear infinite;
-}
-.fl-cats-viewport:hover .fl-cats-track,
-.fl-cats-track:focus-within { animation-play-state: paused; }
-@keyframes fl-cats-loop {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fl-cats-track { animation: none; }
-}
-.fl-cats-fade {
-  position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1;
-  pointer-events: none;
-}
-.fl-cats-fade.left  { left: 0; background: linear-gradient(90deg, var(--surf), transparent); }
-.fl-cats-fade.right { right: 0; background: linear-gradient(270deg, var(--surf), transparent); }
-.fl-cat-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 22px; border-radius: 99px; white-space: nowrap;
-  font-size: .88rem; font-weight: 700; cursor: pointer;
-  border: 1.5px solid var(--border); background: var(--surf2);
-  color: var(--muted); text-decoration: none;
-  transition: transform .2s, box-shadow .2s, background .2s, color .2s, border-color .2s;
-  flex-shrink: 0;
-}
-.fl-cat-pinned { flex-shrink: 0; margin-right: 12px; position: relative; z-index: 2; }
-.fl-cat-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
-.fl-cat-btn.active { color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
-.fl-cat-btn.all.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-color: var(--accent2);
-}
-
-.fl-cat-btn.c-1 { color: #0f7a45; }
-.fl-cat-btn.c-1:hover { background: rgba(15,122,69,.1); border-color: rgba(15,122,69,.3); }
-.fl-cat-btn.c-1.active { background: #0f7a45; border-color: #0f7a45; }
-
-.fl-cat-btn.c-2 { color: #2c5f4a; }
-.fl-cat-btn.c-2:hover { background: rgba(44,95,74,.1); border-color: rgba(44,95,74,.3); }
-.fl-cat-btn.c-2.active { background: #2c5f4a; border-color: #2c5f4a; }
-
-.fl-cat-btn.c-3 { color: #3b5a7a; }
-.fl-cat-btn.c-3:hover { background: rgba(59,90,122,.1); border-color: rgba(59,90,122,.3); }
-.fl-cat-btn.c-3.active { background: #3b5a7a; border-color: #3b5a7a; }
-
-.fl-cat-btn.c-4 { color: #a5761f; }
-.fl-cat-btn.c-4:hover { background: rgba(165,118,31,.1); border-color: rgba(165,118,31,.3); }
-.fl-cat-btn.c-4.active { background: #a5761f; border-color: #a5761f; }
-
-.fl-cat-btn.c-5 { color: #6b3fa0; }
-.fl-cat-btn.c-5:hover { background: rgba(107,63,160,.1); border-color: rgba(107,63,160,.3); }
-.fl-cat-btn.c-5.active { background: #6b3fa0; border-color: #6b3fa0; }
-
-.fl-cat-btn.active.c-1, .fl-cat-btn.active.c-2, .fl-cat-btn.active.c-3,
-.fl-cat-btn.active.c-4, .fl-cat-btn.active.c-5 { color: #fff; }
-</style>
-
-<!-- ══ HERO ══ -->
-<div class="fl-hero">
-  <div class="fl-hero-bg"></div>
-  <div class="fl-hero-overlay"></div>
-  <div class="fl-hero-inner">
-    <p class="fl-hero-eyebrow">Lantante Technologie Formations</p>
-    <h1 class="fl-hero-title">
-      Bienvenue sur nos <em>formations</em>
-    </h1>
-    <p class="fl-hero-sub">
-      Des formations créées par nos experts pour vous accompagner dans votre montée en compétence.
-    </p>
-
-    <div class="fl-search-wrap">
-      <form method="get" action="{% url 'formations:formations' %}">
-        <div class="fl-search">
-          <i class="fa fa-search"></i>
-          <input type="text" name="q" value="{{ search_query }}" placeholder="Rechercher une formation…" autocomplete="off">
-          <button type="submit" class="fl-search-btn">Rechercher</button>
-        </div>
+  <div class="bq-wrap" id="liste">
+    <div class="ct-tools">
+      <nav class="ct-chips" aria-label="Catégories">
+        <a href="{% url 'formations:formations' %}#liste" class="ct-chip{% if not active_category and not search_query %} is-on{% endif %}">Toutes</a>
+        {% for cat in categories %}
+        <a href="{% url 'formations:formations' %}?category={{ cat.slug }}#liste" class="ct-chip{% if active_category.slug == cat.slug %} is-on{% endif %}">{% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}{{ cat.name }}</a>
+        {% endfor %}
+      </nav>
+      <form class="bq-search" method="get" action="{% url 'formations:formations' %}#liste" role="search">
+        <i class="fa fa-magnifying-glass"></i>
+        <input type="search" name="q" value="{{ search_query }}" placeholder="Rechercher une formation" aria-label="Rechercher une formation">
+        <button type="submit">Chercher</button>
       </form>
-      {% if search_query %}
-      <p class="fl-search-result">
-        Résultats pour <strong>"{{ search_query }}"</strong> —
-        {{ formations|length }} formation{% if formations|length != 1 %}s{% endif %} trouvée{% if formations|length != 1 %}s{% endif %}
-      </p>
-      {% endif %}
+    </div>
+
+    <div class="bq-sec-title">
+      <h2>{% if search_query %}Résultats <span>pour « {{ search_query }} »</span>{% elif active_category %}{{ active_category.name }}<span>.</span>{% else %}Toutes les formations<span>.</span>{% endif %}</h2>
+      <small>{{ formations|length }} formation{{ formations|length|pluralize }}</small>
+    </div>
+    <div class="ct-grid">
+      {% for f in formations %}{% include 'formations/_card.html' %}
+      {% empty %}
+      <div class="bq-empty"><i class="fa fa-graduation-cap"></i><p>Aucune formation ne correspond{% if search_query %} à « {{ search_query }} »{% endif %}.</p><p><a href="{% url 'formations:formations' %}">Voir toutes les formations</a></p></div>
+      {% endfor %}
+    </div>
+
+    <div class="ct-cta">
+      <div><h2>Une formation sur mesure ?</h2><p>Pour une équipe ou une école, nous adaptons le programme.</p></div>
+      {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Nous écrire sur WhatsApp</a>{% endif %}
     </div>
   </div>
+  {% include 'core/_toasts.html' %}
 </div>
-
-<!-- ══ CATÉGORIES ══ -->
-<div class="fl-cats-outer">
-  <div class="fl-cats-wrap">
-    <span class="fl-cats-label">Thèmes</span>
-    <a href="{% url 'formations:formations' %}"
-       class="fl-cat-btn all fl-cat-pinned {% if not active_category %}active{% endif %}">
-      <i class="fa fa-th-large"></i> Tout voir
-    </a>
-    <div class="fl-cats-viewport">
-      <span class="fl-cats-fade left"></span>
-      <div class="fl-cats-track {% if nav_categories|length > 4 %}fl-cats-scroll{% endif %}">
-        {% for cat, color in nav_categories %}
-        <a href="{% url 'formations:formations' %}?category={{ cat.slug }}"
-           class="fl-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}">
-          {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
-          {{ cat.name }}
-        </a>
-        {% endfor %}
-        {% if nav_categories|length > 4 %}
-        {% for cat, color in nav_categories %}
-        <a href="{% url 'formations:formations' %}?category={{ cat.slug }}"
-           class="fl-cat-btn {{ color }} {% if active_category.slug == cat.slug %}active{% endif %}"
-           aria-hidden="true" tabindex="-1">
-          {% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}
-          {{ cat.name }}
-        </a>
-        {% endfor %}
-        {% endif %}
-      </div>
-      <span class="fl-cats-fade right"></span>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SECTION ══ -->
-<section class="fl-section">
-  <div class="fl-section-header">
-    <h2 class="fl-section-title">
-      <span>Catalogue</span>
-      Toutes les formations
-    </h2>
-    <span class="fl-count">{{ formations|length }} formation{% if formations|length != 1 %}s{% endif %}</span>
-  </div>
-
-  <div class="fl-grid">
-    {% for f in formations %}
-    <a href="{% url 'formations:formation_detail' f.pk %}" class="fl-card" style="animation-delay:{{ forloop.counter0 }}0{{ forloop.counter0 }}ms">
-
-      <div class="fl-img">
-        {% if f.image %}
-          <img src="{{ f.image.url }}" alt="{{ f.title }}">
-        {% else %}
-          <div class="fl-img-placeholder">🎓</div>
-        {% endif %}
-        <div class="fl-badges">
-          <span class="fl-badge level">{{ f.get_level_display }}</span>
-          {% if f.is_on_sale %}<span class="fl-badge sale">-{{ f.discount_percent }}%</span>{% endif %}
-        </div>
-      </div>
-
-      <div class="fl-body">
-        <div class="fl-meta">
-          {% if f.duration %}<span class="fl-meta-item"><i class="fa fa-clock-o"></i> {{ f.duration }}</span>{% endif %}
-          {% if f.students_count %}<span class="fl-meta-item"><i class="fa fa-users"></i> {{ f.students_count }} inscrits</span>{% endif %}
-        </div>
-        <h2 class="fl-title">{{ f.title }}</h2>
-        <p class="fl-desc">{{ f.description }}</p>
-
-        <div class="fl-footer">
-          <div class="fl-price-wrap">
-            {% if f.is_on_sale %}<span class="fl-price-old">{{ f.old_price }} FCFA</span>{% endif %}
-            <div class="fl-price">{{ f.price }} <small>FCFA</small></div>
-          </div>
-          <span class="fl-btn">
-            Voir la formation <i class="fa fa-arrow-right"></i>
-          </span>
-        </div>
-      </div>
-
-    </a>
-    {% empty %}
-    <div class="fl-empty">
-      <span class="fl-empty-icon">📭</span>
-      <p>Aucune formation disponible pour le moment.</p>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-
-<style>
-.fl-card { grid-template-columns:320px minmax(0,1fr); gap:0 24px; }
-.fl-img { border:1px solid var(--border); aspect-ratio:1.85/1; }
-.fl-body { padding:4px 0; }
-.fl-title { font-family:var(--font); font-weight:800; color:#0f7a45; letter-spacing:0; }
-.fl-price { font-family:var(--font); color:#0f7a45; letter-spacing:0; }
-.fl-btn { background:#0f7a45; border-radius:0; } .fl-btn:hover { background:#0b6137; box-shadow:none; transform:none; }
-.fl-section-header { background:#0f7a45; border-left:6px solid #c9a84c; padding:8px 16px; align-items:center; margin-bottom:28px; }
-.fl-section-title, .fl-section-title span, .fl-count { color:#fff !important; font-family:var(--font); font-size:.95rem; font-weight:800; text-transform:uppercase; letter-spacing:.3px; margin:0; }
-.fl-section-title span { display:inline; opacity:.85; margin-right:8px; }
-.fl-count { background:transparent !important; border:0 !important; padding:0 !important; }
-.fl-card:hover { transform:none; box-shadow:none; border:0; }
-.fl-card { background:transparent; border:0; border-radius:0; box-shadow:none; }
-@media (max-width:640px) { .fl-card { grid-template-columns:minmax(0,1fr); } }
-</style>
-<style>
-/* ── Bande des thèmes : une seule ligne qui défile doucement, boutons soignés ── */
-.fl-cats-outer { position:static !important; background:#fff !important; border-top:1px solid rgba(15,122,69,.14) !important; border-bottom:1px solid rgba(15,122,69,.14) !important; box-shadow:none !important; }
-.fl-cats-wrap { flex-wrap:nowrap !important; gap:0 !important; padding-top:0 !important; padding-bottom:0 !important; align-items:center !important; }
-.fl-cats-label { color:#0f7a45 !important; font-weight:700 !important; font-size:.7rem !important; letter-spacing:.18em !important; border-right:1px solid rgba(15,122,69,.25) !important; margin-right:14px !important; padding-right:16px !important; }
-.fl-cats-viewport { overflow:hidden !important; flex:1 1 auto !important; min-width:0 !important; }
-.fl-cats-track { padding:9px 4px !important; gap:8px !important; flex-wrap:nowrap !important; width:max-content !important; }
-.fl-cats-track[class*="scroll"] { animation-duration:55s !important; }
-.fl-cats-fade.left { background:linear-gradient(90deg,#fff,rgba(255,255,255,0)) !important; }
-.fl-cats-fade.right { background:linear-gradient(270deg,#fff,rgba(255,255,255,0)) !important; }
-.fl-cats-fade { display:block !important; width:32px !important; }
-.fl-cat-btn[aria-hidden="true"] { display:inline-flex !important; }
-.fl-cat-pinned { margin-right:12px !important; }
-.fl-cat-btn { background:#eef7f1 !important; border:1px solid transparent !important; color:#0b5e36 !important; border-radius:999px !important; padding:8px 16px !important; font-weight:600 !important; font-size:.74rem !important; letter-spacing:.09em !important; text-transform:uppercase !important; line-height:1.2 !important; box-shadow:none !important; white-space:nowrap !important; }
-.fl-cat-btn:hover { background:#0f7a45 !important; color:#fff !important; transform:none !important; box-shadow:none !important; }
-.fl-cat-btn.active, .fl-cat-btn.all.active { background:#0f7a45 !important; color:#fff !important; box-shadow:none !important; }
-.fl-cat-btn i { color:inherit !important; opacity:.9; font-size:.85em; }
-</style>
 {% endblock %}

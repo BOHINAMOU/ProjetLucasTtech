@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+{% block title %}Paiement — {{ description }} — Lantante Technologie{% endblock %}
+{% block meta_description %}Paiement sécurisé avec FedaPay.{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="pp-bar">
+      <a href="{{ back_url }}" class="pp-back"><i class="fa fa-arrow-left"></i> Retour</a>
+      {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test : aucun argent réel</span>{% endif %}
+    </div>
+
+    <div class="ct-pay">
+      <div class="ct-box">
+        {% if enabled %}
+        <h2>Vos coordonnées</h2>
+        <form method="post" class="ct-form" novalidate>
+          {% csrf_token %}
+          {% include 'payments/_customer_fields.html' %}
+          <button type="submit" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Payer {{ amount|floatformat:"0g" }} FCFA</button>
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Plutôt nous contacter sur WhatsApp</a>{% endif %}
+        </form>
+        <p class="ct-note"><i class="fa fa-shield-halved"></i> Vous serez redirigé vers FedaPay pour payer par Mobile Money ou carte. Nous ne voyons jamais vos codes.</p>
+        {% else %}
+        <h2>Paiement en ligne bientôt disponible</h2>
+        <p style="color:var(--bq-ink2);line-height:1.6">Pour commander dès maintenant, écrivez-nous sur WhatsApp : nous vous envoyons les instructions de paiement.</p>
+        {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="margin-top:1rem"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>{% endif %}
+        {% endif %}
+      </div>
+
+      <aside class="ct-box ct-sum">
+        <h2>Récapitulatif</h2>
+        <div class="ct-sum__item">
+          {% if obj.image %}<img src="{{ obj.image.url }}" alt="">{% endif %}
+          <div><strong>{{ obj.title|default:description }}</strong>
+            <div style="color:var(--bq-muted);font-size:.88rem;margin-top:.2rem">
+              {% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% else %}Commande boutique{% endif %}
+              {% if has_file %} · PDF téléchargeable après paiement{% endif %}
+            </div>
+          </div>
+        </div>
+        {% if kind == 'boutique' %}
+          {% for it in obj.items.all %}<div class="ct-sum__line"><span>{{ it.product.name }} × {{ it.quantity }}</span><span>{{ it.total_price|floatformat:"0g" }} FCFA</span></div>{% endfor %}
+        {% endif %}
+        <div class="ct-sum__total"><span>Total</span><strong>{{ amount|floatformat:"0g" }} FCFA</strong></div>
+        <div class="ct-methods"><span>Flooz</span><span>Mix by Yas</span><span>MTN</span><span>Moov</span><span>Visa / Mastercard</span></div>
+      </aside>
+    </div>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% if form.non_field_errors %}<div class="ct-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+<div class="row">
+  <div class="ct-field"><label for="id_first_name">Prénom</label>{{ form.first_name }}{% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+</div>
+<div class="row">
+  <div class="ct-field"><label for="id_phone">Téléphone</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <div class="ct-field"><label for="id_email">Email</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+</div>
+{% if form.account %}
+<div class="ct-field">
+  <label>Compte</label>
+  <div class="ct-choice" id="accChoice">{% for r in form.account %}<label>{{ r.tag }} <span>{{ r.choice_label }}</span></label>{% endfor %}</div>
+  <span class="help">Déjà inscrit ? <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" style="color:var(--bq-green);font-weight:600">Se connecter</a></span>
+</div>
+<div class="row" id="accPwd">
+  <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+</div>
+<script>
+(function(){var box=document.getElementById('accChoice'),pwd=document.getElementById('accPwd');if(!box||!pwd)return;
+function sync(){var c=box.querySelector('input:checked');pwd.style.display=(c&&c.value==='create')?'':'none';}
+box.addEventListener('change',sync);sync();})();
+</script>
+{% else %}
+<p class="ct-note" style="text-align:left;margin-top:0"><i class="fa fa-user-check"></i> Connecté : {{ user.email }}. L'achat sera ajouté à votre compte.</p>
+{% endif %}

@@ -1,5 +1,8 @@
 from django.db import models
 from django.conf import settings
+from django.urls import reverse
+
+from Payments.models import private_storage
 
 
 class FormationCategory(models.Model):
@@ -38,7 +41,7 @@ class Formation(models.Model):
         help_text="Envoyé par email après inscription (type « Inscription par formulaire »)."
     )
     file = models.FileField(
-        upload_to='formations/fichiers/', blank=True, null=True,
+        upload_to='formations/fichiers/', storage=private_storage, blank=True, null=True,
         verbose_name="Fichier à télécharger",
         help_text="PDF, Word ou Excel — accessible uniquement après paiement confirmé (type « Formation numérique »)."
     )
@@ -79,6 +82,13 @@ class Formation(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('formations:formation_detail', args=[self.pk])
+
+    @property
+    def can_pay_online(self):
+        return self.formation_type in ('cours', 'numerique') and bool(self.price)
 
     @property
     def is_on_sale(self):

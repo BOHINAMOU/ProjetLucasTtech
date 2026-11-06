@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.core.mail import send_mail
+from django.urls import reverse
+
+from Payments.models import private_storage
 
 
 # ─────────────────────────────
@@ -42,6 +45,11 @@ class Service(models.Model):
     video       = models.FileField(upload_to='services/videos/', blank=True, null=True, verbose_name="Vidéo")
     price_from  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Prix à partir de",
                                       help_text="Prix à partir de (optionnel)")
+    price       = models.PositiveIntegerField(null=True, blank=True, verbose_name="Prix payable en ligne (FCFA)",
+                                      help_text="Si rempli, un bouton « Payer » (FedaPay) apparaît sur la page du service.")
+    file        = models.FileField(upload_to='services/fichiers/', storage=private_storage, blank=True, null=True,
+                                   verbose_name="PDF remis après paiement",
+                                   help_text="Téléchargé automatiquement par le client après un paiement réussi.")
     whatsapp    = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp",
                                    help_text="Numéro WhatsApp ex: 22890000000")
     phone       = models.CharField(max_length=20, blank=True, verbose_name="Téléphone",
@@ -58,6 +66,13 @@ class Service(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('services:service_detail', args=[self.pk])
+
+    @property
+    def icon_class(self):
+        return self.icon or (self.category.icon if self.category and self.category.icon else 'fa-laptop-code')
 
 
 # ─────────────────────────────

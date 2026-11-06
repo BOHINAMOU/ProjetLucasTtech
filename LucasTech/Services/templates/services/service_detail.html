@@ -5,526 +5,111 @@
 {% block og_title %}{{ service.title }} — Lantante Technologie{% endblock %}
 {% block og_description %}{{ service.description|striptags|truncatechars:155 }}{% endblock %}
 {% block og_image %}{% if service.image %}{{ service.image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}{% endblock %}
 
 {% block content %}
-<style>
-
-:root {
-  --bg:      #f7f3ee;
-  --surf:    #faf8f5;
-  --surf2:   #f2ede6;
-  --border:  rgba(0,0,0,.085);
-  --shadow:  rgba(0,0,0,.07);
-  --ink:     #1c1814;
-  --ink2:    #3a3530;
-  --muted:   #8a8078;
-  --accent:  #0f7a45;
-  --accent2: #14b8a6;
-  --accent3: #0f766e;
-  --green:   #2c5f4a;
-  --r:       16px;
-  --font:    'Outfit', sans-serif;
-  --serif:   'Cormorant Garamond', serif;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--ink); }
-
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-
-/* ── Breadcrumb ── */
-.sd-breadcrumb {
-  max-width: 1200px; margin: 0 auto;
-  padding: 28px clamp(1.5rem,6vw,5rem) 0;
-  display: flex; align-items: center; gap: 8px;
-  font-size: .8rem; color: var(--muted);
-}
-.sd-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
-.sd-breadcrumb a:hover { text-decoration: underline; }
-.sd-breadcrumb span { opacity: .4; }
-
-/* ── Layout ── */
-.sd-wrapper {
-  max-width: 1200px; margin: 32px auto 0;
-  padding: 0 clamp(1.5rem,6vw,5rem);
-  display: grid;
-  grid-template-columns: minmax(0,1fr) 400px;
-  gap: 56px; align-items: start;
-}
-
-/* ── Média ── */
-.sd-media {
-  position: relative; border-radius: 20px; overflow: hidden;
-  aspect-ratio: 16/10; background: var(--surf2);
-  box-shadow: 0 24px 80px rgba(10,61,36,.16);
-  animation: fadeUp .5s ease both;
-}
-.sd-media img, .sd-media video {
-  width: 100%; height: 100%; object-fit: contain;
-  transition: transform .7s cubic-bezier(.22,.68,0,1.2);
-}
-.sd-media:hover img, .sd-media:hover video { transform: scale(1.04); }
-.sd-media-placeholder {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 5rem; opacity: .2;
-}
-.sd-media::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
-}
-
-/* Badge featured */
-.sd-badge {
-  position: absolute; top: 16px; left: 16px; z-index: 2;
-  font-size: .68rem; font-weight: 800; letter-spacing: .1em;
-  text-transform: uppercase; padding: 5px 14px; border-radius: 99px;
-  background: var(--accent); color: #fff;
-  box-shadow: 0 4px 14px rgba(15,122,69,.4);
-}
-
-/* Icône flottante sur le média */
-.sd-icon-badge {
-  position: absolute; top: 16px; right: 16px; z-index: 3;
-  width: 46px; height: 46px; border-radius: 13px;
-  background: rgba(15,20,18,.55); backdrop-filter: blur(6px);
-  color: #fff; display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; border: 1.5px solid rgba(245,242,238,.25);
-}
-
-/* ── Info ── */
-.sd-info { animation: fadeUp .5s .1s ease both; margin-top: 28px; }
-
-.sd-cat {
-  font-size: .7rem; font-weight: 700; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
-  display: flex; align-items: center; gap: 8px;
-}
-.sd-title {
-  font-family: var(--serif);
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 900; line-height: 1.1;
-  letter-spacing: -.03em; color: var(--ink); margin-bottom: 20px;
-}
-.sd-desc {
-  font-size: .97rem; color: var(--muted);
-  line-height: 1.85; margin-bottom: 28px;
-}
-
-/* Admin */
-.sd-admin {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 28px; padding: 14px 18px;
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 12px;
-}
-.sd-admin-avatar {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: .85rem; font-weight: 800; flex-shrink: 0;
-}
-.sd-admin-info { display: flex; flex-direction: column; gap: 2px; }
-.sd-admin-label { font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.sd-admin-name { font-size: .88rem; font-weight: 700; color: var(--ink); }
-
-/* Contact */
-.sd-price-devis {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: .88rem; color: var(--ink2); line-height: 1.6; margin-bottom: 28px;
-  background: var(--surf2); border: 1px solid var(--border);
-  padding: 14px 16px; border-radius: 12px;
-}
-.sd-price-devis i { color: var(--accent); margin-top: 2px; }
-
-/* ── Sidebar ── */
-.sd-sidebar { position: sticky; top: 28px; animation: fadeUp .5s .08s ease both; }
-
-/* Boutons contact */
-.sd-contact-btns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-
-.btn-whatsapp {
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 16px;
-  background: #25D366; color: #fff;
-  border: none; border-radius: 12px; text-decoration: none;
-  font-family: var(--font); font-size: .97rem; font-weight: 700;
-  transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(37,211,102,.32);
-  cursor: pointer;
-}
-.btn-whatsapp::after {
-  content: ''; position: absolute; inset: 0; border-radius: 12px;
-  box-shadow: 0 0 0 0 rgba(37,211,102,.5);
-  animation: waPulse 2.4s ease-out infinite;
-}
-@keyframes waPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(37,211,102,.45); }
-  70%  { box-shadow: 0 0 0 14px rgba(37,211,102,0); }
-  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
-}
-.btn-whatsapp:hover {
-  background: #1eb85a; transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(37,211,102,.42);
-}
-.btn-whatsapp svg { flex-shrink: 0; }
-
-.btn-form-toggle {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 15px;
-  background: var(--ink); color: #faf9f7;
-  border: none; border-radius: 12px;
-  font-family: var(--font); font-size: .95rem; font-weight: 700;
-  cursor: pointer; transition: background .2s, transform .2s;
-}
-.btn-form-toggle:hover { background: var(--ink2); transform: translateY(-2px); }
-
-/* ── Formulaire contact ── */
-.sd-form-wrap {
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: 20px; padding: 28px 24px;
-  box-shadow: 0 8px 32px var(--shadow);
-  margin-top: 0;
-  max-height: 0; overflow: hidden; opacity: 0;
-  transition: max-height .45s cubic-bezier(.22,.68,0,1), opacity .35s ease, margin-top .35s ease, padding .35s ease;
-  padding-top: 0; padding-bottom: 0;
-}
-.sd-form-wrap.open {
-  max-height: 900px; opacity: 1; margin-top: 0;
-  padding-top: 28px; padding-bottom: 28px;
-}
-.sd-form-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 700; color: var(--ink); margin-bottom: 20px; letter-spacing: -.02em; }
-.sd-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.sd-form-label { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.sd-form-input, .sd-form-textarea {
-  width: 100%; padding: 12px 14px;
-  border: 1.5px solid var(--border); border-radius: 10px;
-  background: var(--surf2); font-family: var(--font);
-  font-size: .9rem; color: var(--ink); outline: none;
-  transition: border-color .2s, box-shadow .2s;
-}
-.sd-form-input:focus, .sd-form-textarea:focus {
-  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,122,69,.12);
-}
-.sd-form-textarea { resize: vertical; min-height: 110px; }
-.sd-form-input::placeholder, .sd-form-textarea::placeholder { color: var(--muted); }
-
-.btn-submit {
-  display: flex; align-items: center; justify-content: center; gap: 9px;
-  width: 100%; padding: 14px;
-  background: var(--accent); color: #fff; border: none;
-  border-radius: 12px; font-family: var(--font);
-  font-size: .95rem; font-weight: 800;
-  cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 14px rgba(15,122,69,.3); margin-top: 6px;
-}
-.btn-submit:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(15,122,69,.4); }
-
-/* Pourquoi nous faire confiance */
-.sd-trust {
-  margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 16px;
-}
-.sd-trust-row { display: flex; align-items: center; gap: 13px; }
-.sd-trust-icon {
-  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
-  background: rgba(15,122,69,.1); color: var(--accent);
-  display: flex; align-items: center; justify-content: center; font-size: 1rem;
-}
-.sd-trust-row strong { display: block; font-size: .84rem; font-weight: 700; color: var(--ink); }
-.sd-trust-row small { display: block; font-size: .74rem; color: var(--muted); margin-top: 1px; }
-
-/* Liens utiles */
-.sd-links {
-  margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 8px;
-}
-.sd-link-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 12px 14px; border-radius: 11px;
-  background: var(--surf2); border: 1px solid var(--border);
-  text-decoration: none; color: var(--ink2);
-  font-size: .83rem; font-weight: 600;
-  transition: background .2s, border-color .2s, transform .2s;
-}
-.sd-link-row i:first-child { color: var(--accent); margin-right: 9px; }
-.sd-link-row i.fa-arrow-right { font-size: .78rem; color: var(--muted); transition: transform .2s; }
-.sd-link-row:hover { background: rgba(15,122,69,.07); border-color: rgba(15,122,69,.3); transform: translateX(2px); }
-.sd-link-row:hover i.fa-arrow-right { transform: translateX(3px); color: var(--accent); }
-
-/* Messages */
-.sd-msgs { margin-bottom: 16px; }
-.sd-msg { padding: 12px 16px; border-radius: 10px; font-size: .85rem; margin-bottom: 8px; }
-.sd-msg.success { background: rgba(45,122,95,.1); border: 1px solid rgba(45,122,95,.3); color: var(--green); }
-.sd-msg.error   { background: rgba(201,48,96,.08); border: 1px solid rgba(201,48,96,.2); color: #c93060; }
-
-/* ── Services associés ── */
-.sd-related { max-width: 1200px; margin: 88px auto 0; padding: 0 clamp(1.5rem,6vw,5rem); }
-.sd-related-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -.02em; }
-.sd-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 18px; }
-.sd-related-card {
-  display: flex; flex-direction: column; text-decoration: none; color: var(--ink);
-  background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-  transition: transform .3s cubic-bezier(.22,.68,0,1.2), box-shadow .3s, border-color .3s;
-}
-.sd-related-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(10,61,36,.14); border-color: var(--accent2); }
-.sd-related-media { height: 130px; background: var(--surf2); overflow: hidden; }
-.sd-related-media img { width: 100%; height: 100%; object-fit: contain; transition: transform .5s; }
-.sd-related-card:hover .sd-related-media img { transform: scale(1.08); }
-.sd-related-body { padding: 14px 16px; }
-.sd-related-body h4 { font-size: .88rem; font-weight: 700; line-height: 1.35; }
-
-/* ── Explorer (pleine largeur) ── */
-.sd-explore { max-width: 1200px; margin: 64px auto 0; padding: 0 clamp(1.5rem,6vw,5rem) 100px; }
-.sd-explore-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -.01em; }
-.sd-explore-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
-.sd-explore-tile {
-  position: relative; height: 140px; border-radius: 14px; overflow: hidden;
-  text-decoration: none; display: flex; align-items: flex-end; padding: 16px;
-  background-size: cover; background-position: center;
-  transition: transform .35s cubic-bezier(.22,.68,0,1.2);
-}
-.sd-explore-tile:hover { transform: translateY(-5px); }
-.sd-explore-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,20,18,.15), rgba(9,14,13,.85)); }
-.sd-explore-label { position: relative; z-index: 1; color: #fff; font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
-
-@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
-
-@media (max-width: 900px) {
-  .sd-explore-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-@media (max-width: 860px) {
-  .sd-wrapper { grid-template-columns: minmax(0,1fr); gap: 32px; }
-  .sd-sidebar { position: static; }
-}
-@media (max-width: 600px) {
-  .sd-wrapper { padding: 0 18px; }
-  .sd-related, .sd-explore { padding-left: 18px; padding-right: 18px; }
-}
-</style>
-
-<!-- Breadcrumb -->
-<nav class="sd-breadcrumb">
-  <a href="{% url 'services:services' %}">Services</a>
-  <span>›</span>
-  {% if service.category %}
-    <a href="{% url 'services:services' %}?category={{ service.category.slug }}">{{ service.category.name }}</a>
-    <span>›</span>
-  {% endif %}
-  <span>{{ service.title }}</span>
-</nav>
-
-<div class="sd-wrapper">
-
-  <!-- ══ GAUCHE : Média + Info ══ -->
-  <div>
-    <!-- Média -->
-    <div class="sd-media">
-      {% if service.is_featured %}
-        <span class="sd-badge"><i class="fa fa-star"></i> Vedette</span>
-      {% endif %}
-      {% if service.video %}
-        <video src="{{ service.video.url }}" autoplay muted loop playsinline></video>
-      {% elif service.image %}
-        <img src="{{ service.image.url }}" alt="{{ service.title }}">
-      {% else %}
-        <div class="sd-media-placeholder">🛠️</div>
-      {% endif %}
-      <span class="sd-icon-badge"><i class="fa {{ service.icon|default:service.category.icon|default:'fa-wrench' }}"></i></span>
+{% with wa=service.whatsapp|default:site_settings.whatsapp_1 %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="pp-bar">
+      <a href="{% url 'services:services' %}" class="pp-back"><i class="fa fa-arrow-left"></i> Services</a>
+      <nav class="pp-crumbs" aria-label="Fil d'Ariane">
+        <a href="{% url 'core:home' %}">Accueil</a><span>/</span><a href="{% url 'services:services' %}">Services</a>
+        {% if service.category %}<span>/</span><a href="{% url 'services:services' %}?category={{ service.category.slug }}">{{ service.category.name }}</a>{% endif %}
+      </nav>
     </div>
 
-    <!-- Infos -->
-    <div class="sd-info">
-      {% if service.category %}
-        <p class="sd-cat"><i class="fa {{ service.category.icon|default:'fa-th-large' }}"></i> {{ service.category.name }}</p>
-      {% endif %}
+    <div class="pp-main">
+      <div class="pp-gallery">
+        <div class="ct-cover">
+          {% if service.video %}<video src="{{ service.video.url }}" controls playsinline {% if service.image %}poster="{{ service.image.url }}"{% endif %}></video>
+          {% elif service.image %}<img src="{{ service.image.url }}" alt="{{ service.title }}">
+          {% else %}<i class="fa {{ service.icon_class }}"></i>{% endif %}
+        </div>
+      </div>
 
-      <h1 class="sd-title">{{ service.title }}</h1>
+      <div class="pp-info">
+        {% if service.category %}<a class="pp-cat" href="{% url 'services:services' %}?category={{ service.category.slug }}">{{ service.category.name }}</a>{% endif %}
+        <h1 class="pp-name">{{ service.title }}</h1>
+        <p class="pp-short">{{ service.description|striptags|truncatewords:28 }}</p>
 
-      <p class="sd-desc">{{ service.description }}</p>
-
-      <p class="sd-price-devis"><i class="fa fa-info-circle"></i> Contactez-nous via WhatsApp ou le formulaire pour discuter de votre projet et obtenir un tarif personnalisé.</p>
+        <div class="pp-buy">
+          <div class="pp-price">
+            {% if service.price %}<strong>{{ service.price|floatformat:"0g" }} FCFA</strong>
+            {% elif service.price_from %}<span style="color:var(--bq-muted)">À partir de</span> <strong>{{ service.price_from|floatformat:"0g" }} FCFA</strong>
+            {% else %}<strong style="font-size:1.6rem">Prix sur devis</strong>{% endif %}
+          </div>
+          <div style="margin-top:1.2rem">
+            {% if service.price %}
+            <a href="{% url 'payments:checkout' 'service' service.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Payer en ligne</a>
+            {% endif %}
+            {% if wa %}
+            <a href="https://wa.me/{{ wa }}?text={{ 'Bonjour, je suis intéressé(e) par le service : '|urlencode }}{{ service.title|urlencode }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>
+            {% endif %}
+            <a href="#contact" class="pp-btn pp-btn--alt"><i class="fa fa-envelope"></i> Être rappelé</a>
+          </div>
+          {% if service.price %}
+          <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay : Mobile Money (Flooz, Mix by Yas, MTN, Moov…) ou carte.{% if service.file %} Votre document PDF se télécharge juste après le paiement.{% endif %}</p>
+          {% endif %}
+          <ul class="pp-perks">
+            <li><i class="fa fa-bolt"></i><span><strong>Réponse rapide</strong>Nous revenons vers vous dans la journée.</span></li>
+            <li><i class="fa fa-handshake"></i><span><strong>Accompagnement</strong>Du premier échange jusqu'à la livraison.</span></li>
+            {% if service.phone %}<li><i class="fa fa-phone"></i><span><strong>Téléphone</strong><a href="tel:{{ service.phone }}">{{ service.phone }}</a></span></li>{% endif %}
+          </ul>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- ══ DROITE : Contact ══ -->
-  <div class="sd-sidebar">
+    <section class="pp-section">
+      <h2>Description</h2>
+      <div class="pp-desc">{{ service.description|linebreaks }}</div>
+    </section>
 
-    <!-- Messages -->
-    {% if messages %}
-    <div class="sd-msgs">
-      {% for msg in messages %}
-        <div class="sd-msg {{ msg.tags }}">{{ msg }}</div>
-      {% endfor %}
-    </div>
+    <section class="pp-section" id="contact">
+      <h2>Être rappelé</h2>
+      <div class="pp-reviews">
+        <form method="post" class="ct-box ct-form">
+          {% csrf_token %}
+          <div class="row">
+            <div class="ct-field"><label for="cName">Nom</label><input id="cName" name="name" required value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}"></div>
+            <div class="ct-field"><label for="cPhone">Téléphone</label><input id="cPhone" name="phone" inputmode="tel" required value="{% if user.is_authenticated %}{{ user.phone|default:'' }}{% endif %}"></div>
+          </div>
+          <div class="ct-field"><label for="cMsg">Votre besoin</label><textarea id="cMsg" name="message" required placeholder="Décrivez votre projet en quelques mots"></textarea></div>
+          <button type="submit" class="pp-btn pp-btn--main">Envoyer</button>
+        </form>
+        <div class="ct-box">
+          <h2 style="margin-bottom:.6rem">Comment ça marche ?</h2>
+          <ul class="ct-learn">
+            <li>Vous nous expliquez votre besoin (formulaire, WhatsApp ou paiement direct).</li>
+            <li>Nous vous rappelons pour préciser le projet et le délai.</li>
+            <li>Nous réalisons, vous validez, nous livrons.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {% if related_services %}
+    <section class="pp-section">
+      <h2>Dans la même catégorie</h2>
+      <div class="ct-grid">{% for s in related_services %}{% include 'services/_card.html' %}{% endfor %}</div>
+    </section>
     {% endif %}
-
-    <!-- Boutons principaux -->
-    <div class="sd-contact-btns">
-      {% if service.whatsapp %}
-      <a class="btn-whatsapp"
-         href="https://wa.me/{{ service.whatsapp }}?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20votre%20service%20:{{ service.title|urlencode }}"
-         target="_blank" rel="noopener noreferrer">
-        <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-          <path fill="#fff" d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.02 7.8L.5 31.5l7.9-2.01A15.45 15.45 0 0016 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.27 20.36c-.4-.2-2.36-1.16-2.73-1.3-.37-.13-.63-.2-.9.2-.26.4-1.02 1.3-1.26 1.57-.23.26-.46.3-.86.1-.4-.2-1.69-.62-3.21-1.98-1.19-1.06-1.99-2.37-2.22-2.77-.23-.4-.02-.61.17-.81.18-.18.4-.46.6-.7.2-.23.27-.4.4-.66.14-.27.07-.5-.03-.7-.1-.2-.9-2.16-1.23-2.96-.32-.78-.65-.67-.9-.68h-.77c-.27 0-.7.1-1.06.5-.37.4-1.4 1.37-1.4 3.33s1.43 3.86 1.63 4.13c.2.26 2.82 4.3 6.83 6.03.96.41 1.7.66 2.28.84.96.3 1.83.26 2.52.16.77-.12 2.36-.97 2.7-1.9.33-.93.33-1.73.23-1.9-.1-.17-.36-.27-.76-.47z"/>
-        </svg>
-        Contacter via WhatsApp
-      </a>
-      {% endif %}
-
-      <button class="btn-form-toggle" id="formToggleBtn" type="button">
-        <i class="fa fa-envelope"></i> Envoyer un message
-      </button>
-    </div>
-
-    <!-- Formulaire contact (caché par défaut, s'ouvre au clic) -->
-    <div class="sd-form-wrap" id="contactForm">
-      <p class="sd-form-title">Laisser un message</p>
-
-      <form method="post" action="{% url 'services:service_detail' service.pk %}">
-        {% csrf_token %}
-
-        <div class="sd-form-group">
-          <label class="sd-form-label">Votre nom *</label>
-          <input class="sd-form-input" type="text" name="name" placeholder="Jean Dupont"
-                 value="{% if request.user.is_authenticated %}{{ request.user.get_full_name }}{% endif %}"
-                 required>
-        </div>
-
-        <div class="sd-form-group">
-          <label class="sd-form-label">Votre téléphone *</label>
-          <input class="sd-form-input" type="tel" name="phone" placeholder="+228 90 00 00 00" required>
-        </div>
-
-        <div class="sd-form-group">
-          <label class="sd-form-label">Votre message *</label>
-          <textarea class="sd-form-textarea" name="message"
-                    placeholder="Décrivez votre besoin, votre projet..." required></textarea>
-        </div>
-
-        <button type="submit" class="btn-submit">
-          <i class="fa fa-paper-plane"></i> Envoyer le message
-        </button>
-      </form>
-    </div>
-
-    <!-- Pourquoi nous faire confiance -->
-    <div class="sd-trust">
-      <div class="sd-trust-row">
-        <span class="sd-trust-icon"><i class="fa fa-clock"></i></span>
-        <div><strong>Réponse rapide</strong><small>Sous 24h, WhatsApp ou message</small></div>
-      </div>
-      <div class="sd-trust-row">
-        <span class="sd-trust-icon"><i class="fa fa-file-lines"></i></span>
-        <div><strong>Devis gratuit</strong><small>Sans engagement de votre part</small></div>
-      </div>
-      <div class="sd-trust-row">
-        <span class="sd-trust-icon"><i class="fa fa-map-marker"></i></span>
-        <div><strong>Équipe locale</strong><small>Basée à Lomé, à votre écoute</small></div>
-      </div>
-    </div>
-
-    <!-- Liens utiles -->
-    <div class="sd-links">
-      <a href="{% url 'core:projects' %}" class="sd-link-row">
-        <span><i class="fa fa-briefcase"></i> Voir nos projets réalisés</span>
-        <i class="fa fa-arrow-right"></i>
-      </a>
-      <a href="{% url 'core:team' %}" class="sd-link-row">
-        <span><i class="fa fa-users"></i> Rencontrer notre équipe</span>
-        <i class="fa fa-arrow-right"></i>
-      </a>
-      <a href="{% url 'core:partners' %}" class="sd-link-row">
-        <span><i class="fa fa-handshake"></i> Nos partenaires</span>
-        <i class="fa fa-arrow-right"></i>
-      </a>
-    </div>
-
   </div>
-</div>
 
-<!-- ══ SERVICES ASSOCIÉS ══ -->
-{% if related_services %}
-<section class="sd-related reveal">
-  <h2 class="sd-related-title">Autres services {% if service.category %}en {{ service.category.name }}{% endif %}</h2>
-  <div class="sd-related-grid">
-    {% for rs in related_services %}
-    <a href="{% url 'services:service_detail' rs.pk %}" class="sd-related-card">
-      <div class="sd-related-media">
-        {% if rs.image %}<img src="{{ rs.image.url }}" alt="{{ rs.title }}" loading="lazy">{% endif %}
-      </div>
-      <div class="sd-related-body"><h4>{{ rs.title }}</h4></div>
-    </a>
-    {% endfor %}
+  {% if service.price %}
+  <div class="pp-sticky" id="ppSticky">
+    <div><strong>{{ service.price|floatformat:"0g" }} FCFA</strong><small>{{ service.title }}</small></div>
+    <a href="{% url 'payments:checkout' 'service' service.pk %}" class="pp-btn pp-btn--main">Payer</a>
   </div>
-</section>
-{% endif %}
-
-<!-- ══ EXPLORER ══ -->
-<section class="sd-explore reveal">
-  <p class="sd-explore-title">Explorer aussi</p>
-  <div class="sd-explore-row">
-    <a href="{% url 'services:services' %}" class="sd-explore-tile" style="background:linear-gradient(135deg,#0f7a45,#0f2422);">
-      <span class="sd-explore-overlay"></span>
-      <span class="sd-explore-label"><i class="fa fa-th-large"></i> Tous les services</span>
-    </a>
-    <a href="{% url 'formations:formations' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image2.png' %}')">
-      <span class="sd-explore-overlay"></span>
-      <span class="sd-explore-label"><i class="fa fa-graduation-cap"></i> Formations</span>
-    </a>
-    <a href="{% url 'shop:shop' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image1.png' %}')">
-      <span class="sd-explore-overlay"></span>
-      <span class="sd-explore-label"><i class="fa fa-shopping-bag"></i> Boutique</span>
-    </a>
-    <a href="{% url 'publications:publications' %}" class="sd-explore-tile" style="background-image:url('{% static 'core/images/image3.png' %}')">
-      <span class="sd-explore-overlay"></span>
-      <span class="sd-explore-label"><i class="fa fa-newspaper"></i> Actualités</span>
-    </a>
-  </div>
-</section>
-
-<script>
-(function() {
-  var form = document.getElementById('contactForm');
-  var btn  = document.getElementById('formToggleBtn');
-
-  function openForm() {
-    form.classList.add('open');
-    btn.innerHTML = '<i class="fa fa-times"></i> Fermer le formulaire';
-  }
-  function closeForm() {
-    form.classList.remove('open');
-    btn.innerHTML = '<i class="fa fa-envelope"></i> Envoyer un message';
-  }
-
-  btn.addEventListener('click', function() {
-    form.classList.contains('open') ? closeForm() : openForm();
-  });
-
-  {% if messages %}
-    {% for msg in messages %}{% if 'error' in msg.tags %}openForm();{% endif %}{% endfor %}
   {% endif %}
-})();
-</script>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endwith %}
+{% endblock %}
 
-<style>
-/* ── Pages de détail : même présentation que les actualités (titres verts, barres vertes, boutons carrés) ── */
-.fd-title, .sd-title, .pd-title { font-family:var(--font) !important; font-weight:800 !important; letter-spacing:0 !important; color:#0f7a45 !important; line-height:1.2 !important; font-size:clamp(1.6rem,3.2vw,2.3rem) !important; }
-.fd-learn-title, .fd-related-title, .sd-related-title, .pd-related-title, .pd-desc-block-title, .pd-full-side-title, .sd-form-title, .fd-full-title {
-  background:#0f7a45; border-left:6px solid #c9a84c; color:#fff !important; font-family:var(--font) !important; font-size:.95rem !important;
-  font-weight:800 !important; text-transform:uppercase; letter-spacing:.3px !important; padding:8px 14px; margin-bottom:16px; }
-.fd-card, .pd-buy-card { border-radius:4px !important; box-shadow:0 2px 14px rgba(0,0,0,.06) !important; }
-.fd-price, .pd-price { font-family:var(--font) !important; color:#0f7a45 !important; letter-spacing:0 !important; }
-.fd-qty-input, .pd-qty-input { border-radius:0 !important; }
-.btn-buy-now, .btn-submit, .btn-form-toggle { background:#0f7a45 !important; color:#fff !important; border:2px solid #0f7a45 !important; border-radius:0 !important; box-shadow:none !important; clip-path:none !important; transform:none !important; }
-.btn-buy-now:hover, .btn-submit:hover, .btn-form-toggle:hover { background:#0b6137 !important; border-color:#0b6137 !important; transform:none !important; }
-.btn-primary, .btn-add-cart { background:#fff !important; color:#0f7a45 !important; border:2px solid #0f7a45 !important; border-radius:0 !important; clip-path:none !important; box-shadow:none !important; transform:none !important; }
-.btn-primary:hover, .btn-add-cart:hover { background:#eef7f1 !important; transform:none !important; }
-.btn-whatsapp { border-radius:0 !important; }
-.fd-learn-item, .fd-related-card, .sd-related-card, .pd-related-card, .fd-img-wrap, .sd-media, .pd-media { border-radius:0 !important; }
-.fd-learn-item i { color:#0f7a45 !important; }
-.fd-related-price, .pd-related-price, .fd-cart-link, .pd-cart-link { color:#0f7a45 !important; }
-.fd-breadcrumb a, .sd-breadcrumb a, .pd-breadcrumb a { color:#0f7a45 !important; }
-</style>
+{% block extra_scripts %}
+<script>
+(function(){var s=document.getElementById('ppSticky');if(!s)return;
+window.addEventListener('scroll',function(){s.classList.toggle('is-on',window.scrollY>520);},{passive:true});})();
+</script>
 {% endblock %}

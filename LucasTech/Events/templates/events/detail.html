@@ -1,0 +1,102 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ event.title }} — Événements Lantante Technologie{% endblock %}
+{% block meta_description %}{{ event.starts_at|date:"j F Y" }} · {{ event.location }} — {{ event.description|striptags|truncatechars:120 }}{% endblock %}
+{% block og_title %}{{ event.title }}{% endblock %}
+{% block og_description %}{{ event.starts_at|date:"j F Y" }} · {{ event.location }}. Tickets en ligne.{% endblock %}
+{% block og_image %}{% if event.cover %}{{ event.cover.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="pp-bar">
+      <a href="{% url 'events:list' %}" class="pp-back"><i class="fa fa-arrow-left"></i> Événements</a>
+      {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Paiement en mode test</span>{% endif %}
+    </div>
+
+    <div class="pp-main">
+      <div class="pp-gallery">
+        <div class="ct-cover">{% if event.cover %}<img src="{{ event.cover.url }}" alt="{{ event.title }}">{% else %}<i class="fa fa-calendar-days"></i>{% endif %}</div>
+        <ul class="ct-facts" style="margin-top:1.2rem">
+          <li><i class="fa fa-calendar"></i>{{ event.starts_at|date:"l j F Y" }}</li>
+          <li><i class="fa fa-clock"></i>{{ event.starts_at|date:"H\hi" }}{% if event.ends_at %} – {% if event.ends_at|date:"Ymd" != event.starts_at|date:"Ymd" %}{{ event.ends_at|date:"j F, H\hi" }}{% else %}{{ event.ends_at|date:"H\hi" }}{% endif %}{% endif %}</li>
+          <li><i class="fa fa-location-dot"></i>{% if event.map_url %}<a href="{{ event.map_url }}" target="_blank" rel="noopener" style="color:inherit">{{ event.location }} <i class="fa fa-arrow-up-right-from-square" style="width:auto;height:auto;background:none;font-size:.75rem"></i></a>{% else %}{{ event.location }}{% endif %}</li>
+        </ul>
+      </div>
+
+      <div class="pp-info">
+        <h1 class="pp-name">{{ event.title }}</h1>
+        <div class="pp-desc" style="padding:0;background:none;font-size:1rem;margin-bottom:1.2rem">{{ event.description|linebreaks }}</div>
+
+        <div class="pp-buy" id="tickets">
+          {% if event.is_past %}
+            <h2 style="font-size:1.3rem">Cet événement est terminé.</h2>
+            <p style="color:var(--bq-muted);margin-top:.4rem">Merci à toutes et à tous !</p>
+          {% elif not event.ticket_types.all %}
+            <h2 style="font-size:1.3rem">Billetterie bientôt ouverte.</h2>
+            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="margin-top:1rem"><i class="fab fa-whatsapp"></i> Être prévenu sur WhatsApp</a>{% endif %}
+          {% else %}
+          <form method="post" class="ct-form" novalidate id="ticketForm">
+            {% csrf_token %}
+            <h2 style="font-size:1.3rem">Tickets</h2>
+            <div>
+              {% for tt in event.ticket_types.all %}
+              <div class="ct-tt">
+                <div>
+                  <h3>{{ tt.name }}</h3>
+                  {% if tt.description %}<p>{{ tt.description }}</p>{% endif %}
+                  <strong>{% if tt.price %}{{ tt.price|floatformat:"0g" }} FCFA{% else %}Gratuit{% endif %}</strong>
+                  {% if tt.remaining and tt.remaining <= 10 %}<p style="color:#c46a0c">Plus que {{ tt.remaining }} place{{ tt.remaining|pluralize }}</p>{% endif %}
+                </div>
+                {% if tt.remaining %}
+                <select name="qty_{{ tt.pk }}" data-price="{{ tt.price }}" aria-label="Nombre de tickets {{ tt.name }}">
+                  {% for n in tt.choice_range %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
+                </select>
+                {% else %}<span class="soldout">Complet</span>{% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            <div class="ct-total"><span>Total</span><strong id="ttTotal">0 FCFA</strong></div>
+
+            <div id="buyer" hidden>
+              <h2 style="font-size:1.15rem;margin:.4rem 0 .9rem">Vos coordonnées</h2>
+              <div class="ct-form">{% include 'payments/_customer_fields.html' %}</div>
+            </div>
+            {% if enabled %}
+            <button type="submit" class="pp-btn pp-btn--main" id="ttPay" disabled><i class="fa fa-lock"></i> <span>Choisissez vos tickets</span></button>
+            {% else %}
+            <p class="ct-note" style="text-align:left">Le paiement en ligne n'est pas encore activé : réservez sur WhatsApp.</p>
+            {% endif %}
+            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>{% endif %}
+            <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay (Mobile Money ou carte). Vos tickets s'affichent et partent par email dès le paiement validé.</p>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ selected|json_script:"ttSelected" }}
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  var form=document.getElementById('ticketForm'); if(!form) return;
+  var sel=form.querySelectorAll('select[data-price]'), total=document.getElementById('ttTotal'),
+      buyer=document.getElementById('buyer'), pay=document.getElementById('ttPay');
+  var prev={}; try{prev=JSON.parse(document.getElementById('ttSelected').textContent)||{};}catch(e){}
+  sel.forEach(function(s){var id=s.name.slice(4); if(prev[id]) s.value=prev[id];});
+  function fmt(n){return n.toLocaleString('fr-FR').replace(/ | /g,' ');}
+  function sync(){
+    var sum=0,count=0; sel.forEach(function(s){var q=+s.value; count+=q; sum+=q*(+s.dataset.price);});
+    total.textContent=count?(sum?fmt(sum)+' FCFA':'Gratuit'):'0 FCFA';
+    buyer.hidden=!count;
+    if(pay){pay.disabled=!count; pay.querySelector('span').textContent=!count?'Choisissez vos tickets':(sum?'Payer '+fmt(sum)+' FCFA':'Réserver gratuitement');}
+  }
+  sel.forEach(function(s){s.addEventListener('change',sync);}); sync();
+  if(Object.keys(prev).length) document.getElementById('tickets').scrollIntoView({block:'start'});
+})();
+</script>
+{% endblock %}

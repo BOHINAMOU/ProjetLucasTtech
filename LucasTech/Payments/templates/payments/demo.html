@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+{% block title %}Paiement (démo locale){% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="ct-result">
+      <span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Démo locale : remplace la page FedaPay tant que les clés ne sont pas configurées</span>
+      <h1 style="margin-top:1rem">Payer {{ p.amount|floatformat:"0g" }} FCFA</h1>
+      <p class="lead">{{ p.description }} · {{ p.full_name }} · {{ p.phone }}</p>
+      <form method="post" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.6rem">
+        {% csrf_token %}
+        <input type="hidden" name="t" value="{{ p.access_token }}">
+        <button name="action" value="pay" class="ct-pill ct-pill--green"><i class="fa fa-check"></i> Simuler un paiement réussi</button>
+        <button name="action" value="cancel" class="ct-pill" style="background:#fff;color:var(--bq-ink)">Simuler un échec</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

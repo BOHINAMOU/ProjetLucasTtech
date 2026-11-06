@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+{% block title %}{% if p.is_paid %}Paiement confirmé{% else %}Paiement {{ p.reference }}{% endif %} — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="ct-result">
+      {% if p.is_paid %}
+        <div class="ct-result__icon ok"><i class="fa fa-check"></i></div>
+        <h1>Merci {{ p.first_name }}, paiement confirmé.</h1>
+        <p class="lead">{{ p.description }} · <strong>{{ p.amount|floatformat:"0g" }} FCFA</strong> · référence {{ p.reference }}.
+          Un reçu a été envoyé à {{ p.email }}.</p>
+
+        {% if has_file %}
+        <div class="ct-box" style="margin-top:1.4rem">
+          <h2><i class="fa fa-file-pdf" style="color:var(--bq-green)"></i> Votre document</h2>
+          <p style="color:var(--bq-ink2)">Le téléchargement démarre automatiquement. Sinon, cliquez ici :</p>
+          <a href="{% url 'payments:download' p.reference %}?t={{ p.access_token }}" class="pp-btn pp-btn--main" id="dlBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le PDF</a>
+          <p class="ct-note">Gardez l'email reçu : son lien permet de télécharger à nouveau le document.</p>
+        </div>
+        {% endif %}
+
+        {% if tickets %}
+        <div class="ct-noprint" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
+          <button type="button" class="ct-pill ct-pill--green" onclick="window.print()"><i class="fa fa-print"></i> Imprimer / enregistrer en PDF</button>
+          {% if p.event %}<a href="{{ p.event.get_absolute_url }}" class="ct-pill" style="background:#fff;color:var(--bq-ink)">Voir l'événement</a>{% endif %}
+        </div>
+        <div class="ct-tickets">
+          {% for t in tickets %}
+          <div class="ct-ticket">
+            <div>
+              <h3>{{ t.event.title }}</h3>
+              <p><i class="fa fa-calendar"></i> {{ t.event.starts_at|date:"l j F Y à H\hi" }} · <i class="fa fa-location-dot"></i> {{ t.event.location }}</p>
+              <p>{{ t.ticket_type.name }} · {{ t.holder_name }}</p>
+              <code>{{ t.code }}</code>
+              {% if t.used_at %}<p><span class="ct-badge ct-badge--wait">Déjà validé à l'entrée</span></p>{% endif %}
+            </div>
+            <div class="qr" data-code="{{ t.code }}"></div>
+          </div>
+          {% endfor %}
+        </div>
+        <p class="ct-note">Présentez le code (ou le QR) à l'entrée. Chaque ticket n'est valable qu'une fois.</p>
+        {% elif not has_file %}
+        <p class="lead">Notre équipe vous contacte très vite au {{ p.phone }} pour la suite.</p>
+        {% endif %}
+
+      {% elif p.status == 'pending' %}
+        <div class="ct-result__icon wait"><i class="fa fa-hourglass-half"></i></div>
+        <h1>Paiement en cours de vérification…</h1>
+        <p class="lead">Si vous avez validé le paiement sur votre téléphone, cette page se met à jour toute seule dans quelques secondes.</p>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
+          {% if p.payment_url %}<a href="{{ p.payment_url }}" class="ct-pill ct-pill--green">Reprendre le paiement</a>{% endif %}
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill" style="background:#fff;color:#128c4a"><i class="fab fa-whatsapp"></i> Besoin d'aide</a>{% endif %}
+        </div>
+      {% else %}
+        <div class="ct-result__icon ko"><i class="fa fa-xmark"></i></div>
+        <h1>Le paiement n'a pas abouti.</h1>
+        <p class="lead">Aucun montant n'a été débité. Vous pouvez réessayer, ou nous écrire sur WhatsApp.</p>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
+          {% if p.service %}<a href="{% url 'payments:checkout' 'service' p.service.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
+          {% elif p.formation %}<a href="{% url 'payments:checkout' 'formation' p.formation.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
+          {% elif p.event %}<a href="{{ p.event.get_absolute_url }}" class="ct-pill ct-pill--green">Réessayer</a>
+          {% elif p.shop_order %}<a href="{% url 'shop:payment' p.shop_order.pk %}" class="ct-pill ct-pill--green">Réessayer</a>{% endif %}
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill" style="background:#fff;color:#128c4a"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if tickets %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>document.querySelectorAll('.qr[data-code]').forEach(function(el){try{new QRCode(el,{text:el.dataset.code,width:208,height:208,correctLevel:QRCode.CorrectLevel.M});}catch(e){}});</script>
+{% endif %}
+{% if auto_download %}
+<script>setTimeout(function(){var b=document.getElementById('dlBtn');if(b)window.location.href=b.href;},900);</script>
+{% endif %}
+{% if p.status == 'pending' %}
+<script>(function(){var n=+(sessionStorage.getItem('ltPoll{{ p.reference }}')||0);if(n<24){sessionStorage.setItem('ltPoll{{ p.reference }}',n+1);setTimeout(function(){location.reload();},5000);}})();</script>
+{% endif %}
+{% endblock %}

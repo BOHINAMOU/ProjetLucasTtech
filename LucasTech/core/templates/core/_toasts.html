@@ -1,0 +1,3 @@
+{% for msg in messages %}
+<div class="bq-toast{% if msg.tags == 'error' %} bq-toast--error{% endif %}" role="status">{{ msg }}</div>
+{% endfor %}

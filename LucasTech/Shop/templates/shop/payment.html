@@ -291,68 +291,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
     <div class="py-card">
       <p class="py-card-title">💳 Choisir le paiement</p>
 
+      <a class="btn-pay" href="{% url 'payments:checkout' 'boutique' order.pk %}" style="display:flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;margin-bottom:1.2rem">
+        <i class="fa fa-lock"></i> Payer en ligne : Mobile Money ou carte
+      </a>
+      <p class="py-hint" style="margin-bottom:1.2rem">Flooz, Mix by Yas, MTN, Moov ou carte bancaire, via FedaPay (paiement sécurisé, confirmation immédiate).</p>
+
       <form method="post" id="payForm">
         {% csrf_token %}
-
-        <div class="py-methods" id="methods">
-
-          <label class="py-method" data-method="flooz" onclick="selectMethod(this,'flooz')">
-            <input type="radio" name="payment_method_choice" value="flooz">
-            <div class="py-method-icon flooz"><i class="fa fa-mobile"></i></div>
-            <div class="py-method-text">
-              <div class="py-method-name">Flooz</div>
-              <div class="py-method-desc">Moov Africa — paiement mobile</div>
-            </div>
-            <div class="py-method-check"></div>
-          </label>
-
-          <label class="py-method" data-method="tmoney" onclick="selectMethod(this,'tmoney')">
-            <input type="radio" name="payment_method_choice" value="tmoney">
-            <div class="py-method-icon tmoney"><i class="fa fa-mobile"></i></div>
-            <div class="py-method-text">
-              <div class="py-method-name">Mixx By Yas</div>
-              <div class="py-method-desc">Mixx By Yas — paiement mobile</div>
-            </div>
-            <div class="py-method-check"></div>
-          </label>
-
-          <label class="py-method" data-method="wave" onclick="selectMethod(this,'wave')">
-            <input type="radio" name="payment_method_choice" value="wave">
-            <div class="py-method-icon wave"><i class="fa fa-bolt"></i></div>
-            <div class="py-method-text">
-              <div class="py-method-name">Wave</div>
-              <div class="py-method-desc">Transfert rapide Wave</div>
-            </div>
-            <div class="py-method-check"></div>
-          </label>
-
-          <label class="py-method" data-method="cash" onclick="selectMethod(this,'cash')">
-            <input type="radio" name="payment_method_choice" value="cash">
-            <div class="py-method-icon cash"><i class="fa fa-money"></i></div>
-            <div class="py-method-text">
-              <div class="py-method-name">Espèces</div>
-              <div class="py-method-desc">Paiement à la livraison</div>
-            </div>
-            <div class="py-method-check"></div>
-          </label>
-
-        </div>
-
-        <!-- Instructions + N° transaction -->
-        <div class="py-field" id="fieldMobile">
-          <p class="py-hint" id="hintText"></p>
-          <label class="py-label">Numéro de transaction</label>
-          <input class="py-input" type="text" name="transaction_id"
-                 id="txInput" placeholder="+22890XXXXXXXX"
-                 autocomplete="off">
-        </div>
-
+        <input type="hidden" name="payment_method_choice" value="cash">
+        <p class="py-card-title" style="margin-top:.4rem">Ou payer en espèces à la livraison</p>
         <div class="py-field visible" id="fieldCash">
-          <p class="py-hint">Le paiement en espèces se fait à la livraison. Notre équipe vous contactera pour confirmer la date et l'heure.</p>
+          <label class="py-label" for="cashName">Nom</label>
+          <input class="py-input" id="cashName" name="cash_delivery_name" required value="{% if user.get_full_name %}{{ user.get_full_name }}{% endif %}">
+          <label class="py-label" for="cashPhone" style="margin-top:.7rem">Téléphone</label>
+          <input class="py-input" id="cashPhone" name="cash_delivery_phone" inputmode="tel" required value="{{ user.phone|default:'' }}">
+          <label class="py-label" for="cashMsg" style="margin-top:.7rem">Adresse / précisions (optionnel)</label>
+          <input class="py-input" id="cashMsg" name="cash_delivery_message">
         </div>
-
-        <button type="submit" class="btn-pay" id="btnPay" disabled>
-          <i class="fa fa-lock"></i> Le payement en ligne n'est pas encore disponible contactez-nous via WhatsApp pour finaliser votre commande
+        <button type="submit" class="btn-pay" style="background:#fff;color:#111;border:1.5px solid rgba(0,0,0,.15)">
+          <i class="fa fa-truck"></i> Commander, je paie à la livraison
         </button>
       </form>
 
@@ -373,37 +330,5 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
   </div>
 </div>
 
-<script>
-const HINTS = {
-  flooz:  'Envoyez <strong>{{ order.total_price }} FCFA</strong> au numéro <strong>+228 XX XX XX XX</strong> via Flooz, puis entrez le numéro de transaction ci-dessous.',
-  tmoney: 'Envoyez <strong>{{ order.total_price }} FCFA</strong> au numéro <strong>+228 XX XX XX XX</strong> via T-Money, puis entrez le numéro de transaction ci-dessous.',
-  wave:   'Envoyez <strong>{{ order.total_price }} FCFA</strong> au numéro Wave <strong>+228 XX XX XX XX</strong>, puis entrez le numéro de transaction ci-dessous.',
-};
-
-function selectMethod(el, method) {
-  document.querySelectorAll('.py-method').forEach(m => m.classList.remove('selected'));
-  el.classList.add('selected');
-  el.querySelector('input').checked = true;
-
-  const fMobile = document.getElementById('fieldMobile');
-  const fCash   = document.getElementById('fieldCash');
-  const btn     = document.getElementById('btnPay');
-  const hint    = document.getElementById('hintText');
-  const tx      = document.getElementById('txInput');
-
-  fMobile.classList.remove('visible');
-  fCash.classList.remove('visible');
-
-  if (method === 'cash') {
-    fCash.classList.add('visible');
-    btn.disabled = false;
-  } else {
-    hint.innerHTML = HINTS[method] || '';
-    fMobile.classList.add('visible');
-    tx.addEventListener('input', () => { btn.disabled = tx.value.trim().length < 4; });
-    btn.disabled = true;
-  }
-}
-</script>
 
 {% endblock %}

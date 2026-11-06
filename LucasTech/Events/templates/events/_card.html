@@ -1,0 +1,21 @@
+<article class="bq-card ct-card">
+  <a href="{{ ev.get_absolute_url }}" class="bq-card__link" aria-label="Voir {{ ev.title }}"></a>
+  <div class="bq-card__img">
+    <div class="ct-date"><b>{{ ev.starts_at|date:"j" }}</b><span>{{ ev.starts_at|date:"M" }}</span></div>
+    {% if ev.cover %}<img src="{{ ev.cover.url }}" alt="{{ ev.title }}" loading="lazy">{% else %}<i class="fa fa-calendar-days"></i>{% endif %}
+  </div>
+  <div class="bq-card__body">
+    <h3 class="bq-card__name">{{ ev.title }}</h3>
+    <div class="ct-meta">
+      <span><i class="fa fa-clock"></i>{{ ev.starts_at|date:"l j F, H\hi" }}</span>
+      <span><i class="fa fa-location-dot"></i>{{ ev.location }}</span>
+    </div>
+    <p class="bq-card__desc">{{ ev.description|striptags|truncatechars:140 }}</p>
+  </div>
+  <div class="bq-card__price">
+    {% with p=ev.min_price %}{% if p is None %}<small>Billetterie bientôt ouverte</small>{% elif p == 0 %}<strong>Gratuit</strong>{% else %}<small>Dès</small> <strong>{{ p|floatformat:"0g" }} FCFA</strong>{% endif %}{% endwith %}
+  </div>
+  <div class="bq-card__actions" style="grid-template-columns:1fr">
+    <a href="{{ ev.get_absolute_url }}" class="bq-btn {% if ev.is_past %}bq-btn--line{% else %}bq-btn--green{% endif %}">{% if ev.is_past %}Voir l'événement{% else %}<i class="fa fa-ticket"></i> Réserver mes tickets{% endif %}</a>
+  </div>
+</article>

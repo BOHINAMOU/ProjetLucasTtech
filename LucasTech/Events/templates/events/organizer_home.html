@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+{% block title %}Espace organisateur — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="bq-top"><h1>Mes événements.<span>Vos ventes de tickets en direct.</span></h1></div>
+    <div class="ct-box ct-table-wrap">
+      <table class="ct-table">
+        <thead><tr><th>Événement</th><th>Date</th><th>Tickets vendus</th><th>Encaissé</th><th></th></tr></thead>
+        <tbody>
+        {% for ev, revenue in rows %}
+          <tr>
+            <td><strong>{{ ev.title }}</strong><br><small style="color:var(--bq-muted)">{{ ev.location }}{% if not ev.is_published %} · non publié{% endif %}</small></td>
+            <td>{{ ev.starts_at|date:"j M Y, H\hi" }}</td>
+            <td>{{ ev.sold }}</td>
+            <td>{{ revenue|floatformat:"0g" }} FCFA</td>
+            <td><a href="{% url 'events:organizer_event' ev.slug %}" class="bq-btn bq-btn--dark">Détails</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" style="color:var(--bq-muted);padding:2rem .5rem">Aucun événement ne vous est attribué. Contactez Lantante Technologie pour mettre votre billetterie en ligne.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

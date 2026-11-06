@@ -211,6 +211,7 @@ class ShopOrder(models.Model):
         ('tmoney',    'T-Money'),
         ('wave',      'Wave'),
         ('cash',      'Espèces'),
+        ('fedapay',   'Paiement en ligne (FedaPay)'),
     ]
 
     # TOUS LES CHAMPS DU MODÈLE ENSEMBLE

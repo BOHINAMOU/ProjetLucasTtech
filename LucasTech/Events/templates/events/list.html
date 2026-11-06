@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Événements — Lantante Technologie{% endblock %}
+{% block meta_description %}Concerts, conférences, formations et soirées : réservez vos tickets en ligne avec Lantante Technologie.{% endblock %}
+{% block og_title %}Événements — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <section class="ct-hero" style="background-image:url('{% static 'core/images/home/equipe-dehors.jpg' %}');background-position:50% 35%">
+    <div class="bq-wrap">
+      <h1>Événements.</h1>
+      <p>Réservez vos tickets en ligne, payez par Mobile Money et recevez-les tout de suite.</p>
+      {% if user.is_authenticated and user.organized_events.exists %}
+      <div class="ct-hero__cta"><a href="{% url 'events:organizer' %}" class="ct-pill ct-pill--glass"><i class="fa fa-chart-line"></i> Mon espace organisateur</a></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="bq-wrap">
+    <div class="bq-sec-title" style="margin-top:2rem"><h2>À venir<span>.</span></h2><small>{{ upcoming|length }} événement{{ upcoming|length|pluralize }}</small></div>
+    <div class="ct-grid">
+      {% for ev in upcoming %}{% include 'events/_card.html' %}
+      {% empty %}
+      <div class="bq-empty"><i class="fa fa-calendar"></i><p>Aucun événement annoncé pour le moment. Revenez bientôt !</p></div>
+      {% endfor %}
+    </div>
+
+    {% if past %}
+    <div class="bq-sec-title" style="margin-top:3rem"><h2>Passés<span>.</span></h2></div>
+    <div class="ct-grid">{% for ev in past %}{% include 'events/_card.html' %}{% endfor %}</div>
+    {% endif %}
+
+    <div class="ct-cta">
+      <div><h2>Vous organisez un événement ?</h2><p>Nous mettons en ligne votre billetterie et vous suivez vos ventes en direct.</p></div>
+      {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je voudrais vendre les tickets de mon événement sur votre site.'|urlencode }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Nous contacter</a>{% endif %}
+    </div>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

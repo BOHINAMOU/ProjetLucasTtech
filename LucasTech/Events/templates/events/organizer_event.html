@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ event.title }} — Ventes — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="pp-bar">
+      <a href="{% url 'events:organizer' %}" class="pp-back"><i class="fa fa-arrow-left"></i> Mes événements</a>
+      <a href="{{ event.get_absolute_url }}" class="pp-back" target="_blank">Voir la page publique <i class="fa fa-arrow-up-right-from-square"></i></a>
+    </div>
+    <h1 class="pp-name">{{ event.title }}</h1>
+    <p style="color:var(--bq-muted)">{{ event.starts_at|date:"l j F Y, H\hi" }} · {{ event.location }}</p>
+
+    <div class="ct-kpis">
+      <div class="ct-kpi"><small>Tickets vendus</small><strong>{{ sold }}</strong></div>
+      <div class="ct-kpi"><small>Encaissé</small><strong>{{ revenue|floatformat:"0g" }} FCFA</strong></div>
+      <div class="ct-kpi"><small>Entrées validées</small><strong>{{ used }}</strong></div>
+      <div class="ct-kpi"><small>Commandes</small><strong>{{ payments|length }}</strong></div>
+    </div>
+
+    <div class="pp-reviews">
+      <div class="ct-box ct-table-wrap">
+        <h2>Par type de ticket</h2>
+        <table class="ct-table">
+          <thead><tr><th>Type</th><th>Prix</th><th>Vendus</th><th>Restants</th><th>Total</th></tr></thead>
+          <tbody>{% for t in types %}<tr><td>{{ t.tt.name }}</td><td>{{ t.tt.price|floatformat:"0g" }}</td><td>{{ t.sold }} / {{ t.tt.quantity }}</td><td>{{ t.left }}</td><td>{{ t.revenue|floatformat:"0g" }} FCFA</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+      <form method="post" class="ct-box ct-form">
+        {% csrf_token %}
+        <h2>Contrôle à l'entrée</h2>
+        <div class="ct-field"><label for="code">Code du ticket</label><input id="code" name="code" placeholder="Ex : 3FA9C21B" autocomplete="off" autocapitalize="characters" required></div>
+        <button class="pp-btn pp-btn--main" type="submit"><i class="fa fa-check"></i> Valider l'entrée</button>
+        <p class="ct-note">Chaque code ne peut être validé qu'une seule fois.</p>
+      </form>
+    </div>
+
+    <section class="pp-section">
+      <h2>Acheteurs</h2>
+      <div class="ct-box ct-table-wrap">
+        <table class="ct-table">
+          <thead><tr><th>Date</th><th>Nom</th><th>Contact</th><th>Tickets</th><th>Montant</th></tr></thead>
+          <tbody>
+          {% for p in payments %}
+            <tr>
+              <td>{{ p.paid_at|default:p.created_at|date:"d/m H\hi" }}</td>
+              <td>{{ p.full_name }}</td>
+              <td>{{ p.phone }}<br><small style="color:var(--bq-muted)">{{ p.email }}</small></td>
+              <td>{% for t in p.tickets.all %}<code>{{ t.code }}</code> {{ t.ticket_type.name }}{% if t.used_at %} ✓{% endif %}<br>{% endfor %}</td>
+              <td>{{ p.amount|floatformat:"0g" }} FCFA</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="color:var(--bq-muted);padding:1.5rem .5rem">Aucune vente pour l'instant.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}
