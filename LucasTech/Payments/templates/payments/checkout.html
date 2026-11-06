@@ -6,47 +6,42 @@
 {% block content %}
 <div class="bq">
   <div class="bq-wrap">
-    <div class="pp-bar">
-      <a href="{{ back_url }}" class="pp-back"><i class="fa fa-arrow-left"></i> Retour</a>
-      {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
-    </div>
+    <div class="wz">
+      <div class="wz-top">
+        <a href="{{ back_url }}" class="pp-back"><i class="fa fa-arrow-left"></i> Retour</a>
+        {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
+      </div>
 
-    <div class="ct-pay">
-      <div class="ct-box">
+      <div class="wz-card">
+        <div class="wz-order">
+          {% if obj.image %}<img src="{{ obj.image.url }}" alt="">{% else %}<span class="wz-order__ico"><i class="fa fa-bag-shopping"></i></span>{% endif %}
+          <div class="wz-order__txt">
+            <strong>{% if kind == 'produit' %}{{ obj.name }}{% else %}{{ obj.title|default:description }}{% endif %}</strong>
+            <small>{% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% elif kind == 'produit' %}Quantité : {{ qty }}{% else %}Commande boutique{% endif %}{% if has_file %} · PDF inclus{% endif %}</small>
+          </div>
+          <b class="wz-order__price">{{ amount|floatformat:"0g" }} <small>FCFA</small></b>
+        </div>
+
         {% if enabled %}
-        <h2 class="ct-pay__title">Paiement</h2>
-        <form method="post" class="ct-form" novalidate>
+        <form method="post" class="ct-form wz-form" novalidate
+              data-order-label="{% if kind == 'produit' %}{{ obj.name }} × {{ qty }}{% else %}{{ description }}{% endif %}"
+              data-order-total="{{ amount|floatformat:'0g' }} FCFA">
           {% csrf_token %}
           {% if kind == 'produit' %}<input type="hidden" name="qty" value="{{ qty }}">{% endif %}
           {% include 'payments/_customer_fields.html' %}
-          <button type="submit" class="pp-btn pp-btn--main ct-paybtn" data-pay-submit><i class="fa fa-lock"></i> <span>Payer {{ amount|floatformat:"0g" }} FCFA</span></button>
-          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
         </form>
-        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay</p>
         {% else %}
-        <h2>Paiement en ligne bientôt disponible</h2>
-        <p style="color:var(--bq-ink2)">Commandez dès maintenant sur WhatsApp.</p>
-        {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="margin-top:1rem"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>{% endif %}
+        <div class="wz-off">
+          <p>Paiement en ligne bientôt disponible.</p>
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Commander sur WhatsApp</a>{% endif %}
+        </div>
         {% endif %}
       </div>
 
-      <aside class="ct-box ct-sum">
-        <h2>Votre commande</h2>
-        <div class="ct-sum__item">
-          {% if obj.image %}<img src="{{ obj.image.url }}" alt="">{% endif %}
-          <div><strong>{% if kind == 'produit' %}{{ obj.name }}{% else %}{{ obj.title|default:description }}{% endif %}</strong>
-            <div style="color:var(--bq-muted);font-size:.88rem;margin-top:.2rem">
-              {% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% elif kind == 'produit' %}Quantité : {{ qty }}{% else %}Commande boutique{% endif %}
-              {% if has_file %} · PDF inclus{% endif %}
-            </div>
-          </div>
-        </div>
-        {% if kind == 'boutique' %}
-          {% for it in obj.items.all %}<div class="ct-sum__line"><span>{{ it.product.name }} × {{ it.quantity }}</span><span>{{ it.total_price|floatformat:"0g" }} FCFA</span></div>{% endfor %}
-        {% endif %}
-        <div class="ct-sum__total"><span>Total</span><strong>{{ amount|floatformat:"0g" }} FCFA</strong></div>
-        <div class="ct-methods"><span>Mixx by Yas</span><span>Moov</span><span>MTN</span><span>Wave</span></div>
-      </aside>
+      <div class="wz-foot">
+        <span><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay</span>
+        {% if whatsapp_url and enabled %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Une question ?</a>{% endif %}
+      </div>
     </div>
   </div>
   {% include 'core/_toasts.html' %}

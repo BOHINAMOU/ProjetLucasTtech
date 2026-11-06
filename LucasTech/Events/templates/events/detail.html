@@ -36,7 +36,7 @@
             <h2 style="font-size:1.3rem">Billetterie bientôt ouverte.</h2>
             {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="margin-top:1rem"><i class="fab fa-whatsapp"></i> Être prévenu sur WhatsApp</a>{% endif %}
           {% else %}
-          <form method="post" class="ct-form" novalidate id="ticketForm">
+          <form method="post" class="ct-form wz-form" novalidate id="ticketForm" data-order-label="" data-order-total="">
             {% csrf_token %}
             <h2 style="font-size:1.3rem">Tickets</h2>
             <div>
@@ -49,7 +49,7 @@
                   {% if tt.remaining and tt.remaining <= 10 %}<p style="color:#c46a0c">Plus que {{ tt.remaining }} place{{ tt.remaining|pluralize }}</p>{% endif %}
                 </div>
                 {% if tt.remaining %}
-                <select name="qty_{{ tt.pk }}" data-price="{{ tt.price }}" aria-label="Nombre de tickets {{ tt.name }}">
+                <select name="qty_{{ tt.pk }}" data-price="{{ tt.price }}" data-name="{{ tt.name }}" aria-label="Nombre de tickets {{ tt.name }}">
                   {% for n in tt.choice_range %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
                 </select>
                 {% else %}<span class="soldout">Complet</span>{% endif %}
@@ -58,16 +58,13 @@
             </div>
             <div class="ct-total"><span>Total</span><strong id="ttTotal">0 FCFA</strong></div>
 
-            <div id="buyer" hidden>
-              <h2 style="font-size:1.15rem;margin:.4rem 0 .9rem">Vos coordonnées</h2>
-              <div class="ct-form">{% include 'payments/_customer_fields.html' %}</div>
-            </div>
             {% if enabled %}
-            <button type="submit" class="pp-btn pp-btn--main" id="ttPay" data-pay-submit disabled><i class="fa fa-lock"></i> <span>Choisissez vos tickets</span></button>
+            <p class="wz-pick" id="ttPick">Choisissez vos tickets pour continuer.</p>
+            <div id="buyer" hidden>{% include 'payments/_customer_fields.html' %}</div>
             {% else %}
             <p class="ct-note" style="text-align:left">Réservation sur WhatsApp.</p>
             {% endif %}
-            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>{% endif %}
+            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
             <p class="ct-secure"><i class="fa fa-shield-halved"></i> Sans compte · reçu immédiat · Mobile Money</p>
           </form>
           {% endif %}
@@ -85,15 +82,17 @@
 (function(){
   var form=document.getElementById('ticketForm'); if(!form) return;
   var sel=form.querySelectorAll('select[data-price]'), total=document.getElementById('ttTotal'),
-      buyer=document.getElementById('buyer'), pay=document.getElementById('ttPay');
+      buyer=document.getElementById('buyer'), pick=document.getElementById('ttPick'), pay=document.getElementById('payBtn');
   var prev={}; try{prev=JSON.parse(document.getElementById('ttSelected').textContent)||{};}catch(e){}
   sel.forEach(function(s){var id=s.name.slice(4); if(prev[id]) s.value=prev[id];});
   function fmt(n){return n.toLocaleString('fr-FR').replace(/ | /g,' ');}
   function sync(){
     var sum=0,count=0; sel.forEach(function(s){var q=+s.value; count+=q; sum+=q*(+s.dataset.price);});
     total.textContent=count?(sum?fmt(sum)+' FCFA':'Gratuit'):'0 FCFA';
-    buyer.hidden=!count;
-    if(pay){pay.disabled=!count; pay.querySelector('span').textContent=!count?'Choisissez vos tickets':(sum?'Payer '+fmt(sum)+' FCFA':'Réserver gratuitement');}
+    if(buyer) buyer.hidden=!count; if(pick) pick.hidden=!!count;
+    var parts=[]; sel.forEach(function(s){var q=+s.value; if(q) parts.push(q+' × '+s.dataset.name);});
+    form.dataset.orderLabel=parts.join(', '); form.dataset.orderTotal=sum?fmt(sum)+' FCFA':'Gratuit';
+    if(pay){pay.querySelector('span').textContent=sum?'Payer '+fmt(sum)+' FCFA':'Réserver';}
   }
   sel.forEach(function(s){s.addEventListener('change',sync);}); sync();
   if(Object.keys(prev).length) document.getElementById('tickets').scrollIntoView({block:'start'});

@@ -142,6 +142,7 @@ def checkout(request, kind, pk):
         'form': form, 'obj': obj, 'kind': kind, 'amount': amount, 'description': description, 'qty': qty,
         'back_url': back_url, 'has_file': has_file, 'enabled': fedapay.is_enabled(),
         'mode': fedapay.mode(), 'pay_js': pay_js_data(),
+        'pay_label': f"Payer {amount:,} FCFA".replace(',', ' '),
         'whatsapp_url': whatsapp_link(f"Bonjour, je suis intéressé(e) par : {description} ({amount} FCFA)."),
     })
 

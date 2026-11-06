@@ -1,46 +1,131 @@
-{% if form.non_field_errors %}<div class="ct-errors" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+{% comment %}Paiement en 3 étapes : 1. Coordonnées (ou compte) · 2. Aperçu · 3. Paiement Mobile Money.
+   Le <form> parent porte data-order-label et data-order-total (mis à jour en JS pour les tickets).{% endcomment %}
 {{ form.submission }}
-<h3 class="ct-step"><span>1</span> Vos coordonnées</h3>
-<div class="row">
-  <div class="ct-field"><label for="id_first_name">Prénom</label>{{ form.first_name }}{% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-  <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-</div>
 {% if form.whatsapp.is_hidden %}{{ form.whatsapp }}{% endif %}{% if form.address.is_hidden %}{{ form.address }}{% endif %}
-<div class="row">
-  {% if not form.whatsapp.is_hidden %}<div class="ct-field"><label for="id_whatsapp">WhatsApp</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>{% endif %}
-  <div class="ct-field"><label for="id_email">Email{% if not form.email.field.required %} <small style="color:var(--bq-muted);font-weight:400">(facultatif)</small>{% endif %}</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-</div>
-{% if not form.address.is_hidden %}
-<div class="ct-field"><label for="id_address">Adresse de livraison</label>{{ form.address }}{% for e in form.address.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-{% endif %}
 
-{% if form.has_account_choice %}
-<div class="ct-field">
-  <div class="ct-choice" id="accChoice">{% for r in form.account %}<label>{{ r.tag }} <span>{{ r.choice_label }}</span></label>{% endfor %}</div>
-  <span class="help">Déjà client ? <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" style="color:var(--bq-green);font-weight:600">Se connecter</a></span>
-</div>
-<div class="row" id="accPwd">
-  <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-  <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-</div>
-{% elif user.is_authenticated %}
-<p class="ct-note" style="text-align:left;margin-top:0"><i class="fa fa-user-check"></i> {{ user.email }}</p>
-{% endif %}
+<ol class="wz-steps" aria-label="Étapes">
+  <li data-wz-dot="1" class="is-on"><span>1</span><em>Coordonnées</em></li>
+  <li data-wz-dot="2"><span>2</span><em>Aperçu</em></li>
+  <li data-wz-dot="3"><span>3</span><em>Paiement</em></li>
+</ol>
 
-<h3 class="ct-step"><span>2</span> Mobile Money</h3>
-<div class="row">
-  <div class="ct-field"><label for="id_country">Pays</label>{{ form.country }}{% for e in form.country.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-  <div class="ct-field"><label for="id_operator">Opérateur</label>{{ form.operator }}{% for e in form.operator.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-</div>
-<div class="ct-field"><label for="id_phone">Numéro à débiter</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}<span class="help">Vous validerez avec votre code secret.</span></div>
+{% if form.non_field_errors %}<div class="ct-errors" role="alert" data-wz-error="3">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+<!-- ── Étape 1 : coordonnées ── -->
+<section class="wz-panel" data-wz="1">
+  {% if form.has_account_choice %}
+  <div class="wz-seg" id="accChoice" role="radiogroup" aria-label="Compte">
+    {% for r in form.account %}<label>{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}
+  </div>
+  {% elif user.is_authenticated %}
+  <p class="wz-user"><i class="fa fa-circle-user"></i> {{ user.email }}</p>
+  {% endif %}
+
+  <div class="row">
+    <div class="ct-field"><label for="id_first_name">Prénom</label>{{ form.first_name }}{% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  </div>
+  <div class="row">
+    {% if not form.whatsapp.is_hidden %}<div class="ct-field"><label for="id_whatsapp">WhatsApp</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>{% endif %}
+    <div class="ct-field"><label for="id_email">Email{% if not form.email.field.required %} <small>(facultatif)</small>{% endif %}</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  </div>
+  {% if not form.address.is_hidden %}
+  <div class="ct-field"><label for="id_address">Adresse de livraison</label>{{ form.address }}{% for e in form.address.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  {% endif %}
+  {% if form.has_account_choice %}
+  <div class="row" id="accPwd">
+    <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  </div>
+  <p class="wz-hint">Déjà client ? <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}">Se connecter</a></p>
+  {% endif %}
+  <button type="button" class="pp-btn pp-btn--main wz-next" data-wz-go="2">Continuer <i class="fa fa-arrow-right"></i></button>
+</section>
+
+<!-- ── Étape 2 : aperçu ── -->
+<section class="wz-panel" data-wz="2" hidden>
+  <div class="wz-review">
+    <div class="wz-review__order"><span data-rv="label"></span><strong data-rv="total"></strong></div>
+    <dl>
+      <div><dt>Nom</dt><dd data-rv="name"></dd></div>
+      <div data-rv-row="whatsapp"><dt>WhatsApp</dt><dd data-rv="whatsapp"></dd></div>
+      <div data-rv-row="email"><dt>Email</dt><dd data-rv="email"></dd></div>
+      <div data-rv-row="address"><dt>Livraison</dt><dd data-rv="address"></dd></div>
+      <div data-rv-row="account"><dt>Compte</dt><dd data-rv="account"></dd></div>
+    </dl>
+  </div>
+  <button type="button" class="pp-btn pp-btn--main wz-next" data-wz-go="3">Tout est correct <i class="fa fa-arrow-right"></i></button>
+  <button type="button" class="wz-back" data-wz-go="1"><i class="fa fa-pen"></i> Modifier</button>
+</section>
+
+<!-- ── Étape 3 : paiement ── -->
+<section class="wz-panel" data-wz="3" hidden>
+  <div class="row">
+    <div class="ct-field"><label for="id_country">Pays</label>{{ form.country }}{% for e in form.country.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    <div class="ct-field"><label for="id_operator">Opérateur</label>{{ form.operator }}{% for e in form.operator.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  </div>
+  <div class="ct-field"><label for="id_phone">Numéro à débiter</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <button type="submit" class="pp-btn pp-btn--main ct-paybtn" id="payBtn" data-pay-submit><i class="fa fa-lock"></i> <span>{{ pay_label|default:"Payer" }}</span></button>
+  <p class="wz-hint wz-center">Vous validerez sur votre téléphone avec votre code secret.</p>
+  <button type="button" class="wz-back" data-wz-go="2"><i class="fa fa-arrow-left"></i> Retour</button>
+</section>
 
 {{ pay_js|json_script:"payJs" }}
 <script>
 (function(){
   var cfg={}; try{cfg=JSON.parse(document.getElementById('payJs').textContent)||{};}catch(e){}
-  var box=document.getElementById('accChoice'),pwd=document.getElementById('accPwd');
-  if(box&&pwd){var sync=function(){var c=box.querySelector('input:checked');pwd.style.display=(c&&c.value==='create')?'':'none';};box.addEventListener('change',sync);sync();}
-  var country=document.querySelector('[data-pay-country]'),op=document.querySelector('[data-pay-operator]'),ph=document.querySelector('[data-pay-phone]');
+  var payBtn=document.getElementById('payBtn'); if(!payBtn) return;
+  var form=payBtn.form, panels=form.querySelectorAll('.wz-panel'), dots=form.querySelectorAll('[data-wz-dot]');
+  var $=function(id){return document.getElementById(id);};
+
+  // Compte : mots de passe seulement si « Créer un compte »
+  var acc=$('accChoice'), pwd=$('accPwd');
+  function creating(){var c=acc&&acc.querySelector('input:checked');return !!(c&&c.value==='create');}
+  function syncAcc(){ if(pwd) pwd.style.display=creating()?'':'none'; }
+  if(acc){acc.addEventListener('change',syncAcc);} syncAcc();
+
+  function show(n){
+    panels.forEach(function(p){p.hidden=(p.dataset.wz!=String(n));});
+    dots.forEach(function(d){var k=+d.dataset.wzDot;d.classList.toggle('is-on',k===n);d.classList.toggle('is-done',k<n);});
+    if(n===2) review();
+    var top=form.getBoundingClientRect().top+window.scrollY-110; if(window.scrollY>top) window.scrollTo({top:top,behavior:'smooth'});
+  }
+  function valid(n){
+    var ok=true, panel=form.querySelector('[data-wz="'+n+'"]');
+    panel.querySelectorAll('.err.js').forEach(function(e){e.remove();});
+    panel.querySelectorAll('input:not([type=hidden]):not([type=radio]),select').forEach(function(el){
+      if(el.offsetParent===null) return;
+      var need=el.required||(creating()&&/password/.test(el.name));
+      var bad=(need&&!el.value.trim())||(el.type==='email'&&el.value&&!/^\S+@\S+\.\S+$/.test(el.value));
+      if(el.name==='password2'&&creating()&&el.value!==$('id_password1').value) bad=true;
+      if(bad){ok=false;var s=document.createElement('span');s.className='err js';
+        s.textContent=el.name==='password2'&&el.value?'Les mots de passe ne correspondent pas.':(el.type==='email'&&el.value?'Email invalide.':'Champ obligatoire.');
+        el.parentNode.appendChild(s);}
+    });
+    if(!ok){var f=panel.querySelector('.err.js');if(f)f.previousElementSibling&&f.previousElementSibling.focus&&f.previousElementSibling.focus();}
+    return ok;
+  }
+  function val(id){var el=$(id);return el&&el.type!=='hidden'?el.value.trim():'';}
+  function review(){
+    var set=function(k,v){var el=form.querySelector('[data-rv="'+k+'"]');if(el)el.textContent=v;var r=form.querySelector('[data-rv-row="'+k+'"]');if(r)r.hidden=!v;};
+    set('label',form.dataset.orderLabel||''); set('total',form.dataset.orderTotal||'');
+    set('name',(val('id_first_name')+' '+val('id_last_name')).trim());
+    set('whatsapp',val('id_whatsapp')); set('email',val('id_email')); set('address',val('id_address'));
+    set('account',acc?(creating()?'Nouveau compte':'Sans compte'):'');
+  }
+  form.querySelectorAll('[data-wz-go]').forEach(function(b){b.addEventListener('click',function(){
+    var to=+b.dataset.wzGo, cur=+b.closest('.wz-panel').dataset.wz;
+    if(to>cur&&!valid(cur)) return; show(to);});});
+  // Entrée dans un champ : passer à l'étape suivante au lieu d'envoyer
+  form.addEventListener('keydown',function(e){ if(e.key!=='Enter'||e.target.tagName==='TEXTAREA') return;
+    var p=e.target.closest('.wz-panel'); if(p&&p.dataset.wz!=='3'){e.preventDefault();var n=p.querySelector('[data-wz-go]');if(n)n.click();}});
+
+  // Erreurs renvoyées par le serveur : ouvrir la bonne étape
+  var start=1; if(form.querySelector('[data-wz="3"] .err')||form.querySelector('[data-wz-error]')) start=3;
+  if(form.querySelector('[data-wz="1"] .err')) start=1; show(start);
+
+  // Mobile Money : opérateurs du pays choisi, opérateur deviné d'après le numéro (Togo)
+  var country=form.querySelector('[data-pay-country]'),op=form.querySelector('[data-pay-operator]'),ph=form.querySelector('[data-pay-phone]');
   if(country&&op){
     var owner={};(op.dataset.countries||'').split(',').forEach(function(x){var a=x.split(':');owner[a[0]]=a[1];});
     var filter=function(){var c=country.value;
@@ -50,13 +135,15 @@
       if(ops.length===1)op.value=ops[0].value;
       if(ph&&cfg.examples)ph.placeholder='Ex. '+(cfg.examples[c]||'');};
     country.addEventListener('change',filter);filter();
-    if(ph)ph.addEventListener('input',function(){ if(country.value!=='tg'||!cfg.tg)return;
+    if(ph){ form.querySelectorAll('[data-wz-go="3"]').forEach(function(b){b.addEventListener('click',function(){
+        var w=$('id_whatsapp'); if(!ph.value&&w&&w.value){ph.value=w.value;ph.dispatchEvent(new Event('input'));}});});
+      ph.addEventListener('input',function(){ if(country.value!=='tg'||!cfg.tg)return;
       var d=ph.value.replace(/\D/g,''); if(d.indexOf('00')===0)d=d.slice(2); if(d.length===11&&d.indexOf('228')===0)d=d.slice(3);
-      var p=d.slice(0,2); for(var m in cfg.tg){ if(cfg.tg[m].indexOf(p)>-1) op.value=m; } });
+      var p=d.slice(0,2); for(var m in cfg.tg){ if(cfg.tg[m].indexOf(p)>-1) op.value=m; } }); }
   }
   // Bouton « Paiement en cours… » (et pas de double envoi)
-  var f=(ph||country)&&(ph||country).form;
-  if(f)f.addEventListener('submit',function(){var b=f.querySelector('[data-pay-submit]');if(!b)return;
-    setTimeout(function(){b.disabled=true;b.classList.add('is-loading');b.querySelector('span').textContent='Paiement en cours…';},0);});
+  form.addEventListener('submit',function(e){
+    if(!valid(3)){e.preventDefault();return;}
+    setTimeout(function(){payBtn.disabled=true;payBtn.classList.add('is-loading');payBtn.querySelector('span').textContent='Paiement en cours…';},0);});
 })();
 </script>
