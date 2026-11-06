@@ -23,7 +23,8 @@ class Payment(models.Model):
     KIND_CHOICES = [
         ('service', 'Service'),
         ('formation', 'Formation'),
-        ('shop', 'Commande boutique'),
+        ('shop', 'Commande boutique (panier)'),
+        ('product', 'Produit de la boutique'),
         ('ticket', "Tickets d'événement"),
     ]
     STATUS_CHOICES = [
@@ -46,7 +47,11 @@ class Payment(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="Prénom")
     last_name = models.CharField(max_length=100, verbose_name="Nom")
     phone = models.CharField(max_length=30, verbose_name="Téléphone")
-    email = models.EmailField(verbose_name="Email")
+    email = models.EmailField(blank=True, verbose_name="Email")
+    whatsapp = models.CharField(max_length=30, blank=True, verbose_name="WhatsApp")
+    address = models.CharField(max_length=255, blank=True, verbose_name="Adresse de livraison")
+    operator = models.CharField(max_length=20, blank=True, verbose_name="Opérateur Mobile Money")
+    failure_reason = models.CharField(max_length=255, blank=True, verbose_name="Motif de l'échec")
 
     service = models.ForeignKey('Services.Service', on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='payments', verbose_name="Service")
@@ -54,6 +59,8 @@ class Payment(models.Model):
                                   related_name='payments', verbose_name="Formation")
     shop_order = models.ForeignKey('Shop.ShopOrder', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='payments', verbose_name="Commande boutique")
+    product = models.ForeignKey('Shop.Product', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='payments', verbose_name="Produit")
     event = models.ForeignKey('Events.Event', on_delete=models.SET_NULL, null=True, blank=True,
                               related_name='payments', verbose_name="Événement")
     items = models.JSONField(default=list, blank=True, verbose_name="Détail",
@@ -84,17 +91,27 @@ class Payment(models.Model):
         return f"{self.first_name} {self.last_name}".strip()
 
     @property
+    def operator_label(self):
+        from .mobile_money import operator_label
+        return operator_label(self.operator)
+
+    @property
+    def phone_display(self):
+        from .mobile_money import pretty
+        return pretty(self.phone)
+
+    @property
     def is_paid(self):
         return self.status == 'approved'
 
     @property
-    def product(self):
+    def sold_item(self):
         return self.service or self.formation
 
     @property
     def downloadable_file(self):
         """Le PDF livré après paiement (service ou formation), s'il existe."""
-        obj = self.product
+        obj = self.sold_item
         f = getattr(obj, 'file', None) if obj else None
         return f if f else None
 

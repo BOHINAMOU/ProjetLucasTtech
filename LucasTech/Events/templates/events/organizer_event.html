@@ -26,26 +26,37 @@
           <tbody>{% for t in types %}<tr><td>{{ t.tt.name }}</td><td>{{ t.tt.price|floatformat:"0g" }}</td><td>{{ t.sold }} / {{ t.tt.quantity }}</td><td>{{ t.left }}</td><td>{{ t.revenue|floatformat:"0g" }} FCFA</td></tr>{% endfor %}</tbody>
         </table>
       </div>
-      <form method="post" class="ct-box ct-form">
-        {% csrf_token %}
+      <div class="ct-box ct-form">
         <h2>Contrôle à l'entrée</h2>
-        <div class="ct-field"><label for="code">Code du ticket</label><input id="code" name="code" placeholder="Ex : 3FA9C21B" autocomplete="off" autocapitalize="characters" required></div>
-        <button class="pp-btn pp-btn--main" type="submit"><i class="fa fa-check"></i> Valider l'entrée</button>
-        <p class="ct-note">Chaque code ne peut être validé qu'une seule fois.</p>
-      </form>
+        <form method="get" class="ct-field" style="display:flex;gap:.5rem">
+          <input name="q" value="{{ q }}" placeholder="Nom, numéro, code ou référence du reçu" autocomplete="off" aria-label="Rechercher un acheteur" style="flex:1">
+          <button class="bq-btn bq-btn--dark" type="submit"><i class="fa fa-magnifying-glass"></i></button>
+        </form>
+        {% if q %}
+          {% for t in found %}
+          <div class="ct-tt" style="padding:.7rem 0">
+            <div><h3>{{ t.holder_name }}</h3><p>{{ t.ticket_type.name }} · <code>{{ t.code }}</code> · {{ t.payment.whatsapp|default:t.payment.phone }}</p></div>
+            {% if t.used_at %}<span class="ct-badge ct-badge--wait">Déjà entré · {{ t.used_at|date:"H\hi" }}</span>
+            {% else %}<form method="post">{% csrf_token %}<input type="hidden" name="ticket" value="{{ t.pk }}"><button class="bq-btn bq-btn--green" type="submit"><i class="fa fa-check"></i> Faire entrer</button></form>{% endif %}
+          </div>
+          {% empty %}<p class="ct-note" style="text-align:left">Aucun ticket trouvé pour « {{ q }} ».</p>{% endfor %}
+        {% else %}
+        <p class="ct-note" style="text-align:left">L'acheteur montre son reçu ou donne son nom : cherchez-le ici, puis validez son entrée. Chaque ticket ne sert qu'une fois.</p>
+        {% endif %}
+      </div>
     </div>
 
     <section class="pp-section">
       <h2>Acheteurs</h2>
       <div class="ct-box ct-table-wrap">
         <table class="ct-table">
-          <thead><tr><th>Date</th><th>Nom</th><th>Contact</th><th>Tickets</th><th>Montant</th></tr></thead>
+          <thead><tr><th>Date</th><th>Nom</th><th>Téléphone / WhatsApp</th><th>Tickets</th><th>Montant</th></tr></thead>
           <tbody>
           {% for p in payments %}
             <tr>
               <td>{{ p.paid_at|default:p.created_at|date:"d/m H\hi" }}</td>
               <td>{{ p.full_name }}</td>
-              <td>{{ p.phone }}<br><small style="color:var(--bq-muted)">{{ p.email }}</small></td>
+              <td><a href="tel:{{ p.phone }}">{{ p.phone_display }}</a>{% if p.whatsapp and p.whatsapp != p.phone %}<br><a href="https://wa.me/{{ p.whatsapp|cut:'+'|cut:' ' }}" target="_blank" rel="noopener" style="color:#128c4a"><i class="fab fa-whatsapp"></i> {{ p.whatsapp }}</a>{% endif %}{% if p.email %}<br><small style="color:var(--bq-muted)">{{ p.email }}</small>{% endif %}</td>
               <td>{% for t in p.tickets.all %}<code>{{ t.code }}</code> {{ t.ticket_type.name }}{% if t.used_at %} ✓{% endif %}<br>{% endfor %}</td>
               <td>{{ p.amount|floatformat:"0g" }} FCFA</td>
             </tr>

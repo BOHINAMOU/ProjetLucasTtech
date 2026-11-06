@@ -28,3 +28,4 @@ sqlparse==0.5.5
 urllib3==2.6.3
 whitenoise==6.12.0
 phonenumbers==9.0.41
+fpdf2==2.8.4

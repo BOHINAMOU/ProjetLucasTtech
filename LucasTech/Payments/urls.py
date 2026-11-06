@@ -10,5 +10,7 @@ urlpatterns = [
     path('retour/<str:reference>/', views.callback, name='callback'),
     path('recu/<str:reference>/', views.result, name='result'),
     path('recu/<str:reference>/fichier/', views.download, name='download'),
+    path('recu/<str:reference>/statut/', views.status, name='status'),
+    path('recu/<str:reference>/pdf/', views.receipt, name='receipt'),
     path('demo/<str:reference>/', views.demo, name='demo'),
 ]

@@ -187,3 +187,34 @@
   .bq { background: #fff; }
   .ct-ticket { break-inside: avoid; border: 1px solid #ccc; }
 }
+
+/* ── Étapes du formulaire de paiement ── */
+.ct-step { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; font-weight: 700; margin: .6rem 0 .1rem; }
+.ct-step span { width: 26px; height: 26px; border-radius: 50%; background: var(--bq-green); color: #fff; display: grid; place-items: center; font-size: .82rem; }
+
+/* Bouton qui tourne pendant l'envoi */
+.pp-btn.is-loading { opacity: .9; cursor: progress; }
+.pp-btn.is-loading i { display: none; }
+.pp-btn.is-loading::before {
+  content: ''; width: 18px; height: 18px; border-radius: 50%;
+  border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; animation: ctSpin .8s linear infinite;
+}
+@keyframes ctSpin { to { transform: rotate(360deg); } }
+
+/* ── Écran « Paiement en cours » ── */
+.pay-wait { text-align: center; background: #fff; border-radius: 28px; padding: clamp(1.6rem, 5vw, 2.8rem); }
+.pay-wait h1 { font-size: clamp(1.5rem, 3.4vw, 2rem); margin-top: .4rem; }
+.pay-orbit { position: relative; width: 120px; height: 120px; margin: 0 auto 1.2rem; }
+.pay-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid rgba(15,122,69,.15); border-top-color: var(--bq-green); animation: ctSpin 1.1s linear infinite; }
+.pay-ring-2 { inset: 14px; border-top-color: transparent; border-bottom-color: #7fe0ae; animation-duration: 1.6s; animation-direction: reverse; }
+.pay-phone { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.2rem; color: var(--bq-green); }
+.pay-progress { font-weight: 700; color: var(--bq-green); letter-spacing: .02em; }
+.pay-dots i { font-style: normal; animation: ctDot 1.2s infinite; }
+.pay-dots i:nth-child(2) { animation-delay: .2s; } .pay-dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes ctDot { 0%, 60%, 100% { opacity: .2; } 30% { opacity: 1; } }
+.pay-summary { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; margin: 1.2rem 0; }
+.pay-summary div { background: #f5f7f6; border-radius: 14px; padding: .6rem 1rem; min-width: 120px; }
+.pay-summary span { display: block; font-size: .78rem; color: var(--bq-muted); }
+.pay-summary b { font-size: 1rem; }
+.pay-steps { text-align: left; max-width: 420px; margin: 0 auto; padding-left: 1.2rem; line-height: 1.8; color: var(--bq-ink2); }
+@media (prefers-reduced-motion: reduce) { .pay-ring, .pay-dots i, .pp-btn.is-loading::before { animation: none; } }

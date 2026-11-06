@@ -6,9 +6,9 @@ from .models import Payment
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ['reference', 'description', 'full_name', 'phone', 'amount', 'status', 'mode', 'created_at']
+    list_display = ['reference', 'description', 'full_name', 'phone', 'whatsapp', 'operator', 'amount', 'status', 'mode', 'created_at']
     list_filter = ['status', 'kind', 'mode']
-    search_fields = ['reference', 'description', 'first_name', 'last_name', 'email', 'phone', 'fedapay_id']
+    search_fields = ['reference', 'description', 'first_name', 'last_name', 'email', 'phone', 'whatsapp', 'fedapay_id']
     readonly_fields = [f.name for f in Payment._meta.fields]
     actions = ['verify_with_fedapay']
 

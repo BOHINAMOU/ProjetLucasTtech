@@ -1,13 +1,20 @@
-{% if form.non_field_errors %}<div class="ct-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+{% if form.non_field_errors %}<div class="ct-errors" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+{{ form.submission }}
+<h3 class="ct-step"><span>1</span> Vos informations</h3>
 <div class="row">
   <div class="ct-field"><label for="id_first_name">Prénom</label>{{ form.first_name }}{% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
   <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
 </div>
+{% if form.whatsapp.is_hidden %}{{ form.whatsapp }}{% endif %}{% if form.address.is_hidden %}{{ form.address }}{% endif %}
 <div class="row">
-  <div class="ct-field"><label for="id_phone">Téléphone</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-  <div class="ct-field"><label for="id_email">Email</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  {% if not form.whatsapp.is_hidden %}<div class="ct-field"><label for="id_whatsapp"><i class="fab fa-whatsapp" style="color:#128c4a"></i> Numéro WhatsApp</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}<span class="help">Nous vous appelons ou écrivons sur ce numéro.</span></div>{% endif %}
+  <div class="ct-field"><label for="id_email">Email{% if not form.email.field.required %} <small style="color:var(--bq-muted);font-weight:400">(facultatif)</small>{% endif %}</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}{% if form.email.help_text %}<span class="help">{{ form.email.help_text }}</span>{% endif %}</div>
 </div>
-{% if form.account %}
+{% if not form.address.is_hidden %}
+<div class="ct-field"><label for="id_address">Adresse de livraison</label>{{ form.address }}{% for e in form.address.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+{% endif %}
+
+{% if form.has_account_choice %}
 <div class="ct-field">
   <label>Compte</label>
   <div class="ct-choice" id="accChoice">{% for r in form.account %}<label>{{ r.tag }} <span>{{ r.choice_label }}</span></label>{% endfor %}</div>
@@ -17,11 +24,40 @@
   <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
   <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
 </div>
-<script>
-(function(){var box=document.getElementById('accChoice'),pwd=document.getElementById('accPwd');if(!box||!pwd)return;
-function sync(){var c=box.querySelector('input:checked');pwd.style.display=(c&&c.value==='create')?'':'none';}
-box.addEventListener('change',sync);sync();})();
-</script>
-{% else %}
+{% elif user.is_authenticated %}
 <p class="ct-note" style="text-align:left;margin-top:0"><i class="fa fa-user-check"></i> Connecté : {{ user.email }}. L'achat sera ajouté à votre compte.</p>
 {% endif %}
+
+<h3 class="ct-step"><span>2</span> Paiement Mobile Money</h3>
+<div class="row">
+  <div class="ct-field"><label for="id_country">Pays</label>{{ form.country }}{% for e in form.country.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <div class="ct-field"><label for="id_operator">Moyen de paiement</label>{{ form.operator }}{% for e in form.operator.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+</div>
+<div class="ct-field"><label for="id_phone">Numéro Mobile Money</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}<span class="help">{{ form.phone.help_text }}</span></div>
+
+{{ pay_js|json_script:"payJs" }}
+<script>
+(function(){
+  var cfg={}; try{cfg=JSON.parse(document.getElementById('payJs').textContent)||{};}catch(e){}
+  var box=document.getElementById('accChoice'),pwd=document.getElementById('accPwd');
+  if(box&&pwd){var sync=function(){var c=box.querySelector('input:checked');pwd.style.display=(c&&c.value==='create')?'':'none';};box.addEventListener('change',sync);sync();}
+  var country=document.querySelector('[data-pay-country]'),op=document.querySelector('[data-pay-operator]'),ph=document.querySelector('[data-pay-phone]');
+  if(country&&op){
+    var owner={};(op.dataset.countries||'').split(',').forEach(function(x){var a=x.split(':');owner[a[0]]=a[1];});
+    var filter=function(){var c=country.value;
+      Array.prototype.forEach.call(op.options,function(o){o.hidden=o.disabled=!!o.value&&owner[o.value]!==c;});
+      if(op.selectedOptions[0]&&op.selectedOptions[0].disabled)op.value='';
+      var ops=Array.prototype.filter.call(op.options,function(o){return o.value&&!o.disabled;});
+      if(ops.length===1)op.value=ops[0].value;
+      if(ph&&cfg.examples)ph.placeholder='Ex. '+(cfg.examples[c]||'');};
+    country.addEventListener('change',filter);filter();
+    if(ph)ph.addEventListener('input',function(){ if(country.value!=='tg'||!cfg.tg)return;
+      var d=ph.value.replace(/\D/g,''); if(d.indexOf('00')===0)d=d.slice(2); if(d.length===11&&d.indexOf('228')===0)d=d.slice(3);
+      var p=d.slice(0,2); for(var m in cfg.tg){ if(cfg.tg[m].indexOf(p)>-1) op.value=m; } });
+  }
+  // Bouton « Paiement en cours… » (et pas de double envoi)
+  var f=(ph||country)&&(ph||country).form;
+  if(f)f.addEventListener('submit',function(){var b=f.querySelector('[data-pay-submit]');if(!b)return;
+    setTimeout(function(){b.disabled=true;b.classList.add('is-loading');b.querySelector('span').textContent='Paiement en cours…';},0);});
+})();
+</script>

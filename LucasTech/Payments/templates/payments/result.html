@@ -1,5 +1,5 @@
 {% extends 'core/base.html' %}
-{% block title %}{% if p.is_paid %}Paiement confirmé{% else %}Paiement {{ p.reference }}{% endif %} — Lantante Technologie{% endblock %}
+{% block title %}{% if p.is_paid %}Paiement confirmé{% elif p.status == 'pending' %}Paiement en cours{% else %}Paiement {{ p.reference }}{% endif %} — Lantante Technologie{% endblock %}
 {% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
 
 {% block content %}
@@ -9,23 +9,32 @@
       {% if p.is_paid %}
         <div class="ct-result__icon ok"><i class="fa fa-check"></i></div>
         <h1>Merci {{ p.first_name }}, paiement confirmé.</h1>
-        <p class="lead">{{ p.description }} · <strong>{{ p.amount|floatformat:"0g" }} FCFA</strong> · référence {{ p.reference }}.
-          Un reçu a été envoyé à {{ p.email }}.</p>
+        <p class="lead">{{ p.description }} · <strong>{{ p.amount|floatformat:"0g" }} FCFA</strong> · référence {{ p.reference }}.</p>
 
-        {% if has_file %}
+        {% url 'payments:receipt' p.reference as receipt_url %}
         <div class="ct-box" style="margin-top:1.4rem">
+          {% if has_file %}
           <h2><i class="fa fa-file-pdf" style="color:var(--bq-green)"></i> Votre document</h2>
           <p style="color:var(--bq-ink2)">Le téléchargement démarre automatiquement. Sinon, cliquez ici :</p>
           <a href="{% url 'payments:download' p.reference %}?t={{ p.access_token }}" class="pp-btn pp-btn--main" id="dlBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le PDF</a>
-          <p class="ct-note">Gardez l'email reçu : son lien permet de télécharger à nouveau le document.</p>
+          <a href="{{ receipt_url }}?t={{ p.access_token }}&telecharger=1" class="pp-btn pp-btn--alt"><i class="fa fa-receipt"></i> Télécharger le reçu</a>
+          {% else %}
+          <h2><i class="fa fa-receipt" style="color:var(--bq-green)"></i> Votre reçu</h2>
+          <p style="color:var(--bq-ink2)">Votre reçu a été téléchargé automatiquement. Conservez-le{% if p.kind == 'ticket' %} : il vous sera demandé à l'entrée{% else %} : il vous sera demandé en cas de réclamation{% endif %}.</p>
+          <a href="{{ receipt_url }}?t={{ p.access_token }}&telecharger=1" class="pp-btn pp-btn--main" id="rcBtn" style="margin-top:1rem"><i class="fa fa-download"></i> Télécharger le reçu (PDF)</a>
+          <a href="{{ receipt_url }}?t={{ p.access_token }}" target="_blank" rel="noopener" class="pp-btn pp-btn--alt"><i class="fa fa-eye"></i> Voir le reçu</a>
+          {% endif %}
         </div>
-        {% endif %}
 
-        {% if tickets %}
-        <div class="ct-noprint" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
-          <button type="button" class="ct-pill ct-pill--green" onclick="window.print()"><i class="fa fa-print"></i> Imprimer / enregistrer en PDF</button>
-          {% if p.event %}<a href="{{ p.event.get_absolute_url }}" class="ct-pill" style="background:#fff;color:var(--bq-ink)">Voir l'événement</a>{% endif %}
+        {% if p.kind == 'ticket' %}
+        <div class="ct-box" style="margin-top:1rem">
+          <h2>Et maintenant ?</h2>
+          <ul class="ct-learn">
+            <li>Nous vous appelons au <strong>{{ p.whatsapp|default:p.phone_display }}</strong> pour la livraison de vos tickets.</li>
+            <li>Le jour de l'événement, présentez votre reçu ou donnez simplement votre nom à l'entrée.</li>
+          </ul>
         </div>
+        {% if tickets %}
         <div class="ct-tickets">
           {% for t in tickets %}
           <div class="ct-ticket">
@@ -34,34 +43,51 @@
               <p><i class="fa fa-calendar"></i> {{ t.event.starts_at|date:"l j F Y à H\hi" }} · <i class="fa fa-location-dot"></i> {{ t.event.location }}</p>
               <p>{{ t.ticket_type.name }} · {{ t.holder_name }}</p>
               <code>{{ t.code }}</code>
-              {% if t.used_at %}<p><span class="ct-badge ct-badge--wait">Déjà validé à l'entrée</span></p>{% endif %}
             </div>
             <div class="qr" data-code="{{ t.code }}"></div>
           </div>
           {% endfor %}
         </div>
-        <p class="ct-note">Présentez le code (ou le QR) à l'entrée. Chaque ticket n'est valable qu'une fois.</p>
-        {% elif not has_file %}
-        <p class="lead">Notre équipe vous contacte très vite au {{ p.phone }} pour la suite.</p>
+        {% endif %}
+        {% elif p.kind == 'product' or p.kind == 'shop' %}
+        <p class="lead" style="margin-top:1rem">Nous vous appelons au <strong>{{ p.whatsapp|default:p.phone_display }}</strong> pour la livraison{% if p.address %} ({{ p.address }}){% endif %}.</p>
         {% endif %}
 
       {% elif p.status == 'pending' %}
-        <div class="ct-result__icon wait"><i class="fa fa-hourglass-half"></i></div>
-        <h1>Paiement en cours de vérification…</h1>
-        <p class="lead">Si vous avez validé le paiement sur votre téléphone, cette page se met à jour toute seule dans quelques secondes.</p>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
-          {% if p.payment_url %}<a href="{{ p.payment_url }}" class="ct-pill ct-pill--green">Reprendre le paiement</a>{% endif %}
-          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill" style="background:#fff;color:#128c4a"><i class="fab fa-whatsapp"></i> Besoin d'aide</a>{% endif %}
+        <div class="pay-wait" role="status" aria-live="polite">
+          <div class="pay-orbit" aria-hidden="true"><span class="pay-ring"></span><span class="pay-ring pay-ring-2"></span><span class="pay-phone"><i class="fa fa-mobile-screen-button"></i></span></div>
+          <p class="pay-progress">Paiement en cours<span class="pay-dots"><i>.</i><i>.</i><i>.</i></span></p>
+          <h1>Validez le paiement sur votre téléphone</h1>
+          <div class="pay-summary">
+            <div><span>Montant</span><b>{{ p.amount|floatformat:"0g" }} FCFA</b></div>
+            <div><span>Numéro</span><b>{{ p.phone_display }}</b></div>
+            {% if p.operator_label %}<div><span>Moyen</span><b>{{ p.operator_label }}</b></div>{% endif %}
+          </div>
+          {% if direct %}
+          <ol class="pay-steps">
+            <li>Un message {{ p.operator_label|default:"Mobile Money" }} s'affiche sur votre téléphone.</li>
+            <li>Saisissez votre <strong>code secret</strong> pour confirmer.</li>
+            <li>Restez sur cette page : elle se met à jour toute seule.</li>
+          </ol>
+          {% if ussd %}<p class="ct-note">Pas de message ? Composez <strong>{{ ussd }}</strong> puis ouvrez vos paiements en attente.</p>{% endif %}
+          {% elif p.payment_url %}
+          <p class="lead">Terminez le paiement sur la page sécurisée FedaPay, puis revenez ici.</p>
+          <a href="{{ p.payment_url }}" class="ct-pill ct-pill--green" style="margin-top:1rem">Ouvrir la page de paiement</a>
+          {% endif %}
+          <p class="ct-note" data-payment-status="{% url 'payments:status' p.reference %}?t={{ p.access_token }}">Réf. {{ p.reference }}</p>
+          <p class="ct-note" data-payment-slow hidden>Toujours en attente ? Sans validation sur le téléphone, la demande expire et <strong>aucun montant n'est débité</strong>.
+            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" style="color:var(--bq-green)">Besoin d'aide ?</a>{% endif %}</p>
         </div>
       {% else %}
         <div class="ct-result__icon ko"><i class="fa fa-xmark"></i></div>
         <h1>Le paiement n'a pas abouti.</h1>
-        <p class="lead">Aucun montant n'a été débité. Vous pouvez réessayer, ou nous écrire sur WhatsApp.</p>
+        <p class="lead">{{ p.failure_reason|default:"Aucun montant n'a été débité. Vous pouvez réessayer." }}</p>
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
           {% if p.service %}<a href="{% url 'payments:checkout' 'service' p.service.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
           {% elif p.formation %}<a href="{% url 'payments:checkout' 'formation' p.formation.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
+          {% elif p.product %}<a href="{% url 'payments:checkout' 'produit' p.product.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
           {% elif p.event %}<a href="{{ p.event.get_absolute_url }}" class="ct-pill ct-pill--green">Réessayer</a>
-          {% elif p.shop_order %}<a href="{% url 'shop:payment' p.shop_order.pk %}" class="ct-pill ct-pill--green">Réessayer</a>{% endif %}
+          {% elif p.shop_order %}<a href="{% url 'payments:checkout' 'boutique' p.shop_order.pk %}" class="ct-pill ct-pill--green">Réessayer</a>{% endif %}
           {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill" style="background:#fff;color:#128c4a"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
         </div>
       {% endif %}
@@ -75,10 +101,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>document.querySelectorAll('.qr[data-code]').forEach(function(el){try{new QRCode(el,{text:el.dataset.code,width:208,height:208,correctLevel:QRCode.CorrectLevel.M});}catch(e){}});</script>
 {% endif %}
-{% if auto_download %}
-<script>setTimeout(function(){var b=document.getElementById('dlBtn');if(b)window.location.href=b.href;},900);</script>
+{% if p.is_paid %}
+<script>
+(function(){
+  var b=document.getElementById('{% if auto_file %}dlBtn{% else %}rcBtn{% endif %}'); if(!b) return;
+  var key='ltdl-{{ p.reference }}';
+  try{ if(sessionStorage.getItem(key)) return; sessionStorage.setItem(key,'1'); }catch(e){}
+  setTimeout(function(){ var a=document.createElement('a'); a.href=b.href; a.download=''; document.body.appendChild(a); a.click(); a.remove(); },700);
+})();
+</script>
 {% endif %}
 {% if p.status == 'pending' %}
-<script>(function(){var n=+(sessionStorage.getItem('ltPoll{{ p.reference }}')||0);if(n<24){sessionStorage.setItem('ltPoll{{ p.reference }}',n+1);setTimeout(function(){location.reload();},5000);}})();</script>
+<script>
+(function(){
+  var el=document.querySelector('[data-payment-status]'); if(!el) return; var tries=0;
+  function poll(){ tries++;
+    fetch(el.dataset.paymentStatus,{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      if(d.status!=='pending') return location.reload(); next(); }).catch(next); }
+  function next(){ if(tries===36){var s=document.querySelector('[data-payment-slow]'); if(s) s.hidden=false;}
+    setTimeout(poll, tries<180?5000:30000); }
+  setTimeout(poll,4000);
+})();
+</script>
 {% endif %}
 {% endblock %}

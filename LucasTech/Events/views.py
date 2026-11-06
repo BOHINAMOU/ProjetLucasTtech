@@ -9,7 +9,7 @@ from django.utils import timezone
 from Payments import fedapay, services as pay_services
 from Payments.forms import CustomerForm
 from Payments.models import Payment
-from Payments.views import _remember, begin_payment, whatsapp_link
+from Payments.views import _remember, begin_payment, pay_js_data, whatsapp_link
 
 from .models import Event, Ticket, TicketType
 
@@ -44,7 +44,7 @@ def _selection(request, event):
 
 def event_detail(request, slug):
     event = get_object_or_404(Event.objects.prefetch_related('ticket_types'), slug=slug, is_published=True)
-    form = CustomerForm(request.POST or None, user=request.user)
+    form = CustomerForm(request.POST or None, user=request.user, purpose='ticket')
     selected = {}
     if request.method == 'POST' and not event.is_past:
         selected = {k[4:]: v for k, v in request.POST.items() if k.startswith('qty_')}
@@ -75,7 +75,7 @@ def event_detail(request, slug):
                     return response
     return render(request, 'events/detail.html', {
         'event': event, 'form': form, 'selected': selected, 'enabled': fedapay.is_enabled(),
-        'mode': fedapay.mode(),
+        'mode': fedapay.mode(), 'pay_js': pay_js_data(),
         'whatsapp_url': whatsapp_link(f"Bonjour, je souhaite des tickets pour « {event.title} »."),
     })
 
@@ -106,17 +106,27 @@ def organizer_home(request):
 def organizer_event(request, slug):
     event = get_object_or_404(_my_events(request.user), slug=slug)
     if request.method == 'POST':
-        code = request.POST.get('code', '').strip().upper()
-        ticket = Ticket.objects.filter(event=event, code=code).select_related('ticket_type').first()
+        ticket = Ticket.objects.filter(event=event, pk=request.POST.get('ticket')).select_related('ticket_type').first()
         if not ticket:
-            messages.error(request, f"Ticket {code} introuvable pour cet événement.")
+            messages.error(request, "Ticket introuvable pour cet événement.")
         elif ticket.used_at:
-            messages.error(request, f"Ticket {code} déjà validé le {timezone.localtime(ticket.used_at):%d/%m à %H:%M}.")
+            messages.error(request, f"Ticket {ticket.code} déjà utilisé le {timezone.localtime(ticket.used_at):%d/%m à %H:%M}.")
         else:
             ticket.used_at = timezone.now()
             ticket.save(update_fields=['used_at'])
-            messages.success(request, f"✓ Ticket {code} valide ({ticket.ticket_type.name}, {ticket.holder_name}).")
-        return redirect('events:organizer_event', slug=slug)
+            messages.success(request, f"✓ Entrée validée : {ticket.holder_name} ({ticket.ticket_type.name}, {ticket.code}).")
+        return redirect(request.get_full_path())
+
+    # Recherche à l'entrée : nom, numéro de téléphone / WhatsApp, code du ticket ou référence du reçu
+    q = request.GET.get('q', '').strip()
+    found = []
+    if q:
+        digits = ''.join(c for c in q if c.isdigit())
+        cond = (Q(code__iexact=q) | Q(holder_name__icontains=q) | Q(payment__reference__iexact=q)
+                | Q(payment__first_name__icontains=q) | Q(payment__last_name__icontains=q))
+        if len(digits) >= 6:
+            cond |= Q(payment__phone__contains=digits[-8:]) | Q(payment__whatsapp__contains=digits[-8:])
+        found = event.tickets.filter(cond).select_related('ticket_type', 'payment').order_by('holder_name', 'code')[:50]
 
     types = []
     for tt in event.ticket_types.all():
@@ -128,4 +138,5 @@ def organizer_event(request, slug):
         'event': event, 'types': types, 'payments': payments,
         'revenue': sum(t['revenue'] for t in types), 'sold': sum(t['sold'] for t in types),
         'used': event.tickets.filter(used_at__isnull=False).count(),
+        'q': q, 'found': found,
     })

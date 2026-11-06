@@ -5,14 +5,15 @@ import urllib.parse
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
-from django.http import FileResponse, Http404, HttpResponse, HttpResponseBadRequest
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from core.models import SiteSettings
 
-from . import fedapay, services
+from . import fedapay, mobile_money, services
 from .forms import CustomerForm
 from .models import Payment
 
@@ -56,22 +57,30 @@ def _get_visible(request, reference):
 
 
 def begin_payment(request, form, **fields):
-    """Crée le paiement à partir d'un CustomerForm valide et redirige vers la page de paiement.
-    Renvoie une réponse redirect, ou None si FedaPay a refusé (message déjà ajouté)."""
+    """Crée le paiement à partir d'un CustomerForm valide et lance la demande Mobile Money.
+    Renvoie une redirection, ou None si le paiement a été refusé (le message est ajouté au formulaire)."""
+    sub = form.cleaned_data.get('submission') or ''
+    done = request.session.get('lt_pay_submissions', {})
+    if sub and sub in done:  # double clic / renvoi du formulaire : on ne crée pas un 2e paiement
+        p = Payment.objects.filter(reference=done[sub]).first()
+        if p:
+            return redirect(p.get_absolute_url())
     user = form.create_account_if_asked()
     if user and not request.user.is_authenticated:
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        messages.success(request, "✓ Votre compte est créé, vous êtes connecté.")
     payment = Payment.objects.create(user=user, **form.payment_fields(), **fields)
     _remember(request, payment)
     try:
         url = services.start(request, payment)
-    except fedapay.FedaPayError:
+    except fedapay.FedaPayError as exc:
         payment.status = 'canceled'
-        payment.save(update_fields=['status'])
-        messages.error(request, "Le paiement en ligne n'a pas pu démarrer. Réessayez dans un instant "
-                                "ou contactez-nous sur WhatsApp.")
+        payment.failure_reason = str(exc)[:255]
+        payment.save(update_fields=['status', 'failure_reason'])
+        form.add_error(None, str(exc))
         return None
+    if sub:
+        done[sub] = payment.reference
+        request.session['lt_pay_submissions'] = dict(list(done.items())[-20:])
     return redirect(url)
 
 
@@ -94,6 +103,20 @@ def _target(request, kind, pk):
             raise Http404
         return obj, int(obj.price), f"Formation : {obj.title}", {'kind': 'formation', 'formation': obj}, \
             obj.get_absolute_url()
+    if kind == 'produit':
+        from Shop.models import Product
+        obj = get_object_or_404(Product, pk=pk, is_available=True)
+        try:
+            qty = int(request.POST.get('qty') or request.GET.get('qty') or 1)
+        except ValueError:
+            qty = 1
+        qty = max(1, min(qty, obj.stock or 1))
+        unit = obj.bulk_price if (obj.bulk_price and qty >= obj.bulk_min_qty) else obj.price
+        amount = int(unit) * qty
+        desc = f"{obj.name} × {qty}" if qty > 1 else obj.name
+        return obj, amount, desc, {'kind': 'product', 'product': obj,
+                                   'items': [{'product': obj.pk, 'name': obj.name, 'quantity': qty,
+                                              'price': int(unit)}]},             reverse('shop:product_detail', args=[obj.pk])
     if kind == 'boutique':
         from Shop.models import ShopOrder
         if not request.user.is_authenticated:
@@ -106,18 +129,29 @@ def _target(request, kind, pk):
 
 def checkout(request, kind, pk):
     obj, amount, description, link_fields, back_url = _target(request, kind, pk)
-    form = CustomerForm(request.POST or None, user=request.user)
+    if kind == 'produit' and not obj.stock:
+        raise Http404
+    form = CustomerForm(request.POST or None, user=request.user, purpose=kind)
     if request.method == 'POST' and fedapay.is_enabled() and form.is_valid():
         response = begin_payment(request, form, amount=amount, description=description, **link_fields)
         if response:
             return response
     has_file = bool(getattr(obj, 'file', None))
+    qty = link_fields.get('items', [{}])[0].get('quantity', 1) if kind == 'produit' else 1
     return render(request, 'payments/checkout.html', {
-        'form': form, 'obj': obj, 'kind': kind, 'amount': amount, 'description': description,
+        'form': form, 'obj': obj, 'kind': kind, 'amount': amount, 'description': description, 'qty': qty,
         'back_url': back_url, 'has_file': has_file, 'enabled': fedapay.is_enabled(),
-        'mode': fedapay.mode(),
+        'mode': fedapay.mode(), 'pay_js': pay_js_data(),
         'whatsapp_url': whatsapp_link(f"Bonjour, je suis intéressé(e) par : {description} ({amount} FCFA)."),
     })
+
+
+def pay_js_data():
+    """Exemples de numéros et préfixes des opérateurs togolais, pour le formulaire (JS)."""
+    return {
+        'examples': {c: v['example'] for c, v in mobile_money.COUNTRIES.items()},
+        'tg': {m: list(p) for m, (c, _l, p) in mobile_money.OPERATORS.items() if c == 'tg'},
+    }
 
 
 # ─────────────────────────────────────────────
@@ -137,11 +171,33 @@ def result(request, reference):
     services.refresh(p)
     tickets = p.tickets.select_related('ticket_type') if p.kind == 'ticket' else []
     return render(request, 'payments/result.html', {
-        'p': p, 'tickets': tickets,
+        'p': p, 'tickets': tickets, 'ussd': mobile_money.USSD.get(p.operator, ''),
+        'direct': p.operator in mobile_money.DIRECT_MODES and not p.payment_url,
         'has_file': bool(p.downloadable_file),
-        'auto_download': p.is_paid and bool(p.downloadable_file) and request.GET.get('dl') != '0',
+        'auto_file': p.is_paid and bool(p.downloadable_file),
+        'auto_receipt': p.is_paid and not p.downloadable_file,
         'whatsapp_url': whatsapp_link(f"Bonjour, paiement {p.reference} ({p.description})."),
     })
+
+
+def status(request, reference):
+    p = _get_visible(request, reference)
+    if p.status == 'pending':
+        services.refresh(p)
+    return JsonResponse({'status': p.status})
+
+
+def receipt(request, reference):
+    """Reçu PDF d'un paiement réussi. ?telecharger=1 force le téléchargement."""
+    from .receipt import build_receipt
+    p = _get_visible(request, reference)
+    if not p.is_paid:
+        raise Http404
+    resp = HttpResponse(build_receipt(p), content_type='application/pdf')
+    mode = 'attachment' if request.GET.get('telecharger') else 'inline'
+    resp['Content-Disposition'] = f'{mode}; filename="recu-{p.reference}.pdf"'
+    resp['Cache-Control'] = 'private, no-store'
+    return resp
 
 
 def download(request, reference):

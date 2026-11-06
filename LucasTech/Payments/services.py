@@ -15,29 +15,31 @@ logger = logging.getLogger(__name__)
 
 
 def start(request, payment):
-    """Envoie le client vers la page de paiement (FedaPay ou démo). Renvoie l'URL ou lève FedaPayError."""
+    """Lance le paiement et renvoie l'URL où envoyer le client :
+    - paiement direct : la page d'attente du site (« Paiement en cours, validez sur votre téléphone ») ;
+    - opérateur sans paiement direct : la page FedaPay ;
+    - démo locale (sans clés) : la page de simulation. Lève FedaPayError en cas de refus."""
     payment.mode = fedapay.mode()
+    payment.save(update_fields=['mode'])
     if payment.mode == 'demo':
-        payment.save()
         return reverse('payments:demo', args=[payment.reference]) + f'?t={payment.access_token}'
     callback = request.build_absolute_uri(reverse('payments:callback', args=[payment.reference]))
-    tx_id, url = fedapay.create_transaction(payment, callback)
-    payment.fedapay_id = tx_id
-    payment.payment_url = url
-    payment.save()
-    return url
+    url = fedapay.start(payment, callback)
+    return url or payment.get_absolute_url()
 
 
 def refresh(payment):
     """Relit le statut chez FedaPay et livre si payé. Renvoie le paiement à jour."""
     if payment.status != 'pending' or not payment.fedapay_id or payment.mode == 'demo':
         return payment
-    status = fedapay.transaction_status(payment.fedapay_id)
+    status = fedapay.transaction_status(payment)
     if status in fedapay.PAID_STATUSES:
         mark_paid(payment)
     elif status in fedapay.FAILED_STATUSES:
         Payment.objects.filter(pk=payment.pk, status='pending').update(
-            status='canceled' if status == 'canceled' else 'declined')
+            status='canceled' if status == 'canceled' else 'declined',
+            failure_reason="Le paiement n'a pas été validé sur le téléphone (refusé, annulé ou expiré). "
+                           "Aucun montant n'a été débité.")
         _release(payment)
     payment.refresh_from_db()
     return payment
@@ -68,6 +70,17 @@ def _fulfill(p):
     elif p.kind == 'shop' and p.shop_order_id:
         from Shop.models import ShopOrder
         ShopOrder.objects.filter(pk=p.shop_order_id).update(status='paid', payment_method='fedapay')
+    elif p.kind == 'product' and p.product_id:
+        from Shop.models import Product, ShopOrder, ShopOrderItem
+        qty = sum(int(i.get('quantity') or 0) for i in p.items) or 1
+        Product.objects.filter(pk=p.product_id, stock__gte=qty).update(stock=F('stock') - qty)
+        if p.user_id:
+            order = ShopOrder.objects.create(
+                user_id=p.user_id, total_price=p.amount, status='paid', payment_method='fedapay',
+                cash_delivery_name=p.full_name, cash_delivery_phone=p.whatsapp or p.phone,
+                cash_delivery_message=p.address)
+            ShopOrderItem.objects.create(order=order, product_id=p.product_id, quantity=qty,
+                                         price=p.amount // qty)
     elif p.kind == 'ticket' and p.event_id:
         from Events.services import issue_tickets
         issue_tickets(p)
@@ -79,6 +92,8 @@ def _release(payment):
 
 
 def _send_confirmation(p):
+    if not p.email:
+        return
     try:
         site = getattr(settings, 'SITE_URL', '').rstrip('/') or 'https://lantantetechnologie.com'
         link = site + p.get_absolute_url()
@@ -86,7 +101,11 @@ def _send_confirmation(p):
                 f"Nous avons bien reçu votre paiement de {p.amount:,} FCFA pour : {p.description}.\n"
                 f"Référence : {p.reference}\n\n").replace(',', ' ')
         if p.kind == 'ticket':
-            body += f"Vos tickets sont disponibles ici :\n{link}\n\n"
+            body += (f"Votre reçu et vos tickets :\n{link}\n\n"
+                     "L'organisateur vous appellera pour la livraison des tickets. Le jour J, présentez ce reçu "
+                     "ou donnez votre nom à l'entrée.\n\n")
+        elif p.kind in ('product', 'shop'):
+            body += f"Votre reçu :\n{link}\n\nNous vous appelons très vite pour la livraison.\n\n"
         elif p.downloadable_file:
             body += f"Téléchargez votre document ici (lien personnel) :\n{link}\n\n"
         else:

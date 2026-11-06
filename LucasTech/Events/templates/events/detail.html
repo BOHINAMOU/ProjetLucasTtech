@@ -63,12 +63,12 @@
               <div class="ct-form">{% include 'payments/_customer_fields.html' %}</div>
             </div>
             {% if enabled %}
-            <button type="submit" class="pp-btn pp-btn--main" id="ttPay" disabled><i class="fa fa-lock"></i> <span>Choisissez vos tickets</span></button>
+            <button type="submit" class="pp-btn pp-btn--main" id="ttPay" data-pay-submit disabled><i class="fa fa-lock"></i> <span>Choisissez vos tickets</span></button>
             {% else %}
             <p class="ct-note" style="text-align:left">Le paiement en ligne n'est pas encore activé : réservez sur WhatsApp.</p>
             {% endif %}
             {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>{% endif %}
-            <p class="ct-note"><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay (Mobile Money ou carte). Vos tickets s'affichent et partent par email dès le paiement validé.</p>
+            <p class="ct-note"><i class="fa fa-shield-halved"></i> Pas besoin de compte. Vous validez le paiement sur votre téléphone, votre reçu se télécharge aussitôt, puis nous vous appelons pour la livraison des tickets. Le jour J, montrez le reçu ou donnez votre nom.</p>
           </form>
           {% endif %}
         </div>

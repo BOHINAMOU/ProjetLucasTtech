@@ -89,28 +89,26 @@
         </div>
 
         {% if product.stock > 0 %}
-          {% if request.user.is_authenticated %}
-          <form method="post" action="{% url 'shop:add_to_cart' product.pk %}" id="ppForm">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.path }}">
+          <form method="get" action="{% url 'payments:checkout' 'produit' product.pk %}" id="ppForm">
             <div class="pp-qty">
               <label for="ppQty">Quantité</label>
               <div class="pp-step">
                 <button type="button" data-step="-1" aria-label="Moins">−</button>
-                <input id="ppQty" type="number" name="quantity" min="1" max="{{ product.stock }}" value="1" inputmode="numeric">
+                <input id="ppQty" type="number" name="qty" min="1" max="{{ product.stock }}" value="1" inputmode="numeric">
                 <button type="button" data-step="1" aria-label="Plus">+</button>
               </div>
             </div>
-            <button type="submit" class="pp-btn pp-btn--main" id="ppAdd"><i class="fa fa-bag-shopping"></i> Ajouter au panier</button>
-            <button type="submit" name="buy_now" value="1" class="pp-btn pp-btn--alt"><i class="fa fa-bolt"></i> Acheter maintenant</button>
+            <button type="submit" class="pp-btn pp-btn--main" id="ppAdd"><i class="fa fa-lock"></i> Payer</button>
           </form>
-          <a href="{% url 'shop:cart' %}" class="pp-cartlink">Voir mon panier</a>
-          {% else %}
-          <div style="margin-top:1.3rem;">
-            <a href="{% url 'users:login' %}?next={{ request.path }}" class="pp-btn pp-btn--main" id="ppAdd"><i class="fa fa-bag-shopping"></i> Ajouter au panier</a>
-            <p style="text-align:center;font-size:.85rem;color:var(--bq-muted);margin-top:.6rem;">Connectez-vous pour commander (30 secondes).</p>
-          </div>
+          {% if request.user.is_authenticated %}
+          <form method="post" action="{% url 'shop:add_to_cart' product.pk %}" id="ppCartForm" style="margin-top:.6rem">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <input type="hidden" name="quantity" value="1" id="ppCartQty">
+            <button type="submit" class="pp-btn pp-btn--alt"><i class="fa fa-bag-shopping"></i> Ajouter au panier</button>
+          </form>
           {% endif %}
+          <p class="ct-note" style="font-size:.85rem;color:var(--bq-muted);text-align:center;margin-top:.7rem"><i class="fa fa-shield-halved" style="color:var(--bq-green)"></i> Paiement Mobile Money sur votre téléphone, sans créer de compte. Livraison après paiement.</p>
         {% else %}
           <div class="pp-out">Ce produit revient bientôt. Écrivez-nous pour être prévenu.</div>
         {% endif %}
@@ -211,7 +209,7 @@
 <div class="pp-sticky" id="ppSticky" aria-hidden="true">
   <div><small>{{ product.name }}</small><strong>{{ product.price|floatformat:"0g" }} FCFA</strong></div>
   {% if product.stock > 0 %}
-  <button type="button" class="pp-btn pp-btn--main" id="ppStickyBtn" tabindex="-1"><i class="fa fa-bag-shopping"></i> Ajouter</button>
+  <button type="button" class="pp-btn pp-btn--main" id="ppStickyBtn" tabindex="-1"><i class="fa fa-lock"></i> Payer</button>
   {% endif %}
 </div>
 
@@ -253,6 +251,7 @@
       var v = (parseInt(qty.value, 10) || 1) + parseInt(b.dataset.step, 10);
       var max = parseInt(qty.max, 10) || 999;
       qty.value = Math.max(1, Math.min(max, v));
+      var cq = document.getElementById('ppCartQty'); if (cq) cq.value = qty.value;
     });
   });
 
