@@ -988,3 +988,5 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ══ DIVIDER ══ */
 .divider { border: none; border-top: 1px solid var(--border); }
+/* Logo : nom seul, sur une ligne */
+.brand-name { white-space: nowrap; }
