@@ -49,6 +49,7 @@ class Payment(models.Model):
     phone = models.CharField(max_length=30, verbose_name="Téléphone")
     email = models.EmailField(blank=True, verbose_name="Email")
     whatsapp = models.CharField(max_length=30, blank=True, verbose_name="WhatsApp")
+    city = models.CharField(max_length=255, blank=True, verbose_name="Localité")
     address = models.CharField(max_length=255, blank=True, verbose_name="Adresse de livraison")
     operator = models.CharField(max_length=20, blank=True, verbose_name="Opérateur Mobile Money")
     failure_reason = models.CharField(max_length=255, blank=True, verbose_name="Motif de l'échec")

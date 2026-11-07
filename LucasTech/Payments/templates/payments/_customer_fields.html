@@ -1,7 +1,7 @@
 {% comment %}Paiement en 3 étapes : 1. Coordonnées (ou compte) · 2. Aperçu · 3. Paiement Mobile Money.
    Le <form> parent porte data-order-label et data-order-total (mis à jour en JS pour les tickets).{% endcomment %}
 {{ form.submission }}
-{% if form.whatsapp.is_hidden %}{{ form.whatsapp }}{% endif %}{% if form.address.is_hidden %}{{ form.address }}{% endif %}
+
 
 <ol class="wz-steps" aria-label="Étapes">
   <li data-wz-dot="1" class="is-on"><span>1</span><em>Coordonnées</em></li>
@@ -26,19 +26,19 @@
     <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
   </div>
   <div class="row">
-    {% if not form.whatsapp.is_hidden %}<div class="ct-field"><label for="id_whatsapp">WhatsApp</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>{% endif %}
-    <div class="ct-field"><label for="id_email">Email{% if not form.email.field.required %} <small>(facultatif)</small>{% endif %}</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    <div class="ct-field"><label for="id_whatsapp">{{ form.whatsapp.label }}</label>{{ form.whatsapp }}{% for e in form.whatsapp.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    <div class="ct-field"><label for="id_city">{{ form.city.label }}</label>{{ form.city }}{% for e in form.city.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
   </div>
-  {% if not form.address.is_hidden %}
-  <div class="ct-field"><label for="id_address">Adresse de livraison</label>{{ form.address }}{% for e in form.address.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-  {% endif %}
   {% if form.has_account_choice %}
-  <div class="row" id="accPwd">
-    <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
-    <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+  <div class="wz-account" id="accPwd">
+    <div class="ct-field"><label for="id_email">Email</label>{{ form.email }}{% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    <div class="row">
+      <div class="ct-field"><label for="id_password1">Mot de passe</label>{{ form.password1 }}{% for e in form.password1.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+      <div class="ct-field"><label for="id_password2">Confirmer</label>{{ form.password2 }}{% for e in form.password2.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+    </div>
   </div>
   <p class="wz-hint">Déjà client ? <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}">Se connecter</a></p>
-  {% endif %}
+  {% else %}{{ form.email.as_hidden }}{% endif %}
   <button type="button" class="pp-btn pp-btn--main wz-next" data-wz-go="2">Continuer <i class="fa fa-arrow-right"></i></button>
 </section>
 
@@ -48,9 +48,9 @@
     <div class="wz-review__order"><span data-rv="label"></span><strong data-rv="total"></strong></div>
     <dl>
       <div><dt>Nom</dt><dd data-rv="name"></dd></div>
-      <div data-rv-row="whatsapp"><dt>WhatsApp</dt><dd data-rv="whatsapp"></dd></div>
+      <div data-rv-row="whatsapp"><dt>Numéro</dt><dd data-rv="whatsapp"></dd></div>
       <div data-rv-row="email"><dt>Email</dt><dd data-rv="email"></dd></div>
-      <div data-rv-row="address"><dt>Livraison</dt><dd data-rv="address"></dd></div>
+      <div data-rv-row="address"><dt>Localité</dt><dd data-rv="address"></dd></div>
       <div data-rv-row="account"><dt>Compte</dt><dd data-rv="account"></dd></div>
     </dl>
   </div>
@@ -110,7 +110,7 @@
     panel.querySelectorAll('.err.js').forEach(function(e){e.remove();});
     panel.querySelectorAll('input:not([type=hidden]):not([type=radio]),select').forEach(function(el){
       if(el.offsetParent===null) return;
-      var need=el.required||(creating()&&/password/.test(el.name));
+      var need=el.required||(creating()&&/password|email/.test(el.name));
       var bad=(need&&!el.value.trim())||(el.type==='email'&&el.value&&!/^\S+@\S+\.\S+$/.test(el.value));
       if(el.name==='password2'&&creating()&&el.value!==$('id_password1').value) bad=true;
       var tErr=TELS.indexOf(el)>-1&&el.value.trim()?telError(el):''; if(tErr) bad=true;
@@ -126,7 +126,7 @@
     var set=function(k,v){var el=form.querySelector('[data-rv="'+k+'"]');if(el)el.textContent=v;var r=form.querySelector('[data-rv-row="'+k+'"]');if(r)r.hidden=!v;};
     set('label',form.dataset.orderLabel||''); set('total',form.dataset.orderTotal||'');
     set('name',(val('id_first_name')+' '+val('id_last_name')).trim());
-    set('whatsapp',val('id_whatsapp')); set('email',val('id_email')); set('address',val('id_address'));
+    set('whatsapp',val('id_whatsapp')); set('address',val('id_city')); set('email',creating()?val('id_email'):'');
     set('account',acc?(creating()?'Nouveau compte':'Sans compte'):'');
   }
   form.querySelectorAll('[data-wz-go]').forEach(function(b){b.addEventListener('click',function(){

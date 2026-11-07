@@ -111,8 +111,8 @@ def build_receipt(p):
         row("WhatsApp", p.whatsapp)
     if p.email:
         row("Email", p.email)
-    if p.address:
-        row("Livraison", p.address)
+    if p.city:
+        row("Localité", p.city)
 
     if p.kind == "ticket" and p.event:
         ev = p.event

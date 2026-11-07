@@ -23,13 +23,21 @@ class CustomerForm(forms.Form):
     - produit : adresse de livraison + WhatsApp ;
     - service / formation : email obligatoire (lien de téléchargement), compte au choix."""
 
-    first_name = forms.CharField(label="Prénom", max_length=100)
-    last_name = forms.CharField(label="Nom", max_length=100)
-    email = forms.EmailField(label="Email", required=False)
-    whatsapp = forms.CharField(label="Numéro WhatsApp", max_length=30, required=False,
-                               widget=forms.TextInput(attrs={'inputmode': 'tel', 'placeholder': 'Ex. 90 00 00 00'}))
-    address = forms.CharField(label="Adresse de livraison", max_length=255, required=False,
-                              widget=forms.TextInput(attrs={'placeholder': 'Quartier, ville, repère'}))
+    first_name = forms.CharField(label="Prénom", max_length=100,
+                                 widget=forms.TextInput(attrs={'autocomplete': 'given-name'}))
+    last_name = forms.CharField(label="Nom", max_length=100,
+                                widget=forms.TextInput(attrs={'autocomplete': 'family-name'}))
+    whatsapp = forms.CharField(label="Numéro (WhatsApp)", max_length=30,
+                               error_messages={'required': "Saisissez votre numéro."},
+                               widget=forms.TextInput(attrs={'inputmode': 'tel', 'autocomplete': 'tel-national',
+                                                             'placeholder': 'Ex. 90 00 00 00'}))
+    city = forms.CharField(label="Localité", max_length=255,
+                           error_messages={'required': "Indiquez votre localité."},
+                           widget=forms.TextInput(attrs={'autocomplete': 'address-level2',
+                                                         'placeholder': 'Ville, quartier'}))
+    email = forms.EmailField(label="Email", required=False,
+                             widget=forms.EmailInput(attrs={'autocomplete': 'email'}))
+    address = forms.CharField(required=False, widget=forms.HiddenInput)
 
     country = forms.ChoiceField(label="Pays", choices=mobile_money.COUNTRY_CHOICES,
                                 initial=mobile_money.DEFAULT_COUNTRY,
@@ -46,8 +54,10 @@ class CustomerForm(forms.Form):
 
     account = forms.ChoiceField(label="Compte", choices=ACCOUNT_CHOICES, initial='guest',
                                 widget=forms.RadioSelect, required=False)
-    password1 = forms.CharField(label="Mot de passe", required=False, widget=forms.PasswordInput)
-    password2 = forms.CharField(label="Confirmer le mot de passe", required=False, widget=forms.PasswordInput)
+    password1 = forms.CharField(label="Mot de passe", required=False,
+                                widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    password2 = forms.CharField(label="Confirmer le mot de passe", required=False,
+                                widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
     submission = forms.CharField(required=False, widget=forms.HiddenInput)
 
     def __init__(self, *args, user=None, purpose='service', **kwargs):
@@ -59,25 +69,16 @@ class CustomerForm(forms.Form):
         self.fields['operator'].widget.attrs['data-countries'] = ",".join(
             f"{m}:{c}" for m, (c, _l, _p) in mobile_money.OPERATORS.items())
 
-        if purpose == 'ticket':
-            self.fields['whatsapp'].required = True
-            self.fields['email'].help_text = ""
-        elif purpose == 'produit':
-            self.fields['whatsapp'].required = True
-            self.fields['address'].required = True
-            self.fields['email'].help_text = ""
-        else:
-            self.fields['email'].required = True
-            self.fields['email'].help_text = "Votre reçu et votre lien de téléchargement y seront envoyés."
-            self.fields['whatsapp'].widget = forms.HiddenInput()
-        if purpose != 'produit':
-            self.fields['address'].widget = forms.HiddenInput()
+        if purpose == 'produit':
+            self.fields['city'].label = "Localité (livraison)"
+            self.fields['city'].widget.attrs['placeholder'] = 'Ville, quartier, repère'
         if self.user or purpose == 'ticket':
             for name in ('account', 'password1', 'password2'):
                 self.fields.pop(name)
         if self.user and not self.is_bound:
             self.initial.update({'first_name': self.user.first_name, 'last_name': self.user.last_name,
-                                 'email': self.user.email, 'whatsapp': self.user.phone or ''})
+                                 'email': self.user.email, 'whatsapp': self.user.phone or '',
+                                 'city': self.user.city or ''})
         if not self.is_bound:
             self.initial.setdefault('submission', uuid.uuid4().hex)
 
@@ -104,7 +105,7 @@ class CustomerForm(forms.Form):
         if self.has_account_choice and data.get('account') == 'create':
             email = (data.get('email') or '').strip()
             if not email:
-                self.add_error('email', "L'email est nécessaire pour créer un compte.")
+                self.add_error('email', "L'email est obligatoire pour créer un compte.")
             elif User.objects.filter(email__iexact=email).exists():
                 self.add_error('email', "Un compte existe déjà avec cet email : connectez-vous, "
                                         "ou choisissez « Continuer sans compte ».")
@@ -127,7 +128,8 @@ class CustomerForm(forms.Form):
             return None
         d = self.cleaned_data
         return User.objects.create_user(email=d['email'], password=d['password1'], first_name=d['first_name'],
-                                        last_name=d['last_name'], phone=d['phone'], account_type='member')
+                                        last_name=d['last_name'], phone=d.get('whatsapp') or d['phone'],
+                                        city=(d.get('city') or '')[:100], account_type='member')
 
     def payment_fields(self):
         d = self.cleaned_data
@@ -135,5 +137,6 @@ class CustomerForm(forms.Form):
             'first_name': d['first_name'].strip(), 'last_name': d['last_name'].strip(),
             'email': (d.get('email') or '').strip(), 'phone': d['phone'],
             'whatsapp': (d.get('whatsapp') or '').strip() or d['phone'],
-            'address': (d.get('address') or '').strip(), 'operator': d['operator'],
+            'city': (d.get('city') or '').strip(), 'operator': d['operator'],
+            'address': (d.get('city') or '').strip() if self.purpose == 'produit' else '',
         }
