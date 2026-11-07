@@ -96,6 +96,11 @@ class Payment(models.Model):
         return operator_label(self.operator)
 
     @property
+    def operator_short(self):
+        """« Mixx by Yas (ex T-Money) » -> « Mixx by Yas »."""
+        return self.operator_label.split(' (')[0]
+
+    @property
     def phone_display(self):
         from .mobile_money import pretty
         return pretty(self.phone)

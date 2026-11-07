@@ -51,25 +51,24 @@
         {% endif %}
 
       {% elif p.status == 'pending' %}
-        <div class="pay-wait" role="status" aria-live="polite">
-          <div class="pay-orbit" aria-hidden="true"><span class="pay-ring"></span><span class="pay-ring pay-ring-2"></span><span class="pay-phone"><i class="fa fa-mobile-screen-button"></i></span></div>
-          <p class="pay-progress">Paiement en cours<span class="pay-dots"><i>.</i><i>.</i><i>.</i></span></p>
-          <h1>Validez sur votre téléphone</h1>
-          <div class="pay-summary">
-            <div><span>Montant</span><b>{{ p.amount|floatformat:"0g" }} FCFA</b></div>
-            <div><span>Numéro</span><b>{{ p.phone_display }}</b></div>
-            {% if p.operator_label %}<div><span>Moyen</span><b>{{ p.operator_label }}</b></div>{% endif %}
+        <div class="pw" role="status" aria-live="polite">
+          <div class="pw-phone" aria-hidden="true">
+            <span class="pw-wave"></span><span class="pw-wave pw-wave--2"></span>
+            <div class="pw-device"><span class="pw-notch"></span><i class="fa fa-lock"></i><span class="pw-bar"></span></div>
           </div>
-          {% if direct %}
-          <p class="lead">Entrez votre <strong>code secret</strong> {{ p.operator_label }}.<br>Cette page se met à jour toute seule.</p>
-          {% if ussd %}<p class="ct-note">Pas de message ? Composez <strong>{{ ussd }}</strong>.</p>{% endif %}
-          {% elif p.payment_url %}
-          <p class="lead">Terminez sur la page FedaPay.</p>
-          <a href="{{ p.payment_url }}" class="ct-pill ct-pill--green" style="margin-top:1rem">Ouvrir la page de paiement</a>
+          <h1>Confirmez sur votre téléphone</h1>
+          <p class="pw-sub">Saisissez votre code secret{% if p.operator_label %} {{ p.operator_short }}{% endif %}.</p>
+          <div class="pw-ticket">
+            <strong>{{ p.amount|floatformat:"0g" }} <small>FCFA</small></strong>
+            <span>{{ p.phone_display }}</span>
+          </div>
+          {% if not direct and p.payment_url %}
+          <a href="{{ p.payment_url }}" class="ct-pill ct-pill--green" style="margin-top:1.2rem">Ouvrir la page de paiement</a>
           {% endif %}
-          <p class="ct-note" data-payment-status="{% url 'payments:status' p.reference %}?t={{ p.access_token }}">Réf. {{ p.reference }}</p>
-          <p class="ct-note" data-payment-slow hidden>Sans validation, rien n'est débité.
-            {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" style="color:var(--bq-green)">Besoin d'aide ?</a>{% endif %}</p>
+          <div class="pw-live"><span class="pw-dot"></span> En attente de confirmation</div>
+          {% if direct and ussd %}<p class="pw-help">Rien reçu ? Composez <b>{{ ussd }}</b></p>{% endif %}
+          <p class="pw-help" data-payment-slow hidden>Sans confirmation, rien n'est débité.{% if whatsapp_url %} <a href="{{ whatsapp_url }}" target="_blank" rel="noopener">Aide</a>{% endif %}</p>
+          <span class="pw-ref" data-payment-status="{% url 'payments:status' p.reference %}?t={{ p.access_token }}">{{ p.reference }}</span>
         </div>
       {% else %}
         <div class="ct-result__icon ko"><i class="fa fa-xmark"></i></div>
