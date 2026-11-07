@@ -49,7 +49,7 @@
             {% elif formation.formation_type == 'inscription' %}
               <a href="{% url 'formations:formation_register' formation.pk %}" class="pp-btn pp-btn--main">S'inscrire</a>
             {% elif formation.can_pay_online %}
-              <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Payer en ligne</a>
+              <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Acheter la formation</a>
             {% endif %}
             {% if site_settings.whatsapp_1 %}
             <a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je suis intéressé(e) par la formation : '|urlencode }}{{ formation.title|urlencode }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>
@@ -85,7 +85,7 @@
   {% if formation.can_pay_online and not has_purchased %}
   <div class="pp-sticky" id="ppSticky">
     <div><strong>{{ formation.price|floatformat:"0g" }} FCFA</strong><small>{{ formation.title }}</small></div>
-    <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main">Payer</a>
+    <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main">Acheter</a>
   </div>
   {% endif %}
   {% include 'core/_toasts.html' %}
