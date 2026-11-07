@@ -84,6 +84,21 @@
   function syncAcc(){ if(pwd) pwd.style.display=creating()?'':'none'; }
   if(acc){acc.addEventListener('change',syncAcc);} syncAcc();
 
+  // Numéros (Mobile Money, WhatsApp) : chiffres, espaces et « + » au début seulement
+  var TELS=[$('id_phone'),$('id_whatsapp')].filter(function(el){return el&&el.type!=='hidden';});
+  function cleanTel(v){ v=v.replace(/[^\d+ ]/g,''); return (v.charAt(0)==='+'?'+':'')+v.replace(/\+/g,''); }
+  TELS.forEach(function(el){ el.setAttribute('inputmode','tel'); el.setAttribute('maxlength','20');
+    el.addEventListener('input',function(){ var c=cleanTel(el.value); if(c!==el.value){ el.value=c; } }); });
+  function telDigits(v){ var d=(v||'').replace(/\D/g,''); if(d.indexOf('00')===0) d=d.slice(2); return d; }
+  function telError(el){
+    var d=telDigits(el.value); if(!d) return '';
+    if(el.id==='id_phone'){ var c=form.querySelector('[data-pay-country]'), len={tg:[8],bj:[8,10],ci:[10],ne:[8],sn:[9]}[c?c.value:'tg']||[8];
+      var dial={tg:'228',bj:'229',ci:'225',ne:'227',sn:'221'}[c?c.value:'tg'];
+      if(dial&&d.indexOf(dial)===0&&len.indexOf(d.length-dial.length)>-1) d=d.slice(dial.length);
+      return len.indexOf(d.length)>-1?'':'Numéro invalide : '+len.join(' ou ')+' chiffres attendus.'; }
+    return d.length>=8&&d.length<=15?'':'Numéro WhatsApp invalide.';
+  }
+
   function show(n){
     panels.forEach(function(p){p.hidden=(p.dataset.wz!=String(n));});
     dots.forEach(function(d){var k=+d.dataset.wzDot;d.classList.toggle('is-on',k===n);d.classList.toggle('is-done',k<n);});
@@ -98,8 +113,9 @@
       var need=el.required||(creating()&&/password/.test(el.name));
       var bad=(need&&!el.value.trim())||(el.type==='email'&&el.value&&!/^\S+@\S+\.\S+$/.test(el.value));
       if(el.name==='password2'&&creating()&&el.value!==$('id_password1').value) bad=true;
+      var tErr=TELS.indexOf(el)>-1&&el.value.trim()?telError(el):''; if(tErr) bad=true;
       if(bad){ok=false;var s=document.createElement('span');s.className='err js';
-        s.textContent=el.name==='password2'&&el.value?'Les mots de passe ne correspondent pas.':(el.type==='email'&&el.value?'Email invalide.':'Champ obligatoire.');
+        s.textContent=tErr||(el.name==='password2'&&el.value?'Les mots de passe ne correspondent pas.':(el.type==='email'&&el.value?'Email invalide.':'Champ obligatoire.'));
         el.parentNode.appendChild(s);}
     });
     if(!ok){var f=panel.querySelector('.err.js');if(f)f.previousElementSibling&&f.previousElementSibling.focus&&f.previousElementSibling.focus();}

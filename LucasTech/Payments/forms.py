@@ -98,8 +98,8 @@ class CustomerForm(forms.Form):
             except forms.ValidationError as exc:
                 self.add_error('operator' if 'opérateur disponible' in ' '.join(exc.messages) else 'phone', exc)
         wa = (data.get('whatsapp') or '').strip()
-        if wa and len(re.sub(r'\D', '', wa)) < 8:
-            self.add_error('whatsapp', "Numéro WhatsApp invalide.")
+        if wa and (not re.fullmatch(r"\+?[0-9 .\-]+", wa) or not 8 <= len(re.sub(r'\D', '', wa)) <= 15):
+            self.add_error('whatsapp', "Numéro WhatsApp invalide : chiffres uniquement.")
 
         if self.has_account_choice and data.get('account') == 'create':
             email = (data.get('email') or '').strip()
