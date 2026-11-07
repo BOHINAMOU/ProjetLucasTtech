@@ -72,8 +72,8 @@
         </div>
       {% else %}
         <div class="ct-result__icon ko"><i class="fa fa-xmark"></i></div>
-        <h1>Paiement non abouti</h1>
-        <p class="lead">{{ p.failure_reason|default:"Rien n'a été débité." }}</p>
+        <h1>Paiement échoué</h1>
+        <p class="lead">Rien n'a été débité.</p>
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.4rem">
           {% if p.service %}<a href="{% url 'payments:checkout' 'service' p.service.pk %}" class="ct-pill ct-pill--green">Réessayer</a>
           {% elif p.formation %}<a href="{% url 'payments:checkout' 'formation' p.formation.pk %}" class="ct-pill ct-pill--green">Réessayer</a>

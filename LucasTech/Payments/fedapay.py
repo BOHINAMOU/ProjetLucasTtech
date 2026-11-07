@@ -59,15 +59,8 @@ def is_enabled():
 
 
 def _amount_message(text):
-    numbers = re.findall(r'\d+', text)
-    if 'maximum' in text.lower() and numbers:
-        limit = f"{int(numbers[-1]):,}".replace(',', ' ')
-        return (f"Ce montant dépasse le plafond autorisé par paiement en ligne ({limit} FCFA pour le moment). "
-                "Contactez-nous sur WhatsApp pour finaliser votre achat.")
-    if 'minimum' in text.lower() and numbers:
-        limit = f"{int(numbers[-1]):,}".replace(',', ' ')
-        return f"Le montant minimum par paiement est de {limit} FCFA."
-    return "Ce montant n'est pas accepté par le service de paiement."
+    # Le vrai motif (plafond FedaPay, etc.) est dans les journaux ; le client voit un message simple.
+    return "Paiement échoué."
 
 
 def _call(method, path, data=None):
@@ -78,10 +71,10 @@ def _call(method, path, data=None):
         r = requests.request(method, url, json=data, headers=headers, timeout=30)
     except requests.Timeout as exc:
         logger.error('FedaPay %s %s : délai dépassé', method, path)
-        raise FedaPayError("Le service de paiement met trop de temps à répondre. Réessayez dans un instant.") from exc
+        raise FedaPayError("Paiement échoué. Réessayez.") from exc
     except requests.RequestException as exc:
         logger.error('FedaPay %s %s : %s', method, path, exc)
-        raise FedaPayError("Le service de paiement est momentanément indisponible.") from exc
+        raise FedaPayError("Paiement échoué. Réessayez.") from exc
     if r.status_code >= 400:
         detail, errors = '', {}
         try:
@@ -94,7 +87,7 @@ def _call(method, path, data=None):
         amount_errors = errors.get('amount') or []
         if r.status_code == 400 and amount_errors:
             raise FedaPayError(_amount_message(str(amount_errors[0])), detail, r.status_code)
-        raise FedaPayError("Le service de paiement est momentanément indisponible.", detail, r.status_code)
+        raise FedaPayError("Paiement échoué. Réessayez.", detail, r.status_code)
     try:
         return r.json()
     except ValueError:
@@ -137,7 +130,7 @@ def start(payment, callback_url):
     })
     tx = _transaction(result)
     if not tx.get('id'):
-        raise FedaPayError("Le paiement n'a pas pu être lancé. Réessayez dans un instant.")
+        raise FedaPayError("Paiement échoué. Réessayez.")
     payment.fedapay_id = str(tx['id'])
     payment.save(update_fields=['fedapay_id'])
     token = _call('POST', f"/transactions/{tx['id']}/token") or {}
@@ -149,14 +142,13 @@ def start(payment, callback_url):
         except FedaPayError as exc:
             if exc.status and 400 <= exc.status < 500:
                 raise FedaPayError(
-                    f"{mobile_money.operator_label(payment.operator)} n'a pas accepté la demande pour le "
-                    f"{mobile_money.pretty(payment.phone)}. Vérifiez le numéro et l'opérateur, puis réessayez.",
+                    "Paiement échoué. Vérifiez le numéro et l'opérateur.",
                     exc.detail, exc.status) from exc
             raise
         return None
     url = token.get('url')
     if not url:
-        raise FedaPayError("Le paiement n'a pas pu être lancé. Réessayez dans un instant.")
+        raise FedaPayError("Paiement échoué. Réessayez.")
     payment.payment_url = url
     payment.save(update_fields=['payment_url'])
     return url
