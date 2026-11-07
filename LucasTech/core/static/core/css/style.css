@@ -994,8 +994,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .navbar__brand { flex-shrink: 0; margin-right: 1.2rem; }
   .brand-name { white-space: nowrap; }
 }
-@media (min-width: 1501px) and (max-width: 1760px) {
+
+/* Menu du haut : liens plus grands, noir net, vert du logo au survol / page active */
+@media (min-width: 1501px) {
+  .navbar__links { gap: .3rem; }
+  .navbar__links > li > a, .navbar__links .nav-dd__btn {
+    font-family: 'Roboto', system-ui, sans-serif !important; font-size: 1.12rem !important; font-weight: 600 !important;
+    color: #1a1d1b !important; padding: .7rem .9rem !important; letter-spacing: 0;
+  }
+  .navbar__links > li > a:hover, .navbar__links .nav-dd__btn:hover, .nav-dd.open .nav-dd__btn,
+  .navbar__links > li > a.active, .navbar__links .nav-dd__btn.active { color: #0f7a45 !important; }
+  .navbar__links .nav-dd__btn i { font-size: .72rem; }
+  .navbar__links .nav-dd__menu a { font-family: 'Roboto', system-ui, sans-serif; font-size: 1.02rem; color: #1a1d1b; }
+  .nav-auth__login { font-family: 'Roboto', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: #fff !important; background: #0f7a45; border-color: #0f7a45 !important; border-radius: 999px; padding: .65rem 1.2rem; }
+  .nav-auth__login:hover { background: #0b6137; }
+}
+.navbar__drawer a, .navbar__drawer .dr-dd__btn { font-family: 'Roboto', system-ui, sans-serif; font-size: 1.15rem; color: #1a1d1b; }
+@media (min-width: 1501px) and (max-width: 1720px) {
   .navbar__links { gap: 0; }
-  .navbar__links a, .nav-dd__btn { padding-left: .55rem !important; padding-right: .55rem !important; font-size: .94rem !important; }
-  .brand-name { font-size: 1.45rem; }
+  .navbar__links > li > a, .navbar__links .nav-dd__btn { font-size: 1.05rem !important; padding: .7rem .62rem !important; }
+  .nav-auth__login { padding: .6rem 1rem; font-size: .95rem; }
 }
