@@ -12,7 +12,7 @@
     <div class="ct-meta">
       <span><i class="fa fa-signal"></i>{{ f.get_level_display }}</span>
       {% if f.duration %}<span><i class="fa fa-clock"></i>{{ f.duration }}</span>{% endif %}
-      {% if f.formation_type == 'numerique' %}<span><i class="fa fa-file-pdf"></i>À télécharger</span>{% elif f.formation_type == 'inscription' %}<span><i class="fab fa-whatsapp"></i>Sur inscription</span>{% endif %}
+      {% if f.file %}<span><i class="fa fa-file-pdf"></i>PDF inclus</span>{% elif f.formation_type == 'inscription' %}<span><i class="fab fa-whatsapp"></i>Sur inscription</span>{% endif %}
     </div>
   </div>
   <div class="bq-card__price">

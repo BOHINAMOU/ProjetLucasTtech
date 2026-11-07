@@ -45,12 +45,11 @@ class FormationAdmin(admin.ModelAdmin):
         ('Type de formation', {
             'fields': ('formation_type',),
             'description': (
-                "• Formation payante en ligne : achat via panier, le client peut ensuite nous "
-                "contacter sur WhatsApp avec la liste de ses formations choisies.<br>"
+                "• Formation payante en ligne : le client paie par Mobile Money sur le site ; si un PDF est ajouté "
+                "ci-dessous, il se télécharge automatiquement juste après le paiement.<br>"
                 "• Inscription par formulaire : le client remplit un formulaire, reçoit un email "
                 "avec le lien du groupe WhatsApp. Voir les inscriptions dans « Inscriptions » ci-dessous.<br>"
-                "• Formation numérique : fichier PDF/Word/Excel téléchargeable une fois la commande "
-                "marquée « Payé » dans Commandes."
+                "• Formation numérique : même fonctionnement, le document est le contenu principal."
             ),
         }),
         ('Informations principales', {
@@ -71,9 +70,11 @@ class FormationAdmin(admin.ModelAdmin):
             'fields': ('whatsapp_group_link',),
             'classes': ('collapse',),
         }),
-        ('Formation numérique à télécharger', {
+        ('Document PDF de la formation', {
             'fields': ('file',),
-            'classes': ('collapse',),
+            'description': "Le PDF remis au client : il se télécharge automatiquement dès que le paiement est validé, "
+                           "et le client reçoit aussi un lien pour le retélécharger. Le fichier reste privé "
+                           "(personne ne peut l'ouvrir sans avoir payé).",
         }),
         ('Publication', {
             'fields': ('is_published', 'is_featured'),

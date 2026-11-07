@@ -36,7 +36,8 @@
           <ul class="ct-facts">
             <li><i class="fa fa-signal"></i>Niveau {{ formation.get_level_display|lower }}</li>
             {% if formation.duration %}<li><i class="fa fa-clock"></i>{{ formation.duration }}</li>{% endif %}
-            {% if formation.formation_type == 'numerique' %}<li><i class="fa fa-file-arrow-down"></i>PDF téléchargé après paiement</li>
+            {% if formation.file %}<li><i class="fa fa-file-pdf"></i>PDF de la formation téléchargé après paiement</li>{% endif %}
+            {% if formation.formation_type == 'numerique' %}
             {% elif formation.formation_type == 'inscription' %}<li><i class="fab fa-whatsapp"></i>Groupe WhatsApp</li>
             {% else %}<li><i class="fa fa-laptop"></i>En ligne, avec un formateur</li>{% endif %}
             {% if formation.students_count %}<li><i class="fa fa-users"></i>{{ formation.students_count }} inscrit{{ formation.students_count|pluralize }}</li>{% endif %}
