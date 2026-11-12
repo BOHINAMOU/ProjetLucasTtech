@@ -19,7 +19,15 @@ def index(request):
     q = (request.GET.get('q') or '').strip()
     cat_slug = request.GET.get('categorie') or ''
     contests = _contests_for(request.user).annotate(
-        n_sessions=Count('sessions', filter=Q(sessions__is_published=True), distinct=True))
+        n_sessions=Count('sessions', filter=Q(sessions__is_published=True), distinct=True),
+        n_papers=Count('sessions__papers', filter=Q(sessions__is_published=True,
+                                                    sessions__papers__is_published=True), distinct=True))
+    visible = _contests_for(request.user)
+    stats = {'contests': visible.count(),
+             'papers': ExamPaper.objects.filter(is_published=True, session__is_published=True,
+                                                session__contest__in=visible).count(),
+             'corrections': Correction.objects.filter(is_published=True, paper__is_published=True,
+                                                      paper__session__contest__in=visible).count()}
     active_category = None
     if cat_slug:
         active_category = ContestCategory.objects.filter(slug=cat_slug).first()
@@ -30,16 +38,20 @@ def index(request):
     categories = ContestCategory.objects.filter(contests__in=_contests_for(request.user)).distinct()
     return render(request, 'concours/index.html', {
         'contests': contests, 'categories': categories, 'active_category': active_category, 'search_query': q,
+        'stats': stats,
     })
 
 
 def detail(request, slug):
     contest = get_object_or_404(_contests_for(request.user), slug=slug)
+    n_papers = ExamPaper.objects.filter(session__contest=contest, session__is_published=True,
+                                        is_published=True).count()
     sessions = contest.sessions.filter(is_published=True).annotate(
         n_papers=Count('papers', filter=Q(papers__is_published=True)),
         n_free=Count('papers', filter=Q(papers__is_published=True, papers__is_free=True)))
     return render(request, 'concours/detail.html', {
         'contest': contest, 'sessions': sessions, 'has_access': user_can_access(request.user, contest),
+        'n_papers': n_papers,
     })
 
 
@@ -52,6 +64,7 @@ def session(request, slug, year):
     rows = [(p, has_access or p.is_free) for p in papers]
     return render(request, 'concours/session.html', {
         'contest': contest, 'session': sess, 'rows': rows, 'has_access': has_access,
+        'title': f"{contest.acronym} {sess.year}", 'n_papers': len(rows),
         'other_years': contest.sessions.filter(is_published=True).exclude(pk=sess.pk),
     })
 

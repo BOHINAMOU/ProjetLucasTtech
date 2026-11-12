@@ -187,7 +187,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
 
     <p class="auth-footer">
       Pas encore de compte ?
-      <a href="{% url 'users:register' %}">S'inscrire</a>
+      <a href="{% url 'users:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">S'inscrire</a>
     </p>
 
   </div>

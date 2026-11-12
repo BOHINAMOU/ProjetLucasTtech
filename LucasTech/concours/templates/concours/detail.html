@@ -7,20 +7,10 @@
 <div class="bq">
   <div class="bq-wrap">
     <p class="cc-crumbs"><a href="{% url 'concours:index' %}">Concours</a> › {{ contest.acronym }}</p>
-    <section class="cc-head">
-      {% include 'concours/_logo.html' with c=contest big=1 %}
-      <div>
-        <h1>{{ contest.acronym }} — {{ contest.name }}</h1>
-        <p>{{ contest.category.name }} · {{ contest.country }}{% if not contest.is_published %} · <b>Non publié (aperçu admin)</b>{% endif %}</p>
-      </div>
-    </section>
+    {% include 'concours/_banner.html' %}
     {% if contest.description %}<div class="ct-box" style="margin-bottom:1rem">{{ contest.description|linebreaks }}</div>{% endif %}
-
-    {% if has_access %}
-    <div class="cc-note cc-note--info"><span><i class="fa fa-circle-check"></i> Vous avez accès à toutes les épreuves de ce concours.</span></div>
-    {% else %}
-    <div class="cc-note"><span><i class="fa fa-lock"></i> Les épreuves gratuites sont lisibles par tous. Les autres sont réservées aux abonnés.</span>
-      <a class="cc-btn" href="{% url 'abonnements:plans' %}">S'abonner</a></div>
+    {% if not has_access %}
+    <div class="cc-note"><span><i class="fa fa-circle-info"></i> Les épreuves marquées « Gratuit » sont lisibles par tous. Les autres sont réservées aux abonnés (compte gratuit requis).</span></div>
     {% endif %}
 
     <div class="bq-sec-title"><h2>Années<span>.</span></h2><small>{{ sessions|length }} session{{ sessions|length|pluralize }}</small></div>
@@ -28,7 +18,8 @@
       {% for s in sessions %}
       <a class="cc-year" href="{% url 'concours:session' contest.slug s.year %}">
         <b>{{ s.year }}</b>
-        <small>{% if s.n_papers %}{{ s.n_papers }} épreuve{{ s.n_papers|pluralize }}{% if s.n_free %} · {{ s.n_free }} gratuite{{ s.n_free|pluralize }}{% endif %}{% else %}Aucune épreuve disponible{% endif %}</small>
+        <small>{% if s.n_papers %}{{ s.n_papers }} épreuve{{ s.n_papers|pluralize }}{% else %}Aucune épreuve disponible{% endif %}</small>
+        {% if s.n_free %}<br><span class="cc-free">{{ s.n_free }} gratuite{{ s.n_free|pluralize }}</span>{% endif %}
       </a>
       {% empty %}
       <div class="bq-empty" style="grid-column:1/-1"><i class="fa fa-calendar"></i><p>Aucune année disponible pour le moment.</p></div>

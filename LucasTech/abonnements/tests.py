@@ -227,3 +227,12 @@ class SubscriptionRulesTests(TestCase):
         sub.refresh_from_db()
         self.assertEqual(sub.status, 'actif')
         self.assertEqual((sub.end_at - sub.start_at).days, 365)
+
+    def test_achat_impose_un_compte(self):
+        url = reverse('abonnements:subscribe', args=['standard']) + '?periode=mois'
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(r['Location'].startswith(reverse('users:register') + '?next='))
+        r = self.client.get(reverse('abonnements:plans'))
+        self.assertContains(r, 'Créer mon compte')
+        self.assertFalse(UserSubscription.objects.exists())

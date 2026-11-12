@@ -19,6 +19,34 @@ DEMO = [
 YEAR = 2025
 
 
+COLORS = {'enseignement': ((11, 74, 45), (15, 122, 69)), 'sante': ((90, 32, 51), (178, 58, 90)),
+          'administration': ((30, 42, 90), (62, 91, 181))}
+
+
+def _logo(acronym, cat_slug):
+    """Photo de profil de démonstration : dégradé + sigle (PNG 400x400)."""
+    import io
+
+    from PIL import Image, ImageDraw, ImageFont
+    a, b = COLORS.get(cat_slug, COLORS['enseignement'])
+    img = Image.new('RGB', (400, 400))
+    d = ImageDraw.Draw(img)
+    for y in range(400):
+        t = y / 399
+        d.line([(0, y), (400, y)], fill=tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3)))
+    text = acronym.replace('DEMO-', '')
+    try:
+        font = ImageFont.truetype('DejaVuSans-Bold.ttf', 96 if len(text) <= 4 else 64)
+    except OSError:
+        font = ImageFont.load_default(size=80)
+    w = d.textlength(text, font=font)
+    d.text(((400 - w) / 2, 150), text, fill=(255, 255, 255), font=font)
+    d.text((140, 290), 'DEMO', fill=(255, 255, 255, 160), font=ImageFont.load_default(size=36))
+    buf = io.BytesIO()
+    img.save(buf, 'PNG')
+    return buf.getvalue()
+
+
 def _pdf(title, lines):
     pdf = FPDF()
     pdf.add_page()
@@ -50,6 +78,8 @@ class Command(BaseCommand):
                     for corr in p.corrections.all():
                         corr.file.delete(save=False)
                     p.file.delete(save=False)
+                if c.logo:
+                    c.logo.delete(save=False)
                 c.delete()
             self.stdout.write("Concours de démonstration supprimés.")
             return
@@ -59,6 +89,8 @@ class Command(BaseCommand):
                 'name': name, 'category': cat, 'country': 'Togo',
                 'description': "Concours de démonstration pour vérifier l'affichage du site. "
                                "Les documents sont factices."})
+            if not contest.logo:
+                contest.logo.save(f'{acronym.lower()}.png', ContentFile(_logo(acronym, cat_slug)), save=True)
             if opts['publier'] and not contest.is_published:
                 contest.is_published = True
                 contest.save(update_fields=['is_published'])

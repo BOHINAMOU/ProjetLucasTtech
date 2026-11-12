@@ -54,7 +54,11 @@ class Contest(models.Model):
     category = models.ForeignKey(ContestCategory, on_delete=models.PROTECT, related_name='contests',
                                  verbose_name="Catégorie")
     country = models.CharField("Pays", max_length=60, default="Togo")
-    logo = models.ImageField("Logo", upload_to='concours/logos/', blank=True)
+    logo = models.ImageField("Photo de profil", upload_to='concours/logos/', blank=True,
+                             help_text="Logo ou photo de l'école, format carré conseillé (ex. 400 × 400).")
+    cover = models.ImageField("Photo de couverture", upload_to='concours/couvertures/', blank=True,
+                              help_text="Facultative : image large en haut de la carte et de la page "
+                                        "(ex. 1200 × 600). Sinon, un fond vert élégant est utilisé.")
     description = models.TextField("Description", blank=True)
     is_published = models.BooleanField("Publié", default=False,
                                        help_text="Décochez pour retirer le concours du site.")
@@ -78,6 +82,11 @@ class Contest(models.Model):
 
     def get_absolute_url(self):
         return reverse('concours:detail', args=[self.slug])
+
+    @property
+    def gradient(self):
+        """Fond par défaut de la couverture (une teinte par catégorie)."""
+        return f"cx-g{(self.category_id or 0) % 5}"
 
 
 class ContestSession(models.Model):

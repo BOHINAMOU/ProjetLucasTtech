@@ -1,3 +1,6 @@
+from functools import wraps
+from urllib.parse import quote
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -13,6 +16,18 @@ from Payments.views import begin_payment, pay_js_data, whatsapp_link
 from . import services
 from .access import accessible_contest_ids, active_subscriptions, has_unlimited
 from .models import PERIOD_DAYS, ExtensionOption, SubscriptionPlan, UserSubscription
+
+
+def account_required(view):
+    """Achat d'abonnement / d'extension : compte obligatoire (pas d'achat invité).
+    Visiteur -> page d'inscription, avec retour automatique ici après création du compte."""
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.info(request, "Créez votre compte gratuit (ou connectez-vous) pour vous abonner.")
+            return redirect(f"{reverse('users:register')}?next={quote(request.get_full_path())}")
+        return view(request, *args, **kwargs)
+    return wrapper
 
 
 def plans(request):
@@ -31,7 +46,7 @@ def _pay_context(form, amount, description, back_url, **extra):
     return ctx
 
 
-@login_required
+@account_required
 def subscribe(request, code):
     plan = get_object_or_404(SubscriptionPlan, code=code, is_active=True)
     period = request.POST.get('periode') or request.GET.get('periode') or 'mois'
@@ -60,7 +75,7 @@ def subscribe(request, code):
         days=PERIOD_DAYS[period]))
 
 
-@login_required
+@account_required
 def extend(request, pk):
     sub = get_object_or_404(UserSubscription, pk=pk, user=request.user)
     back = reverse('abonnements:space')

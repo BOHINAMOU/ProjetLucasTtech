@@ -25,9 +25,8 @@
 
     {% if tab == 'concours' %}
       {% if unlimited %}<div class="cc-note cc-note--info"><span><i class="fa fa-infinity"></i> Votre formule illimitée donne accès à tous les concours.</span><a class="cc-btn" href="{% url 'concours:index' %}">Parcourir</a></div>{% endif %}
-      <div class="cc-grid">
-        {% for c in my_contests %}
-        <a href="{{ c.get_absolute_url }}" class="cc-card">{% include 'concours/_logo.html' %}<span><h3>{{ c.acronym }}</h3><p>{{ c.name }}</p></span></a>
+      <div class="cx-grid">
+        {% for c in my_contests %}{% include 'concours/_card.html' %}
         {% empty %}
         {% if not unlimited %}<div class="bq-empty" style="grid-column:1/-1"><i class="fa fa-file-pen"></i><p>Aucun concours pour le moment.</p></div>{% endif %}
         {% endfor %}

@@ -7,18 +7,7 @@
 <div class="bq">
   <div class="bq-wrap">
     <p class="cc-crumbs"><a href="{% url 'concours:index' %}">Concours</a> › <a href="{{ contest.get_absolute_url }}">{{ contest.acronym }}</a> › {{ session.year }}</p>
-    <section class="cc-head">
-      {% include 'concours/_logo.html' with c=contest big=1 %}
-      <div>
-        <h1>{{ contest.acronym }} {{ session.year }}</h1>
-        <p>{{ contest.name }}</p>
-      </div>
-    </section>
-
-    {% if not has_access %}
-    <div class="cc-note"><span><i class="fa fa-lock"></i> Épreuves payantes réservées aux abonnés {{ contest.acronym }}.</span>
-      <a class="cc-btn" href="{% url 'abonnements:plans' %}">S'abonner</a></div>
-    {% endif %}
+    {% include 'concours/_banner.html' %}
 
     <div class="cc-papers">
       {% for p, ok in rows %}
