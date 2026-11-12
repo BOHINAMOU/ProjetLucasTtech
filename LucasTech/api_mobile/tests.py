@@ -193,3 +193,33 @@ class ApiMobileTests(APITestCase):
         self.assertEqual(len(concours), 1)
         self.assertEqual(concours[0]['type'], 'concours')
         self.assertEqual(len(self.client.get(API + 'historique/', {'type': 'paiements'}).json()), 2)
+
+    # ── Suppression du compte ──
+    def test_suppression_compte(self):
+        self._login()
+        r = self.client.delete(API + 'me/', {'password': 'mauvais'}, format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json()['code'], 'mot_de_passe_incorrect')
+        r = self.client.delete(API + 'me/', {'password': 'x-Pass-12345'}, format='json')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['resultat'], 'supprime')
+        self.assertFalse(get_user_model().objects.filter(email='eleve@example.com').exists())
+        self.assertEqual(self.client.get(API + 'me/').status_code, 401)
+
+    def test_suppression_compte_avec_achats_anonymise(self):
+        pay = Payment.objects.create(kind='service', status='approved', amount=5000, description='Site',
+                                     user=self.user, first_name='Ama', last_name='Koffi', phone='9')
+        self._login()
+        r = self.client.delete(API + 'me/', {'password': 'x-Pass-12345'}, format='json')
+        self.assertEqual(r.json()['resultat'], 'anonymise')
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+        self.assertFalse(self.user.has_usable_password())
+        self.assertNotIn('eleve', self.user.email)
+        self.assertEqual(self.user.first_name, '')
+        pay.refresh_from_db()
+        self.assertEqual(pay.user_id, self.user.pk)
+        self.client.credentials()
+        r = self.client.post(API + 'auth/login/', {'identifiant': 'eleve@example.com', 'password': 'x-Pass-12345'},
+                             format='json')
+        self.assertEqual(r.status_code, 400)
