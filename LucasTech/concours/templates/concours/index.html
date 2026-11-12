@@ -7,11 +7,10 @@
 
 {% block content %}
 <div class="bq">
-  <section class="cx-hero cx-hero--photo" style="--hero:url('{% static 'concours/img/hero-concours.webp' %}');--hero-sm:url('{% static 'concours/img/hero-concours-800.webp' %}')">
+  <section class="cx-hero cx-hero--photo" style="--hero:url('{% static 'concours/img/hero-concours-v2.webp' %}');--hero-sm:url('{% static 'concours/img/hero-concours-v2-800.webp' %}')">
     <div class="bq-wrap">
       <span class="cx-eyebrow"><i class="fa fa-graduation-cap"></i> Sujets &amp; corrigés</span>
       <h1>Préparez vos <em>concours</em>, année par année.</h1>
-      <p class="lead">Retrouvez les anciennes épreuves et leurs corrigés, à lire en ligne sur téléphone ou ordinateur.</p>
       <form class="cx-search" method="get" action="{% url 'concours:index' %}#liste" role="search">
         <i class="fa fa-magnifying-glass"></i>
         {% if active_category %}<input type="hidden" name="categorie" value="{{ active_category.slug }}">{% endif %}
@@ -27,7 +26,6 @@
         <a class="cx-sub" href="{% url 'abonnements:plans' %}"><i class="fa fa-star"></i> Abonnements dès 1 000 F</a>
       </div>
     </div>
-    <a class="cx-hero-credit" href="https://commons.wikimedia.org/wiki/File:Students_writing_in_class.jpg" target="_blank" rel="noopener nofollow">Photo : Gumah1, CC BY-SA 4.0</a>
   </section>
 
   <div class="bq-wrap" id="liste">

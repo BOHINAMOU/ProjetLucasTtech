@@ -249,3 +249,12 @@
 @media (max-width: 900px) { .cx-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .cx-list { grid-template-columns: 1fr; } }
 .cx-list .bq-tag--demo { background: #1b1f1d; color: #fff; }
+
+/* ══ En-tête /concours/ v2 : photo Unsplash (Ben White) sous un voile bleu nuit, accent or (nov. 2026) ══ */
+.cx-hero--photo { background:
+    linear-gradient(90deg, #0B1F3A 0%, rgba(11,31,58,.96) 34%, rgba(18,62,107,.70) 60%, rgba(18,62,107,.15) 100%),
+    var(--hero) right 35% / cover no-repeat, #0B1F3A; }
+.cx-hero--photo h1 em { color: #F2B705; }
+@media (max-width: 760px) {
+  .cx-hero--photo { background: linear-gradient(180deg, rgba(11,31,58,.80) 0%, rgba(11,31,58,.90) 55%, #123E6B 100%), var(--hero-sm) center 25% / cover no-repeat, #0B1F3A; }
+}
