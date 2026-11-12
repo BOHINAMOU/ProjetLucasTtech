@@ -1,12 +1,14 @@
 """Tests de l'API mobile : connexion, accès aux documents (refusé / autorisé / hors connexion), historique."""
 import shutil
 import tempfile
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from abonnements import services
@@ -131,48 +133,91 @@ class ApiMobileTests(APITestCase):
         self.assertEqual((ens['nb_annees'], ens['nb_epreuves'], ens['accessible']), (1, 2, False))
         self.assertEqual(len(self.client.get(API + 'concours/', {'q': 'normale'}).json()), 1)
 
-    # ── Documents ──
-    def test_document_refuse_sans_abonnement(self):
+    # ── Documents : règle stricte (connexion + abonnement actif et payé couvrant le concours) ──
+    def _urls(self, paper=None, corr=None):
+        return [f'{API}documents/epreuve/{(paper or self.paper).pk}/', f'{API}documents/epreuve/{self.free.pk}/',
+                f'{API}documents/corrige/{(corr or self.corr).pk}/']
+
+    def test_document_anonyme_401(self):
+        for url in self._urls():
+            self.assertEqual(self.client.get(url).status_code, 401, url)
+
+    def test_document_connecte_sans_abonnement_403(self):
         self._login()
-        r = self.client.get(f'{API}documents/epreuve/{self.paper.pk}/')
-        self.assertEqual(r.status_code, 403)
-        self.assertEqual(r.json()['code'], 'abonnement_requis')
-        r = self.client.get(f'{API}documents/corrige/{self.corr.pk}/')
-        self.assertEqual(r.status_code, 403)
+        for url in self._urls():  # y compris l'épreuve marquée « gratuite »
+            r = self.client.get(url)
+            self.assertEqual(r.status_code, 403, url)
+            self.assertEqual(r.json()['code'], 'abonnement_requis')
         self.assertEqual(self.client.get(f'{API}documents/epreuve/999999/').json()['code'], 'indisponible')
+        annee = self.client.get(f'{API}concours/{self.ens.slug}/annees/{self.session.pk}/').json()
+        for e in annee['epreuves']:
+            self.assertFalse(e['accessible'])
+            self.assertFalse(e['gratuite'])
+            self.assertFalse(e['hors_ligne_autorise'])
+            self.assertTrue(all(not c['accessible'] for c in e['corriges']))
 
-    def test_document_gratuit_autorise(self):
-        r = self.client.get(f'{API}documents/epreuve/{self.free.pk}/')
+    def test_document_concours_demo_reserve_equipe(self):
+        demo = Contest.objects.create(acronym='DEMO', name='Concours démo', category=self.ens.category,
+                                      is_published=True, is_demo=True)
+        s = ContestSession.objects.create(contest=demo, year=2024)
+        p = ExamPaper(session=s, title='Maths', is_free=True)
+        p.file.save('demo.pdf', ContentFile(b'%PDF-1.4 demo'), save=True)
+        self._subscribe('ultimate')
+        self._login()
+        self.assertEqual(self.client.get(f'{API}documents/epreuve/{p.pk}/').status_code, 403)
+        liste = {c['sigle']: c for c in self.client.get(API + 'concours/').json()}
+        self.assertTrue(liste['DEMO']['est_demo'])
+        self.assertFalse(liste['DEMO']['accessible'])
+        admin = get_user_model().objects.create_user(email='admin@example.com', password='x-Pass-12345',
+                                                     is_staff=True)
+        token = self.client.post(API + 'auth/login/', {'identifiant': 'admin@example.com',
+                                                        'password': 'x-Pass-12345'}, format='json').json()['token']
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        r = self.client.get(f'{API}documents/epreuve/{p.pk}/')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(b''.join(r.streaming_content), b'%PDF-1.4 sujet')
-        self.assertEqual(r['X-Hors-Ligne-Autorise'], '1')
-        self.assertIn('no-store', r['Cache-Control'])
+        self.assertEqual(r['X-Hors-Ligne-Autorise'], '1')  # équipe : lecture hors connexion autorisée
+        self.assertIsNotNone(admin)
 
-    def test_document_autorise_standard_sans_hors_ligne(self):
+    def test_document_standard_200_sans_hors_ligne(self):
         self._subscribe('standard', [self.ens])
         self._login()
+        for url in self._urls():
+            r = self.client.get(url)
+            self.assertEqual(r.status_code, 200, url)
+            self.assertEqual(r['X-Hors-Ligne-Autorise'], '0')
+            self.assertFalse(r.has_header('X-Hors-Ligne-Jusqu-A'))
+            self.assertIn('no-store', r['Cache-Control'])
         r = self.client.get(f'{API}documents/epreuve/{self.paper.pk}/')
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r['X-Hors-Ligne-Autorise'], '0')
+        self.assertEqual(b''.join(r.streaming_content), b'%PDF-1.4 sujet')
         self.assertEqual(r['X-Filigrane'], 'eleve@example.com')
-        self.assertFalse(r.has_header('X-Hors-Ligne-Jusqu-A'))
+        annee = self.client.get(f'{API}concours/{self.ens.slug}/annees/{self.session.pk}/').json()
+        self.assertTrue(all(e['accessible'] and not e['hors_ligne_autorise'] for e in annee['epreuves']))
         # un autre concours reste fermé
-        r = self.client.get(f'{API}concours/{self.ens.slug}/annees/{self.session.pk}/').json()
-        maths = next(e for e in r['epreuves'] if e['id'] == self.paper.pk)
-        self.assertTrue(maths['accessible'])
-        self.assertFalse(maths['hors_ligne_autorise'])
+        liste = {c['sigle']: c['accessible'] for c in self.client.get(API + 'concours/').json()}
+        self.assertEqual(liste, {'ENS': True, 'ENA': False})
 
-    def test_document_premium_hors_ligne(self):
+    def test_document_premium_200_avec_hors_ligne(self):
         sub = self._subscribe('premium', [self.ens])
         self._login()
-        r = self.client.get(f'{API}documents/corrige/{self.corr.pk}/')
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r['X-Hors-Ligne-Autorise'], '1')
-        self.assertTrue(r['X-Hors-Ligne-Jusqu-A'].startswith(sub.end_at.date().isoformat()[:7]))
+        for url in self._urls():
+            r = self.client.get(url)
+            self.assertEqual(r.status_code, 200, url)
+            self.assertEqual(r['X-Hors-Ligne-Autorise'], '1')
+            self.assertEqual(r['X-Hors-Ligne-Jusqu-A'][:10], timezone.localtime(sub.end_at).date().isoformat())
         abos = self.client.get(API + 'abonnements/').json()
         self.assertEqual(abos[0]['formule']['code'], 'premium')
         self.assertEqual(abos[0]['places_utilisees'], 1)
         self.assertEqual(abos[0]['concours'], [{'sigle': 'ENS', 'nom': 'École normale supérieure'}])
+
+    def test_document_abonnement_expire_ou_non_paye_403(self):
+        sub = self._subscribe('premium', [self.ens])
+        sub.end_at = timezone.now() - timedelta(minutes=1)
+        sub.save(update_fields=['end_at'])
+        pending = services.create_pending_subscription(self.user, SubscriptionPlan.objects.get(code='ultimate'), 'mois')
+        self.assertEqual(pending.status, 'en_attente')
+        self._login()
+        for url in self._urls():
+            self.assertEqual(self.client.get(url).status_code, 403, url)
 
     # ── Historique ──
     def test_historique(self):

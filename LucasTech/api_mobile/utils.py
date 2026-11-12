@@ -3,7 +3,7 @@ from django.db.models import Max, Q
 from django.utils import timezone
 from rest_framework.response import Response
 
-from abonnements.access import accessible_contest_ids, active_subscriptions, has_unlimited
+from abonnements.access import active_subscriptions, can_view_paper, user_can_access
 
 # Formules qui autorisent la lecture hors connexion dans l'application.
 OFFLINE_PLAN_CODES = ('premium', 'ultimate')
@@ -54,26 +54,30 @@ def money(value):
 # Droits
 # ─────────────────────────────
 class Rights:
-    """Droits d'un utilisateur calculés une fois par requête (évite une requête SQL par concours)."""
+    """Droits d'un utilisateur pour une requête. AUCUNE règle propre à l'API : la lecture passe toujours
+    par abonnements.access (user_can_access / can_view_paper), exactement comme le site.
+    Seul ajout : le droit hors connexion (Premium / Ultimate), réservé à ce qui est déjà lisible."""
 
     def __init__(self, user, now=None):
         self.now = now or timezone.now()
         self.user = user
         self.auth = bool(user and user.is_authenticated)
-        self.staff = self.auth and user.is_staff
-        self.unlimited = self.auth and has_unlimited(user, self.now)
-        self.ids = accessible_contest_ids(user, self.now) if self.auth else set()
+        self._cache = {}
         self._offline = None
 
     def can_access(self, contest):
-        return self.staff or self.unlimited or contest.pk in self.ids
+        if contest.pk not in self._cache:
+            self._cache[contest.pk] = user_can_access(self.user, contest, self.now)
+        return self._cache[contest.pk]
 
     def can_view(self, paper, contest=None):
-        return paper.is_free or self.can_access(contest or paper.session.contest)
+        if contest is not None and paper.session.contest_id == contest.pk:
+            paper.session.contest = contest  # évite une requête, même objet
+        return can_view_paper(self.user, paper)
 
     def offline_until(self, contest):
-        """Date de fin du droit hors connexion (Premium / Ultimate couvrant le concours), sinon None."""
-        if not self.auth:
+        """Fin du droit hors connexion : abonnement Premium / Ultimate actif (donc payé) couvrant le concours."""
+        if not self.auth or not self.can_access(contest):
             return None
         if self._offline is None:
             subs = active_subscriptions(self.user, self.now).filter(
@@ -91,9 +95,9 @@ class Rights:
 
     def offline_allowed(self, paper, contest=None):
         contest = contest or paper.session.contest
-        if paper.is_free or self.staff:
-            return True
-        return self.offline_until(contest) is not None
+        if not self.can_view(paper, contest):
+            return False
+        return bool(self.user.is_staff) or self.offline_until(contest) is not None
 
 
 # ─────────────────────────────

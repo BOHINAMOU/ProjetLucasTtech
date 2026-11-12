@@ -232,11 +232,7 @@ def me(request):
         result = _delete_account(user)
         return Response({'detail': "Votre compte a été supprimé.", 'resultat': result})
     rights = Rights(user)
-    published = Contest.objects.published()
-    if rights.staff or rights.unlimited:
-        n_contests = published.count()
-    else:
-        n_contests = published.filter(pk__in=rights.ids).count()
+    n_contests = sum(1 for c in Contest.objects.published() if rights.can_access(c))
     from Events.models import Ticket
     from Payments.models import Payment
     from Shop.models import ShopOrder
@@ -376,7 +372,7 @@ def concours_annee(request, slug, pk):
         out.append({
             'id': p.pk, 'titre': p.title, 'matiere': p.subject, 'duree': p.duration,
             'coefficient': float(p.coefficient) if p.coefficient is not None else None,
-            'description': p.description, 'gratuite': p.is_free, 'accessible': ok,
+            'description': p.description, 'gratuite': False, 'accessible': ok,
             'hors_ligne_autorise': ok and rights.offline_allowed(p, contest),
             'document_disponible': bool(p.file),
             'corriges': [{'id': c.pk, 'titre': c.get_kind_display() + (f" — {c.author}" if c.author else ''),
@@ -386,9 +382,10 @@ def concours_annee(request, slug, pk):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
 def document(request, kind, pk):
-    """PDF d'une épreuve ou d'un corrigé : mêmes droits que concours.views.file (revérifiés à chaque appel)."""
+    """PDF d'une épreuve ou d'un corrigé : connexion obligatoire (401 sinon), puis exactement la règle du site
+    (abonnements.access.can_view_paper, revérifiée à chaque appel) : abonnement actif couvrant le concours,
+    ou membre de l'équipe."""
     unavailable = error("Ce document n'est pas disponible.", 404, code='indisponible')
     if kind == 'epreuve':
         doc = ExamPaper.objects.select_related('session__contest').filter(pk=pk).first()
@@ -409,8 +406,6 @@ def document(request, kind, pk):
         return unavailable
     rights = Rights(user)
     if not rights.can_view(paper, contest):
-        if not user.is_authenticated:
-            return error("Connectez-vous et abonnez-vous pour lire ce document.", 403, code='abonnement_requis')
         return error(f"Ce document est réservé aux abonnés du concours {contest.acronym}.", 403,
                      code='abonnement_requis')
     if not doc.file:
@@ -426,11 +421,11 @@ def document(request, kind, pk):
     resp['X-Robots-Tag'] = 'noindex, nofollow'
     offline = rights.offline_allowed(paper, contest)
     resp['X-Hors-Ligne-Autorise'] = '1' if offline else '0'
-    until = rights.offline_until(contest) if offline and not paper.is_free else None
+    until = rights.offline_until(contest) if offline else None
     if until:
         resp['X-Hors-Ligne-Jusqu-A'] = dt(until)
     # Filigrane : comme le lecteur du site, l'application superpose l'email du lecteur sur le document.
-    resp['X-Filigrane'] = user.email if user.is_authenticated else 'Lantante Technologie'
+    resp['X-Filigrane'] = user.email
     resp['Access-Control-Expose-Headers'] = 'X-Hors-Ligne-Autorise, X-Hors-Ligne-Jusqu-A, X-Filigrane'
     return resp
 
