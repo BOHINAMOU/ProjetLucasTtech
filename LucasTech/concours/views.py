@@ -1,11 +1,12 @@
 import mimetypes
 
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Min, Prefetch, Q
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.cache import never_cache
 
 from abonnements.access import can_view_paper, user_can_access
+from abonnements.models import SubscriptionPlan
 
 from .models import Contest, ContestCategory, ContestSession, Correction, ExamPaper
 
@@ -36,9 +37,13 @@ def index(request):
     if q:
         contests = contests.filter(Q(acronym__icontains=q) | Q(name__icontains=q) | Q(description__icontains=q))
     categories = ContestCategory.objects.filter(contests__in=_contests_for(request.user)).distinct()
+    contests = list(contests)
+    for c in contests:  # même règle que la lecture des documents
+        c.has_access = user_can_access(request.user, c)
     return render(request, 'concours/index.html', {
         'contests': contests, 'categories': categories, 'active_category': active_category, 'search_query': q,
         'stats': stats,
+        'min_plan_price': SubscriptionPlan.objects.filter(is_active=True).aggregate(m=Min('monthly_price'))['m'],
     })
 
 

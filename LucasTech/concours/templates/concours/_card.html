@@ -1,18 +1,30 @@
-<a href="{{ c.get_absolute_url }}" class="cx-card" aria-label="{{ c.acronym }} — {{ c.name }}">
-  <div class="cx-cover {{ c.gradient }}">
-    {% if c.cover %}<img src="{{ c.cover.url }}" alt="" loading="lazy">{% else %}<span class="cx-cover__txt">{{ c.acronym }}</span>{% endif %}
-    <span class="cx-cat">{% if c.category.icon %}<i class="fa {{ c.category.icon }}"></i>{% endif %}{{ c.category.name }}</span>
-    {% if c.is_demo %}<span class="cx-demo">Démo</span>{% elif not c.is_published %}<span class="cc-draft">Non publié</span>{% endif %}
+<article class="bq-card ct-card">
+  <a href="{{ c.get_absolute_url }}" class="bq-card__link" aria-label="Voir {{ c.short_acronym }} — {{ c.name }}"></a>
+  <div class="bq-card__img">
+    {% if c.is_demo %}<span class="bq-tag bq-tag--demo">Démo</span>{% elif c.has_access %}<span class="bq-tag bq-tag--incl">Inclus</span>{% elif not c.is_published %}<span class="bq-tag bq-tag--sale">Non publié</span>{% endif %}
+    {% if c.cover %}<img src="{{ c.cover.url }}" alt="{{ c.name }}" loading="lazy">{% elif c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.name }}" loading="lazy">{% else %}<i class="fa fa-file-pen" aria-hidden="true"></i>{% endif %}
   </div>
-  <div class="cx-body">
-    <span class="cx-avatar">{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.acronym }}" loading="lazy">{% else %}<span>{{ c.acronym|truncatechars:12 }}</span>{% endif %}</span>
-    <h3>{{ c.short_acronym }}</h3>
-    <p>{{ c.name }}</p>
-    <div class="cx-meta">
+  <div class="bq-card__body">
+    <span class="bq-card__cat">{{ c.category.name }}</span>
+    <h3 class="bq-card__name">{{ c.short_acronym }} — {{ c.name }}</h3>
+    <p class="bq-card__desc">{% if c.description %}{{ c.description|striptags|truncatechars:150 }}{% else %}Anciens sujets et corrigés du concours {{ c.short_acronym }}, année par année.{% endif %}</p>
+    <div class="ct-meta">
       <span><i class="fa fa-location-dot"></i>{{ c.country }}</span>
       {% if c.n_sessions is not None %}<span><i class="fa fa-calendar"></i>{{ c.n_sessions }} année{{ c.n_sessions|pluralize }}</span>{% endif %}
       {% if c.n_papers %}<span><i class="fa fa-file-lines"></i>{{ c.n_papers }} épreuve{{ c.n_papers|pluralize }}</span>{% endif %}
     </div>
   </div>
-  <div class="cx-foot"><span>Voir les épreuves</span><i class="fa fa-arrow-right"></i></div>
-</a>
+  <div class="bq-card__price">
+    {% if c.has_access %}<strong class="cx-incl">Inclus dans votre abonnement</strong>{% elif min_plan_price %}<strong>dès {{ min_plan_price|floatformat:"0g" }} FCFA</strong><small>/ mois</small>{% else %}<strong>Sur abonnement</strong>{% endif %}
+  </div>
+  <div class="bq-card__actions">
+    {% if c.has_access %}
+    <a href="{{ c.get_absolute_url }}" class="bq-btn bq-btn--green"><i class="fa fa-book-open"></i> Lire</a>
+    {% elif user.is_authenticated %}
+    <a href="{% url 'abonnements:plans' %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> S'abonner</a>
+    {% else %}
+    <a href="{% url 'users:login' %}?next={% url 'abonnements:plans' %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> S'abonner</a>
+    {% endif %}
+    <a href="{{ c.get_absolute_url }}" class="bq-btn bq-btn--dark">Voir détails</a>
+  </div>
+</article>

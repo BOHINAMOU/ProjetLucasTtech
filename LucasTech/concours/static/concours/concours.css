@@ -239,3 +239,13 @@
   .cx-hero--photo { background: linear-gradient(180deg, rgba(6,38,26,.82) 0%, rgba(6,38,26,.9) 55%, #06261a 100%), var(--hero-sm) center 30% / cover no-repeat, #06261a; }
   .cx-pills span { padding: .35rem .7rem; font-size: .82rem; }
 }
+
+/* ══ Liste des concours : cartes au gabarit des formations (nov. 2026) ══ */
+.cx-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cx-list .bq-card__desc { -webkit-line-clamp: 2; }
+.cx-list .bq-tag--incl { background: var(--bq-green, #0f7a45); color: #fff; }
+.cx-list .bq-card__price .cx-incl { font-size: 1rem; color: var(--bq-green, #0f7a45); }
+@media (max-width: 1200px) { .cx-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .cx-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .cx-list { grid-template-columns: 1fr; } }
+.cx-list .bq-tag--demo { background: #1b1f1d; color: #fff; }
