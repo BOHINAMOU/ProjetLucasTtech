@@ -377,6 +377,17 @@
 </main>
 
 <div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>
+{% if request.GET.session == 'expiree' %}
+<div class="session-toast" role="alert" id="sessionToast">
+  <i class="fa fa-rotate"></i><span>Votre session a expiré, veuillez réessayer.</span>
+  <button type="button" aria-label="Fermer" onclick="this.parentNode.remove()">&times;</button>
+</div>
+<style>
+.session-toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 86px);transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:.6rem;max-width:min(92vw,520px);padding:.8rem 1rem;border-radius:14px;background:#fff8e1;color:#5a4300;border:1px solid #f2d27a;box-shadow:0 14px 34px rgba(0,0,0,.14);font-weight:500;font-size:.95rem}
+.session-toast i{color:#c99700}.session-toast button{margin-left:auto;background:none;border:0;font-size:1.3rem;line-height:1;color:#5a4300;cursor:pointer}
+</style>
+<script>setTimeout(function(){var t=document.getElementById('sessionToast');if(t)t.remove();},9000);</script>
+{% endif %}
 
 <!-- ═══════════ FOOTER ═══════════ -->
 {% block footer %}
@@ -385,6 +396,13 @@
 
 {% block extra_scripts %}{% endblock %}
 
+<script>
+/* ── Page restaurée par « Précédent » (Safari iPhone surtout) : on la recharge si elle contient un
+   formulaire protégé, sinon son jeton CSRF périmé ferait échouer l'envoi. ── */
+window.addEventListener('pageshow',function(e){
+  if(e.persisted&&document.querySelector('form input[name="csrfmiddlewaretoken"]'))location.reload();
+});
+</script>
 <script>
 /* ── Barre de progression ── */
 const bar = document.getElementById('progress-bar');

@@ -41,6 +41,12 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
 ]
+for _o in ("https://lantantetechnologie.com", "https://www.lantantetechnologie.com"):
+    if _o not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_o)
+CSRF_COOKIE_SAMESITE = "Lax"
+# Page d'échec CSRF conviviale (redirection + « Votre session a expiré ») au lieu de la page jaune.
+CSRF_FAILURE_VIEW = "core.csrf.csrf_failure"
 
 # True when running on Render (Render sets this automatically).
 ON_RENDER = os.getenv("RENDER") is not None
