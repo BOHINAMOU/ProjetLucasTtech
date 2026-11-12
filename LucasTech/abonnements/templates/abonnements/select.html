@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+{% block title %}Choisir mes concours — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <p class="cc-crumbs"><a href="{% url 'abonnements:space' %}">Mon espace</a> › Choisir mes concours</p>
+    <section class="cc-head">
+      <span class="cc-logo cc-logo--lg"><i class="fa fa-list-check"></i></span>
+      <div>
+        <h1>{{ sub.plan.name }} #{{ sub.pk }}</h1>
+        <p><b id="free" data-free="{{ sub.free_slots }}">{{ sub.free_slots }}</b> place{{ sub.free_slots|pluralize }} libre{{ sub.free_slots|pluralize }} sur {{ sub.total_limit }} · jusqu'au {{ sub.end_at|date:"j F Y" }}</p>
+      </div>
+    </section>
+
+    {% if messages %}{% for m in messages %}<div class="cc-note {% if m.tags == 'error' %}cc-note--warn{% else %}cc-note--info{% endif %}"><span>{{ m }}</span></div>{% endfor %}{% endif %}
+    <div class="cc-note"><span><i class="fa fa-circle-info"></i> Un concours choisi reste attaché à cet abonnement jusqu'à sa fin (il ne peut pas être remplacé). Vous pouvez en choisir moins et compléter plus tard, sans frais.</span></div>
+
+    <div class="ct-tools">
+      <nav class="ct-chips">
+        <a class="ct-chip{% if not active_cat %} is-on{% endif %}" href="?">Tous</a>
+        {% for c in categories %}<a class="ct-chip{% if active_cat == c.slug %} is-on{% endif %}" href="?categorie={{ c.slug }}">{{ c.name }}</a>{% endfor %}
+      </nav>
+      <form class="bq-search" method="get" role="search">
+        <i class="fa fa-magnifying-glass"></i>
+        <input type="search" name="q" value="{{ search_query }}" placeholder="Nom ou sigle" aria-label="Rechercher">
+        <button type="submit">Chercher</button>
+      </form>
+    </div>
+
+    <form method="post" id="pickForm">
+      {% csrf_token %}
+      <div class="cc-pick">
+        {% for c, state in rows %}
+        <label class="{% if state != 'libre' %}is-off{% endif %}">
+          <input type="checkbox" name="contests" value="{{ c.pk }}" {% if state != 'libre' %}disabled{% endif %}{% if state == 'ici' %} checked{% endif %}>
+          <span><b>{{ c.acronym }}</b><small>{{ c.name|truncatechars:60 }}</small></span>
+          {% if state == 'ici' %}<span class="st">Choisi</span>{% elif state == 'deja' %}<span class="st">Déjà accessible</span>{% endif %}
+        </label>
+        {% empty %}
+        <div class="bq-empty" style="grid-column:1/-1"><i class="fa fa-file-pen"></i><p>Aucun concours trouvé.</p></div>
+        {% endfor %}
+      </div>
+      <div class="cc-bar">
+        <span id="count">0 concours choisi</span>
+        <button type="submit" class="cc-btn" id="go" disabled>Confirmer ma sélection</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+(function(){
+  var f=document.getElementById('pickForm'), free=+document.getElementById('free').dataset.free,
+      count=document.getElementById('count'), go=document.getElementById('go');
+  function upd(){
+    var boxes=[].slice.call(f.querySelectorAll('input[name=contests]:not([disabled])')), n=boxes.filter(function(b){return b.checked;}).length;
+    count.textContent=n+' concours choisi'+(n>1?'s':'')+' · '+Math.max(0,free-n)+' place'+(free-n>1?'s':'')+' restante'+(free-n>1?'s':'');
+    go.disabled=!n;
+    boxes.forEach(function(b){ if(!b.checked){ b.disabled=false; b.parentNode.classList.toggle('is-off', n>=free); b.dataset.full=n>=free?'1':''; } });
+  }
+  f.addEventListener('change',function(e){ var b=e.target; if(b.checked){ var n=f.querySelectorAll('input[name=contests]:checked:not([disabled])').length; if(n>free){ b.checked=false; alert('Plus de place libre sur cet abonnement.'); } } upd(); });
+  f.addEventListener('submit',function(e){ var n=f.querySelectorAll('input[name=contests]:checked:not([disabled])').length; if(!confirm('Confirmer '+n+' concours ? Ce choix ne pourra pas être remplacé.')) e.preventDefault(); });
+  upd();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ contest.acronym }} {{ session.year }} : épreuves et corrigés — Lantante Technologie{% endblock %}
+{% block meta_description %}{{ contest.name }}, session {{ session.year }} : sujets et corrigés.{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <p class="cc-crumbs"><a href="{% url 'concours:index' %}">Concours</a> › <a href="{{ contest.get_absolute_url }}">{{ contest.acronym }}</a> › {{ session.year }}</p>
+    <section class="cc-head">
+      {% include 'concours/_logo.html' with c=contest big=1 %}
+      <div>
+        <h1>{{ contest.acronym }} {{ session.year }}</h1>
+        <p>{{ contest.name }}</p>
+      </div>
+    </section>
+
+    {% if not has_access %}
+    <div class="cc-note"><span><i class="fa fa-lock"></i> Épreuves payantes réservées aux abonnés {{ contest.acronym }}.</span>
+      <a class="cc-btn" href="{% url 'abonnements:plans' %}">S'abonner</a></div>
+    {% endif %}
+
+    <div class="cc-papers">
+      {% for p, ok in rows %}
+      <article class="cc-paper">
+        <div>
+          <h3>{{ p.title }} {% if p.is_free %}<span class="cc-free">Gratuit</span>{% endif %}</h3>
+          <div class="meta">
+            {% if p.subject %}<span><i class="fa fa-book"></i> {{ p.subject }}</span>{% endif %}
+            {% if p.specialty %}<span><i class="fa fa-tag"></i> {{ p.specialty.name }}</span>{% endif %}
+            {% if p.duration %}<span><i class="fa fa-clock"></i> {{ p.duration }}</span>{% endif %}
+            {% if p.coefficient %}<span>Coef. {{ p.coefficient|floatformat:"-1" }}</span>{% endif %}
+          </div>
+          {% if p.description %}<p class="meta">{{ p.description|truncatechars:200 }}</p>{% endif %}
+        </div>
+        <div class="cc-actions">
+          {% if ok %}
+            <a class="cc-btn" href="{% url 'concours:reader' 'sujet' p.pk %}"><i class="fa fa-file-lines"></i> Sujet</a>
+            {% for c in p.corrections.all %}
+            <a class="cc-btn cc-btn--ghost" href="{% url 'concours:reader' 'corrige' c.pk %}"><i class="fa fa-file-circle-check"></i> {% if p.corrections.all|length > 1 %}{{ c.get_kind_display }}{% else %}Corrigé{% endif %}</a>
+            {% empty %}
+            <span class="cc-na">Corrigé non disponible</span>
+            {% endfor %}
+          {% else %}
+            <a class="cc-btn cc-btn--lock" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock"></i> Sujet</a>
+            {% if p.corrections.all %}<a class="cc-btn cc-btn--lock" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock"></i> Corrigé</a>{% else %}<span class="cc-na">Corrigé non disponible</span>{% endif %}
+          {% endif %}
+        </div>
+      </article>
+      {% empty %}
+      <div class="bq-empty"><i class="fa fa-file-circle-xmark"></i><p>Aucune épreuve disponible.</p></div>
+      {% endfor %}
+    </div>
+
+    {% if other_years %}
+    <div class="bq-sec-title"><h2>Autres années<span>.</span></h2></div>
+    <div class="cc-tags">{% for s in other_years %}<a class="cc-tag" href="{{ s.get_absolute_url }}">{{ s.year }}</a>{% endfor %}</div>
+    {% endif %}
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

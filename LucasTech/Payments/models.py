@@ -26,6 +26,7 @@ class Payment(models.Model):
         ('shop', 'Commande boutique (panier)'),
         ('product', 'Produit de la boutique'),
         ('ticket', "Tickets d'événement"),
+        ('abonnement', 'Abonnement concours'),
     ]
     STATUS_CHOICES = [
         ('pending', 'En attente'),

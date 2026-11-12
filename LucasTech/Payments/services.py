@@ -80,6 +80,9 @@ def _fulfill(p):
                 cash_delivery_message=p.address)
             ShopOrderItem.objects.create(order=order, product_id=p.product_id, quantity=qty,
                                          price=p.amount // qty)
+    elif p.kind == 'abonnement':
+        from abonnements.services import fulfill_payment
+        fulfill_payment(p)
     elif p.kind == 'ticket' and p.event_id:
         from Events.services import issue_tickets
         issue_tickets(p)
@@ -103,6 +106,9 @@ def _send_confirmation(p):
             body += (f"Votre reçu et vos tickets :\n{link}\n\n"
                      "L'organisateur vous appellera pour la livraison des tickets. Le jour J, présentez ce reçu "
                      "ou donnez votre nom à l'entrée.\n\n")
+        elif p.kind == 'abonnement':
+            body += ("Votre abonnement est actif. Choisissez vos concours dans votre espace :\n"
+                     f"{site}/abonnements/mon-espace/\n\n")
         elif p.kind in ('product', 'shop'):
             body += f"Votre reçu :\n{link}\n\nNous vous appelons très vite pour la livraison.\n\n"
         elif p.downloadable_file:

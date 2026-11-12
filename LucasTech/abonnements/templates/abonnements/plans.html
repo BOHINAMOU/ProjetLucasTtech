@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% block title %}Abonnements concours — Lantante Technologie{% endblock %}
+{% block meta_description %}Standard, Premium ou Ultimate : accédez aux anciens sujets et corrigés de vos concours. Abonnements cumulables.{% endblock %}
+{% block og_title %}Abonnements concours — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <section class="ct-hero cc-hero">
+    <div class="bq-wrap">
+      <h1>Abonnements.</h1>
+      <p>Choisissez vos concours, lisez tous leurs sujets et corrigés. Les abonnements se cumulent.</p>
+      <div class="ct-hero__cta">
+        <a href="{% url 'concours:index' %}" class="ct-pill ct-pill--glass"><i class="fa fa-file-pen"></i> Voir les concours</a>
+        {% if user.is_authenticated %}<a href="{% url 'abonnements:space' %}" class="ct-pill ct-pill--green">Mon espace</a>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <div class="bq-wrap">
+    <div class="cc-plans">
+      {% for p in plans %}
+      <article class="cc-plan{% if p.is_highlighted %} cc-plan--hl{% endif %}">
+        {% if p.is_highlighted %}<span class="ct-badge ct-badge--ok" style="align-self:flex-start">Le plus choisi</span>{% endif %}
+        <h2>{{ p.name }}</h2>
+        <div class="price">{{ p.monthly_price|floatformat:"0g" }} F <small>/ mois</small></div>
+        <small style="color:var(--bq-muted)">ou {{ p.yearly_price|floatformat:"0g" }} F / an{% if p.yearly_saving %} (vous économisez {{ p.yearly_saving|floatformat:"0g" }} F){% endif %}</small>
+        <ul>
+          <li><b>{{ p.limit_label }}</b>{% if not p.is_unlimited %} au choix{% endif %}</li>
+          <li>Tous les sujets et corrigés {% if p.is_unlimited %}du site{% else %}de ces concours{% endif %}</li>
+          <li>Lecture en ligne, sur téléphone ou ordinateur</li>
+          {% if not p.is_unlimited %}<li>Places à compléter plus tard, sans frais</li>{% endif %}
+          {% if p.tagline %}<li>{{ p.tagline }}</li>{% endif %}
+        </ul>
+        <div class="cc-actions">
+          <a class="cc-btn" href="{% url 'abonnements:subscribe' p.code %}?periode=mois">1 mois</a>
+          <a class="cc-btn cc-btn--ghost" href="{% url 'abonnements:subscribe' p.code %}?periode=an">1 an</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="ct-box" style="margin-top:1.6rem">
+      <h2>Comment ça marche ?</h2>
+      <ul class="ct-learn">
+        <li>Payez par Mobile Money : l'abonnement s'active dès que le paiement est confirmé.</li>
+        <li>Choisissez vos concours dans « Mon espace ». Vous pouvez en choisir moins et compléter plus tard.</li>
+        <li>Plusieurs abonnements ? Ils s'additionnent : 2 Standard = 6 concours.</li>
+        <li>Besoin d'un ou deux concours de plus ? Extensions {% for o in options %}+{{ o.slots }} = {{ o.price|floatformat:"0g" }} F{% if not forloop.last %}, {% endif %}{% endfor %} (par 30 jours, au prorata des jours restants).</li>
+        <li>Un concours choisi reste attaché à l'abonnement jusqu'à sa fin.</li>
+      </ul>
+    </div>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

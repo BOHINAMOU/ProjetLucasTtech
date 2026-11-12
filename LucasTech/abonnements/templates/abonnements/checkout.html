@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% block title %}Abonnement {{ plan.name }} — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <div class="wz">
+      <div class="wz-top">
+        <a href="{{ back_url }}" class="pp-back"><i class="fa fa-arrow-left"></i> Formules</a>
+        {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
+      </div>
+
+      {% if advice %}<div class="cc-note cc-note--warn"><span><i class="fa fa-lightbulb"></i> {{ advice }}</span><a class="cc-btn" href="{% url 'abonnements:subscribe' 'premium' %}?periode={{ period }}">Prendre Premium</a></div>{% endif %}
+      {% if ultimate %}<div class="cc-note cc-note--info"><span><i class="fa fa-circle-info"></i> Vous avez déjà {{ plan.name }} jusqu'au {{ ultimate.end_at|date:"j F Y" }}. Cet achat prolongera cet abonnement de {{ days }} jours.</span></div>{% endif %}
+
+      <div class="wz-card">
+        <div class="wz-order">
+          <span class="wz-order__ico"><i class="fa fa-graduation-cap"></i></span>
+          <div class="wz-order__txt">
+            <strong>{{ plan.name }} — {{ plan.limit_label }}</strong>
+            <small>
+              <a href="?periode=mois"{% if period == 'mois' %} style="font-weight:700;color:var(--bq-green)"{% endif %}>1 mois</a> ·
+              <a href="?periode=an"{% if period == 'an' %} style="font-weight:700;color:var(--bq-green)"{% endif %}>1 an</a>
+              · activé dès le paiement confirmé
+            </small>
+          </div>
+          <b class="wz-order__price">{{ amount|floatformat:"0g" }} <small>FCFA</small></b>
+        </div>
+        {% include 'abonnements/_pay.html' %}
+      </div>
+
+      <div class="wz-foot">
+        <span><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay</span>
+        {% if whatsapp_url and enabled %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Une question ?</a>{% endif %}
+      </div>
+    </div>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

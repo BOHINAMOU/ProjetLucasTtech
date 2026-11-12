@@ -1,0 +1,74 @@
+{% extends 'core/base.html' %}
+{% block title %}{% if kind == 'sujet' %}{{ paper.title }}{% else %}Corrigé — {{ paper.title }}{% endif %} — {{ contest.acronym }} {{ paper.session.year }}{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <p class="cc-crumbs"><a href="{% url 'concours:index' %}">Concours</a> › <a href="{{ contest.get_absolute_url }}">{{ contest.acronym }}</a> › <a href="{{ paper.session.get_absolute_url }}">{{ paper.session.year }}</a> › {% if kind == 'sujet' %}Sujet{% else %}Corrigé{% endif %}</p>
+    <section class="cc-head">
+      {% include 'concours/_logo.html' with c=contest %}
+      <div>
+        <h1 style="font-size:clamp(1.25rem,3vw,1.7rem)">{% if kind == 'corrige' %}{{ doc.get_kind_display }} — {% endif %}{{ paper.title }}</h1>
+        <p>{{ contest.acronym }} {{ paper.session.year }}{% if paper.subject %} · {{ paper.subject }}{% endif %}{% if paper.duration %} · {{ paper.duration }}{% endif %}</p>
+      </div>
+    </section>
+
+    {% if allowed %}
+      <div class="cc-reader" id="reader" oncontextmenu="return false"
+           data-src="{% url 'concours:file' kind doc.pk %}" data-pdf="{{ is_pdf|yesno:'1,0' }}"
+           data-wm="{{ watermark|default:'Lantante Technologie' }}">
+        <p class="cc-loading" id="loading"><i class="fa fa-spinner fa-spin"></i> Chargement du document…</p>
+      </div>
+      <p class="cc-crumbs" style="text-align:center">Lecture en ligne uniquement. Document protégé{% if watermark %}, marqué à votre nom{% endif %}.</p>
+    {% else %}
+      <div class="ct-box" style="text-align:center;margin-bottom:2rem">
+        <p style="font-size:2rem;color:var(--bq-green)"><i class="fa fa-lock"></i></p>
+        <h2>Épreuve réservée aux abonnés</h2>
+        <p>Choisissez une formule et ajoutez <b>{{ contest.acronym }}</b> à vos concours pour lire tous ses sujets et corrigés.</p>
+        <div class="cc-actions" style="justify-content:center;margin-top:1rem">
+          <a class="cc-btn" href="{% url 'abonnements:plans' %}">Voir les abonnements</a>
+          {% if user.is_authenticated %}<a class="cc-btn cc-btn--ghost" href="{% url 'abonnements:space' %}">Mon espace</a>
+          {% else %}<a class="cc-btn cc-btn--ghost" href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}">Se connecter</a>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% if allowed %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+  var box=document.getElementById('reader'), src=box.dataset.src, wm=box.dataset.wm, loading=document.getElementById('loading');
+  function mark(page){
+    var w=document.createElement('div'); w.className='cc-wm';
+    for(var i=0;i<12;i++){var s=document.createElement('span'); s.textContent=wm; w.appendChild(s);}
+    page.appendChild(w);
+  }
+  function fail(){ loading.textContent="Impossible d'afficher le document. Réessayez plus tard."; }
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&['s','p'].indexOf(e.key.toLowerCase())>=0){e.preventDefault();} });
+  if(box.dataset.pdf!=='1'){
+    var page=document.createElement('div'); page.className='cc-page';
+    var img=new Image(); img.alt=''; img.draggable=false; img.onload=function(){loading.remove();}; img.onerror=fail; img.src=src;
+    page.appendChild(img); mark(page); box.appendChild(page); return;
+  }
+  if(!window.pdfjsLib){ fail(); return; }
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  fetch(src,{credentials:'same-origin'}).then(function(r){ if(!r.ok) throw r; return r.arrayBuffer(); })
+  .then(function(buf){ return pdfjsLib.getDocument({data:buf}).promise; })
+  .then(function(pdf){
+    loading.remove();
+    var width=Math.min(box.clientWidth-20,900), ratio=window.devicePixelRatio||1, chain=Promise.resolve();
+    for(var n=1;n<=pdf.numPages;n++){ (function(n){ chain=chain.then(function(){ return pdf.getPage(n).then(function(pg){
+      var vp0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:width/vp0.width*ratio});
+      var page=document.createElement('div'); page.className='cc-page';
+      var c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
+      page.appendChild(c); mark(page); box.appendChild(page);
+      return pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+    }); }); })(n); }
+    return chain;
+  }).catch(fail);
+})();
+</script>
+{% endif %}
+{% endblock %}

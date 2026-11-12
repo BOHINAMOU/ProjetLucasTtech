@@ -1,0 +1,13 @@
+{% if enabled %}
+<form method="post" class="ct-form wz-form" novalidate data-order-label="{{ description }}" data-order-total="{{ amount|floatformat:'0g' }} FCFA">
+  {% csrf_token %}
+  {% if period %}<input type="hidden" name="periode" value="{{ period }}">{% endif %}
+  {% if option %}<input type="hidden" name="slots" value="{{ option.slots }}">{% endif %}
+  {% include 'payments/_customer_fields.html' %}
+</form>
+{% else %}
+<div class="wz-off">
+  <p>Paiement en ligne bientôt disponible.</p>
+  {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous écrire sur WhatsApp</a>{% endif %}
+</div>
+{% endif %}

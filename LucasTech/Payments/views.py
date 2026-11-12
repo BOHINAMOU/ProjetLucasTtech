@@ -56,7 +56,7 @@ def _get_visible(request, reference):
     return p
 
 
-def begin_payment(request, form, **fields):
+def begin_payment(request, form, before_start=None, **fields):
     """Crée le paiement à partir d'un CustomerForm valide et lance la demande Mobile Money.
     Renvoie une redirection, ou None si le paiement a été refusé (le message est ajouté au formulaire)."""
     sub = form.cleaned_data.get('submission') or ''
@@ -70,6 +70,8 @@ def begin_payment(request, form, **fields):
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     payment = Payment.objects.create(user=user, **form.payment_fields(), **fields)
     _remember(request, payment)
+    if before_start:  # ex. abonnement : relier l'objet acheté au paiement avant de le lancer
+        before_start(payment)
     try:
         url = services.start(request, payment)
     except fedapay.FedaPayError as exc:

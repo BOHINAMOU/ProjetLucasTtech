@@ -46,6 +46,11 @@
           {% endfor %}
         </div>
         {% endif %}
+        {% elif p.kind == 'abonnement' %}
+        <div class="ct-box" style="margin-top:1rem">
+          <h2><i class="fa fa-graduation-cap" style="color:var(--bq-green)"></i> Abonnement concours actif</h2>
+          <a href="{% url 'abonnements:space' %}" class="pp-btn pp-btn--main" style="margin-top:1rem"><i class="fa fa-list-check"></i> Choisir mes concours</a>
+        </div>
         {% elif p.kind == 'product' or p.kind == 'shop' %}
         <p class="lead" style="margin-top:1rem"><i class="fa fa-truck" style="color:var(--bq-green)"></i> Nous vous appelons pour la livraison.</p>
         {% endif %}

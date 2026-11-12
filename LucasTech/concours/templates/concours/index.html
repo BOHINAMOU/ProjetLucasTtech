@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+{% block title %}Concours : sujets et corrigés — Lantante Technologie{% endblock %}
+{% block meta_description %}Anciens sujets et corrigés des concours (enseignement, santé, administration, sécurité, informatique…) à lire en ligne.{% endblock %}
+{% block og_title %}Concours : sujets et corrigés — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <section class="ct-hero cc-hero">
+    <div class="bq-wrap">
+      <h1>Concours.</h1>
+      <p>Anciens sujets et corrigés, à lire en ligne, année par année.</p>
+      <div class="ct-hero__cta">
+        <a href="#liste" class="ct-pill ct-pill--green">Trouver un concours</a>
+        <a href="{% url 'abonnements:plans' %}" class="ct-pill ct-pill--glass"><i class="fa fa-star"></i> Les abonnements</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="bq-wrap" id="liste">
+    <div class="ct-tools">
+      <nav class="ct-chips" aria-label="Catégories">
+        <a href="{% url 'concours:index' %}#liste" class="ct-chip{% if not active_category and not search_query %} is-on{% endif %}">Tous</a>
+        {% for cat in categories %}
+        <a href="{% url 'concours:index' %}?categorie={{ cat.slug }}#liste" class="ct-chip{% if active_category.slug == cat.slug %} is-on{% endif %}">{% if cat.icon %}<i class="fa {{ cat.icon }}"></i>{% endif %}{{ cat.name }}</a>
+        {% endfor %}
+      </nav>
+      <form class="bq-search" method="get" action="{% url 'concours:index' %}#liste" role="search">
+        <i class="fa fa-magnifying-glass"></i>
+        {% if active_category %}<input type="hidden" name="categorie" value="{{ active_category.slug }}">{% endif %}
+        <input type="search" name="q" value="{{ search_query }}" placeholder="Nom ou sigle (ex. ENS)" aria-label="Rechercher un concours">
+        <button type="submit">Chercher</button>
+      </form>
+    </div>
+
+    <div class="bq-sec-title">
+      <h2>{% if search_query %}Résultats <span>pour « {{ search_query }} »</span>{% elif active_category %}{{ active_category.name }}<span>.</span>{% else %}Tous les concours<span>.</span>{% endif %}</h2>
+      <small>{{ contests|length }} concours</small>
+    </div>
+
+    <div class="cc-grid">
+      {% for c in contests %}
+      <a href="{{ c.get_absolute_url }}" class="cc-card">
+        {% if not c.is_published %}<span class="cc-draft">Non publié</span>{% endif %}
+        {% include 'concours/_logo.html' %}
+        <span>
+          <h3>{{ c.acronym }}</h3>
+          <p>{{ c.name }}</p>
+          <small>{{ c.category.name }} · {{ c.country }} · {{ c.n_sessions }} année{{ c.n_sessions|pluralize }}</small>
+        </span>
+      </a>
+      {% empty %}
+      <div class="bq-empty" style="grid-column:1/-1"><i class="fa fa-file-pen"></i>
+        <p>{% if search_query or active_category %}Aucun concours ne correspond{% if search_query %} à « {{ search_query }} »{% endif %}.{% else %}Les premiers concours arrivent bientôt.{% endif %}</p>
+        {% if search_query or active_category %}<p><a href="{% url 'concours:index' %}">Voir tous les concours</a></p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="ct-cta">
+      <div><h2>Accédez à tous les sujets</h2><p>Abonnements dès 1 000 F par mois, cumulables.</p></div>
+      <a href="{% url 'abonnements:plans' %}" class="ct-pill ct-pill--green">Voir les formules</a>
+    </div>
+  </div>
+  {% include 'core/_toasts.html' %}
+</div>
+{% endblock %}

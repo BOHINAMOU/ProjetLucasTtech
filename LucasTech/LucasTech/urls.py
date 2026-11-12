@@ -12,6 +12,10 @@ from .sitemaps import sitemaps
 
 urlpatterns = [
     path(
+        'ads.txt',
+        lambda request: HttpResponse("google.com, pub-2908722543426563, DIRECT, f08c47fec0942fa0", content_type="text/plain"),
+    ),
+    path(
         'googlef89010971d315902.html',
         lambda request: HttpResponse("google-site-verification: googlef89010971d315902.html", content_type="text/html"),
     ),
@@ -29,6 +33,8 @@ urlpatterns = [
     re_path(r'^publications/(?P<rest>.*)$', RedirectView.as_view(url='/actualites/%(rest)s', permanent=True, query_string=True)),
     path('paiement/',     include('Payments.urls', namespace='payments')),
     path('evenements/',   include('Events.urls', namespace='events')),
+    path('concours/',     include('concours.urls', namespace='concours')),
+    path('abonnements/',  include('abonnements.urls', namespace='abonnements')),
     path('bohinamou/',    include('Portfolio.urls', namespace='portfolio')),
     path('emploi/',       include('Emploi.urls', namespace='emploi')),
     path('api/v1/',       include('Emploi.api.urls')),

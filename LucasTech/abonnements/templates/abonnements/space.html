@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+{% block title %}Mon espace concours — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <p class="cc-crumbs"><a href="{% url 'users:profile' %}">Mon profil</a> › Mon espace concours</p>
+    <section class="cc-head">
+      <span class="cc-logo cc-logo--lg"><i class="fa fa-graduation-cap"></i></span>
+      <div>
+        <h1>Mon espace</h1>
+        <p>{{ n_active }} abonnement{{ n_active|pluralize }} actif{{ n_active|pluralize }} · {% if unlimited %}tous les concours{% else %}{{ my_contests|length }} concours accessible{{ my_contests|length|pluralize }}{% endif %}</p>
+      </div>
+    </section>
+
+    {% if messages %}{% for m in messages %}<div class="cc-note {% if m.tags == 'error' %}cc-note--warn{% else %}cc-note--info{% endif %}"><span>{{ m }}</span></div>{% endfor %}{% endif %}
+
+    <nav class="cc-tabs">
+      <a class="cc-tab{% if tab == 'abonnements' %} is-on{% endif %}" href="?onglet=abonnements">Mes abonnements</a>
+      <a class="cc-tab{% if tab == 'concours' %} is-on{% endif %}" href="?onglet=concours">Mes concours</a>
+      <a class="cc-tab{% if tab == 'paiements' %} is-on{% endif %}" href="?onglet=paiements">Paiements</a>
+      <a class="cc-tab" href="{% url 'abonnements:plans' %}"><i class="fa fa-plus"></i> Nouvel abonnement</a>
+    </nav>
+
+    {% if tab == 'concours' %}
+      {% if unlimited %}<div class="cc-note cc-note--info"><span><i class="fa fa-infinity"></i> Votre formule illimitée donne accès à tous les concours.</span><a class="cc-btn" href="{% url 'concours:index' %}">Parcourir</a></div>{% endif %}
+      <div class="cc-grid">
+        {% for c in my_contests %}
+        <a href="{{ c.get_absolute_url }}" class="cc-card">{% include 'concours/_logo.html' %}<span><h3>{{ c.acronym }}</h3><p>{{ c.name }}</p></span></a>
+        {% empty %}
+        {% if not unlimited %}<div class="bq-empty" style="grid-column:1/-1"><i class="fa fa-file-pen"></i><p>Aucun concours pour le moment.</p></div>{% endif %}
+        {% endfor %}
+      </div>
+
+    {% elif tab == 'paiements' %}
+      <div class="ct-box ct-table-wrap">
+        <table class="ct-table">
+          <thead><tr><th>Date</th><th>Description</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+          <tbody>
+          {% for p in payments %}
+          <tr><td>{{ p.created_at|date:"d/m/Y H:i" }}</td><td>{{ p.description }}</td><td>{{ p.amount|floatformat:"0g" }} F</td>
+            <td><span class="ct-badge {% if p.is_paid %}ct-badge--ok{% elif p.status == 'pending' %}ct-badge--wait{% else %}ct-badge--ko{% endif %}">{{ p.get_status_display }}</span></td>
+            <td><a href="{{ p.get_absolute_url }}">{% if p.is_paid %}Reçu{% else %}Voir{% endif %}</a></td></tr>
+          {% empty %}
+          <tr><td colspan="5">Aucun paiement.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% else %}
+      {% for s in subs %}
+      <article class="cc-sub">
+        <div class="cc-sub__top">
+          <h3>{{ s.plan.name }} <small style="color:var(--bq-muted);font-weight:400">#{{ s.pk }} · {{ s.get_period_display }}</small></h3>
+          {% if s.is_active %}<span class="ct-badge ct-badge--ok">Actif</span>
+          {% elif s.status == 'en_attente' %}<span class="ct-badge ct-badge--wait">En attente de paiement</span>
+          {% elif s.status == 'fusionne' %}<span class="ct-badge ct-badge--wait">Prolongation de #{{ s.merged_into_id }}</span>
+          {% else %}<span class="ct-badge ct-badge--ko">{% if s.status == 'actif' %}Expiré{% else %}{{ s.get_status_display }}{% endif %}</span>{% endif %}
+        </div>
+        <dl>
+          <div><dt>Début</dt><dd>{{ s.start_at|date:"j M Y"|default:"—" }}</dd></div>
+          <div><dt>Fin</dt><dd>{{ s.end_at|date:"j M Y"|default:"—" }}{% if s.is_active %} ({{ s.days_left }} j){% endif %}</dd></div>
+          <div><dt>Prix payé</dt><dd>{{ s.price_paid|floatformat:"0g" }} F</dd></div>
+          <div><dt>Concours</dt><dd>{% if s.is_unlimited %}Illimité{% else %}{{ s.used_slots }} / {{ s.total_limit }}{% endif %}</dd></div>
+        </dl>
+        {% if not s.is_unlimited and s.status != 'fusionne' %}
+        <div class="cc-tags">
+          {% for link in s.contests.all %}<a class="cc-tag" href="{{ link.contest.get_absolute_url }}">{{ link.contest.acronym }}</a>{% endfor %}
+          {% if s.is_active %}{% for i in ''|center:s.free_slots %}<span class="cc-tag cc-tag--slot">place libre</span>{% endfor %}{% endif %}
+        </div>
+        {% endif %}
+        {% with exts=s.active_extensions %}{% if exts %}<p class="cc-crumbs" style="margin:0 0 10px">Extensions : {% for e in exts %}+{{ e.slots }}{% if not forloop.last %}, {% endif %}{% endfor %} (jusqu'au {{ s.end_at|date:"j M Y" }})</p>{% endif %}{% endwith %}
+        {% if s.is_active and not s.is_unlimited %}
+        <div class="cc-actions">
+          {% if s.free_slots %}<a class="cc-btn" href="{% url 'abonnements:select' s.pk %}"><i class="fa fa-plus"></i> Ajouter des concours</a>{% endif %}
+          <a class="cc-btn cc-btn--ghost" href="{% url 'abonnements:extend' s.pk %}"><i class="fa fa-circle-plus"></i> Extension</a>
+        </div>
+        {% elif s.is_active %}
+        <div class="cc-actions"><a class="cc-btn" href="{% url 'concours:index' %}">Parcourir les concours</a></div>
+        {% elif s.status == 'en_attente' and s.payment %}
+        <div class="cc-actions"><a class="cc-btn cc-btn--ghost" href="{{ s.payment.get_absolute_url }}">Suivre le paiement</a></div>
+        {% endif %}
+      </article>
+      {% empty %}
+      <div class="bq-empty"><i class="fa fa-id-card-clip"></i><p>Vous n'avez pas encore d'abonnement.</p><p><a href="{% url 'abonnements:plans' %}">Voir les formules</a></p></div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
