@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Concours : sujets et corrigés — Lantante Technologie{% endblock %}
 {% block meta_description %}Anciens sujets et corrigés des concours (enseignement, santé, administration, sécurité, informatique…) à lire en ligne.{% endblock %}
 {% block og_title %}Concours : sujets et corrigés — Lantante Technologie{% endblock %}
@@ -6,7 +7,7 @@
 
 {% block content %}
 <div class="bq">
-  <section class="cx-hero">
+  <section class="cx-hero cx-hero--photo" style="--hero:url('{% static 'concours/img/hero-concours.webp' %}');--hero-sm:url('{% static 'concours/img/hero-concours-800.webp' %}')">
     <div class="bq-wrap">
       <span class="cx-eyebrow"><i class="fa fa-graduation-cap"></i> Sujets &amp; corrigés</span>
       <h1>Préparez vos <em>concours</em>, année par année.</h1>
@@ -17,13 +18,16 @@
         <input type="search" name="q" value="{{ search_query }}" placeholder="Nom ou sigle (ex. ENS)" aria-label="Rechercher un concours">
         <button type="submit">Rechercher</button>
       </form>
-      <div class="cx-stats">
-        <span><b>{{ stats.contests }}</b>concours</span>
-        <span><b>{{ stats.papers }}</b>épreuve{{ stats.papers|pluralize }}</span>
-        <span><b>{{ stats.corrections }}</b>corrigé{{ stats.corrections|pluralize }}</span>
-        <a href="{% url 'abonnements:plans' %}" style="color:#9be8c0;font-weight:700;text-decoration:none">Abonnements dès 1 000 F <i class="fa fa-arrow-right"></i></a>
+      <div class="cx-row">
+        <div class="cx-pills">
+          <span><i class="fa fa-file-pen"></i><b>{{ stats.contests }}</b> concours</span>
+          <span><i class="fa fa-file-lines"></i><b>{{ stats.papers }}</b> épreuve{{ stats.papers|pluralize }}</span>
+          <span><i class="fa fa-file-circle-check"></i><b>{{ stats.corrections }}</b> corrigé{{ stats.corrections|pluralize }}</span>
+        </div>
+        <a class="cx-sub" href="{% url 'abonnements:plans' %}"><i class="fa fa-star"></i> Abonnements dès 1 000 F</a>
       </div>
     </div>
+    <a class="cx-hero-credit" href="https://commons.wikimedia.org/wiki/File:Students_writing_in_class.jpg" target="_blank" rel="noopener nofollow">Photo : Gumah1, CC BY-SA 4.0</a>
   </section>
 
   <div class="bq-wrap" id="liste">

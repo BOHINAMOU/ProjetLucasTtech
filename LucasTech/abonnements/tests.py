@@ -10,7 +10,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from concours.models import Contest, ContestCategory, ContestSession, ExamPaper
+from concours.models import Contest, ContestCategory, ContestSession, Correction, ExamPaper
 from Payments import services as pay_services
 from Payments.models import Payment
 
@@ -28,13 +28,15 @@ class SubscriptionRulesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls._field = ExamPaper._meta.get_field('file')
-        cls._storage = cls._field.storage
-        cls._field.storage = FileSystemStorage(location=TMP)  # pas de fichiers de test dans private_media
+        cls._fields = [ExamPaper._meta.get_field('file'), Correction._meta.get_field('file')]
+        cls._storages = [f.storage for f in cls._fields]
+        for f in cls._fields:
+            f.storage = FileSystemStorage(location=TMP)  # pas de fichiers de test dans private_media
 
     @classmethod
     def tearDownClass(cls):
-        cls._field.storage = cls._storage
+        for f, st in zip(cls._fields, cls._storages):
+            f.storage = st
         super().tearDownClass()
         shutil.rmtree(TMP, ignore_errors=True)
 
@@ -138,14 +140,37 @@ class SubscriptionRulesTests(TestCase):
             services.add_contests(sub, [self.ens])
         self.assertFalse(user_can_access(self.user, self.ens))
 
-    def test_epreuve_gratuite_accessible_sans_abonnement(self):
+    def test_lecture_exige_connexion_et_abonnement(self):
+        """Règle stricte : aucun document lisible sans compte + abonnement actif (même « gratuit »)."""
         free = self._paper(self.ens, free=True)
         paid = self._paper(self.ens, free=False)
-        self.assertTrue(can_view_paper(self.user, free))
-        self.assertFalse(can_view_paper(self.user, paid))
-        anon = self.client
-        self.assertEqual(anon.get(reverse('concours:file', args=['sujet', free.pk])).status_code, 200)
-        self.assertEqual(anon.get(reverse('concours:file', args=['sujet', paid.pk])).status_code, 403)
+        corr = Correction.objects.create(paper=paid, kind='officiel', file=paid.file.name)
+        urls = [reverse(n, args=[k, pk]) for n in ('concours:reader', 'concours:file')
+                for k, pk in (('sujet', free.pk), ('sujet', paid.pk), ('corrige', corr.pk))]
+        for url in urls:  # anonyme
+            self.assertIn(self.client.get(url).status_code, (302, 403), url)
+        self.assertFalse(can_view_paper(self.user, free))
+        self.client.force_login(self.user)  # connecté sans abonnement
+        for url in urls:
+            self.assertEqual(self.client.get(url).status_code, 403, url)
+        sub = self._active(self.standard)  # abonné au concours
+        services.add_contests(sub, [self.ens])
+        for url in urls:
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+        staff = get_user_model().objects.create_user(email='admin@example.com', password='x-Pass-12345',
+                                                     is_staff=True)
+        self.client.force_login(staff)
+        for url in urls:
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_concours_demo_lisible_par_equipe_seulement(self):
+        demo = Contest.objects.create(acronym='DEMO-Y', name='Démo', category=self.ens.category,
+                                      is_published=True, is_demo=True)
+        p = self._paper(demo, free=True)
+        url = reverse('concours:file', args=['sujet', p.pk])
+        self._active(self.ultimate)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(url).status_code, 403)
 
     def test_ens_refuse_si_seul_abonnement_ens_expire(self):
         sub_ens = self._active(self.standard)
