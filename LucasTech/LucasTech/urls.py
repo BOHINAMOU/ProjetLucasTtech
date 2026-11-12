@@ -38,6 +38,7 @@ urlpatterns = [
     path('bohinamou/',    include('Portfolio.urls', namespace='portfolio')),
     path('emploi/',       include('Emploi.urls', namespace='emploi')),
     path('api/v1/',       include('Emploi.api.urls')),
+    path('api/mobile/v1/', include('api_mobile.urls', namespace='api_mobile')),
     path('social-auth/',  include('social_django.urls', namespace='social')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),

@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'Events',
     'concours',
     'abonnements',
+    'api_mobile',
 
     'social_django',
 
