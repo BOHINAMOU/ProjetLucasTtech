@@ -12,41 +12,46 @@
     <div class="cc-note cc-note--warn"><span><i class="fa fa-flask"></i> Exemple de démonstration : documents factices, pour découvrir le lecteur du site.</span></div>
     {% endif %}
 
-    <div class="cc-papers">
+    <div class="bq-sec-title"><h2>Épreuves<span>.</span></h2><small>{{ n_papers }} épreuve{{ n_papers|pluralize }} · {{ n_corrections }} avec corrigé</small></div>
+    <div class="px-list">
       {% for p, ok in rows %}
-      <article class="cc-paper">
-        <div>
-          <h3>{{ p.title }} {% if p.is_free %}<span class="cc-free">Gratuit</span>{% endif %}</h3>
-          <div class="meta">
-            {% if p.subject %}<span><i class="fa fa-book"></i> {{ p.subject }}</span>{% endif %}
-            {% if p.specialty %}<span><i class="fa fa-tag"></i> {{ p.specialty.name }}</span>{% endif %}
-            {% if p.duration %}<span><i class="fa fa-clock"></i> {{ p.duration }}</span>{% endif %}
-            {% if p.coefficient %}<span>Coef. {{ p.coefficient|floatformat:"-1" }}</span>{% endif %}
+      <article class="px-item{% if not ok %} is-locked{% endif %}">
+        <span class="px-num"><i class="fa {% if ok %}fa-file-lines{% else %}fa-lock{% endif %}"></i></span>
+        <div class="px-main">
+          <h3>{{ p.title }}{% if not ok %}<span class="px-lockpill">Abonnés</span>{% endif %}</h3>
+          <div class="px-facts">
+            {% if p.subject %}<span><i class="fa fa-book"></i>{{ p.subject }}</span>{% endif %}
+            {% if p.specialty %}<span><i class="fa fa-tag"></i>{{ p.specialty.name }}</span>{% endif %}
+            {% if p.duration %}<span><i class="fa fa-clock"></i>{{ p.duration }}</span>{% endif %}
+            {% if p.coefficient %}<span><i class="fa fa-scale-balanced"></i>Coef. {{ p.coefficient|floatformat:"-1" }}</span>{% endif %}
           </div>
-          {% if p.description %}<p class="meta">{{ p.description|truncatechars:200 }}</p>{% endif %}
         </div>
-        <div class="cc-actions">
+        <div class="px-acts">
           {% if ok %}
-            <a class="cc-btn" href="{% url 'concours:reader' 'sujet' p.pk %}"><i class="fa fa-file-lines"></i> Sujet</a>
+            <a class="cc-btn" href="{% url 'concours:reader' 'sujet' p.pk %}"><i class="fa fa-eye"></i> Sujet</a>
             {% for c in p.corrections.all %}
             <a class="cc-btn cc-btn--ghost" href="{% url 'concours:reader' 'corrige' c.pk %}"><i class="fa fa-file-circle-check"></i> {% if p.corrections.all|length > 1 %}{{ c.get_kind_display }}{% else %}Corrigé{% endif %}</a>
             {% empty %}
             <span class="cc-na">Corrigé non disponible</span>
             {% endfor %}
+          {% elif not user.is_authenticated %}
+            <a class="cc-btn cc-btn--lock" href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}"><i class="fa fa-right-to-bracket"></i> Se connecter pour lire</a>
+          {% elif contest.is_demo %}
+            <span class="cc-na"><i class="fa fa-lock"></i> Exemple réservé à l'équipe</span>
           {% else %}
-            <a class="cc-btn cc-btn--lock" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock"></i> Sujet</a>
-            {% if p.corrections.all %}<a class="cc-btn cc-btn--lock" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock"></i> Corrigé</a>{% else %}<span class="cc-na">Corrigé non disponible</span>{% endif %}
+            <a class="cc-btn cc-btn--lock" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock"></i> S'abonner pour lire</a>
+            {% if not p.corrections.all %}<span class="cc-na">Corrigé non disponible</span>{% endif %}
           {% endif %}
         </div>
       </article>
       {% empty %}
-      <div class="bq-empty"><i class="fa fa-file-circle-xmark"></i><p>Aucune épreuve disponible.</p></div>
+      <div class="ap-empty" style="background:#fff;border-radius:24px;padding:3rem 1rem;text-align:center"><i class="fa fa-file-circle-xmark" style="font-size:2rem;color:#c3c8c5"></i><p style="margin-top:.8rem">Aucune épreuve disponible.</p></div>
       {% endfor %}
     </div>
 
     {% if other_years %}
-    <div class="bq-sec-title"><h2>Autres années<span>.</span></h2></div>
-    <div class="cc-tags">{% for s in other_years %}<a class="cc-tag" href="{{ s.get_absolute_url }}">{{ s.year }}</a>{% endfor %}</div>
+    <div class="bq-sec-title" style="margin-top:2rem"><h2>Autres sessions<span>.</span></h2></div>
+    <div class="cc-tags">{% for s in other_years %}<a class="cc-tag" href="{{ s.get_absolute_url }}">{{ contest.short_acronym }} {{ s.year }}</a>{% endfor %}</div>
     {% endif %}
   </div>
   {% include 'core/_toasts.html' %}

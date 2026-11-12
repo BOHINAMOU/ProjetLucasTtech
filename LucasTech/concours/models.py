@@ -89,6 +89,11 @@ class Contest(models.Model):
         return reverse('concours:detail', args=[self.slug])
 
     @property
+    def short_acronym(self):
+        """Sigle d'affichage : « ENS » pour « DEMO-ENS » (le badge Démo reste affiché à côté)."""
+        return self.acronym[5:] if self.acronym.upper().startswith('DEMO-') else self.acronym
+
+    @property
     def gradient(self):
         """Fond par défaut de la couverture (une teinte par catégorie)."""
         return f"cx-g{(self.category_id or 0) % 5}"
@@ -140,7 +145,7 @@ class ExamPaper(models.Model):
     file = models.FileField("Fichier du sujet (PDF ou image)", storage=private_storage,
                             upload_to='concours/epreuves/%Y/', validators=[FileExtensionValidator(ALLOWED_EXT)])
     is_free = models.BooleanField("Gratuite", default=False,
-                                  help_text="Lisible par tous, sans abonnement (sujet et corrigés).")
+                                  help_text="Indication seulement : la lecture exige toujours un compte et un abonnement.")
     is_published = models.BooleanField("Publiée", default=True)
     order = models.PositiveSmallIntegerField("Ordre", default=0)
     created_at = models.DateTimeField(auto_now_add=True)

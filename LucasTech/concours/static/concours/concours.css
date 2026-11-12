@@ -176,3 +176,66 @@
 .cx-credit { position: absolute; right: 12px; bottom: 10px; max-width: 70%; font-size: .68rem; color: rgba(255,255,255,.85); text-decoration: none; background: rgba(0,0,0,.35); padding: .15rem .5rem; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cx-card .cx-cover::before, .cx-banner .cx-cover::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,0) 40%, rgba(0,0,0,.18)); z-index: 1; pointer-events: none; }
 .cx-cat, .cx-demo, .cx-credit, .cc-draft { z-index: 2; }
+
+/* ══ Cartes des sessions (années) ══ */
+.sx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; margin-bottom: 2.4rem; }
+.sx-card { display: flex; flex-direction: column; background: #fff; border-radius: 24px; overflow: hidden; transition: transform .3s var(--bq-ease), box-shadow .3s; }
+.sx-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.09); }
+.sx-head { position: relative; display: flex; align-items: flex-end; height: 112px; padding: 14px 18px; overflow: hidden; color: #fff; text-decoration: none; }
+.sx-head img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9); }
+.sx-head::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,38,26,.15), rgba(6,38,26,.82)); }
+.sx-title { position: relative; z-index: 1; font-size: 2.1rem; font-weight: 700; line-height: 1; letter-spacing: -.02em; color: #fff; }
+.sx-title small { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .85; margin-bottom: 4px; }
+.sx-new { position: absolute; z-index: 1; left: 14px; top: 12px; background: #7fe0ae; color: #06261a; font-size: .7rem; font-weight: 800; padding: .22rem .6rem; border-radius: 999px; }
+.sx-head .cx-demo { top: 12px; right: 12px; }
+.sx-body { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px 18px; flex: 1; }
+.sx-body h3 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+.sx-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.sx-stats span { display: inline-flex; align-items: center; gap: .35rem; background: #f3f5f4; border-radius: 999px; padding: .25rem .65rem; font-size: .8rem; color: #3b423e; }
+.sx-stats i { color: var(--bq-green); font-size: .75rem; }
+.sx-stats .is-free { background: #e3f4ea; color: #0b6137; font-weight: 700; }
+.sx-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.sx-tags span { font-size: .74rem; border: 1px solid #dfe5e1; border-radius: 6px; padding: .1rem .45rem; color: #5b625e; }
+.sx-none { margin: 0; color: var(--bq-muted); font-size: .9rem; }
+.sx-btn { margin-top: auto; display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .7rem 1rem; border-radius: 14px; background: var(--bq-green); color: #fff; font-weight: 700; font-size: .92rem; text-decoration: none; transition: background .2s; }
+.sx-btn:hover { background: #0b6137; color: #fff; }
+.sx-btn i { transition: transform .2s; }
+.sx-card:hover .sx-btn i { transform: translateX(3px); }
+
+/* ══ Page d'une année : liste des épreuves ══ */
+.px-list { display: flex; flex-direction: column; gap: 12px; }
+.px-item { display: flex; gap: 16px; align-items: center; background: #fff; border-radius: 22px; padding: 16px 18px; }
+.px-num { flex: none; width: 48px; height: 48px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: #e3f4ea; color: var(--bq-green); font-size: 1.1rem; }
+.px-item.is-locked .px-num { background: #f1f1ef; color: #8a8f8c; }
+.px-main { flex: 1; min-width: 0; }
+.px-main h3 { margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.px-facts { display: flex; flex-wrap: wrap; gap: .3rem .9rem; margin-top: .35rem; color: var(--bq-muted); font-size: .85rem; }
+.px-facts i { color: var(--bq-green); margin-right: .25rem; }
+.px-acts { flex: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.px-acts .cc-btn { border-radius: 12px; }
+.px-lockpill { font-size: .72rem; font-weight: 700; background: #f1f1ef; color: #6e7571; border-radius: 999px; padding: .1rem .55rem; }
+@media (max-width: 640px) {
+  .px-item { flex-wrap: wrap; }
+  .px-acts { width: 100%; justify-content: flex-start; padding-left: 64px; }
+}
+
+/* ══ En-tête /concours/ avec photo ══ */
+.cx-hero--photo { background:
+    linear-gradient(90deg, #06261a 0%, rgba(6,38,26,.97) 34%, rgba(8,60,36,.72) 58%, rgba(8,60,36,.18) 100%),
+    var(--hero) right 30% / cover no-repeat, #06261a; }
+.cx-hero--photo::after { background-image: none; }
+.cx-hero--photo .bq-wrap { padding-top: clamp(2rem, 5vw, 3.2rem); padding-bottom: clamp(1.8rem, 4.5vw, 2.8rem); }
+.cx-hero--photo h1 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 640px; }
+.cx-hero--photo .cx-search { max-width: 600px; }
+.cx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 1.3rem; max-width: 680px; }
+.cx-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.cx-pills span { display: inline-flex; align-items: center; gap: .4rem; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(6px); border-radius: 999px; padding: .4rem .85rem; font-size: .88rem; color: rgba(255,255,255,.9); white-space: nowrap; }
+.cx-pills i { color: #7fe0ae; font-size: .8rem; }
+.cx-pills b { color: #fff; font-size: 1rem; }
+.cx-sub { display: inline-flex; align-items: center; gap: .45rem; padding: .45rem 1rem; border-radius: 999px; background: #ffd23f; color: #3a2a00; font-weight: 700; font-size: .88rem; text-decoration: none; white-space: nowrap; }
+.cx-sub:hover { background: #ffdf6b; color: #3a2a00; }
+.cx-hero-credit { position: absolute; right: 12px; bottom: 8px; z-index: 2; font-size: .66rem; color: rgba(255,255,255,.7); text-decoration: none; background: rgba(0,0,0,.3); padding: .1rem .45rem; border-radius: 5px; }
+@media (max-width: 760px) {
+  .cx-hero--photo { background: linear-gradient(180deg, rgba(6,38,26,.82) 0%, rgba(6,38,26,.9) 55%, #06261a 100%), var(--hero-sm) center 30% / cover no-repeat, #06261a; }
+  .cx-pills span { padding: .35rem .7rem; font-size: .82rem; }
+}

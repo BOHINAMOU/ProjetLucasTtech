@@ -8,7 +8,7 @@
   <div class="cx-banner__body">
     <span class="cx-avatar">{% if contest.logo %}<img src="{{ contest.logo.url }}" alt="{{ contest.acronym }}">{% else %}<span>{{ contest.acronym|truncatechars:12 }}</span>{% endif %}</span>
     <div class="cx-banner__txt">
-      <h1>{% if title %}{{ title }}{% else %}{{ contest.acronym }}{% endif %}</h1>
+      <h1>{% if title %}{{ title }}{% else %}{{ contest.short_acronym }}{% endif %}</h1>
       <p>{{ contest.name }}</p>
       <div class="cx-meta">
         <span><i class="fa fa-location-dot"></i>{{ contest.country }}</span>

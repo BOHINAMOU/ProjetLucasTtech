@@ -46,9 +46,15 @@ def detail(request, slug):
     contest = get_object_or_404(_contests_for(request.user), slug=slug)
     n_papers = ExamPaper.objects.filter(session__contest=contest, session__is_published=True,
                                         is_published=True).count()
-    sessions = contest.sessions.filter(is_published=True).annotate(
-        n_papers=Count('papers', filter=Q(papers__is_published=True)),
-        n_free=Count('papers', filter=Q(papers__is_published=True, papers__is_free=True)))
+    sessions = list(contest.sessions.filter(is_published=True).order_by('-year').prefetch_related(
+        Prefetch('papers', queryset=ExamPaper.objects.filter(is_published=True).prefetch_related(
+            Prefetch('corrections', queryset=Correction.objects.filter(is_published=True))))))
+    for s in sessions:
+        papers = list(s.papers.all())
+        s.n_papers = len(papers)
+        s.n_free = sum(1 for p in papers if p.is_free)
+        s.n_corrections = sum(1 for p in papers if p.corrections.all())
+        s.subjects = list(dict.fromkeys(p.subject or p.title for p in papers))[:4]
     return render(request, 'concours/detail.html', {
         'contest': contest, 'sessions': sessions, 'has_access': user_can_access(request.user, contest),
         'n_papers': n_papers,
@@ -61,11 +67,12 @@ def session(request, slug, year):
     papers = sess.papers.filter(is_published=True).select_related('specialty').prefetch_related(
         Prefetch('corrections', queryset=Correction.objects.filter(is_published=True)))
     has_access = user_can_access(request.user, contest)
-    rows = [(p, has_access or p.is_free) for p in papers]
+    rows = [(p, has_access) for p in papers]
     return render(request, 'concours/session.html', {
         'contest': contest, 'session': sess, 'rows': rows, 'has_access': has_access,
-        'title': f"{contest.acronym} {sess.year}", 'n_papers': len(rows),
-        'other_years': contest.sessions.filter(is_published=True).exclude(pk=sess.pk),
+        'title': f"{contest.short_acronym} {sess.year}", 'n_papers': len(rows),
+        'other_years': contest.sessions.filter(is_published=True).exclude(pk=sess.pk).order_by('-year'),
+        'n_corrections': sum(1 for p, _ok in rows if p.corrections.all()),
     })
 
 
