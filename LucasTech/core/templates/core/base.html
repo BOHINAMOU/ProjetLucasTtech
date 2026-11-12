@@ -376,18 +376,7 @@
 {% endblock %}
 </main>
 
-<!-- ═══════════ BARRE DU BAS (mobile) ═══════════ -->
 <div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>
-<nav class="tabbar" aria-label="Navigation rapide">
-  <a href="{% url 'core:home' %}" data-tab="/"><i class="fa fa-house"></i><span>Accueil</span></a>
-  <a href="{% url 'concours:index' %}" data-tab="/concours/"><i class="fa fa-file-pen"></i><span>Concours</span></a>
-  <a href="{% url 'core:history' %}" data-tab="/historique/"><i class="fa fa-clock-rotate-left"></i><span>Historique</span></a>
-  {% if user.is_authenticated %}
-  <a href="{% url 'users:profile' %}" data-tab="/users/"><i class="fa fa-user"></i><span>Mon compte</span></a>
-  {% else %}
-  <a href="{% url 'users:login' %}" data-tab="/users/"><i class="fa fa-right-to-bracket"></i><span>Connexion</span></a>
-  {% endif %}
-</nav>
 
 <!-- ═══════════ FOOTER ═══════════ -->
 {% block footer %}
@@ -426,11 +415,6 @@ window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scro
   }
   btn.addEventListener('click',function(){setOpen(!drawer.classList.contains('open'));});
   var bd=document.getElementById('navBackdrop'); if(bd)bd.addEventListener('click',function(){setOpen(false);});
-  /* Barre du bas : onglet actif */
-  var path=location.pathname, best=null;
-  document.querySelectorAll('.tabbar a').forEach(function(a){var t=a.dataset.tab;
-    if((t==='/'&&path==='/')||(t!=='/'&&path.indexOf(t)===0)||(t==='/historique/'&&path.indexOf('/abonnements/mon-espace')===0))best=a;});
-  if(best)best.classList.add('is-on');
   drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setOpen(false)));
   window.addEventListener('resize',function(){if(drawer.classList.contains('open'))fit();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&drawer.classList.contains('open'))setOpen(false);});
