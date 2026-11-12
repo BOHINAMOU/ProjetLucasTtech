@@ -6,7 +6,7 @@
   </div>
   <div class="cx-body">
     <span class="cx-avatar">{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.acronym }}" loading="lazy">{% else %}<span>{{ c.acronym|truncatechars:12 }}</span>{% endif %}</span>
-    <h3>{{ c.acronym }}</h3>
+    <h3>{{ c.short_acronym }}</h3>
     <p>{{ c.name }}</p>
     <div class="cx-meta">
       <span><i class="fa fa-location-dot"></i>{{ c.country }}</span>

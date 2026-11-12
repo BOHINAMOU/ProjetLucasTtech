@@ -29,6 +29,8 @@ def user_can_access(user, contest, now=None):
         return False
     if user.is_staff:
         return True
+    if getattr(contest, 'is_demo', False):
+        return False  # concours de démonstration : lisibles par l'équipe seulement
     now = now or timezone.now()
     if has_unlimited(user, now):
         return True
@@ -37,7 +39,6 @@ def user_can_access(user, contest, now=None):
 
 
 def can_view_paper(user, paper):
-    """Épreuve gratuite : tout le monde. Sinon : user_can_access sur son concours."""
-    if paper.is_free:
-        return True
+    """Lire un document (sujet ou corrigé) = être connecté ET avoir un abonnement actif couvrant
+    son concours (ou être de l'équipe). Règle stricte : la case « gratuite » n'ouvre plus l'accès."""
     return user_can_access(user, paper.session.contest)
