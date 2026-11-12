@@ -224,7 +224,17 @@ def password_reset_new_password(request):
 # ─────────────────────────────
 @login_required
 def profile(request):
-    return render(request, 'users/profile.html', {'user': request.user})
+    from abonnements.access import accessible_contest_ids, active_subscriptions, has_unlimited
+    from Payments.models import Payment
+    u = request.user
+    paid = Payment.objects.filter(user=u, status='approved')
+    stats = {
+        'subs': active_subscriptions(u).count(),
+        'contests': 'Tous' if has_unlimited(u) else len(accessible_contest_ids(u)),
+        'purchases': paid.exclude(kind__in=['ticket', 'abonnement']).count(),
+        'tickets': paid.filter(kind='ticket').count(),
+    }
+    return render(request, 'users/profile.html', {'user': u, 'stats': stats})
 
 
 @login_required

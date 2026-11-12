@@ -1,128 +1,81 @@
 {% extends 'core/base.html' %}
 {% block title %}Mon profil — Lantante Technologie{% endblock %}
-{% block extra_head %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
-
-{% block content %}
+{% block extra_head %}{% include 'concours/_head.html' %}<meta name="robots" content="noindex">
+{% include 'core/_app_style.html' %}
 <style>
-.pf { --ink: #1d1d1f; --gray: #6e6e73; --bg: #fbfbfd; --card: #f5f5f7; --line: rgba(0,0,0,.09); --g: #0f7a45; --g2: #0b6137; --gd: #0b2e1d; --gold: #c9a84c;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5; letter-spacing: -.011em;
-  color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(3rem, 7vw, 5rem); }
-.pf *, .pf *::before, .pf *::after { box-sizing: border-box; }
-.pf :where(h1, h2, h3, p, ul, dl, dd, dt) { margin: 0; padding: 0; }
-.pf :where(ul) { list-style: none; }
-.pf a { color: inherit; text-decoration: none; }
-.pf-in { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 2rem); }
-
-.pf-msg { padding: 13px 18px; border-radius: 14px; margin-bottom: 14px; font-size: .95rem; background: #e8f5ee; color: var(--g2); }
-.pf-msg.error { background: #fff1f2; color: #b4001a; }
-
-/* ── En-tête ── */
-.pf-head { display: flex; align-items: center; gap: clamp(1rem, 3vw, 1.8rem); background: var(--gd); color: #fff; border-radius: 28px; padding: clamp(1.4rem, 4vw, 2.2rem); }
-.pf-avatar { flex: none; width: clamp(72px, 14vw, 96px); aspect-ratio: 1; border-radius: 50%; background: var(--gold); color: var(--gd); display: flex; align-items: center; justify-content: center; font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 700; overflow: hidden; border: 3px solid rgba(255,255,255,.25); }
+.pf-avatar { flex: none; width: 76px; height: 76px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #c9a84c, #e8cf7d); color: #0b2e1d; font-size: 2rem; font-weight: 700; box-shadow: 0 0 0 4px rgba(255,255,255,.18); }
 .pf-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.pf-who { min-width: 0; }
-.pf-who h1 { font-size: clamp(1.4rem, 3.6vw, 2.1rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.1; overflow-wrap: anywhere; }
-.pf-who p { margin-top: 6px; color: rgba(255,255,255,.72); font-size: .95rem; overflow-wrap: anywhere; }
-.pf-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.pf-tag { display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; border-radius: 980px; background: rgba(255,255,255,.12); font-size: .8rem; font-weight: 500; }
-.pf-tag::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #5fd08c; }
-.pf-tag--off::before { background: rgba(255,255,255,.4); }
-
-/* ── Titres de blocs ── */
-.pf-h { font-size: 1.35rem; font-weight: 700; letter-spacing: -.03em; margin: clamp(1.8rem, 4vw, 2.6rem) 0 12px 4px; }
-
-/* ── Informations : une liste propre ── */
-.pf-list { background: var(--card); border-radius: 22px; overflow: hidden; }
-.pf-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 22px; }
-.pf-row + .pf-row { border-top: 1px solid var(--line); }
-.pf-row dt { color: var(--gray); font-size: .92rem; flex: none; }
-.pf-row dd { font-weight: 500; text-align: right; overflow-wrap: anywhere; min-width: 0; }
-.pf-row dd.empty { color: #a1a1a6; font-weight: 400; }
-.pf-row dd.empty a { color: var(--g); font-weight: 500; margin-left: 8px; }
-.pf-row dd.empty a:hover { text-decoration: underline; }
-.ok { color: var(--g); } .off { color: var(--gray); }
-
-/* ── Accès rapides ── */
-.pf-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.pf-tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: 22px; padding: 20px 22px; transition: transform .3s cubic-bezier(.2,.7,.2,1), background .3s, box-shadow .3s; }
-.pf-tile:hover { transform: translateY(-3px); background: #fff; box-shadow: 0 14px 30px rgba(0,0,0,.08); }
-.pf-tile b { display: block; font-size: 1.05rem; font-weight: 600; letter-spacing: -.02em; }
-.pf-tile small { display: block; margin-top: 2px; color: var(--gray); font-size: .86rem; }
-.pf-tile::after { content: '→'; color: var(--g); font-size: 1.2rem; transition: transform .25s; flex: none; }
-.pf-tile:hover::after { transform: translateX(4px); }
-.pf-tile--main { background: var(--g); color: #fff; }
-.pf-tile--main small { color: rgba(255,255,255,.8); }
-.pf-tile--main::after { color: #fff; }
-.pf-tile--main:hover { background: var(--g2); }
-
-.pf-out { margin-top: 26px; text-align: center; }
-.pf-out button { font: inherit; font-weight: 500; padding: 12px 28px; border-radius: 980px; border: 1.5px solid rgba(215,0,21,.35); background: transparent; color: #c4001a; cursor: pointer; transition: background .2s, color .2s; }
-.pf-out button:hover { background: #c4001a; color: #fff; }
-
+.pf-edit { position: absolute !important; top: 16px; right: 16px; z-index: 2; display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .85rem; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; text-decoration: none; font-size: .85rem; font-weight: 500; }
+.pf-edit:hover { background: rgba(255,255,255,.24); color: #fff; }
+.pf-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pf-badges span { font-size: .74rem; font-weight: 600; padding: .2rem .6rem; border-radius: 999px; background: rgba(255,255,255,.14); }
+.pf-badges .on::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #5fd08c; margin-right: 6px; }
+.pf-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.pf-act { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; background: #fff; border-radius: 22px; text-decoration: none; color: var(--bq-ink); font-size: .86rem; font-weight: 600; text-align: center; transition: transform .2s, box-shadow .2s; }
+.pf-act:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.08); color: var(--bq-ink); }
+.pf-act i { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
+.pf-act .c1 { background: #e6efff; color: #2f55b5; } .pf-act .c2 { background: #e3f4ea; color: #0f7a45; }
+.pf-act .c3 { background: #fde8ee; color: #b23a5a; } .pf-act .c4 { background: #fff1e0; color: #b56a00; }
+.pf-msg { padding: 12px 16px; border-radius: 16px; margin-bottom: 12px; background: #e3f4ea; color: #0b6137; }
+.pf-msg.error { background: #fdecef; color: #8a1c2e; }
 @media (max-width: 560px) {
-  .pf-head { flex-direction: column; text-align: center; }
-  .pf-tags { justify-content: center; }
-  .pf-tiles { grid-template-columns: 1fr; }
-  .pf-row { padding: 14px 18px; }
+  .pf-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-top { flex-direction: column; text-align: center; padding-right: 0 !important; padding-top: 6px; }
+  .pf-badges { justify-content: center; }
+  .pf-avatar { width: 70px; height: 70px; font-size: 1.7rem; }
+  .pf-edit span { display: none; }
 }
 </style>
+{% endblock %}
 
-<div class="pf">
-  <div class="pf-in">
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap ap-wrap">
+    {% for msg in messages %}<div class="pf-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}
 
-    {% if messages %}
-    <div>{% for msg in messages %}<div class="pf-msg {{ msg.tags }}">{{ msg }}</div>{% endfor %}</div>
-    {% endif %}
-
-    <!-- En-tête -->
-    <section class="pf-head">
-      <div class="pf-avatar">
-        {% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% else %}{{ user.email|slice:":1"|upper }}{% endif %}
-      </div>
-      <div class="pf-who">
-        <h1>{% if user.get_full_name %}{{ user.get_full_name }}{% else %}Mon profil{% endif %}</h1>
-        <p>{{ user.email }}</p>
-        <p>Membre depuis le {{ user.created_at|date:"j F Y" }}</p>
-        <div class="pf-tags">
-          <span class="pf-tag">{% if user.is_premium %}Premium{% else %}Compte actif{% endif %}</span>
-          <span class="pf-tag {% if not user.is_verified %}pf-tag--off{% endif %}">{% if user.is_verified %}Vérifié{% else %}Non vérifié{% endif %}</span>
+    <section class="ap-hero">
+      <a class="pf-edit" href="{% url 'users:edit_profile' %}"><i class="fa fa-pen"></i><span> Modifier</span></a>
+      <div class="ap-hero__top pf-top" style="padding-right:90px">
+        <span class="pf-avatar">{% if user.avatar %}<img src="{{ user.avatar.url }}" alt="">{% elif user.first_name %}{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}{% else %}{{ user.email|slice:":1"|upper }}{% endif %}</span>
+        <div>
+          <h1>{% if user.get_full_name %}{{ user.get_full_name }}{% else %}Mon compte{% endif %}</h1>
+          <p>{{ user.email }}</p>
+          <div class="pf-badges">
+            <span class="on">Compte actif</span>
+            <span>Membre depuis {{ user.created_at|date:"F Y" }}</span>
+          </div>
         </div>
+      </div>
+      <div class="ap-stats">
+        <a href="{% url 'abonnements:space' %}"><b>{{ stats.subs }}</b><small>Abonnement{{ stats.subs|pluralize }} actif{{ stats.subs|pluralize }}</small></a>
+        <a href="{% url 'abonnements:space' %}?onglet=concours"><b>{{ stats.contests }}</b><small>Concours accessibles</small></a>
+        <a href="{% url 'core:history' %}"><b>{{ stats.purchases }}</b><small>Achat{{ stats.purchases|pluralize }}</small></a>
+        <a href="{% url 'core:history' %}?type=evenements"><b>{{ stats.tickets }}</b><small>Ticket{{ stats.tickets|pluralize }}</small></a>
       </div>
     </section>
 
-    <!-- Informations -->
-    <h2 class="pf-h">Mes informations</h2>
-    <dl class="pf-list">
-      <div class="pf-row"><dt>E-mail</dt><dd>{{ user.email }}</dd></div>
-      <div class="pf-row"><dt>Téléphone</dt>
-        {% if user.phone %}<dd>{{ user.phone }}</dd>{% else %}<dd class="empty">Non renseigné<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
-      <div class="pf-row"><dt>Pays</dt>
-        {% if user.country %}<dd>{{ user.country }}</dd>{% else %}<dd class="empty">Non renseigné<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
-      <div class="pf-row"><dt>Ville</dt>
-        {% if user.city %}<dd>{{ user.city }}</dd>{% else %}<dd class="empty">Non renseignée<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
-      <div class="pf-row"><dt>Date de naissance</dt>
-        {% if user.date_of_birth %}<dd>{{ user.date_of_birth|date:"j F Y" }}</dd>{% else %}<dd class="empty">Non renseignée<a href="{% url 'users:edit_profile' %}">Ajouter</a></dd>{% endif %}</div>
-      <div class="pf-row"><dt>Compte</dt>
-        <dd>{% if user.is_premium %}<span class="ok">Premium</span>{% else %}<span class="off">Gratuit</span>{% endif %}</dd></div>
-    </dl>
-
-    <!-- Accès rapides -->
-    <h2 class="pf-h">Accès rapides</h2>
-    <div class="pf-tiles">
-      <a class="pf-tile pf-tile--main" href="{% url 'users:edit_profile' %}"><span><b>Modifier le profil</b><small>Téléphone, pays, ville…</small></span></a>
-      <a class="pf-tile" href="{% url 'core:history' %}"><span><b>Historique</b><small>Achats, formations, concours, tickets</small></span></a>
-      <a class="pf-tile" href="{% url 'abonnements:space' %}"><span><b>Mon espace concours</b><small>Abonnements, concours, paiements</small></span></a>
-      <a class="pf-tile" href="{% url 'shop:order_history' %}"><span><b>Mes commandes</b><small>Boutique, suivi et reçus</small></span></a>
-      <a class="pf-tile" href="{% url 'formations:formations' %}"><span><b>Mes formations</b><small>Voir les formations</small></span></a>
-      <a class="pf-tile" href="{% url 'formations:cart' %}"><span><b>Mon panier</b><small>Vos articles en attente</small></span></a>
-      <a class="pf-tile" href="{% url 'users:password_reset' %}"><span><b>Mot de passe</b><small>Le changer en toute sécurité</small></span></a>
+    <div class="pf-actions">
+      <a class="pf-act" href="{% url 'abonnements:space' %}"><i class="fa fa-file-pen c1"></i>Mes concours</a>
+      <a class="pf-act" href="{% url 'core:history' %}"><i class="fa fa-clock-rotate-left c2"></i>Historique</a>
+      <a class="pf-act" href="{% url 'core:history' %}?type=evenements"><i class="fa fa-ticket c3"></i>Mes tickets</a>
+      <a class="pf-act" href="{% url 'core:history' %}?type=formations"><i class="fa fa-graduation-cap c4"></i>Mes formations</a>
     </div>
 
-    <form class="pf-out" method="post" action="{% url 'users:logout' %}">
-      {% csrf_token %}
-      <button type="submit">Se déconnecter</button>
-    </form>
+    <h2 class="ap-h">Mon compte</h2>
+    <div class="ap-list">
+      <a class="ap-item" href="{% url 'users:edit_profile' %}"><i class="fa fa-user"></i><span><b>Informations personnelles</b><small>{% if user.phone %}{{ user.phone }}{% else %}Téléphone non renseigné{% endif %}{% if user.city %} · {{ user.city }}{% endif %}{% if user.country %}, {{ user.country }}{% endif %}</small></span></a>
+      <a class="ap-item" href="{% url 'shop:order_history' %}"><i class="fa fa-box"></i><span><b>Mes commandes boutique</b><small>Suivi et reçus</small></span></a>
+      <a class="ap-item" href="{% url 'formations:cart' %}"><i class="fa fa-cart-shopping"></i><span><b>Mon panier</b><small>Formations en attente</small></span></a>
+      <a class="ap-item" href="{% url 'abonnements:plans' %}"><i class="fa fa-star"></i><span><b>Abonnements concours</b><small>Standard, Premium, Ultimate</small></span></a>
+    </div>
 
+    <h2 class="ap-h">Sécurité</h2>
+    <div class="ap-list">
+      <a class="ap-item" href="{% url 'users:password_reset' %}"><i class="fa fa-lock"></i><span><b>Mot de passe</b><small>Le changer en toute sécurité</small></span></a>
+      <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}
+        <button type="submit" class="ap-item ap-item--danger no-chev"><i class="fa fa-right-from-bracket"></i><span><b>Se déconnecter</b></span></button>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}
