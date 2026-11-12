@@ -191,9 +191,46 @@ def password_reset_confirm(request):
     return Response({'token': token.key, 'user': user_payload(request, user)})
 
 
-@api_view(['GET'])
+def _has_records(user):
+    """Vrai si le compte a des achats / abonnements à conserver pour la comptabilité."""
+    from Payments.models import Payment
+    from Shop.models import ShopOrder
+    return (Payment.objects.filter(user=user).exists() or ShopOrder.objects.filter(user=user).exists()
+            or UserSubscription.objects.filter(user=user).exists())
+
+
+def _delete_account(user):
+    """Suppression demandée par l'utilisateur. Avec un historique d'achats : anonymisation + désactivation
+    (les paiements restent pour la comptabilité, sans données personnelles du compte). Sinon : suppression."""
+    Token.objects.filter(user=user).delete()
+    if not _has_records(user):
+        user.delete()
+        return 'supprime'
+    if user.avatar:
+        user.avatar.delete(save=False)
+    user.email = f"compte-supprime-{user.pk}@supprime.invalid"
+    user.first_name = user.last_name = ''
+    user.phone = user.country = user.city = None
+    user.avatar = None
+    user.date_of_birth = None
+    user.is_active = False
+    user.set_unusable_password()
+    user.save()
+    PasswordResetCode.objects.filter(user=user).delete()
+    return 'anonymise'
+
+
+@api_view(['GET', 'DELETE'])
 def me(request):
     user = request.user
+    if request.method == 'DELETE':
+        if user.is_staff or user.is_superuser:
+            return error("Un compte d'administration ne peut pas être supprimé depuis l'application.", 403,
+                         code='interdit')
+        if not user.check_password(request.data.get('password') or ''):
+            return error("Mot de passe incorrect.", 400, code='mot_de_passe_incorrect')
+        result = _delete_account(user)
+        return Response({'detail': "Votre compte a été supprimé.", 'resultat': result})
     rights = Rights(user)
     published = Contest.objects.published()
     if rights.staff or rights.unlimited:
