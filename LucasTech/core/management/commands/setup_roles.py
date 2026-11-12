@@ -17,7 +17,7 @@ from django.core.management.base import BaseCommand
 GROUP_NAME = "Administrateur"
 
 # Applications dont le contenu est géré par le rôle.
-CONTENT_APPS = ('core', 'Publications', 'Services', 'Portfolio', 'Shop', 'Formations', 'Emploi')
+CONTENT_APPS = ('core', 'Publications', 'Services', 'Portfolio', 'Shop', 'Formations', 'Emploi', 'concours')
 
 # Modèles exclus totalement (app_label, model) : jetons d'appareil = données techniques.
 EXCLUDED_MODELS = {('Emploi', 'devicetoken')}
