@@ -9,7 +9,9 @@
     <p class="cc-crumbs"><a href="{% url 'concours:index' %}">Concours</a> › {{ contest.acronym }}</p>
     {% include 'concours/_banner.html' %}
     {% if contest.description %}<div class="ct-box" style="margin-bottom:1rem">{{ contest.description|linebreaks }}</div>{% endif %}
-    {% if not has_access %}
+    {% if contest.is_demo %}
+    <div class="cc-note cc-note--warn"><span><i class="fa fa-flask"></i> <b>Concours de démonstration.</b> Les épreuves et corrigés ci-dessous sont des exemples factices, pour découvrir le fonctionnement du site. Ils ne sont pas proposés à l'abonnement.</span></div>
+    {% elif not has_access %}
     <div class="cc-note"><span><i class="fa fa-circle-info"></i> Les épreuves marquées « Gratuit » sont lisibles par tous. Les autres sont réservées aux abonnés (compte gratuit requis).</span></div>
     {% endif %}
 

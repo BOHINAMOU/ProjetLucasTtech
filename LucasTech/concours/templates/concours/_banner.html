@@ -2,7 +2,8 @@
   <div class="cx-cover {{ contest.gradient }}">
     {% if contest.cover %}<img src="{{ contest.cover.url }}" alt="">{% else %}<span class="cx-cover__txt">{{ contest.acronym }}</span>{% endif %}
     <span class="cx-cat">{% if contest.category.icon %}<i class="fa {{ contest.category.icon }}"></i>{% endif %}{{ contest.category.name }}</span>
-    {% if not contest.is_published %}<span class="cc-draft">Non publié (aperçu admin)</span>{% endif %}
+    {% if contest.is_demo %}<span class="cx-demo">Démonstration</span>{% elif not contest.is_published %}<span class="cc-draft">Non publié (aperçu admin)</span>{% endif %}
+    {% if contest.photo_credit %}<a class="cx-credit" href="{{ contest.photo_credit_url|default:'#' }}" target="_blank" rel="noopener nofollow">Photos : {{ contest.photo_credit }}</a>{% endif %}
   </div>
   <div class="cx-banner__body">
     <span class="cx-avatar">{% if contest.logo %}<img src="{{ contest.logo.url }}" alt="{{ contest.acronym }}">{% else %}<span>{{ contest.acronym|truncatechars:12 }}</span>{% endif %}</span>
@@ -16,7 +17,7 @@
         {% if has_access %}<span><i class="fa fa-circle-check"></i>Inclus dans vos abonnements</span>{% endif %}
       </div>
     </div>
-    {% if not has_access %}
+    {% if not has_access and not contest.is_demo %}
     <div class="cx-banner__cta"><a class="cc-btn" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock-open"></i> S'abonner</a></div>
     {% endif %}
   </div>

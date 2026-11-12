@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import history, views
 
 app_name = 'core'
 
@@ -15,6 +15,7 @@ urlpatterns = [
     path('equipe/<int:pk>/', views.team_member_detail, name='team_member_detail'),
     path('monetisation/', views.monetization_page, name='monetization'),
     path('monetisation/merci/', views.monetization_thanks, name='monetization_thanks'),
+    path('historique/', history.history, name='history'),
     path('confidentialite/', views.privacy_policy, name='privacy_policy'),
     path('conditions-utilisation/', views.terms_of_service, name='terms_of_service'),
 ]

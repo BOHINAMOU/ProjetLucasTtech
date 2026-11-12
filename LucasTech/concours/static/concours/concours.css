@@ -168,3 +168,11 @@
 }
 .cx-card .cx-cover__txt { font-size: clamp(1.5rem, 2.6vw, 2rem); max-width: 88%; overflow: hidden; text-overflow: ellipsis; }
 .cx-banner__txt { padding-top: 14px; }
+.cx-demo { position: absolute; top: 12px; right: 12px; background: #ffd23f; color: #3a2a00; font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .28rem .7rem; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+.cx-credit { position: absolute; right: 12px; bottom: 10px; max-width: 70%; font-size: .68rem; color: rgba(255,255,255,.85); text-decoration: none; background: rgba(0,0,0,.35); padding: .15rem .5rem; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cx-card .cx-cover::before, .cx-banner .cx-cover::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,0) 40%, rgba(0,0,0,.18)); z-index: 1; pointer-events: none; }
+.cx-cat, .cx-demo, .cx-credit, .cc-draft { z-index: 2; }
+.cx-demo { position: absolute; top: 12px; right: 12px; background: #ffd23f; color: #3a2a00; font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .28rem .7rem; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+.cx-credit { position: absolute; right: 12px; bottom: 10px; max-width: 70%; font-size: .68rem; color: rgba(255,255,255,.85); text-decoration: none; background: rgba(0,0,0,.35); padding: .15rem .5rem; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cx-card .cx-cover::before, .cx-banner .cx-cover::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,0) 40%, rgba(0,0,0,.18)); z-index: 1; pointer-events: none; }
+.cx-cat, .cx-demo, .cx-credit, .cc-draft { z-index: 2; }

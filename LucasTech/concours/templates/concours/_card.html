@@ -2,7 +2,7 @@
   <div class="cx-cover {{ c.gradient }}">
     {% if c.cover %}<img src="{{ c.cover.url }}" alt="" loading="lazy">{% else %}<span class="cx-cover__txt">{{ c.acronym }}</span>{% endif %}
     <span class="cx-cat">{% if c.category.icon %}<i class="fa {{ c.category.icon }}"></i>{% endif %}{{ c.category.name }}</span>
-    {% if not c.is_published %}<span class="cc-draft">Non publié</span>{% endif %}
+    {% if c.is_demo %}<span class="cx-demo">Démo</span>{% elif not c.is_published %}<span class="cc-draft">Non publié</span>{% endif %}
   </div>
   <div class="cx-body">
     <span class="cx-avatar">{% if c.logo %}<img src="{{ c.logo.url }}" alt="{{ c.acronym }}" loading="lazy">{% else %}<span>{{ c.acronym|truncatechars:12 }}</span>{% endif %}</span>

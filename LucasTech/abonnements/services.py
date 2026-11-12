@@ -154,7 +154,7 @@ def add_contests(subscription, contests):
         contests = list({c.pk: c for c in contests}.values())
         if not contests:
             raise SelectionError("Choisissez au moins un concours.")
-        if any(not c.is_published for c in contests):
+        if any(not c.is_published or c.is_demo for c in contests):
             raise SelectionError("Concours indisponible.")
         states = dict((c.pk, s) for c, s in selection_states(sub.user, sub, contests))
         dup = [c for c in contests if states[c.pk] != 'libre']

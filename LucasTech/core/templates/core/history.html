@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Historique — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'concours/_head.html' %}<meta name="robots" content="noindex">
+<style>
+.hx-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+.hx-item { display: flex; gap: 14px; align-items: flex-start; background: #fff; border-radius: 20px; padding: 16px 18px; }
+.hx-ico { flex: none; width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #e3f4ea; color: var(--bq-green); font-size: 1.1rem; }
+.hx-ico.t-boutique { background: #fff1e0; color: #b56a00; }
+.hx-ico.t-concours { background: #e6efff; color: #2f55b5; }
+.hx-ico.t-evenements { background: #fde8ee; color: #b23a5a; }
+.hx-ico.t-services { background: #efe9ff; color: #6a4bc4; }
+.hx-main { flex: 1; min-width: 0; }
+.hx-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.hx-top h3 { margin: 0; font-size: 1rem; font-weight: 700; overflow-wrap: anywhere; }
+.hx-top b { white-space: nowrap; }
+.hx-sub { margin-top: .25rem; color: var(--bq-muted); font-size: .84rem; display: flex; flex-wrap: wrap; gap: .3rem .8rem; align-items: center; }
+.hx-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .7rem; }
+.hx-actions a { display: inline-flex; align-items: center; gap: .4rem; font-size: .84rem; font-weight: 500; padding: .4rem .8rem; border-radius: 999px; background: #f1f3f2; color: var(--bq-ink); text-decoration: none; }
+.hx-actions a:first-child { background: var(--bq-green); color: #fff; }
+.hx-chips .ct-chip small { opacity: .6; margin-left: .2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bq">
+  <div class="bq-wrap">
+    <section class="cc-head">
+      <span class="cc-logo cc-logo--lg"><i class="fa fa-clock-rotate-left" style="font-size:1.6rem"></i></span>
+      <div>
+        <h1>Historique</h1>
+        <p>Tout ce que vous avez fait sur Lantante Technologie : achats, formations, abonnements, tickets.</p>
+      </div>
+    </section>
+
+    <nav class="ct-chips hx-chips" aria-label="Filtrer">
+      {% for key, label, icon, n in types %}
+      <a href="?type={{ key }}" class="ct-chip{% if active == key %} is-on{% endif %}"><i class="fa {{ icon }}"></i>{{ label }}<small>{{ n }}</small></a>
+      {% endfor %}
+    </nav>
+
+    <div class="hx-list" style="margin-top:1rem">
+      {% for e in entries %}
+      <article class="hx-item">
+        <span class="hx-ico t-{{ e.type }}"><i class="fa {{ e.icon }}"></i></span>
+        <div class="hx-main">
+          <div class="hx-top">
+            <h3>{{ e.title }}</h3>
+            {% if e.amount is not None %}<b>{{ e.amount|floatformat:"0g" }} F</b>{% endif %}
+          </div>
+          <div class="hx-sub">
+            <span>{{ e.date|date:"j M Y à H:i" }}</span>
+            <span class="ct-badge ct-badge--{{ e.status_class }}">{{ e.status }}</span>
+            {% if e.ref %}<span>Réf. {{ e.ref }}</span>{% endif %}
+          </div>
+          {% if e.actions %}<div class="hx-actions">{% for label, url, icon in e.actions %}<a href="{{ url }}"><i class="fa {{ icon }}"></i> {{ label }}</a>{% endfor %}</div>{% endif %}
+        </div>
+      </article>
+      {% empty %}
+      <div class="bq-empty"><i class="fa fa-clock-rotate-left"></i><p>Rien pour le moment{% if active != 'tout' %} dans cette rubrique{% endif %}.</p>
+        <p><a href="{% url 'concours:index' %}">Concours</a> · <a href="{% url 'shop:shop' %}">Boutique</a> · <a href="{% url 'formations:formations' %}">Formations</a></p></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

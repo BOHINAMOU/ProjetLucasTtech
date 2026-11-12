@@ -236,3 +236,22 @@ class SubscriptionRulesTests(TestCase):
         r = self.client.get(reverse('abonnements:plans'))
         self.assertContains(r, 'Créer mon compte')
         self.assertFalse(UserSubscription.objects.exists())
+
+    def test_concours_de_demo_non_selectionnable(self):
+        demo = Contest.objects.create(acronym='DEMO-X', name='Démo', category=self.ens.category,
+                                      is_published=True, is_demo=True)
+        sub = self._active(self.standard)
+        with self.assertRaises(services.SelectionError):
+            services.add_contests(sub, [demo])
+
+    def test_historique_connexion_obligatoire_et_contenu(self):
+        r = self.client.get(reverse('core:history'))
+        self.assertEqual(r.status_code, 302)
+        pay = Payment.objects.create(kind='abonnement', amount=1000, description='Abonnement concours Standard',
+                                     user=self.user, first_name='A', last_name='B', phone='22890000000')
+        self.client.force_login(self.user)
+        r = self.client.get(reverse('core:history'))
+        self.assertContains(r, 'Abonnement concours Standard')
+        self.assertContains(r, pay.reference)
+        r = self.client.get(reverse('core:history') + '?type=boutique')
+        self.assertNotContains(r, 'Abonnement concours Standard')

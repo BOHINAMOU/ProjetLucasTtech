@@ -8,6 +8,9 @@
   <div class="bq-wrap">
     <p class="cc-crumbs"><a href="{% url 'concours:index' %}">Concours</a> › <a href="{{ contest.get_absolute_url }}">{{ contest.acronym }}</a> › {{ session.year }}</p>
     {% include 'concours/_banner.html' %}
+    {% if contest.is_demo %}
+    <div class="cc-note cc-note--warn"><span><i class="fa fa-flask"></i> Exemple de démonstration : documents factices, pour découvrir le lecteur du site.</span></div>
+    {% endif %}
 
     <div class="cc-papers">
       {% for p, ok in rows %}

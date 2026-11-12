@@ -141,7 +141,7 @@ def select(request, pk):
         return redirect('concours:index')
     if request.method == 'POST':
         ids = [int(i) for i in request.POST.getlist('contests') if i.isdigit()]
-        chosen = list(Contest.objects.published().filter(pk__in=ids))
+        chosen = list(Contest.objects.published().filter(pk__in=ids, is_demo=False))
         try:
             services.add_contests(sub, chosen)
         except services.SelectionError as exc:
@@ -151,7 +151,7 @@ def select(request, pk):
             messages.success(request, f"{n} concours ajouté{'s' if n > 1 else ''} à votre abonnement.")
             return redirect(reverse('abonnements:space'))
     q = (request.GET.get('q') or '').strip()
-    contests = Contest.objects.published().select_related('category')
+    contests = Contest.objects.published().filter(is_demo=False).select_related('category')
     cat = request.GET.get('categorie') or ''
     if cat:
         contests = contests.filter(category__slug=cat)

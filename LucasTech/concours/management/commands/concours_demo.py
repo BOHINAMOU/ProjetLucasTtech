@@ -1,113 +1,168 @@
-"""Crée 3 concours de DÉMONSTRATION, non publiés (visibles seulement par les admins), avec des
-documents factices clairement marqués « démonstration » : aucune vraie épreuve n'est inventée.
+"""Concours de DÉMONSTRATION pour présenter la rubrique (web et future application).
 
-    python manage.py concours_demo            # crée (idempotent)
-    python manage.py concours_demo --publier  # les rend visibles au public
-    python manage.py concours_demo --supprimer
+- 6 concours fictifs « DEMO-… » dans 5 catégories, avec de vraies photos libres de droits
+  (Wikimedia Commons, usage commercial autorisé : voir concours/demo_photos/CREDITS.json) ;
+- plusieurs années, des épreuves et des corrigés FACTICES, clairement marqués « Démonstration » ;
+- badge « Démo » visible partout ; ces concours ne peuvent pas être choisis dans un abonnement.
+
+    python manage.py concours_demo              # crée / met à jour (non publiés)
+    python manage.py concours_demo --publier    # crée / met à jour et publie
+    python manage.py concours_demo --retirer    # dépublie (garde les données)
+    python manage.py concours_demo --supprimer  # supprime tout (concours, fichiers, photos)
 """
+import json
+from pathlib import Path
+
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from fpdf import FPDF
 
 from concours.models import Contest, ContestCategory, ContestSession, Correction, ExamPaper
 
+PHOTOS = Path(__file__).resolve().parents[2] / 'demo_photos'
+
 DEMO = [
-    ('DEMO-ENS', "École normale supérieure (démonstration)", 'enseignement'),
-    ('DEMO-SANTE', "Concours des écoles de santé (démonstration)", 'sante'),
-    ('DEMO-ADMIN', "Concours de la fonction publique (démonstration)", 'administration'),
+    # sigle, nom, catégorie, préfixe photo, description, années -> épreuves
+    ('DEMO-ENS', "École normale supérieure — exemple", 'enseignement', 'ens',
+     "Concours de recrutement des élèves-professeurs (exemple de démonstration).",
+     {2025: ['culture', 'maths', 'francais'], 2024: ['maths', 'francais'], 2023: ['culture'], 2020: []}),
+    ('DEMO-INFO', "Concours d'informatique — exemple", 'informatique', 'info',
+     "Entrée en école d'informatique et de réseaux (exemple de démonstration).",
+     {2025: ['logique', 'maths', 'anglais'], 2024: ['logique', 'maths']}),
+    ('DEMO-SANTE', "Écoles de santé : infirmiers et sages-femmes — exemple", 'sante', 'sante',
+     "Concours d'entrée dans les écoles paramédicales (exemple de démonstration).",
+     {2025: ['culture', 'biologie', 'francais'], 2024: ['biologie'], 2023: ['culture', 'biologie']}),
+    ('DEMO-DOUANES', "Concours des douanes — exemple", 'administration', 'douanes',
+     "Recrutement d'agents et de contrôleurs des douanes (exemple de démonstration).",
+     {2025: ['culture', 'droit', 'maths'], 2024: ['culture', 'droit']}),
+    ('DEMO-FP', "Fonction publique — exemple", 'administration', 'fp',
+     "Concours administratifs de la fonction publique (exemple de démonstration).",
+     {2025: ['culture', 'redaction'], 2024: ['culture', 'redaction'], 2023: ['redaction']}),
+    ('DEMO-GEND', "Gendarmerie nationale — exemple", 'securite', 'gend',
+     "Recrutement des élèves gendarmes (exemple de démonstration).",
+     {2025: ['culture', 'francais', 'maths'], 2024: ['culture']}),
 ]
-YEAR = 2025
+SUBJECTS = {  # clé -> (titre, matière, durée, coefficient)
+    'culture': ("Culture générale", "Culture générale", "2 h", 2),
+    'maths': ("Mathématiques", "Mathématiques", "3 h", 3),
+    'francais': ("Français : dissertation", "Français", "3 h", 3),
+    'logique': ("Logique et algorithmique", "Informatique", "2 h", 3),
+    'anglais': ("Anglais", "Anglais", "1 h 30", 1),
+    'biologie': ("Sciences biologiques", "Biologie", "2 h", 3),
+    'droit': ("Droit et économie", "Droit", "3 h", 2),
+    'redaction': ("Note de synthèse", "Rédaction administrative", "4 h", 4),
+}
 
 
-COLORS = {'enseignement': ((11, 74, 45), (15, 122, 69)), 'sante': ((90, 32, 51), (178, 58, 90)),
-          'administration': ((30, 42, 90), (62, 91, 181))}
-
-
-def _logo(acronym, cat_slug):
-    """Photo de profil de démonstration : dégradé + sigle (PNG 400x400)."""
-    import io
-
-    from PIL import Image, ImageDraw, ImageFont
-    a, b = COLORS.get(cat_slug, COLORS['enseignement'])
-    img = Image.new('RGB', (400, 400))
-    d = ImageDraw.Draw(img)
-    for y in range(400):
-        t = y / 399
-        d.line([(0, y), (400, y)], fill=tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3)))
-    text = acronym.replace('DEMO-', '')
-    try:
-        font = ImageFont.truetype('DejaVuSans-Bold.ttf', 96 if len(text) <= 4 else 64)
-    except OSError:
-        font = ImageFont.load_default(size=80)
-    w = d.textlength(text, font=font)
-    d.text(((400 - w) / 2, 150), text, fill=(255, 255, 255), font=font)
-    d.text((140, 290), 'DEMO', fill=(255, 255, 255, 160), font=ImageFont.load_default(size=36))
-    buf = io.BytesIO()
-    img.save(buf, 'PNG')
-    return buf.getvalue()
-
-
-def _pdf(title, lines):
+def _pdf(title, subtitle, body):
     pdf = FPDF()
+    pdf.set_auto_page_break(True, 20)
     pdf.add_page()
-    pdf.set_font('Helvetica', 'B', 18)
-    pdf.multi_cell(0, 10, title)
-    pdf.ln(4)
-    pdf.set_font('Helvetica', '', 12)
-    for line in lines:
-        pdf.multi_cell(0, 8, line)
-    pdf.ln(6)
+    pdf.set_fill_color(15, 122, 69)
+    pdf.rect(0, 0, 210, 30, 'F')
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font('Helvetica', 'B', 16)
+    pdf.set_xy(12, 9)
+    pdf.cell(0, 8, title)
+    pdf.set_font('Helvetica', '', 10)
+    pdf.set_xy(12, 18)
+    pdf.cell(0, 6, subtitle)
     pdf.set_text_color(200, 0, 0)
-    pdf.set_font('Helvetica', 'B', 14)
-    pdf.multi_cell(0, 9, "DOCUMENT DE DEMONSTRATION - ce n'est pas une vraie epreuve.")
+    pdf.set_font('Helvetica', 'B', 13)
+    pdf.set_xy(12, 40)
+    pdf.multi_cell(186, 7, "DOCUMENT DE DEMONSTRATION - ce n'est pas une vraie epreuve officielle.")
+    pdf.set_text_color(30, 30, 30)
+    pdf.set_font('Helvetica', '', 11)
+    pdf.ln(4)
+    for line in body:
+        pdf.set_x(12)
+        pdf.multi_cell(186, 7, line)
+        pdf.ln(2)
     return bytes(pdf.output())
 
 
+def _ascii(s):
+    import unicodedata
+    return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode()
+
+
 class Command(BaseCommand):
-    help = "Concours de démonstration (non publiés) pour tester les pages."
+    help = "Concours de démonstration avec photos (voir l'aide du fichier)."
 
     def add_arguments(self, parser):
         parser.add_argument('--publier', action='store_true')
+        parser.add_argument('--retirer', action='store_true')
         parser.add_argument('--supprimer', action='store_true')
 
+    def _demo_qs(self):
+        return Contest.objects.filter(Q(is_demo=True) | Q(acronym__startswith='DEMO-'))
+
+    def _delete(self, contests):
+        for c in contests:
+            for p in ExamPaper.objects.filter(session__contest=c):
+                for corr in p.corrections.all():
+                    corr.file.delete(save=False)
+                p.file.delete(save=False)
+            for f in (c.logo, c.cover):
+                if f:
+                    f.delete(save=False)
+            c.delete()
+
     def handle(self, *args, **opts):
-        acronyms = [a for a, _n, _c in DEMO]
         if opts['supprimer']:
-            for c in Contest.objects.filter(acronym__in=acronyms):
-                for p in ExamPaper.objects.filter(session__contest=c):
-                    for corr in p.corrections.all():
-                        corr.file.delete(save=False)
-                    p.file.delete(save=False)
-                if c.logo:
-                    c.logo.delete(save=False)
-                c.delete()
-            self.stdout.write("Concours de démonstration supprimés.")
+            n = self._demo_qs().count()
+            self._delete(self._demo_qs())
+            self.stdout.write(f"{n} concours de démonstration supprimés.")
             return
-        for acronym, name, cat_slug in DEMO:
+        if opts['retirer']:
+            n = self._demo_qs().update(is_published=False)
+            self.stdout.write(f"{n} concours de démonstration retirés du site.")
+            return
+
+        credits = json.loads((PHOTOS / 'CREDITS.json').read_text(encoding='utf-8'))
+        keep = [d[0] for d in DEMO]
+        self._delete(self._demo_qs().exclude(acronym__in=keep))  # anciens exemples
+        for acronym, name, cat_slug, photo, desc, years in DEMO:
             cat = ContestCategory.objects.get(slug=cat_slug)
-            contest, _ = Contest.objects.get_or_create(acronym=acronym, defaults={
-                'name': name, 'category': cat, 'country': 'Togo',
-                'description': "Concours de démonstration pour vérifier l'affichage du site. "
-                               "Les documents sont factices."})
-            if not contest.logo:
-                contest.logo.save(f'{acronym.lower()}.png', ContentFile(_logo(acronym, cat_slug)), save=True)
-            if opts['publier'] and not contest.is_published:
-                contest.is_published = True
-                contest.save(update_fields=['is_published'])
-            session, _ = ContestSession.objects.get_or_create(contest=contest, year=YEAR)
-            ContestSession.objects.get_or_create(contest=contest, year=YEAR - 1)
-            if session.papers.exists():
-                continue
-            free = ExamPaper(session=session, title="Culture générale (démo)", subject="Culture générale",
-                             duration="2 h", coefficient=2, is_free=True, order=1)
-            free.file.save(f'{acronym.lower()}-demo-gratuit.pdf', ContentFile(_pdf(
-                f"{acronym} {YEAR} - Culture generale (demo)", ["Sujet gratuit de demonstration."])), save=True)
-            paid = ExamPaper(session=session, title="Épreuve de spécialité (démo)", subject="Spécialité",
-                             duration="3 h", coefficient=3, is_free=False, order=2)
-            paid.file.save(f'{acronym.lower()}-demo-payant.pdf', ContentFile(_pdf(
-                f"{acronym} {YEAR} - Specialite (demo)", ["Sujet payant de demonstration."])), save=True)
-            corr = Correction(paper=paid, kind='enseignant', author="Équipe Lantante (démo)")
-            corr.file.save(f'{acronym.lower()}-demo-corrige.pdf', ContentFile(_pdf(
-                f"{acronym} {YEAR} - Corrige (demo)", ["Corrige de demonstration."])), save=True)
-        state = "publiés" if opts['publier'] else "non publiés (visibles par les admins seulement)"
-        self.stdout.write(f"Concours de démonstration prêts, {state}.")
+            c, _ = Contest.objects.get_or_create(acronym=acronym, defaults={'name': name, 'category': cat})
+            c.name, c.category, c.description, c.is_demo, c.country = name, cat, desc, True, 'Togo'
+            cr = [credits[f'{photo}-cover'], credits[f'{photo}-profil']]
+            c.photo_credit = " · ".join(f"{x['auteur'] or 'Auteur inconnu'} ({x['licence']})" for x in cr)
+            c.photo_credit_url = cr[0]['source']
+            if opts['publier']:
+                c.is_published = True
+            for field, suffix in (('cover', 'cover'), ('logo', 'profil')):
+                f = getattr(c, field)
+                if f:
+                    f.delete(save=False)
+                f.save(f'{acronym.lower()}-{suffix}.jpg',
+                       ContentFile((PHOTOS / f'{photo}-{suffix}.jpg').read_bytes()), save=False)
+            c.save()
+            for p in ExamPaper.objects.filter(session__contest=c):  # documents de démo régénérés à chaque fois
+                for corr in p.corrections.all():
+                    corr.file.delete(save=False)
+                p.file.delete(save=False)
+            c.sessions.all().delete()
+            for year, subjects in years.items():
+                s = ContestSession.objects.create(contest=c, year=year)
+                latest = year == max(years)
+                for i, key in enumerate(subjects):
+                    title, matiere, duree, coef = SUBJECTS[key]
+                    p = ExamPaper(session=s, title=f"{title} (démo)", subject=matiere, duration=duree,
+                                  coefficient=coef, order=i, is_free=latest and i == 0,
+                                  description="Sujet factice pour la démonstration du site.")
+                    head = _ascii(f"{acronym} {year} - {title}")
+                    p.file.save(f'{acronym.lower()}-{year}-{key}.pdf', ContentFile(_pdf(
+                        head, _ascii(f"Exemple de sujet - duree {duree} - coefficient {coef}"),
+                        ["Exercice 1 : texte de demonstration.", "Exercice 2 : texte de demonstration.",
+                         "Ce document sert uniquement a montrer le lecteur en ligne du site."])), save=True)
+                    if i % 2 == 0:  # un sujet sur deux a un corrigé (les autres : « Corrigé non disponible »)
+                        corr = Correction(paper=p, kind='officiel' if i == 0 else 'enseignant',
+                                          author="Équipe Lantante (démo)")
+                        corr.file.save(f'{acronym.lower()}-{year}-{key}-corrige.pdf', ContentFile(_pdf(
+                            _ascii(f"Corrige - {head}"), "Exemple de corrige",
+                            ["Correction de l'exercice 1 (demonstration).",
+                             "Correction de l'exercice 2 (demonstration)."])), save=True)
+        state = "publiés" if opts['publier'] else "créés (non publiés : lancez --publier pour les afficher)"
+        self.stdout.write(f"{len(DEMO)} concours de démonstration {state}.")

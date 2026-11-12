@@ -59,7 +59,12 @@ class Contest(models.Model):
     cover = models.ImageField("Photo de couverture", upload_to='concours/couvertures/', blank=True,
                               help_text="Facultative : image large en haut de la carte et de la page "
                                         "(ex. 1200 × 600). Sinon, un fond vert élégant est utilisé.")
+    photo_credit = models.CharField("Crédit photo", max_length=255, blank=True,
+                                    help_text="Auteur et licence des photos, si elles ne vous appartiennent pas.")
+    photo_credit_url = models.URLField("Lien du crédit photo", blank=True)
     description = models.TextField("Description", blank=True)
+    is_demo = models.BooleanField("Démonstration", default=False,
+                                  help_text="Exemple factice : badge « Démo » affiché, non sélectionnable dans un abonnement.")
     is_published = models.BooleanField("Publié", default=False,
                                        help_text="Décochez pour retirer le concours du site.")
     created_at = models.DateTimeField(auto_now_add=True)
