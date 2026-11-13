@@ -302,7 +302,7 @@ def publication(request, pk):
     data = publication_item(request, p)
     # Galerie : la couverture + les images insérées dans l'article (éditeur du site).
     imgs = [media(request, p.cover_image)] if p.cover_image else []
-    for src in re.findall(r'<img[^>]+src=["']([^"']+)["']', p.content or '', re.I):
+    for src in re.findall(r"""<img[^>]+src=["']([^"']+)["']""", p.content or '', re.I):
         url = src if src.startswith('http') else absolute(request, src)
         if url and url not in imgs:
             imgs.append(url)
