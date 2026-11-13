@@ -557,6 +557,14 @@ def historique(request):
 
 
 @api_view(['GET'])
+def historique_detail(request, cle):
+    d = history.detail(request, request.user, cle)
+    if d is None:
+        return error("Élément introuvable.", 404, code='introuvable')
+    return Response(d)
+
+
+@api_view(['GET'])
 def telechargement(request, reference):
     """Re-téléchargement du PDF acheté (formation ou service), pour le propriétaire du paiement."""
     from Payments.models import Payment

@@ -105,3 +105,41 @@ class AppliSansSiteTests(APITestCase):
                                                     'sous_titre': 'ENS 2024'}, format='json')
         d = self.client.get(API + 'telechargements/').json()
         self.assertEqual((d[0]['titre'], d[0]['accessible']), ('Maths', False))  # plus d'abonnement : pas récupérable
+
+    def test_historique_detail(self):
+        from Payments.models import Payment
+        p = Payment.objects.create(kind='product', product=self.product, status='canceled', amount=6000,
+                                   description='Annale SVT × 2', user=self.user, first_name='Ama', last_name='Koffi',
+                                   phone='+22890123456', operator='togocel', failure_reason='Annulé sur le téléphone',
+                                   items=[{'product': self.product.pk, 'quantity': 2, 'price': 3000}])
+        rows = self.client.get(API + 'historique/').json()
+        cle = rows[0]['cle']
+        d = self.client.get(f'{API}historique/{cle}/').json()
+        self.assertEqual((d['reference'], d['statut'], d['quantite'], d['montant']), (p.reference, 'annule', 2, 6000))
+        self.assertEqual(d['telephone'][-4:], '3456')
+        self.assertNotIn('90123', d['telephone'])
+        self.assertEqual(d['achat'], {'type': 'produit', 'id': self.product.pk, 'quantite': 2})
+        other = get_user_model().objects.create_user(email='x@example.com', password='x-Pass-12345', is_verified=True)
+        self.client.force_authenticate(other)
+        self.assertEqual(self.client.get(f'{API}historique/{cle}/').status_code, 404)
+
+    def test_espace_services(self):
+        from Services.models import Service, ServiceCategory
+        cat = ServiceCategory.objects.create(name='Web', slug='web')
+        Service.objects.create(admin=self.user, title='Site vitrine', description='x', category=cat, price=1000)
+        d = self.client.get(API + 'services/espace/').json()
+        self.assertEqual(d[0]['nom'], 'Web')
+        self.assertEqual(d[0]['services'][0]['titre'], 'Site vitrine')
+
+    def test_actualite_site_ou_appli(self):
+        from Publications.models import Publication
+        Publication.objects.create(author=self.user, title='Appli seulement', content='x', is_published=True,
+                                   show_on_site=False, show_in_app=True)
+        Publication.objects.create(author=self.user, title='Site seulement', content='x', is_published=True,
+                                   show_on_site=True, show_in_app=False)
+        titres = [a['titre'] for a in self.client.get(API + 'publications/').json()]
+        self.assertIn('Appli seulement', titres)
+        self.assertNotIn('Site seulement', titres)
+        r = self.client.get('/actualites/')
+        self.assertContains(r, 'Site seulement')
+        self.assertNotContains(r, 'Appli seulement')

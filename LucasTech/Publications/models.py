@@ -57,6 +57,9 @@ class Publication(models.Model):
         help_text="Ex : « Télécharger la liste des candidats admis ». Laisser vide pour un texte par défaut."
     )
     is_published = models.BooleanField(default=False, verbose_name="Publié")
+    # Où afficher l'actualité publiée : sur le site, dans l'application, ou les deux (par défaut).
+    show_on_site = models.BooleanField(default=True, verbose_name="Publier sur le site")
+    show_in_app  = models.BooleanField(default=True, verbose_name="Publier dans l'application")
     is_featured  = models.BooleanField(default=False, verbose_name="À la une")
     views_count  = models.PositiveIntegerField(default=0, editable=False, verbose_name="Nombre de vues")
 

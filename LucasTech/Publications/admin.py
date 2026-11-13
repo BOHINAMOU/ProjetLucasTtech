@@ -108,9 +108,9 @@ def export_registrations_excel(modeladmin, request, queryset):
 # ─────────────────────────────
 @admin.register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
-    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'is_featured', 'views_count', 'registrations_link', 'created_at']
-    list_filter    = ['is_published', 'is_featured', 'publication_type', 'category']
-    list_editable  = ['is_published', 'is_featured']
+    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'show_on_site', 'show_in_app', 'is_featured', 'views_count', 'registrations_link', 'created_at']
+    list_filter    = ['is_published', 'show_on_site', 'show_in_app', 'is_featured', 'publication_type', 'category']
+    list_editable  = ['is_published', 'show_on_site', 'show_in_app', 'is_featured']
     search_fields  = ['title', 'content']
     prepopulated_fields = {'slug': ('title',)}
     inlines        = [PublicationImageInline, PublicationVideoInline]
@@ -215,7 +215,7 @@ class PublicationAdmin(admin.ModelAdmin):
             'fields': ('content',),
         }),
         ('Publication', {
-            'fields': ('is_published', 'is_featured'),
+            'fields': ('is_published', ('show_on_site', 'show_in_app'), 'is_featured'),
         }),
     )
 

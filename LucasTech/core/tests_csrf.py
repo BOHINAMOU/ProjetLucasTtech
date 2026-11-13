@@ -70,7 +70,7 @@ class CsrfLoginTests(TestCase):
 class ApplicationPageTests(TestCase):
     def test_page_application(self):
         r = self.client.get('/application/')
-        self.assertContains(r, 'href="/media/app/Lantante.apk"')
+        self.assertContains(r, 'href="/application/telecharger/')
         self.assertContains(r, 'iPhone : bientôt disponible')
         self.assertContains(self.client.get('/'), 'href="/application/"')
 

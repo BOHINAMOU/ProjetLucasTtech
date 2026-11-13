@@ -17,6 +17,7 @@ urlpatterns = [
     path('monetisation/merci/', views.monetization_thanks, name='monetization_thanks'),
     path('historique/', history.history, name='history'),
     path('application/', app_page.application, name='application'),
+    path('application/telecharger/', app_page.telecharger, name='application_download'),
     path('confidentialite/', views.privacy_policy, name='privacy_policy'),
     path('conditions-utilisation/', views.terms_of_service, name='terms_of_service'),
 ]

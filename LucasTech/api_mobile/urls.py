@@ -37,6 +37,7 @@ urlpatterns = [
     path('boutique/produits/', catalog.produits, name='produits'),
     path('boutique/categories/', catalog.boutique_categories, name='boutique_categories'),
     path('boutique/produits/<int:pk>/', catalog.produit, name='produit'),
+    path('services/espace/', catalog.espace_services, name='espace_services'),
     path('services/', catalog.services, name='services'),
     path('services/categories/', catalog.service_categories, name='service_categories'),
     path('services/<int:pk>/', catalog.service, name='service'),
@@ -60,5 +61,6 @@ urlpatterns = [
     path('formules/', views.formules, name='formules'),
     path('abonnements/', views.abonnements, name='abonnements'),
     path('historique/', views.historique, name='historique'),
+    path('historique/<str:cle>/', views.historique_detail, name='historique_detail'),
     path('achats/<str:reference>/telecharger/', views.telechargement, name='telechargement'),
 ]

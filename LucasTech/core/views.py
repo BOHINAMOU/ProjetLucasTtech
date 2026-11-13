@@ -24,7 +24,7 @@ def home(request):
             .order_by('-is_featured', '-created_at')[:8]
         ),
         'home_posts': (
-            Publication.objects.filter(is_published=True)
+            Publication.objects.filter(is_published=True, show_on_site=True)
             .select_related('category')
             .order_by('-is_featured', '-created_at')[:3]
         ),

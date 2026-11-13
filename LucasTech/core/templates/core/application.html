@@ -36,7 +36,7 @@
         <img class="app-hero__logo" src="{% static 'images/logo.png' %}" alt="Lantante Technologie">
         <h1>Téléchargez l'application <em>Lantante</em> pour Android.</h1>
         <p>Concours, épreuves et corrigés, boutique, formations et événements : tout Lantante Technologie dans votre téléphone, avec le même compte que sur le site.</p>
-        <a class="app-dl" href="{{ apk_url }}" download="Lantante{% if apk_version %}-{{ apk_version }}{% endif %}.apk"><i class="fab fa-android"></i> Télécharger <small>({{ apk_size }} Mo)</small></a>
+        <a class="app-dl" href="{% url 'core:application_download' %}?v={{ apk_version }}"><i class="fab fa-android"></i> Télécharger <small>({{ apk_size }} Mo)</small></a>
         <div class="app-ios"><i class="fab fa-apple"></i> iPhone : bientôt disponible</div>
       </div>
       <div class="app-phone" aria-hidden="true">

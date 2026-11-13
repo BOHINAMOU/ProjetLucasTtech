@@ -34,3 +34,19 @@ def application(request):
     resp = render(request, 'core/application.html', {'apk_url': url, 'apk_size': size_mb or 37, 'apk_version': version})
     resp['Cache-Control'] = 'no-cache'
     return resp
+
+
+def telecharger(request):
+    """Téléchargement de l'APK avec le BON type Android (application/vnd.android.package-archive) et un nom
+    simple « Lantante.apk » : certains installateurs (Tecno, Infinix…) refusent un .apk reçu comme
+    « application/octet-stream » ou au nom compliqué. Pas de cache : toujours la dernière version."""
+    from django.http import FileResponse, Http404
+    url, _size, version = current_apk()
+    path = os.path.join(settings.MEDIA_ROOT, url[len(settings.MEDIA_URL):])
+    if not os.path.exists(path):
+        raise Http404
+    resp = FileResponse(open(path, 'rb'), content_type='application/vnd.android.package-archive',
+                        as_attachment=True, filename='Lantante.apk')
+    resp['Cache-Control'] = 'no-store'
+    resp['Content-Length'] = os.path.getsize(path)
+    return resp

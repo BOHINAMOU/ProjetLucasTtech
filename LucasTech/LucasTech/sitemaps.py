@@ -70,7 +70,7 @@ class PublicationSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return Publication.objects.filter(is_published=True)
+        return Publication.objects.filter(is_published=True, show_on_site=True)
 
     def location(self, obj):
         return reverse('publications:publication_detail', args=[obj.slug])

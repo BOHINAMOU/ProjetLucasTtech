@@ -31,7 +31,7 @@ def publications(request):
         (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
     ]
 
-    qs = Publication.objects.filter(is_published=True).select_related('author', 'category')
+    qs = Publication.objects.filter(is_published=True, show_on_site=True).select_related('author', 'category')
 
     active_category = None
     if category_slug:
@@ -63,7 +63,7 @@ def publications(request):
 # 📄 DÉTAIL PUBLICATION
 # ─────────────────────────────
 def publication_detail(request, slug):
-    publication = get_object_or_404(Publication, slug=slug, is_published=True)
+    publication = get_object_or_404(Publication, slug=slug, is_published=True, show_on_site=True)
 
     # Incrémenter les vues
     Publication.objects.filter(pk=publication.pk).update(views_count=publication.views_count + 1)
@@ -71,7 +71,7 @@ def publication_detail(request, slug):
     # Articles similaires (même catégorie) ; on complète avec les plus
     # récentes publications toutes catégories confondues si besoin, pour
     # toujours proposer jusqu'à 4 suggestions.
-    base_qs = Publication.objects.filter(is_published=True).exclude(pk=publication.pk)
+    base_qs = Publication.objects.filter(is_published=True, show_on_site=True).exclude(pk=publication.pk)
 
     related = list(base_qs.filter(category=publication.category)[:4]) if publication.category else []
     if len(related) < 4:
@@ -91,7 +91,7 @@ def publication_detail(request, slug):
 # ─────────────────────────────
 def publication_register(request, slug):
     publication = get_object_or_404(
-        Publication, slug=slug, is_published=True, publication_type='evenement'
+        Publication, slug=slug, is_published=True, show_on_site=True, publication_type='evenement'
     )
 
     if not publication.registration_is_open:
@@ -190,7 +190,7 @@ def _too_many(request, action, limit, seconds=3600):
 
 @require_POST
 def publication_comment(request, slug):
-    publication = get_object_or_404(Publication, slug=slug, is_published=True)
+    publication = get_object_or_404(Publication, slug=slug, is_published=True, show_on_site=True)
     back = redirect(reverse('publications:publication_detail', args=[slug]) + '#commentaires')
     if request.POST.get('website'):  # champ piège invisible : seuls les robots le remplissent
         return back
@@ -217,7 +217,7 @@ def publication_comment(request, slug):
 
 @require_POST
 def publication_quick_message(request, slug):
-    publication = get_object_or_404(Publication, slug=slug, is_published=True)
+    publication = get_object_or_404(Publication, slug=slug, is_published=True, show_on_site=True)
     back = redirect('publications:publication_detail', slug=slug)
     if request.POST.get('website'):
         return back

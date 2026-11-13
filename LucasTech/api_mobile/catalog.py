@@ -281,7 +281,7 @@ def publication_item(request, p):
 
 def _publications():
     from Publications.models import Publication
-    return Publication.objects.filter(is_published=True).select_related('category').order_by('-created_at')
+    return Publication.objects.filter(is_published=True, show_in_app=True).select_related('category').order_by('-created_at')
 
 
 @api_view(['GET'])
@@ -535,3 +535,26 @@ def telechargements(request):
         out.append({'type': o.kind, 'id': o.doc_id, 'titre': o.titre, 'sous_titre': o.sous_titre,
                     'accessible': ok, 'date': dt(o.created_at)})
     return Response(out)
+
+
+
+# ─────────────────────────────
+# Espace « Services » : tous les services de l'entreprise, regroupés par catégorie (gérés dans l'admin :
+# une nouvelle catégorie ou un nouveau service apparaît dans l'appli sans nouvelle version).
+# ─────────────────────────────
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@public_cache(120)
+def espace_services(request):
+    from Services.models import ServiceCategory
+    groupes = []
+    for c in ServiceCategory.objects.prefetch_related('services').order_by('order', 'name'):
+        items = [service_item(request, x) for x in c.services.all() if x.is_active]
+        if items:
+            groupes.append({'id': c.pk, 'nom': c.name, 'slug': c.slug, 'description': c.description,
+                            'icone': c.icon, 'services': items})
+    sans = [service_item(request, x) for x in _services().filter(category__isnull=True)]
+    if sans:
+        groupes.append({'id': 0, 'nom': 'Autres services', 'slug': 'autres', 'description': '', 'icone': '',
+                        'services': sans})
+    return Response(groupes)
