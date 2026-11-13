@@ -459,12 +459,13 @@ VERSION_FILE = 'app/version.json'
 def version(request):
     path = os.path.join(settings.MEDIA_ROOT, VERSION_FILE)
     try:
-        with open(path, encoding='utf-8') as fh:
-            data = json.load(fh)
+        with open(path, 'rb') as fh:
+            data = json.loads(fh.read().decode('utf-8', 'replace'))
     except (OSError, ValueError):
         return error("Aucune version publiée.", 404, code='indisponible')
     out = {'version': str(data.get('version', '')), 'build': int(data.get('build') or 0),
-           'url_apk': absolute(request, data.get('url_apk') or settings.MEDIA_URL + 'app/Lantante.apk'),
+           'url_apk': absolute(request, data.get('url_apk') or settings.MEDIA_URL
+                               + (f"app/Lantante-{data.get('version')}.apk" if data.get('version') else 'app/Lantante.apk')),
            'taille': int(data.get('taille') or 0), 'notes': str(data.get('notes') or ''),
            'obligatoire': bool(data.get('obligatoire'))}
     resp = Response(out)

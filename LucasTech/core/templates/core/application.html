@@ -36,7 +36,7 @@
         <img class="app-hero__logo" src="{% static 'images/logo.png' %}" alt="Lantante Technologie">
         <h1>Téléchargez l'application <em>Lantante</em> pour Android.</h1>
         <p>Concours, épreuves et corrigés, boutique, formations et événements : tout Lantante Technologie dans votre téléphone, avec le même compte que sur le site.</p>
-        <a class="app-dl" href="{{ apk_url }}" download="Lantante.apk"><i class="fab fa-android"></i> Télécharger <small>({{ apk_size }} Mo)</small></a>
+        <a class="app-dl" href="{{ apk_url }}" download="Lantante{% if apk_version %}-{{ apk_version }}{% endif %}.apk"><i class="fab fa-android"></i> Télécharger <small>({{ apk_size }} Mo)</small></a>
         <div class="app-ios"><i class="fab fa-apple"></i> iPhone : bientôt disponible</div>
       </div>
       <div class="app-phone" aria-hidden="true">
@@ -52,7 +52,7 @@
       <div class="app-step"><span class="app-step__n">2</span><h3>Autorisez cette source</h3><p>Si le téléphone le demande, autorisez l'installation depuis votre navigateur (Chrome) : Paramètres, puis « Autoriser cette source ».</p></div>
       <div class="app-step"><span class="app-step__n">3</span><h3>Installez</h3><p>Touchez « Installer », puis « Ouvrir ». Connectez-vous avec votre compte Lantante habituel.</p></div>
     </div>
-    <p class="app-note">Version 1.0.0 · Pour téléphones Android. L'application sera aussi publiée sur le Google Play Store.</p>
+    <p class="app-note">Version {{ apk_version|default:"1.0" }} · Pour téléphones Android. L'application sera aussi publiée sur le Google Play Store.</p>
   </div>
 </div>
 {% endblock %}
