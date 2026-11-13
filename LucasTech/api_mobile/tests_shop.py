@@ -83,6 +83,11 @@ class AppliSansSiteTests(APITestCase):
         self.assertEqual([a['titre'] for a in self.client.get(API + 'concours/annonces/').json()],
                          ['Concours ENS 2027 : inscriptions ouvertes'])
         self.assertEqual(len(self.client.get(f'{API}concours/{self.ens.slug}/annonces/').json()), 1)
+        art = Publication.objects.create(author=self.user, title='Galerie', is_published=True,
+                                         content='<p>Texte</p><img src="/media/publications/a.jpg"><img src="https://x.tg/b.png">')
+        d = self.client.get(f'{API}publications/{art.pk}/').json()
+        self.assertEqual(len(d['images']), 2)
+        self.assertTrue(d['images'][0].endswith('/media/publications/a.jpg'))
 
     def test_choix_des_concours_dans_l_appli(self):
         sub = abo.activate_subscription(abo.create_pending_subscription(

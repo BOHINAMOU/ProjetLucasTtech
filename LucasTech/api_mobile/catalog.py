@@ -300,8 +300,14 @@ def publication(request, pk):
     if not p:
         return error("Article introuvable.", 404, code='introuvable')
     data = publication_item(request, p)
+    # Galerie : la couverture + les images insérées dans l'article (éditeur du site).
+    imgs = [media(request, p.cover_image)] if p.cover_image else []
+    for src in re.findall(r'<img[^>]+src=["']([^"']+)["']', p.content or '', re.I):
+        url = src if src.startswith('http') else absolute(request, src)
+        if url and url not in imgs:
+            imgs.append(url)
     data.update({
-        'images': [media(request, p.cover_image)] if p.cover_image else [], 'contenu': text(p.content),
+        'images': imgs, 'contenu': text(p.content),
         'video': media(request, getattr(p, 'cover_video', None)),
         'document': media(request, getattr(p, 'document', None)),
         'texte_document': getattr(p, 'document_label', '') or '',
