@@ -1,7 +1,7 @@
 """API REST de l'application mobile Flutter : préfixe /api/mobile/v1/."""
 from django.urls import path
 
-from . import catalog, views
+from . import catalog, shop, views
 
 app_name = 'api_mobile'
 
@@ -15,6 +15,14 @@ urlpatterns = [
     path('auth/password-reset/', views.password_reset, name='password_reset'),
     path('auth/password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
     path('me/', views.me, name='me'),
+    path('me/profil/', shop.profil, name='profil'),
+    path('contact/', shop.contact, name='contact'),
+    path('pages/<slug:slug>/', shop.page, name='page'),
+    path('paiements/moyens/', shop.moyens, name='moyens'),
+    path('paiements/', shop.payer, name='payer'),
+    path('paiements/<str:reference>/', shop.paiement, name='paiement'),
+    path('telechargements/', catalog.telechargements, name='telechargements'),
+    path('abonnements/<int:pk>/concours/', shop.abonnement_concours, name='abonnement_concours'),
 
     # Accueil et catalogues
     path('home/', views.home, name='home'),
@@ -40,7 +48,9 @@ urlpatterns = [
 
     # Concours
     path('concours/categories/', views.concours_categories, name='concours_categories'),
+    path('concours/annonces/', catalog.annonces, name='annonces'),
     path('concours/', views.concours_list, name='concours_list'),
+    path('concours/<slug:slug>/annonces/', catalog.annonces, name='concours_annonces'),
     path('concours/<slug:slug>/', views.concours_detail, name='concours_detail'),
     path('concours/<slug:slug>/annees/<int:pk>/', views.concours_annee, name='concours_annee'),
     path('documents/<str:kind>/<int:pk>/', views.document, name='document'),

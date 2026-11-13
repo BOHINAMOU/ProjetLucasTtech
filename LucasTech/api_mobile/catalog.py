@@ -471,3 +471,61 @@ def version(request):
     resp = Response(out)
     resp['Cache-Control'] = 'no-cache'
     return resp
+
+
+# ─────────────────────────────
+# Annonces des concours (actualités de la catégorie « Concours » ou qui citent le concours)
+# ─────────────────────────────
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@public_cache()
+def annonces(request, slug=None):
+    qs = _publications()
+    if slug:
+        from concours.models import Contest
+        c = Contest.objects.published().filter(slug=slug).first()
+        if not c:
+            return error("Concours introuvable.", 404, code='introuvable')
+        sigle = c.short_acronym if hasattr(c, 'short_acronym') else c.acronym
+        qs = qs.filter(Q(title__icontains=sigle) | Q(title__icontains=c.name) | Q(content__icontains=c.name)
+                       | (Q(category__slug='concours') & Q(content__icontains=sigle)))
+    else:
+        qs = qs.filter(Q(category__slug='concours') | Q(category__name__icontains='concours'))
+    qs = search(qs, request, 'title', 'content')
+    return paginated(request, qs, lambda p: publication_item(request, p))
+
+
+# ─────────────────────────────
+# Téléchargements hors connexion gardés côté serveur (récupération après réinstallation)
+# ─────────────────────────────
+@api_view(['GET', 'POST', 'DELETE'])
+def telechargements(request):
+    from abonnements.access import can_view_paper
+    from concours.models import Correction, ExamPaper
+    from .models import OfflineDocument
+    if request.method in ('POST', 'DELETE'):
+        kind = str(request.data.get('type') or '')
+        try:
+            doc_id = int(request.data.get('id') or 0)
+        except (TypeError, ValueError):
+            doc_id = 0
+        if kind not in ('epreuve', 'corrige') or not doc_id:
+            return error("Document inconnu.", 400, code='donnees_invalides')
+        if request.method == 'DELETE':
+            OfflineDocument.objects.filter(user=request.user, kind=kind, doc_id=doc_id).delete()
+        else:
+            OfflineDocument.objects.update_or_create(
+                user=request.user, kind=kind, doc_id=doc_id,
+                defaults={'titre': str(request.data.get('titre') or '')[:200],
+                          'sous_titre': str(request.data.get('sous_titre') or '')[:200]})
+    out = []
+    for o in OfflineDocument.objects.filter(user=request.user):
+        if o.kind == 'epreuve':
+            paper = ExamPaper.objects.select_related('session__contest').filter(pk=o.doc_id).first()
+        else:
+            corr = Correction.objects.select_related('paper__session__contest').filter(pk=o.doc_id).first()
+            paper = corr.paper if corr else None
+        ok = bool(paper) and can_view_paper(request.user, paper)
+        out.append({'type': o.kind, 'id': o.doc_id, 'titre': o.titre, 'sous_titre': o.sous_titre,
+                    'accessible': ok, 'date': dt(o.created_at)})
+    return Response(out)
