@@ -175,6 +175,7 @@ SOCIAL_AUTH_PIPELINE = (
 # ══════════════════════════════════════
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'api_mobile.middleware.ApiGZipMiddleware',
 
     # Render static files
     'whitenoise.middleware.WhiteNoiseMiddleware',

@@ -28,8 +28,7 @@ from Users.forms import SiteAuthenticationForm
 from Users.models import PasswordResetCode
 
 from . import history
-from .utils import (OFFLINE_PLAN_CODES, Rights, contest_payload, dt, error, event_payload,
-                    formation_payload, product_payload, user_payload)
+from .utils import OFFLINE_PLAN_CODES, Rights, contest_payload, dt, error, user_payload
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -259,58 +258,49 @@ def _contests():
                                                     sessions__papers__is_published=True), distinct=True)))
 
 
-def _events():
-    from Events.models import Event
-    now = timezone.now()
-    return (Event.objects.filter(is_published=True).filter(Q(ends_at__gte=now) | Q(ends_at__isnull=True,
-                                                                                    starts_at__gte=now))
-            .prefetch_related('ticket_types').order_by('starts_at'))
-
-
-def _formations():
-    from Formations.models import Formation
-    return Formation.objects.filter(is_published=True).order_by('-is_featured', '-created_at')
-
-
-def _products():
-    from Shop.models import Product
-    return Product.objects.filter(is_available=True).order_by('-is_featured', '-created_at')
-
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def home(request):
+    """Tout l'accueil en UN appel : carrousel, concours populaires, événements, formations, produits,
+    services, actualités (avec vignettes légères)."""
+    from . import catalog
     rights = Rights(request.user)
-    populaires = (_contests().annotate(n_abonnes=Count('subscription_links', distinct=True))
-                  .order_by('-n_abonnes', '-n_papers', 'acronym')[:6])
-    return Response({
-        'concours_populaires': [contest_payload(request, c, rights) for c in populaires],
-        'evenements': [event_payload(request, e) for e in _events()[:6]],
-        'formations': [formation_payload(request, f) for f in _formations()[:6]],
-        'produits': [product_payload(request, p) for p in _products()[:6]],
+    populaires = list(_contests().annotate(n_abonnes=Count('subscription_links', distinct=True))
+                      .order_by('-n_abonnes', '-n_papers', 'acronym')[:6])
+    concours = []
+    for c in populaires:
+        d = contest_payload(request, c, rights)
+        d['image_vignette'] = catalog.vignette(request, c.cover or c.logo)
+        concours.append(d)
+    resp = Response({
+        'carrousel': catalog.carousel_items(request),
+        'concours_populaires': concours,
+        'evenements': [catalog.event_item(request, e) for e in catalog._events()[:6]],
+        'formations': [catalog.formation_item(request, f) for f in catalog._formations()[:6]],
+        'produits': [catalog.product_item(request, p) for p in catalog._products()[:6]],
+        'services': [catalog.service_item(request, x) for x in catalog._services()[:6]],
+        'actualites': [catalog.publication_item(request, x) for x in catalog._publications()[:6]],
     })
+    resp['Cache-Control'] = 'private, max-age=30'
+    return resp
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-def evenements(request):
-    return Response([event_payload(request, e) for e in _events()])
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def formations(request):
-    return Response([formation_payload(request, f) for f in _formations()])
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def produits(request):
-    qs = _products()
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
-    return Response([product_payload(request, p) for p in qs[:200]])
+def web_login(request):
+    """Ouvre une page du site DANS l'application avec la session de l'utilisateur (paiement FedaPay, tickets…).
+    L'appli charge cette adresse dans sa WebView avec l'en-tête « Authorization: Token … » ; on ouvre une
+    session Django puis on redirige vers ?suivant= (chemin interne au site uniquement)."""
+    from django.contrib.auth import login as django_login
+    from django.shortcuts import redirect
+    from django.utils.http import url_has_allowed_host_and_scheme
+    nxt = request.GET.get('suivant') or '/'
+    if not nxt.startswith('/') or nxt.startswith('//') or not url_has_allowed_host_and_scheme(
+            nxt, allowed_hosts={request.get_host()}):
+        nxt = '/'
+    django_login(request._request, request.user, backend='django.contrib.auth.backends.ModelBackend')
+    resp = redirect(nxt)
+    resp['Cache-Control'] = 'no-store'
+    return resp
 
 
 # ─────────────────────────────
