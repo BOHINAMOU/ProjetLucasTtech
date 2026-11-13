@@ -64,3 +64,16 @@ class CsrfLoginTests(TestCase):
         self.assertEqual(r['Location'], '/users/connexion/?session=expiree')
         r = self.c.post('/users/inscription/', {}, HTTP_REFERER='https://evil.example/x')
         self.assertEqual(r['Location'], '/users/connexion/?session=expiree')
+
+
+@override_settings(STORAGES=STORAGES)
+class ApplicationPageTests(TestCase):
+    def test_page_application(self):
+        r = self.client.get('/application/')
+        self.assertContains(r, 'href="/media/app/Lantante.apk"')
+        self.assertContains(r, 'iPhone : bientôt disponible')
+        self.assertContains(self.client.get('/'), 'href="/application/"')
+
+    def test_type_apk(self):
+        import mimetypes
+        self.assertEqual(mimetypes.guess_type('Lantante.apk')[0], 'application/vnd.android.package-archive')

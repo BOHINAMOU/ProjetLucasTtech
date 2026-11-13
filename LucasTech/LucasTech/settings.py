@@ -45,6 +45,10 @@ for _o in ("https://lantantetechnologie.com", "https://www.lantantetechnologie.c
     if _o not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_o)
 CSRF_COOKIE_SAMESITE = "Lax"
+
+# Application Android (/media/app/Lantante.apk) : type reconnu par le téléphone pour proposer l'installation.
+import mimetypes  # noqa: E402
+mimetypes.add_type("application/vnd.android.package-archive", ".apk")
 # Page d'échec CSRF conviviale (redirection + « Votre session a expiré ») au lieu de la page jaune.
 CSRF_FAILURE_VIEW = "core.csrf.csrf_failure"
 
