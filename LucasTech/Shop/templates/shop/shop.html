@@ -83,12 +83,8 @@
         </div>
 
         <div class="bq-card__body">
-          {% if product.category %}<span class="bq-card__cat">{{ product.category.name }}</span>{% endif %}
           <h3 class="bq-card__name">{{ product.name }}</h3>
           <p class="bq-card__desc">{{ product.card_description }}</p>
-          {% if product.stock == 0 %}<span class="bq-card__stock out">Rupture de stock</span>
-          {% elif product.stock < 5 %}<span class="bq-card__stock low">Plus que {{ product.stock }} en stock</span>
-          {% else %}<span class="bq-card__stock ok">En stock</span>{% endif %}
         </div>
 
         <div class="bq-card__price">

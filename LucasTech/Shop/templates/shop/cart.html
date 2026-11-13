@@ -262,9 +262,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
         {% endif %}
       </div>
       <div class="ct-item-info">
-        {% if item.product.category %}
-          <span class="ct-item-cat">{{ item.product.category.name }}</span>
-        {% endif %}
         <div class="ct-item-name">{{ item.product.name }}</div>
         <div class="ct-item-qty">Quantité : {{ item.quantity }}</div>
       </div>

@@ -143,3 +143,15 @@ class AppliSansSiteTests(APITestCase):
         r = self.client.get('/actualites/')
         self.assertContains(r, 'Site seulement')
         self.assertNotContains(r, 'Appli seulement')
+
+
+class TexteEtImagesTests(APITestCase):
+    def test_liens_du_texte_conserves(self):
+        from api_mobile.catalog import text
+        t = text('<p>Voir <a href="https://x.tg/liste.pdf">la liste</a> et <a href="https://x.tg">https://x.tg</a></p>')
+        self.assertIn('la liste https://x.tg/liste.pdf', t)
+        self.assertEqual(t.count('https://x.tg'), 2)
+
+    def test_image_hors_site_inchangee(self):
+        from api_mobile.catalog import grande_url
+        self.assertEqual(grande_url(None, 'https://ailleurs.tg/a.jpg'), 'https://ailleurs.tg/a.jpg')

@@ -15,7 +15,7 @@
 
   <!-- Open Graph / réseaux sociaux -->
   <meta property="og:site_name" content="Lantante Technologie">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:title" content="{% block og_title %}Lantante Technologie — Technologie & Formation{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Lantante Technologie – Formations, services numériques, boutique et actualités tech au Togo.{% endblock %}">
   <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">

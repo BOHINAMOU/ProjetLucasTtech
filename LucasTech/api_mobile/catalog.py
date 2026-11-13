@@ -31,7 +31,9 @@ def text(value):
     """HTML (CKEditor) -> texte lisible avec paragraphes."""
     if not value:
         return ''
-    s = re.sub(r'(?i)<\s*br\s*/?>', '\n', value)
+    s = re.sub(r'(?is)<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
+               lambda m: m.group(2) if strip_tags(m.group(2)).strip() == m.group(1) else f"{m.group(2)} {m.group(1)}", value)
+    s = re.sub(r'(?i)<\s*br\s*/?>', '\n', s)
     s = re.sub(r'(?i)</\s*(p|div|li|h[1-6]|tr)\s*>', '\n\n', s)
     s = re.sub(r'(?i)<\s*li[^>]*>', '• ', s)
     s = html.unescape(strip_tags(s))
@@ -46,6 +48,19 @@ def short(value, n=140):
 
 def vignette(request, field):
     return absolute(request, thumb_url(field)) if field else None
+
+
+def grande(request, field):
+    """Image des fiches et du bandeau : 1080 px en WebP (plusieurs fois plus légère que l'original)."""
+    if not field:
+        return None
+    return absolute(request, thumb_url(field, 1080)) or media(request, field)
+
+
+def grande_url(request, url):
+    from .thumbs import media_file_from_url
+    f = media_file_from_url(url)
+    return (absolute(request, thumb_url(f, 1080)) if f else None) or url
 
 
 def cat(c):
@@ -147,7 +162,7 @@ def produit(request, pk):
     data = product_item(request, p)
     gallery = [p.image] + [i.image for i in p.images.all()]
     data.update({
-        'images': [media(request, f) for f in gallery if f],
+        'images': [grande(request, f) for f in gallery if f],
         'images_vignettes': [vignette(request, f) for f in gallery if f],
         'description': text(p.description), 'stock': p.stock,
         'prix_gros': money(p.bulk_price), 'quantite_min_gros': p.bulk_min_qty if p.bulk_price else None,
@@ -201,7 +216,7 @@ def formation(request, pk):
         return error("Formation introuvable.", 404, code='introuvable')
     data = formation_item(request, f)
     data.update({
-        'images': [media(request, f.image)] if f.image else [], 'description': text(f.description),
+        'images': [grande(request, f.image)] if f.image else [], 'description': text(f.description),
         'ce_que_vous_apprendrez': f.learn_points(), 'inscrits': f.students_count,
         'url_paiement': paiement(request, reverse('payments:checkout', args=['formation', f.pk])) if f.can_pay_online else None,
         'url_inscription': absolute(request, reverse('formations:formation_register', args=[f.pk]))
@@ -251,7 +266,7 @@ def service(request, pk):
         return error("Service introuvable.", 404, code='introuvable')
     data = service_item(request, s)
     data.update({
-        'images': [media(request, s.image)] if s.image else [], 'description': text(s.description),
+        'images': [grande(request, s.image)] if s.image else [], 'description': text(s.description),
         'video': media(request, s.video), 'whatsapp': s.whatsapp or '', 'telephone': s.phone or '',
         'url_paiement': paiement(request, reverse('payments:checkout', args=['service', s.pk])) if s.price else None,
     })
@@ -301,9 +316,9 @@ def publication(request, pk):
         return error("Article introuvable.", 404, code='introuvable')
     data = publication_item(request, p)
     # Galerie : la couverture + les images insérées dans l'article (éditeur du site).
-    imgs = [media(request, p.cover_image)] if p.cover_image else []
+    imgs = [grande(request, p.cover_image)] if p.cover_image else []
     for src in re.findall(r"""<img[^>]+src=["']([^"']+)["']""", p.content or '', re.I):
-        url = src if src.startswith('http') else absolute(request, src)
+        url = grande_url(request, src if src.startswith('http') else absolute(request, src))
         if url and url not in imgs:
             imgs.append(url)
     data.update({
@@ -401,7 +416,7 @@ def evenement(request, pk):
         return error("Événement introuvable.", 404, code='introuvable')
     data = event_item(request, e)
     data.update({
-        'images': [media(request, e.cover)] if e.cover else [], 'description': text(e.description),
+        'images': [grande(request, e.cover)] if e.cover else [], 'description': text(e.description),
         'carte': e.map_url,
         'tickets': [{'id': t.pk, 'nom': t.name, 'detail': t.description, 'prix': t.price, 'restant': t.remaining,
                      'max_par_commande': t.max_per_order, 'image': media(request, t.cover)}

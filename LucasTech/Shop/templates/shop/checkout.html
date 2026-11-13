@@ -254,7 +254,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <div class="co-item-info">
         <div class="co-item-name">{{ item.product.name }}</div>
         <div class="co-item-sub">
-          {% if item.product.category %}{{ item.product.category.name }} · {% endif %}
           Qté : {{ item.quantity }}
         </div>
       </div>

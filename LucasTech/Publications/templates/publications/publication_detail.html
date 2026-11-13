@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}{{ publication.title }} — Lantante Technologie{% endblock %}
 {% block meta_description %}{{ publication.seo_description }}{% endblock %}
+{% block og_type %}article{% endblock %}
 {% block og_title %}{{ publication.title }}{% endblock %}
 {% block og_description %}{{ publication.seo_description }}{% endblock %}
 {% block og_image %}{% if publication.cover_image %}{{ publication.cover_image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
@@ -380,6 +381,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 .nd-share { display:flex; align-items:center; gap:8px; color:#222; }
 .nd-share a { width:40px; height:40px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; font-size:1.2rem; }
 .nd-fb { background:#3b5998; } .nd-x { background:#55acee; } .nd-wa { background:#25d366; }
+.nd-copy { background:#0B7A4B; border:0; cursor:pointer; }
 .nd-layout .pd-content-body { text-align:justify; font-size:1.12rem; line-height:1.7; color:#111; }
 .nd-layout .pd-content-body a { color:#3b7ac0; font-weight:400; text-decoration:underline; }
 .nd-layout .pd-content-body h2, .nd-layout .pd-content-body h3 { color:#0f7a45; font-family:var(--font); }
@@ -454,6 +456,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
         <a class="nd-fb" href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{{ request.path|urlencode }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
         <a class="nd-x" href="https://twitter.com/intent/tweet?url={{ request.scheme }}://{{ request.get_host }}{{ request.path|urlencode }}&text={{ publication.title|urlencode }}" target="_blank" rel="noopener" aria-label="X"><i class="fab fa-x-twitter"></i></a>
         <a class="nd-wa" href="https://wa.me/?text={{ publication.title|urlencode }}%20{{ request.scheme }}://{{ request.get_host }}{{ request.path }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a class="nd-copy" href="#" role="button" aria-label="Copier le lien" title="Copier le lien" onclick="navigator.clipboard&&navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{{ request.path }}').then(()=>{this.title='Lien copié';this.innerHTML='<i class=\'fa fa-check\'></i>'});return false;"><i class="fa fa-link"></i></a>
       </span>
     </div>
 

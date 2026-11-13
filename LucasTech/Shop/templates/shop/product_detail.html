@@ -22,7 +22,7 @@
     </a>
     <nav class="pp-crumbs" aria-label="Fil d'Ariane">
       <a href="{% url 'shop:shop' %}">Boutique</a>
-      {% if product.category %}<span>/</span><a href="{% url 'shop:shop' %}?category={{ product.category.slug }}">{{ product.category.name }}</a>{% endif %}
+
       <span>/</span><span>{{ product.name }}</span>
     </nav>
   </div>
@@ -61,7 +61,7 @@
 
     <!-- ══ Infos + achat ══ -->
     <div class="pp-info">
-      {% if product.category %}<a href="{% url 'shop:shop' %}?category={{ product.category.slug }}" class="pp-cat">{{ product.category.name }}</a>{% endif %}
+
       <h1 class="pp-name">{{ product.name }}</h1>
       <p class="pp-short">{{ product.card_description }}</p>
 
@@ -81,12 +81,7 @@
         <div class="pp-bulk"><i class="fa fa-boxes-stacked"></i> Prix de gros&nbsp;: <strong>{{ product.bulk_price|floatformat:"0g" }} FCFA</strong> l'unité dès {{ product.bulk_min_qty }} pièces.</div>
         {% endif %}
 
-        <div class="pp-stock {% if product.stock == 0 %}out{% elif product.stock < 5 %}low{% else %}ok{% endif %}">
-          <i class="fa fa-circle"></i>
-          {% if product.stock == 0 %}Rupture de stock pour le moment
-          {% elif product.stock < 5 %}Plus que {{ product.stock }} en stock, commandez vite
-          {% else %}En stock, prêt à être livré{% endif %}
-        </div>
+        {% if product.stock == 0 %}<div class="pp-stock out"><i class="fa fa-circle"></i> Épuisé</div>{% endif %}
 
         {% if product.stock > 0 %}
           <form method="get" action="{% url 'payments:checkout' 'produit' product.pk %}" id="ppForm">
