@@ -130,7 +130,7 @@ class CatalogueTests(APITestCase):
                        'obligatoire': False}, fh)
         d = self.client.get(API + 'version/').json()
         self.assertEqual((d['version'], d['build'], d['obligatoire']), ('1.1.0', 3, False))
-        self.assertTrue(d['url_apk'].endswith('/media/app/Lantante.apk'))
+        self.assertTrue(d['url_apk'].endswith('/media/app/Lantante-1.1.0.apk'))  # lien propre a la version
 
     def test_session_web_pour_paiement_dans_l_appli(self):
         self.assertEqual(self.client.get(API + 'auth/web/', {'suivant': '/paiement/'}).status_code, 401)
