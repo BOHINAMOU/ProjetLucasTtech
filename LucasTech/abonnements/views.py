@@ -71,6 +71,7 @@ def subscribe(request, code):
     ultimate = services.ultimate_to_extend(request.user) if plan.is_unlimited else None
     return render(request, 'abonnements/checkout.html', _pay_context(
         form, amount, description, reverse('abonnements:plans'), plan=plan, period=period,
+        plans=SubscriptionPlan.objects.filter(is_active=True),
         advice=services.advice_for(request.user, plan), ultimate=ultimate,
         days=PERIOD_DAYS[period]))
 

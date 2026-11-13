@@ -24,6 +24,7 @@ from rest_framework.response import Response
 from abonnements.access import active_subscriptions
 from abonnements.models import SubscriptionPlan, UserSubscription
 from concours.models import Contest, ContestCategory, ContestSession, Correction, ExamPaper
+from Users import verification
 from Users.forms import SiteAuthenticationForm
 from Users.models import PasswordResetCode
 
@@ -78,6 +79,12 @@ def login(request):
         email = u.email if u else ident
     form = SiteAuthenticationForm(request._request, data={'username': email, 'password': password})
     if not form.is_valid():
+        if form.unverified_user_id:  # bon mot de passe, mais e-mail pas encore vérifié
+            unverified = User.objects.get(pk=form.unverified_user_id)
+            verification.send_code(unverified)
+            return Response({'detail': "Votre adresse e-mail n'est pas encore vérifiée. Saisissez le code à 6 chiffres "
+                                       "que nous venons de vous envoyer.", 'code': 'email_non_verifie',
+                             'email': unverified.email}, status=403)
         _hit('login', request)
         errors = form.non_field_errors()
         msg = str(errors[0]) if errors else "Identifiant ou mot de passe incorrect."
@@ -110,7 +117,8 @@ def register(request):
         except ValidationError:
             errors['email'] = ["Adresse email invalide."]
         else:
-            if User.objects.filter(email__iexact=data['email']).exists():
+            if (User.objects.filter(email__iexact=data['email']).exists()
+                    and not verification.reusable_unverified(data['email'])):
                 errors['email'] = ["Cet email est déjà utilisé."]
     if not password:
         errors['password'] = ["Le mot de passe est obligatoire."]
@@ -124,11 +132,59 @@ def register(request):
         first = next(iter(errors.values()))[0]
         return error(first, 400, code='donnees_invalides', errors=errors)
     _hit('register', request)
+    old = verification.reusable_unverified(data['email'])
+    if old:
+        old.delete()
     user = User.objects.create_user(email=data['email'].lower(), password=password,
                                     first_name=data['first_name'][:150], last_name=data['last_name'][:150],
-                                    phone=data['phone'][:20], country=data['country'][:100] or None)
+                                    phone=data['phone'][:20], country=data['country'][:100] or None,
+                                    account_type='member', is_verified=False)
+    verification.send_code(user, force=True)
+    # Pas de jeton tant que l'adresse n'est pas vérifiée (code à 6 chiffres envoyé par e-mail).
+    return Response({'verification_requise': True, 'email': user.email,
+                     'detail': "Un code à 6 chiffres vient d'être envoyé à votre adresse e-mail."}, status=201)
+
+
+def _pending_user(email):
+    u = User.objects.filter(email__iexact=(email or '').strip()).first() if email else None
+    return u if u and not verification.is_verified(u) else None
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_email(request):
+    """{email, code} -> {token, user} : active le compte créé dans l'application."""
+    if _too_many('verify', request, limit=20):
+        return error("Trop de tentatives. Réessayez dans 15 minutes.", 429, code='trop_de_tentatives')
+    email = str(request.data.get('email') or '').strip()
+    user = User.objects.filter(email__iexact=email).first() if email else None
+    if user is None:
+        _hit('verify', request)
+        return error("Code invalide ou expiré.", 400, code='code_invalide')
+    if not verification.is_verified(user):
+        ok, msg = verification.check_code(user, str(request.data.get('code') or ''))
+        if not ok:
+            _hit('verify', request)
+            return error(msg, 400, code='code_invalide')
+    else:
+        return error("Ce compte est déjà vérifié : connectez-vous.", 400, code='deja_verifie')
     token, _ = Token.objects.get_or_create(user=user)
-    return Response({'token': token.key, 'user': user_payload(request, user)}, status=201)
+    user.last_login = timezone.now()
+    user.save(update_fields=['last_login'])
+    return Response({'token': token.key, 'user': user_payload(request, user)})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_code(request):
+    """{email} : renvoie un code (au plus un toutes les 60 s). Répond toujours de la même façon."""
+    user = _pending_user(request.data.get('email'))
+    if user is not None:
+        wait = verification.resend_wait(user)
+        if wait:
+            return error(f"Patientez encore {wait} secondes avant de renvoyer un code.", 429, code='trop_tot')
+        verification.send_code(user)
+    return Response({'detail': "Si un compte en attente existe pour cette adresse, un nouveau code vient d'être envoyé."})
 
 
 @api_view(['POST'])
@@ -182,6 +238,7 @@ def password_reset_confirm(request):
     except ValidationError as e:
         return error(e.messages[0], 400, code='donnees_invalides', errors={'password': list(e.messages)})
     user.set_password(password)
+    user.is_verified = True  # le code reçu par e-mail prouve que l'adresse lui appartient
     user.save()
     otp.is_used = True
     otp.save(update_fields=['is_used'])
@@ -321,8 +378,8 @@ def concours_list(request):
     cat = (request.GET.get('categorie') or '').strip()
     if cat:
         qs = qs.filter(category__pk=int(cat)) if cat.isdigit() else qs.filter(category__slug=cat)
-    if q:
-        qs = qs.filter(Q(acronym__icontains=q) | Q(name__icontains=q) | Q(description__icontains=q))
+    from concours.search import search_contests
+    qs = search_contests(qs, q)  # sans accents, par catégorie, nom, sigle… triée par pertinence
     rights = Rights(request.user)
     return Response([contest_payload(request, c, rights) for c in qs])
 
@@ -371,11 +428,8 @@ def concours_annee(request, slug, pk):
     return Response({'concours': contest_payload(request, contest, rights), 'annee': sess.year, 'epreuves': out})
 
 
-@api_view(['GET'])
-def document(request, kind, pk):
-    """PDF d'une épreuve ou d'un corrigé : connexion obligatoire (401 sinon), puis exactement la règle du site
-    (abonnements.access.can_view_paper, revérifiée à chaque appel) : abonnement actif couvrant le concours,
-    ou membre de l'équipe."""
+def _resolve_document(request, kind, pk):
+    """(doc, paper, contest, rights, None) si l'utilisateur a le droit de lire, sinon (…, réponse d'erreur)."""
     unavailable = error("Ce document n'est pas disponible.", 404, code='indisponible')
     if kind == 'epreuve':
         doc = ExamPaper.objects.select_related('session__contest').filter(pk=pk).first()
@@ -386,20 +440,58 @@ def document(request, kind, pk):
         paper = doc.paper if doc else None
         published = bool(doc) and doc.is_published and paper.is_published
     else:
-        return unavailable
+        return None, None, None, None, unavailable
     if not doc:
-        return unavailable
+        return None, None, None, None, unavailable
     contest = paper.session.contest
     user = request.user
     if not (user.is_authenticated and user.is_staff) and not (
             published and paper.session.is_published and contest.is_published):
-        return unavailable
+        return None, None, None, None, unavailable
     rights = Rights(user)
     if not rights.can_view(paper, contest):
-        return error(f"Ce document est réservé aux abonnés du concours {contest.acronym}.", 403,
-                     code='abonnement_requis')
+        return None, None, None, None, error(f"Ce document est réservé aux abonnés du concours {contest.acronym}.",
+                                              403, code='abonnement_requis')
     if not doc.file:
-        return unavailable
+        return None, None, None, None, unavailable
+    return doc, paper, contest, rights, None
+
+
+@api_view(['GET'])
+def document_download(request, kind, pk):
+    """PDF à enregistrer dans le téléphone (lire ailleurs, imprimer) : mêmes droits que la lecture,
+    avec un filigrane incrusté (nom + e-mail de l'abonné) sur chaque page."""
+    from concours.watermark import WatermarkUnavailable, download_name, watermarked_pdf
+    doc, paper, contest, rights, err = _resolve_document(request, kind, pk)
+    if err:
+        return err
+    try:
+        data = watermarked_pdf(doc, request.user)
+    except WatermarkUnavailable:
+        return error("Le téléchargement est momentanément indisponible. Vous pouvez lire le document dans l'appli.",
+                     503, code='indisponible')
+    except Exception:
+        logger.exception("Filigrane impossible pour %s %s", kind, pk)
+        return error("Ce document n'est pas disponible.", 404, code='indisponible')
+    from django.http import HttpResponse
+    resp = HttpResponse(data, content_type='application/pdf')
+    resp['Content-Disposition'] = f'attachment; filename="{download_name(paper, kind)}"'
+    resp['Cache-Control'] = 'private, no-store, max-age=0'
+    resp['X-Robots-Tag'] = 'noindex, nofollow'
+    resp['Access-Control-Expose-Headers'] = 'Content-Disposition'
+    return resp
+
+
+@api_view(['GET'])
+def document(request, kind, pk):
+    """PDF d'une épreuve ou d'un corrigé : connexion obligatoire (401 sinon), puis exactement la règle du site
+    (abonnements.access.can_view_paper, revérifiée à chaque appel) : abonnement actif couvrant le concours,
+    ou membre de l'équipe."""
+    unavailable = error("Ce document n'est pas disponible.", 404, code='indisponible')
+    doc, paper, contest, rights, err = _resolve_document(request, kind, pk)
+    if err:
+        return err
+    user = request.user
     try:
         fh = doc.file.open('rb')
     except (FileNotFoundError, OSError):

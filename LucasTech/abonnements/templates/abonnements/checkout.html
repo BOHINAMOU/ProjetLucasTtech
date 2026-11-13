@@ -11,19 +11,40 @@
         {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
       </div>
 
-      {% if advice %}<div class="cc-note cc-note--warn"><span><i class="fa fa-lightbulb"></i> {{ advice }}</span><a class="cc-btn" href="{% url 'abonnements:subscribe' 'premium' %}?periode={{ period }}">Prendre Premium</a></div>{% endif %}
+      {% if advice %}<div class="cc-note cc-note--warn"><span><i class="fa fa-lightbulb"></i> {{ advice }}</span><a class="cc-btn cc-btn--ghost" href="{% url 'abonnements:subscribe' 'premium' %}?periode={{ period }}">Voir Premium</a></div>{% endif %}
       {% if ultimate %}<div class="cc-note cc-note--info"><span><i class="fa fa-circle-info"></i> Vous avez déjà {{ plan.name }} jusqu'au {{ ultimate.end_at|date:"j F Y" }}. Cet achat prolongera cet abonnement de {{ days }} jours.</span></div>{% endif %}
 
       <div class="wz-card">
+        {# Libre choix de la formule et de la durée jusqu'au paiement : rien n'est imposé. #}
+        <div class="ab-choice" role="group" aria-label="Choisir la formule">
+          <span class="ab-choice__label">Formule</span>
+          <div class="ab-choice__row">
+            {% for p in plans %}
+            <a class="ab-opt{% if p.pk == plan.pk %} is-on{% endif %}" href="{% url 'abonnements:subscribe' p.code %}?periode={{ period }}"{% if p.pk == plan.pk %} aria-current="true"{% endif %}>
+              <b>{{ p.name }}</b><small>{{ p.limit_label }} · {% if period == 'an' %}{{ p.yearly_price|floatformat:"0g" }} F/an{% else %}{{ p.monthly_price|floatformat:"0g" }} F/mois{% endif %}</small>
+            </a>
+            {% endfor %}
+          </div>
+          <span class="ab-choice__label">Durée</span>
+          <div class="ab-choice__row">
+            <a class="ab-opt{% if period == 'mois' %} is-on{% endif %}" href="?periode=mois"><b>1 mois</b><small>{{ plan.monthly_price|floatformat:"0g" }} F</small></a>
+            <a class="ab-opt{% if period == 'an' %} is-on{% endif %}" href="?periode=an"><b>1 an</b><small>{{ plan.yearly_price|floatformat:"0g" }} F{% if plan.yearly_saving %} · −{{ plan.yearly_saving|floatformat:"0g" }} F{% endif %}</small></a>
+          </div>
+        </div>
+        <style>
+          .ab-choice{display:grid;gap:.5rem;margin-bottom:1.1rem}
+          .ab-choice__label{font-size:.8rem;font-weight:700;color:var(--bq-muted);text-transform:uppercase;letter-spacing:.06em}
+          .ab-choice__row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.5rem}
+          .ab-opt{display:flex;flex-direction:column;gap:.15rem;padding:.7rem .85rem;border:1.5px solid #dfe5e1;border-radius:14px;text-decoration:none;color:var(--bq-ink);background:#fff}
+          .ab-opt small{color:var(--bq-muted);font-size:.8rem}
+          .ab-opt.is-on{border-color:var(--bq-green);background:#e9f6ef;box-shadow:0 0 0 3px rgba(15,122,69,.12)}
+          .ab-opt:hover{border-color:var(--bq-green);color:var(--bq-ink)}
+        </style>
         <div class="wz-order">
           <span class="wz-order__ico"><i class="fa fa-graduation-cap"></i></span>
           <div class="wz-order__txt">
             <strong>{{ plan.name }} — {{ plan.limit_label }}</strong>
-            <small>
-              <a href="?periode=mois"{% if period == 'mois' %} style="font-weight:700;color:var(--bq-green)"{% endif %}>1 mois</a> ·
-              <a href="?periode=an"{% if period == 'an' %} style="font-weight:700;color:var(--bq-green)"{% endif %}>1 an</a>
-              · activé dès le paiement confirmé
-            </small>
+            <small>{% if period == 'an' %}1 an{% else %}1 mois{% endif %} · activé dès le paiement confirmé</small>
           </div>
           <b class="wz-order__price">{{ amount|floatformat:"0g" }} <small>FCFA</small></b>
         </div>

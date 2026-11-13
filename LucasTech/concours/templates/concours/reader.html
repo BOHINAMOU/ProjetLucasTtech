@@ -20,7 +20,8 @@
            data-wm="{{ watermark|default:'Lantante Technologie' }}">
         <p class="cc-loading" id="loading"><i class="fa fa-spinner fa-spin"></i> Chargement du document…</p>
       </div>
-      <p class="cc-crumbs" style="text-align:center">Lecture en ligne uniquement. Document protégé{% if watermark %}, marqué à votre nom{% endif %}.</p>
+      <p class="cc-crumbs" style="text-align:center">Document protégé{% if watermark %}, marqué à votre nom{% endif %}.
+        <a class="cc-btn cc-btn--ghost" style="margin-left:.6rem" href="{% url 'concours:download' kind doc.pk %}"><i class="fa fa-download"></i> Télécharger le PDF (impression)</a></p>
     {% else %}
       <div class="ct-box" style="text-align:center;margin-bottom:2rem">
         <p style="font-size:2rem;color:var(--bq-green)"><i class="fa fa-lock"></i></p>

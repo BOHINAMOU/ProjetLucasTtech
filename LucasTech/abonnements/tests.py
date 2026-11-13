@@ -280,3 +280,22 @@ class SubscriptionRulesTests(TestCase):
         self.assertContains(r, pay.reference)
         r = self.client.get(reverse('core:history') + '?type=boutique')
         self.assertNotContains(r, 'Abonnement concours Standard')
+
+
+@override_settings(STORAGES=STORAGES)
+class LibreChoixFormuleTests(TestCase):
+    """Aucune formule n'est imposée : on peut changer de formule et de durée jusqu'au paiement."""
+
+    def test_page_paiement_propose_les_trois_formules(self):
+        u = get_user_model().objects.create_user(email='choix@example.com', password='x-Pass-12345',
+                                                 is_verified=True)
+        self.client.force_login(u)
+        r = self.client.get(reverse('abonnements:subscribe', args=['standard']) + '?periode=mois')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['plan'].code, 'standard')
+        self.assertEqual(r.context['amount'], r.context['plan'].monthly_price)
+        for code in ('standard', 'premium', 'ultimate'):
+            self.assertContains(r, reverse('abonnements:subscribe', args=[code]) + '?periode=mois')
+        self.assertContains(r, '?periode=an')
+        r = self.client.get(reverse('abonnements:subscribe', args=['ultimate']) + '?periode=an')
+        self.assertEqual(r.context['amount'], r.context['plan'].yearly_price)

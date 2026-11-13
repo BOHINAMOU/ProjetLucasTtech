@@ -41,7 +41,7 @@ class CatalogueTests(APITestCase):
         from Shop.models import Category, Product, ProductImage
         from core.models import Partner
         U = get_user_model()
-        self.user = U.objects.create_user(email='eleve@example.com', password='x-Pass-12345')
+        self.user = U.objects.create_user(email='eleve@example.com', password='x-Pass-12345', is_verified=True)
         self.cat = Category.objects.create(name='Téléphones', slug='telephones')
         self.produits = [Product.objects.create(name=f'Téléphone {i}', category=self.cat, price=10000 + i,
                                                 old_price=20000, stock=3, description='<p>Super <b>téléphone</b></p>',

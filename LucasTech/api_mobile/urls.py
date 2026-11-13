@@ -9,6 +9,8 @@ urlpatterns = [
     # Compte
     path('auth/login/', views.login, name='login'),
     path('auth/register/', views.register, name='register'),
+    path('auth/verify-email/', views.verify_email, name='verify_email'),
+    path('auth/resend-code/', views.resend_code, name='resend_code'),
     path('auth/logout/', views.logout, name='logout'),
     path('auth/password-reset/', views.password_reset, name='password_reset'),
     path('auth/password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
@@ -42,6 +44,7 @@ urlpatterns = [
     path('concours/<slug:slug>/', views.concours_detail, name='concours_detail'),
     path('concours/<slug:slug>/annees/<int:pk>/', views.concours_annee, name='concours_annee'),
     path('documents/<str:kind>/<int:pk>/', views.document, name='document'),
+    path('documents/<str:kind>/<int:pk>/telecharger/', views.document_download, name='document_download'),
 
     # Abonnements et historique
     path('formules/', views.formules, name='formules'),

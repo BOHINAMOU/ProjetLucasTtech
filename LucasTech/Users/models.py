@@ -98,3 +98,23 @@ class PasswordResetCode(models.Model):
 
     def __str__(self):
         return f"{self.user.email} — {self.code}"
+
+# ─────────────────────────────
+# ✉️ CODE DE VÉRIFICATION DE L'E-MAIL (inscription)
+# ─────────────────────────────
+class EmailVerificationCode(models.Model):
+    """Code à 6 chiffres envoyé à l'inscription : tant qu'il n'est pas saisi, le compte reste non vérifié
+    (connexion et achats impossibles). Empêche de créer un compte avec l'adresse de quelqu'un d'autre."""
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_codes', verbose_name="Utilisateur")
+    code       = models.CharField(max_length=6, verbose_name="Code")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    attempts   = models.PositiveSmallIntegerField(default=0, verbose_name="Essais")
+    is_used    = models.BooleanField(default=False, verbose_name="Utilisé")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Code de vérification de l'e-mail"
+        verbose_name_plural = "Codes de vérification de l'e-mail"
+
+    def __str__(self):
+        return f"{self.user.email} — vérification"

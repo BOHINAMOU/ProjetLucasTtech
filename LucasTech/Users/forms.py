@@ -38,7 +38,8 @@ class RegisterForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
+        from .verification import reusable_unverified
+        if User.objects.filter(email__iexact=email).exists() and not reusable_unverified(email):
             raise forms.ValidationError("Cet email est déjà utilisé.")
         return email
 
@@ -64,7 +65,18 @@ class RegisterForm(forms.ModelForm):
 # 🔐 CONNEXION
 # ─────────────────────────────
 class SiteAuthenticationForm(AuthenticationForm):
-    """Formulaire de connexion : un compte banni voit le motif au lieu d'un message générique."""
+    """Formulaire de connexion : un compte banni voit le motif au lieu d'un message générique ;
+    un compte dont l'e-mail n'est pas vérifié est refusé (code « email_non_verifie »)."""
+    unverified_user_id = None
+
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        from .verification import is_verified
+        if not is_verified(user):
+            self.unverified_user_id = user.pk
+            raise forms.ValidationError(
+                "Votre adresse e-mail n'est pas encore vérifiée. Saisissez le code reçu par e-mail.",
+                code='email_non_verifie')
 
     def clean(self):
         try:

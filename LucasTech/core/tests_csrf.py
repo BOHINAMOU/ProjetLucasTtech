@@ -17,7 +17,7 @@ def token(html):
 @override_settings(STORAGES=STORAGES)
 class CsrfLoginTests(TestCase):
     def setUp(self):
-        get_user_model().objects.create_user(email='eleve@example.com', password='x-Pass-12345')
+        get_user_model().objects.create_user(email='eleve@example.com', password='x-Pass-12345', is_verified=True)
         self.c = Client(enforce_csrf_checks=True)
 
     def _login(self, tok, password='x-Pass-12345', referer=None):
@@ -77,3 +77,34 @@ class ApplicationPageTests(TestCase):
     def test_type_apk(self):
         import mimetypes
         self.assertEqual(mimetypes.guess_type('Lantante.apk')[0], 'application/vnd.android.package-archive')
+
+
+@override_settings(STORAGES=STORAGES, EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class EmailVerificationWebTests(TestCase):
+    def test_inscription_web_code_obligatoire(self):
+        from django.core import mail
+        c = Client()
+        r = c.post('/users/inscription/', {'email': 'nouveau@example.com', 'phone': '+22890000000', 'country': '',
+                                           'city': '', 'password1': 'Un-Mot2Passe-solide',
+                                           'password2': 'Un-Mot2Passe-solide'})
+        self.assertEqual(r.status_code, 302, getattr(r, 'context', None) and r.context['form'].errors)
+        self.assertTrue(r['Location'].startswith('/users/verifier-email/'))
+        self.assertNotIn('_auth_user_id', c.session)
+        code = re.search(r'\b(\d{6})\b', mail.outbox[-1].body).group(1)
+        # connexion refusée tant que l'e-mail n'est pas vérifié : renvoi vers la saisie du code
+        c2 = Client()
+        r = c2.post(LOGIN, {'username': 'nouveau@example.com', 'password': 'Un-Mot2Passe-solide'})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(r['Location'].startswith('/users/verifier-email/'))
+        self.assertNotIn('_auth_user_id', c2.session)
+        code = re.search(r'\b(\d{6})\b', mail.outbox[-1].body).group(1)
+        self.assertContains(c.get('/users/verifier-email/'), 'Vérifiez votre e-mail')
+        r = c.post('/users/verifier-email/', {'action': 'verifier', 'code': code})
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('_auth_user_id', c.session)
+        self.assertTrue(get_user_model().objects.get(email='nouveau@example.com').is_verified)
+
+    def test_comptes_staff_non_bloques(self):
+        u = get_user_model().objects.create_user(email='staff@example.com', password='x-Pass-12345', is_staff=True)
+        from Users.verification import is_verified
+        self.assertTrue(is_verified(u))

@@ -29,8 +29,10 @@
         <div class="px-acts">
           {% if ok %}
             <a class="cc-btn" href="{% url 'concours:reader' 'sujet' p.pk %}"><i class="fa fa-eye"></i> Sujet</a>
+            <a class="cc-btn cc-btn--ghost" href="{% url 'concours:download' 'sujet' p.pk %}" title="Télécharger le sujet en PDF (pour l'imprimer)"><i class="fa fa-download"></i> PDF</a>
             {% for c in p.corrections.all %}
             <a class="cc-btn cc-btn--ghost" href="{% url 'concours:reader' 'corrige' c.pk %}"><i class="fa fa-file-circle-check"></i> {% if p.corrections.all|length > 1 %}{{ c.get_kind_display }}{% else %}Corrigé{% endif %}</a>
+            <a class="cc-btn cc-btn--ghost" href="{% url 'concours:download' 'corrige' c.pk %}" title="Télécharger le corrigé en PDF (pour l'imprimer)"><i class="fa fa-download"></i> PDF</a>
             {% empty %}
             <span class="cc-na">Corrigé non disponible</span>
             {% endfor %}

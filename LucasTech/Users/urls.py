@@ -18,6 +18,7 @@ urlpatterns = [
 
     # ───────── COMPTE ─────────
     path('inscription/', fresh(views.register), name='register'),
+    path('verifier-email/', fresh(views.verify_email), name='verify_email'),
     path('profil/', never_cache(views.profile), name='profile'),
     path('edit-profile/', never_cache(views.edit_profile), name='edit_profile'),
 

@@ -10,6 +10,7 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from . import verification
 from .models import PasswordResetCode
 from .forms import RegisterForm, LoginForm, SetNewPasswordForm, ProfileUpdateForm
 
@@ -30,10 +31,21 @@ def _safe_next(request):
 
 
 class SiteLoginView(LoginView):
-    """Après connexion, un candidat ou une entreprise arrive directement dans son propre espace."""
+    """Après connexion, un candidat ou une entreprise arrive directement dans son propre espace.
+    Un compte dont l'e-mail n'est pas encore vérifié est renvoyé vers la saisie du code."""
 
     def get_default_redirect_url(self):
         return super().get_default_redirect_url()
+
+    def form_invalid(self, form):
+        uid = getattr(form, 'unverified_user_id', None)
+        if uid:
+            self.request.session['verify_user_id'] = uid
+            user = User.objects.get(pk=uid)
+            verification.send_code(user)
+            nxt = _safe_next(self.request)
+            return redirect(reverse('users:verify_email') + (f'?next={nxt}' if nxt else ''))
+        return super().form_invalid(form)
 
 
 def register(request):
@@ -44,14 +56,48 @@ def register(request):
     form = RegisterForm(request.POST or None)
 
     if request.method == 'POST' and form.is_valid():
+        # Compte jamais vérifié avec la même adresse : on le reprend (sinon l'adresse resterait bloquée).
+        old = verification.reusable_unverified(form.cleaned_data['email'])
+        if old:
+            old.delete()
         user = form.save(commit=False)
         user.account_type = 'member'
+        user.is_verified = False
         user.save()
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        messages.success(request, f'Bienvenue {user.email} !')
-        return redirect(next_url or 'core:home')
+        verification.send_code(user, force=True)
+        request.session['verify_user_id'] = user.pk
+        return redirect(reverse('users:verify_email') + (f'?next={next_url}' if next_url else ''))
 
     return render(request, 'users/register.html', {'form': form, 'next': next_url})
+
+
+def verify_email(request):
+    """Saisie du code à 6 chiffres reçu par e-mail (après l'inscription ou une connexion non vérifiée)."""
+    uid = request.session.get('verify_user_id')
+    user = User.objects.filter(pk=uid).first() if uid else None
+    if not user:
+        return redirect('users:register')
+    next_url = _safe_next(request)
+    if verification.is_verified(user):
+        request.session.pop('verify_user_id', None)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return redirect(next_url or 'core:home')
+    error = ''
+    if request.method == 'POST':
+        if request.POST.get('action') == 'renvoyer':
+            if verification.send_code(user):
+                messages.success(request, "Un nouveau code vient d'être envoyé.")
+            else:
+                error = f"Patientez encore {verification.resend_wait(user)} secondes avant de renvoyer un code."
+        else:
+            ok, error = verification.check_code(user, request.POST.get('code'))
+            if ok:
+                request.session.pop('verify_user_id', None)
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.success(request, f'Bienvenue {user.first_name or user.email} ! Votre compte est activé.')
+                return redirect(next_url or 'core:home')
+    return render(request, 'users/verify_email.html', {
+        'email': user.email, 'error': error, 'next': next_url, 'wait': verification.resend_wait(user)})
 
 
 # ─────────────────────────────
@@ -65,6 +111,10 @@ def user_login(request):
 
     if request.method == 'POST' and form.is_valid():
         user = form.get_user()
+        if not verification.is_verified(user):
+            request.session['verify_user_id'] = user.pk
+            verification.send_code(user)
+            return redirect('users:verify_email')
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f'Bon retour, {user.email} !')
         return redirect('core:home')
@@ -209,6 +259,7 @@ def password_reset_new_password(request):
 
     if request.method == "POST" and form.is_valid():
         user.set_password(form.cleaned_data["new_password1"])
+        user.is_verified = True  # le code reçu par e-mail prouve que l'adresse lui appartient
         user.save()
 
         request.session.flush()

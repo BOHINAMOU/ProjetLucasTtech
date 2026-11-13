@@ -1,4 +1,5 @@
 """Tests de l'API mobile : connexion, accès aux documents (refusé / autorisé / hors connexion), historique."""
+import re
 import shutil
 import tempfile
 from datetime import timedelta
@@ -44,7 +45,7 @@ class ApiMobileTests(APITestCase):
     def setUp(self):
         cache.clear()
         User = get_user_model()
-        self.user = User.objects.create_user(email='eleve@example.com', password='x-Pass-12345',
+        self.user = User.objects.create_user(email='eleve@example.com', password='x-Pass-12345', is_verified=True,
                                              first_name='Ama', last_name='Koffi', phone='+22890000000')
         cat = ContestCategory.objects.get(slug='enseignement')
         self.ens = Contest.objects.create(acronym='ENS', name='École normale supérieure', category=cat,
@@ -96,17 +97,52 @@ class ApiMobileTests(APITestCase):
                              format='json')
         self.assertEqual(r.status_code, 429)
 
-    def test_register_me_logout(self):
-        r = self.client.post(API + 'auth/register/', {
-            'first_name': 'Kodjo', 'last_name': 'Mensah', 'email': 'kodjo@example.com', 'phone': '+22891000000',
-            'country': 'Togo', 'password': 'Un-Mot2Passe-solide'}, format='json')
+    def test_register_verification_email_puis_me_logout(self):
+        from django.core import mail
+        data = {'first_name': 'Kodjo', 'last_name': 'Mensah', 'email': 'kodjo@example.com', 'phone': '+22891000000',
+                'country': 'Togo', 'password': 'Un-Mot2Passe-solide'}
+        r = self.client.post(API + 'auth/register/', data, format='json')
         self.assertEqual(r.status_code, 201, r.content)
+        self.assertTrue(r.json()['verification_requise'])
+        self.assertNotIn('token', r.json())
+        code = re.search(r'(\d{6})', mail.outbox[-1].body).group(1)
+        # tant que le code n'est pas saisi : connexion refusée (403 email_non_verifie)
+        r = self.client.post(API + 'auth/login/', {'identifiant': 'kodjo@example.com', 'password': 'Un-Mot2Passe-solide'},
+                             format='json')
+        self.assertEqual((r.status_code, r.json()['code']), (403, 'email_non_verifie'))
+        # renvoi trop tôt
+        self.assertEqual(self.client.post(API + 'auth/resend-code/', {'email': 'kodjo@example.com'},
+                                          format='json').status_code, 429)
+        # mauvais code puis bon code (le dernier envoyé)
+        code = re.search(r'(\d{6})', mail.outbox[-1].body).group(1)
+        bad = '000000' if code != '000000' else '111111'
+        r = self.client.post(API + 'auth/verify-email/', {'email': 'kodjo@example.com', 'code': bad}, format='json')
+        self.assertEqual(r.json()['code'], 'code_invalide')
+        r = self.client.post(API + 'auth/verify-email/', {'email': 'kodjo@example.com', 'code': code}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + r.json()['token'])
         me = self.client.get(API + 'me/').json()
         self.assertEqual(me['country'], 'Togo')
         self.assertEqual(me['stats']['abonnements_actifs'], 0)
         self.assertEqual(self.client.post(API + 'auth/logout/').status_code, 200)
         self.assertEqual(self.client.get(API + 'me/').status_code, 401)
+
+    def test_verification_essais_limites_et_reprise_adresse(self):
+        from django.core import mail
+        data = {'first_name': 'A', 'last_name': 'B', 'email': 'cible@example.com', 'phone': '1',
+                'password': 'Un-Mot2Passe-solide'}
+        self.client.post(API + 'auth/register/', data, format='json')
+        code = re.search(r'(\d{6})', mail.outbox[-1].body).group(1)
+        bad = '000000' if code != '000000' else '111111'
+        for _ in range(5):
+            self.client.post(API + 'auth/verify-email/', {'email': 'cible@example.com', 'code': bad}, format='json')
+        r = self.client.post(API + 'auth/verify-email/', {'email': 'cible@example.com', 'code': code}, format='json')
+        self.assertEqual(r.status_code, 400)  # le bon code ne passe plus après 5 essais
+        # la vraie propriétaire peut se réinscrire : le compte non vérifié est remplacé
+        data['password'] = 'Autre-Mot2Passe-solide'
+        r = self.client.post(API + 'auth/register/', data, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(get_user_model().objects.filter(email='cible@example.com').count(), 1)
 
     def test_register_email_deja_utilise(self):
         r = self.client.post(API + 'auth/register/', {
@@ -268,3 +304,40 @@ class ApiMobileTests(APITestCase):
         r = self.client.post(API + 'auth/login/', {'identifiant': 'eleve@example.com', 'password': 'x-Pass-12345'},
                              format='json')
         self.assertEqual(r.status_code, 400)
+
+    # ── Téléchargement filigrané (lire ailleurs, imprimer) ──
+    def _real_pdf_paper(self):
+        import pymupdf as fitz
+        pdf = fitz.open()
+        pdf.new_page().insert_text((72, 72), 'Sujet de mathematiques')
+        p = ExamPaper(session=self.session, title='Mathématiques', subject='Mathématiques', is_free=False)
+        p.file.save('vrai.pdf', ContentFile(pdf.tobytes()), save=True)
+        return p
+
+    def test_telechargement_filigrane_reserve_aux_abonnes(self):
+        import pymupdf as fitz
+        p = self._real_pdf_paper()
+        url = f'{API}documents/epreuve/{p.pk}/telecharger/'
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self._login()
+        self.assertEqual(self.client.get(url).json()['code'], 'abonnement_requis')
+        self._subscribe('standard', [self.ens])
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertIn('attachment; filename="ENS-2024-Mathematiques-sujet.pdf"', r['Content-Disposition'])
+        texte = fitz.open(stream=r.content, filetype='pdf')[0].get_text()
+        self.assertIn('eleve@example.com', texte)
+        self.assertIn('Lantante Technologie', texte)
+        self.assertIn('Sujet de mathematiques', texte)
+
+    def test_telechargement_web(self):
+        p = self._real_pdf_paper()
+        url = f'/concours/telecharger/sujet/{p.pk}/'
+        self.assertEqual(self.client.get(url).status_code, 302)  # connexion demandée
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self._subscribe('standard', [self.ens])
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.content.startswith(b'%PDF'))

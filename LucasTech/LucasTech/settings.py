@@ -167,6 +167,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
+    'Users.verification.social_mark_verified',  # e-mail Google déjà vérifié
 )
 
 

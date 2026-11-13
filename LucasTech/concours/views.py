@@ -1,7 +1,8 @@
 import mimetypes
 
 from django.db.models import Count, Min, Prefetch, Q
-from django.http import FileResponse, Http404, HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.cache import never_cache
 
@@ -9,6 +10,7 @@ from abonnements.access import can_view_paper, user_can_access
 from abonnements.models import SubscriptionPlan
 
 from .models import Contest, ContestCategory, ContestSession, Correction, ExamPaper
+from .search import search_contests
 
 
 def _contests_for(user):
@@ -34,10 +36,9 @@ def index(request):
         active_category = ContestCategory.objects.filter(slug=cat_slug).first()
         if active_category:
             contests = contests.filter(category=active_category)
-    if q:
-        contests = contests.filter(Q(acronym__icontains=q) | Q(name__icontains=q) | Q(description__icontains=q))
     categories = ContestCategory.objects.filter(contests__in=_contests_for(request.user)).distinct()
-    contests = list(contests)
+    # Recherche sans accents ni majuscules, par sigle, nom, catégorie, pays ou description, triée par pertinence.
+    contests = search_contests(contests, q)
     for c in contests:  # même règle que la lecture des documents
         c.has_access = user_can_access(request.user, c)
     return render(request, 'concours/index.html', {
@@ -124,6 +125,30 @@ def file(request, kind, pk):
     ctype = mimetypes.guess_type(doc.file.name)[0] or 'application/octet-stream'
     resp = FileResponse(fh, content_type=ctype)
     resp['Content-Disposition'] = 'inline'
+    resp['Cache-Control'] = 'private, no-store, max-age=0'
+    resp['X-Robots-Tag'] = 'noindex, nofollow'
+    return resp
+
+
+@never_cache
+@login_required
+def download(request, kind, pk):
+    """Téléchargement du PDF (lire ailleurs, imprimer) : mêmes droits que la lecture, filigrane incrusté
+    avec le nom et l'e-mail de l'abonné sur chaque page."""
+    from .watermark import WatermarkUnavailable, download_name, watermarked_pdf
+    doc, paper = _document(request, kind, pk)
+    if not can_view_paper(request.user, paper):
+        return HttpResponseForbidden("Accès réservé aux abonnés.")
+    if not doc.file:
+        raise Http404
+    try:
+        data = watermarked_pdf(doc, request.user)
+    except WatermarkUnavailable:
+        return HttpResponse("Téléchargement momentanément indisponible : lisez le document en ligne.", status=503)
+    except (FileNotFoundError, OSError):
+        raise Http404
+    resp = HttpResponse(data, content_type='application/pdf')
+    resp['Content-Disposition'] = f'attachment; filename="{download_name(paper, "corrige" if kind == "corrige" else "sujet")}"'
     resp['Cache-Control'] = 'private, no-store, max-age=0'
     resp['X-Robots-Tag'] = 'noindex, nofollow'
     return resp
