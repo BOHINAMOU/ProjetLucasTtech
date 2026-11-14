@@ -405,6 +405,9 @@ def _events(all_events=False):
 @public_cache()
 def evenements(request):
     qs = search(_events(request.GET.get('passes') == '1'), request, 'title', 'location', 'description')
+    typ = request.GET.get('categorie') or request.GET.get('type')
+    if typ in ('tickets', 'soutien'):
+        qs = qs.filter(kind=typ)
     return paginated(request, qs, lambda e: event_item(request, e))
 
 

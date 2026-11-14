@@ -60,3 +60,10 @@ class SoutienTests(APITestCase):
         self.assertContains(self.client.get('/evenements/?type=soutien'), 'Un sourire pour chaque orphelin')
         self.assertNotContains(self.client.get('/evenements/?type=tickets'), 'Un sourire pour chaque orphelin')
         self.assertContains(self.client.get('/evenements/?q=sourire'), 'Un sourire pour chaque orphelin')
+
+    def test_filtre_api(self):
+        def titres(q):
+            d = self.client.get(API + 'evenements/' + q).json()
+            return [e['titre'] for e in (d['resultats'] if isinstance(d, dict) else d)]
+        self.assertIn('Un sourire pour chaque orphelin', titres('?categorie=soutien'))
+        self.assertNotIn('Un sourire pour chaque orphelin', titres('?categorie=tickets'))
