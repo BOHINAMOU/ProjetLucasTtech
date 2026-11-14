@@ -15,6 +15,9 @@ ACCOUNT_CHOICES = [
 ]
 
 
+NOM_RE = re.compile(r"[^\W\d_](?:[^\W\d_]|[ '’\-]){1,59}")
+
+
 class CustomerForm(forms.Form):
     """Coordonnées + paiement Mobile Money (pays, opérateur, numéro), transmis tels quels à FedaPay.
 
@@ -103,6 +106,10 @@ class CustomerForm(forms.Form):
                 self.add_error('operator' if 'opérateur disponible' in ' '.join(exc.messages) else 'phone', exc)
         if self.purpose == 'soutien' and not (data.get('whatsapp') or '').strip() and data.get('phone'):
             data['whatsapp'] = data['phone']
+        for champ in ('first_name', 'last_name'):
+            v = (data.get(champ) or '').strip()
+            if v and not NOM_RE.fullmatch(v):
+                self.add_error(champ, "Lettres seulement (2 à 60).")
         wa = (data.get('whatsapp') or '').strip()
         if wa and (not re.fullmatch(r"\+?[0-9 .\-]+", wa) or not 8 <= len(re.sub(r'\D', '', wa)) <= 15):
             self.add_error('whatsapp', "Numéro WhatsApp invalide : chiffres uniquement.")

@@ -117,7 +117,7 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
     .sx .ct-field input,.sx .ct-field select{width:100%;height:48px;border:1.5px solid #DCE3DF;border-radius:12px;padding:0 12px;font-size:1rem;background:#fff;box-sizing:border-box}
     .sx .err{color:#B42318;font-size:.82rem}
     .sx-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;height:56px;border:0;border-radius:16px;background:#0B7A4B;color:#fff;font-weight:900;font-size:1.1rem;cursor:pointer;margin-top:.4rem;text-decoration:none}
-    .sx-btn:disabled{opacity:.7}
+    .sx-btn:disabled{opacity:.45;cursor:not-allowed}
     .sx-note{text-align:center;color:#5b6b63;font-size:.85rem;margin:.7rem 0 0}
     </style>
     {% elif not event.ticket_types.all %}
@@ -205,7 +205,8 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
   function chiffres(el,max){el.addEventListener('input',function(){var v=el.value.replace(/\D/g,'').slice(0,max);if(v!==el.value)el.value=v;});}
   if(ph){ph.setAttribute('inputmode','numeric');ph.setAttribute('maxlength','10');chiffres(ph,10);}
   inp.addEventListener('keydown',function(e){if(['e','E','+','-','.',','].indexOf(e.key)>=0)e.preventDefault();});
-  function err(el,msg){var p=el.closest('.ct-field')||el.parentElement.parentElement, e=p.querySelector('.err.js');
+  var muet=false;
+  function err(el,msg){if(muet) return !msg;var p=el.closest('.ct-field')||el.parentElement.parentElement, e=p.querySelector('.err.js');
     if(!msg){if(e)e.remove();el.removeAttribute('aria-invalid');return true;}
     if(!e){e=document.createElement('span');e.className='err js';p.appendChild(e);} e.textContent=msg; el.setAttribute('aria-invalid','true'); return false;}
   function verifier(){var ok=true, v=parseInt(inp.value,10)||0;
@@ -217,7 +218,9 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
     if(ph){var n=ph.value.replace(/\D/g,''), l=LEN[c?c.value:'tg']||[8];
       ok=err(ph,!n?'Saisissez votre numéro.':(l.indexOf(n.length)<0?'Numéro à '+l.join(' ou ')+' chiffres.':''))&&ok;}
     return ok;}
-  [ph,op,c].forEach(function(el){if(el)el.addEventListener('change',function(){if(f.dataset.essai)verifier();});});
+  /* Bouton grisé tant que tout n'est pas valide (sans afficher d'erreur avant le premier essai). */
+  function etat(){muet=!f.dataset.essai; var ok=verifier(); muet=false; if(btn) btn.disabled=!ok;}
+  f.addEventListener('input',etat); f.addEventListener('change',etat); etat();
   f.addEventListener('submit',function(e){f.dataset.essai='1';
     if(!verifier()){e.preventDefault();var x=f.querySelector('[aria-invalid=true]');if(x)x.focus();return;}
     if(btn){setTimeout(function(){btn.disabled=true;btn.querySelector('span').textContent='Paiement en cours…';},0);}});

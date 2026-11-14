@@ -35,8 +35,9 @@ def moyens(request):
     return Response({
         'actif': fedapay.is_enabled(),
         'pays': [{'code': code, 'nom': c['label'], 'indicatif': c['dial'], 'exemple': c['example'],
-                  'operateurs': [{'code': m, 'nom': label, 'direct': m in mm.DIRECT_MODES}
-                                 for m, label, _p in c['operators']]}
+                  'chiffres': list(c['digits']),
+                  'operateurs': [{'code': m, 'nom': label, 'direct': m in mm.DIRECT_MODES, 'prefixes': list(p)}
+                                 for m, label, p in c['operators']]}
                  for code, c in mm.COUNTRIES.items()],
     })
 
@@ -96,8 +97,8 @@ def _cible(user, d):
             montant = 0
         if montant < e.min_amount:
             raise ValidationError(f"Montant minimal : {e.min_amount} F.")
-        if montant > 5_000_000:
-            raise ValidationError("Montant trop élevé.")
+        if montant > 1_000_000:
+            raise ValidationError("Maximum 1 000 000 F.")
         return {'kind': 'soutien', 'event': e}, montant, f"Soutien : {e.title}", None
     if kind == 'ticket':
         from Events.models import Event, TicketType

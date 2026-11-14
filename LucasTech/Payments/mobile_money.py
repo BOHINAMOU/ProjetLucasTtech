@@ -58,6 +58,8 @@ def _digits(raw):
 
 
 def normalize(raw, country=DEFAULT_COUNTRY):
+    if raw and not re.fullmatch(r"\s*\+?[0-9 .\-]+\s*", str(raw)):
+        raise ValidationError("Numéro invalide : chiffres seulement.")
     """« 92 96 77 87 », « 0022892967787 » ou « +228 92967787 » -> « +22892967787 » (selon le pays).
     Lève ValidationError si le numéro n'a pas la bonne longueur pour ce pays."""
     c = COUNTRIES.get(country)
