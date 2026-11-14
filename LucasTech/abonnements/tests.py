@@ -1,4 +1,3 @@
-import unittest
 """Règles clés des abonnements cumulables aux concours."""
 import shutil
 import tempfile
@@ -237,34 +236,6 @@ class SubscriptionRulesTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertEqual(sub.contests.count(), 2)
 
-    @unittest.skip("Formules plus vendues : chaque concours se débloque à l'unité (décision du 14/11/2026).")
-    @override_settings(DEBUG=True, FEDAPAY_SECRET_KEY='')
-    def test_achat_complet_en_mode_demo(self):
-        """Formulaire -> paiement en attente (aucun droit) -> paiement confirmé -> abonnement actif."""
-        self.client.force_login(self.user)
-        form = {'first_name': 'Ama', 'last_name': 'Koffi', 'whatsapp': '90000000', 'city': 'Lomé', 'country': 'tg',
-                'operator': 'togocel', 'phone': '90000000', 'periode': 'an', 'submission': 'abc'}
-        r = self.client.post(reverse('abonnements:subscribe', args=['premium']), form)
-        self.assertEqual(r.status_code, 302)
-        sub = UserSubscription.objects.get(user=self.user)
-        self.assertEqual((sub.status, sub.price_paid, sub.contest_limit, sub.period), ('en_attente', 20000, 8, 'an'))
-        self.assertEqual(sub.payment.kind, 'abonnement')
-        self.assertFalse(sub.is_active)
-        r = self.client.post(reverse('payments:demo', args=[sub.payment.reference]), {'action': 'pay'})
-        sub.refresh_from_db()
-        self.assertEqual(sub.status, 'actif')
-        self.assertEqual((sub.end_at - sub.start_at).days, 365)
-
-    @unittest.skip("Formules plus vendues : chaque concours se débloque à l'unité (décision du 14/11/2026).")
-    def test_achat_impose_un_compte(self):
-        url = reverse('abonnements:subscribe', args=['standard']) + '?periode=mois'
-        r = self.client.get(url)
-        self.assertEqual(r.status_code, 302)
-        self.assertTrue(r['Location'].startswith(reverse('users:register') + '?next='))
-        r = self.client.get(reverse('abonnements:plans'))
-        self.assertContains(r, 'Créer mon compte')
-        self.assertFalse(UserSubscription.objects.exists())
-
     def test_concours_de_demo_non_selectionnable(self):
         demo = Contest.objects.create(acronym='DEMO-X', name='Démo', category=self.ens.category,
                                       is_published=True, is_demo=True)
@@ -289,17 +260,42 @@ class SubscriptionRulesTests(TestCase):
 class LibreChoixFormuleTests(TestCase):
     """Aucune formule n'est imposée : on peut changer de formule et de durée jusqu'au paiement."""
 
-    @unittest.skip("Formules plus vendues : chaque concours se débloque à l'unité (décision du 14/11/2026).")
-    def test_page_paiement_propose_les_trois_formules(self):
-        u = get_user_model().objects.create_user(email='choix@example.com', password='x-Pass-12345',
-                                                 is_verified=True)
-        self.client.force_login(u)
-        r = self.client.get(reverse('abonnements:subscribe', args=['standard']) + '?periode=mois')
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.context['plan'].code, 'standard')
-        self.assertEqual(r.context['amount'], r.context['plan'].monthly_price)
-        for code in ('standard', 'premium', 'ultimate'):
-            self.assertContains(r, reverse('abonnements:subscribe', args=[code]) + '?periode=mois')
-        self.assertContains(r, '?periode=an')
-        r = self.client.get(reverse('abonnements:subscribe', args=['ultimate']) + '?periode=an')
-        self.assertEqual(r.context['amount'], r.context['plan'].yearly_price)
+
+
+class FormulesPlusVenduesTests(TestCase):
+    """Décision du 14/11/2026 : chaque concours se débloque à l'unité ; plus de vente de formules."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from concours.models import Contest, ContestCategory
+        self.user = get_user_model().objects.create_user(email='f@example.com', password='x-Pass-12345',
+                                                         first_name='Ama', last_name='Koffi', is_verified=True)
+        cat = ContestCategory.objects.get(slug='enseignement')
+        self.c = Contest.objects.create(acronym='ENS', name='École normale', category=cat, is_published=True)
+
+    def test_pages_de_vente_redirigent(self):
+        self.client.force_login(self.user)
+        self.assertRedirects(self.client.get(reverse('abonnements:plans')), reverse('concours:index'),
+                             fetch_redirect_response=False)
+        r = self.client.post(reverse('abonnements:subscribe', args=['premium']), {'periode': 'an'})
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(UserSubscription.objects.filter(user=self.user).exists())
+
+    def test_achat_par_l_api_refuse(self):
+        from rest_framework.test import APIClient
+        c = APIClient()
+        c.force_authenticate(self.user)
+        r = c.post('/api/mobile/v1/paiements/', {'type': 'abonnement', 'formule': 'premium', 'periode': 'mois',
+                                                 'pays': 'tg', 'operateur': 'togocel', 'telephone': '90000000'},
+                   format='json')
+        self.assertIn(r.status_code, (400, 503))
+        self.assertFalse(UserSubscription.objects.filter(user=self.user).exists())
+
+    def test_abonne_actif_garde_son_acces(self):
+        from abonnements import services as abo
+        from abonnements.access import user_can_access
+        from abonnements.models import SubscriptionPlan
+        sub = abo.activate_subscription(abo.create_pending_subscription(
+            self.user, SubscriptionPlan.objects.get(code='standard'), 'mois').pk)
+        abo.add_contests(sub, [self.c])
+        self.assertTrue(user_can_access(self.user, self.c))

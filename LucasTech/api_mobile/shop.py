@@ -77,6 +77,8 @@ def _cible(user, d):
                  'items': [{'product': p.pk, 'name': p.name, 'quantity': qty, 'price': int(unit)}]},
                 int(unit) * qty, desc, None)
     if kind == 'abonnement':
+        raise ValidationError("Les formules ne sont plus vendues : débloquez chaque concours à l'unité.")
+    if kind == 'abonnement_ancien':  # gardé pour mémoire, inaccessible
         from abonnements import services as abo
         from abonnements.models import PERIOD_DAYS, SubscriptionPlan
         plan = SubscriptionPlan.objects.filter(code=str(d.get('formule') or ''), is_active=True).first()

@@ -52,12 +52,11 @@ class AppliSansSiteTests(APITestCase):
 
     @mock.patch('Payments.fedapay.is_enabled', return_value=True)
     @mock.patch('Payments.fedapay.mode', return_value='demo')
-    def test_paiement_abonnement_libre_choix(self, *_):
+    def test_paiement_abonnement_refuse(self, *_):
         r = self.client.post(API + 'paiements/', {'type': 'abonnement', 'formule': 'ultimate', 'periode': 'an',
                                                   'pays': 'tg', 'operateur': 'moov_tg', 'telephone': '96000000'},
                              format='json')
-        self.assertEqual(r.status_code, 201, r.content)
-        self.assertEqual(r.json()['montant'], SubscriptionPlan.objects.get(code='ultimate').yearly_price)
+        self.assertEqual(r.status_code, 400, r.content)  # formules plus vendues
 
     def test_contact_par_email(self):
         r = self.client.post(API + 'contact/', {'sujet': 'Aide', 'message': 'Je ne trouve pas mon épreuve.'},
