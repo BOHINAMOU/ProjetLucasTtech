@@ -349,11 +349,18 @@ JAZZMIN_SETTINGS = {
     ],
 
     "hide_apps": ["Emploi"],
+    # Modèles techniques inutiles au quotidien (toujours accessibles par leur adresse).
+    "hide_models": ["social_django.association", "social_django.nonce", "authtoken.tokenproxy",
+                    "api_mobile.offlinedocument"],
     "custom_css": "css/admin.css",
     "custom_js": "js/admin-mobile.js",
 
     # Menu « Emploi » regroupé et ordonné dans la barre latérale
     "order_with_respect_to": [
+        # Ventes et paiements, Concours et abonnements, Boutique, Formations, Événements, Actualités,
+        # Partenaires et services, Utilisateurs, Paramètres
+        "Payments", "abonnements", "concours", "Shop", "Formations", "Events", "Publications", "Services",
+        "core", "Portfolio", "Users", "auth", "social_django",
         "Emploi", "Emploi.candidateprofile", "Emploi.employerprofile",
         "Emploi.staffingrequest", "Emploi.joboffer", "Emploi.application", "Emploi.conversation",
         "Emploi.appointment", "Emploi.placement", "Emploi.feedpost", "Emploi.notification",

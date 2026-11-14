@@ -141,7 +141,48 @@
       <div class="ltd-date">{{ dash.today }}</div>
       <h2>Bonjour {{ dash.greeting }}</h2>
       <p>Voici l'essentiel de votre site aujourd'hui.</p>
-      <span class="ltd-pill {% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
+      <span class="ltd-pill {% if dash.argent %}
+<div class="ltd-h"><h3>Argent encaissé</h3><a href="{{ dash.argent.url }}">Tous les paiements →</a></div>
+<div class="ltd-grid">
+  {% for p in dash.argent.periodes %}
+  <a class="ltd-card" href="{{ dash.argent.url }}?status__exact=approved"><span class="ltd-ico"><i class="fas fa-coins"></i></span>
+    <span><span class="ltd-n">{{ p.montant }}</span><span class="ltd-l">{{ p.label }}</span><span class="ltd-sub">{{ p.n }} paiement{{ p.n|pluralize }}</span></span></a>
+  {% endfor %}
+</div>
+<div class="ltd-grid" style="margin-top:12px">
+  {% for label, n, couleur, url in dash.argent.statuts %}
+  <a class="ltd-card" href="{{ url }}"><span class="ltd-ico" style="color:{{ couleur }}"><i class="fas fa-circle"></i></span>
+    <span><span class="ltd-n" style="color:{{ couleur }}">{{ n }}</span><span class="ltd-l">Paiements {{ label|lower }}</span></span></a>
+  {% endfor %}
+</div>
+<div style="background:#fff;border:1px solid #e6eaee;border-radius:14px;padding:16px 18px;margin-top:12px">
+  <div style="font-weight:800;margin-bottom:10px">Encaissements des 30 derniers jours</div>
+  <div style="display:flex;align-items:flex-end;gap:3px;height:120px">
+    {% for j in dash.argent.jours %}<div title="{{ j.label }} : {{ j.txt }}" style="flex:1;background:{% if j.v %}#0B7A4B{% else %}#e6eaee{% endif %};height:{{ j.h }}%;border-radius:3px 3px 0 0"></div>{% endfor %}
+  </div>
+  <div style="display:flex;justify-content:space-between;color:#64748b;font-size:11px;margin-top:4px"><span>{{ dash.argent.jours.0.label }}</span><span>aujourd'hui</span></div>
+</div>
+<div class="ltd-h"><h3>Par activité (paiements réussis)</h3></div>
+<div class="ltd-grid">
+  {% for label, montant, n, url in dash.argent.par_type %}
+  <a class="ltd-card" href="{{ url }}"><span><span class="ltd-n" style="font-size:1.3rem">{{ montant }}</span><span class="ltd-l">{{ label }}</span><span class="ltd-sub">{{ n }} paiement{{ n|pluralize }}</span></span></a>
+  {% endfor %}
+</div>
+<div class="ltd-h"><h3>10 derniers paiements</h3><a href="{{ dash.argent.url }}">Voir tout →</a></div>
+<div style="background:#fff;border:1px solid #e6eaee;border-radius:14px;overflow:auto">
+  <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+    <thead><tr style="text-align:left;color:#64748b"><th style="padding:10px 14px">Date</th><th>Client</th><th>Objet</th><th>Montant</th><th>Statut</th></tr></thead>
+    <tbody>
+    {% for p in dash.argent.derniers %}
+      <tr style="border-top:1px solid #eef1f5"><td style="padding:9px 14px;white-space:nowrap"><a href="{{ p.url }}">{{ p.quand|date:"d/m/Y H:i" }}</a></td><td>{{ p.qui|default:"—" }}</td><td>{{ p.objet|truncatechars:48 }}</td>
+        <td style="white-space:nowrap;font-weight:700">{{ p.montant }}</td>
+        <td><span style="padding:2px 9px;border-radius:999px;font-weight:700;font-size:12px;{% if p.status == 'approved' %}background:#E3F5EC;color:#0B7A4B{% elif p.status == 'pending' %}background:#FFF4D6;color:#9A6700{% elif p.status == 'refunded' %}background:#EEE7FD;color:#6D28D9{% else %}background:#FDECEA;color:#B42318{% endif %}">{{ p.statut }}</span></td></tr>
+    {% empty %}<tr><td style="padding:14px" colspan="5">Aucun paiement.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
         {% if dash.todo_total %}{{ dash.todo_total }} élément{{ dash.todo_total|pluralize }} à traiter{% else %}Tout est à jour{% endif %}</span>
     </div>
     <div class="ltd-kpis">

@@ -1,0 +1,13 @@
+{% extends "admin/change_list.html" %}
+{% block result_list %}
+{% if resume %}
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px">
+  <div style="background:#0B7A4B;color:#fff;border-radius:12px;padding:10px 16px"><div style="font-size:12px;opacity:.85">Encaissé (sélection)</div><div style="font-size:22px;font-weight:800">{{ resume.encaisse }}</div></div>
+  <div style="background:#fff;border:1px solid #e6eaee;border-radius:12px;padding:10px 16px"><div style="font-size:12px;color:#64748b">Payés</div><div style="font-size:22px;font-weight:800">{{ resume.payeurs }}</div></div>
+  <div style="background:#fff;border:1px solid #e6eaee;border-radius:12px;padding:10px 16px"><div style="font-size:12px;color:#64748b">En attente</div><div style="font-size:22px;font-weight:800;color:#9A6700">{{ resume.attente }}</div></div>
+  <div style="background:#fff;border:1px solid #e6eaee;border-radius:12px;padding:10px 16px"><div style="font-size:12px;color:#64748b">Refusés / annulés</div><div style="font-size:22px;font-weight:800;color:#B42318">{{ resume.echecs }}</div></div>
+  <div style="background:#fff;border:1px solid #e6eaee;border-radius:12px;padding:10px 16px"><div style="font-size:12px;color:#64748b">Remboursés</div><div style="font-size:22px;font-weight:800;color:#6D28D9">{{ resume.rembourses }}</div></div>
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

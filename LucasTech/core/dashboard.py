@@ -119,6 +119,51 @@ def build(request):
     for d in app_days:
         d['h'] = max(4, round(100 * d['n'] / app_peak)) if d['n'] else 4
 
+    # ── Argent encaissé (paiements réussis seulement) ──
+    P = _model('Payments.Payment')
+    argent = {}
+    if P:
+        ok = P.objects.filter(status='approved')
+
+        def somme(qs):
+            return qs.aggregate(s=Sum('amount'))['s'] or 0
+        def f(n):
+            return f"{int(n):,} F".replace(',', '\u202f')
+        d30 = now - timedelta(days=30)
+        argent = {
+            'periodes': [
+                {'label': '7 derniers jours', 'montant': f(somme(ok.filter(paid_at__gte=week))), 'n': ok.filter(paid_at__gte=week).count()},
+                {'label': '30 derniers jours', 'montant': f(somme(ok.filter(paid_at__gte=d30))), 'n': ok.filter(paid_at__gte=d30).count()},
+                {'label': 'Depuis le début', 'montant': f(somme(ok)), 'n': ok.count()},
+            ],
+            'statuts': [
+                ('Réussis', ok.count(), '#0B7A4B', _url('Payments.Payment', '?status__exact=approved')),
+                ('En attente', P.objects.filter(status='pending').count(), '#9A6700', _url('Payments.Payment', '?status__exact=pending')),
+                ('Refusés / annulés', P.objects.filter(status__in=('declined', 'canceled')).count(), '#B42318', _url('Payments.Payment', '?status__in=declined,canceled')),
+                ('Remboursés', P.objects.filter(status='refunded').count(), '#6D28D9', _url('Payments.Payment', '?status__exact=refunded')),
+            ],
+            'par_type': [
+                (label, f(somme(ok.filter(kind=k))), ok.filter(kind=k).count(), _url('Payments.Payment', f'?status__exact=approved&kind__exact={k}'))
+                for k, label in (('abonnement', 'Abonnements concours'), ('product', 'Boutique (produit)'), ('shop', 'Boutique (panier)'),
+                                 ('formation', 'Formations'), ('ticket', "Tickets d'événement"), ('soutien', 'Soutiens'),
+                                 ('service', 'Services'))
+            ],
+            'derniers': [{'ref': p.reference, 'qui': f"{p.first_name} {p.last_name}".strip(), 'objet': p.description,
+                          'montant': f(p.amount), 'statut': p.get_status_display(), 'status': p.status,
+                          'quand': p.created_at, 'url': _change_url(p)}
+                         for p in P.objects.order_by('-created_at')[:10]],
+            'url': _url('Payments.Payment'),
+        }
+        jours = []
+        for i in range(29, -1, -1):
+            day = (now - timedelta(days=i)).date()
+            jours.append({'label': day.strftime('%d/%m'), 'v': somme(ok.filter(paid_at__date=day))})
+        pic = max([j['v'] for j in jours] + [1])
+        for j in jours:
+            j['h'] = max(3, round(100 * j['v'] / pic)) if j['v'] else 3
+            j['txt'] = f(j['v'])
+        argent['jours'] = jours
+
     MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
     WEEK = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
     today = f"{WEEK[now.weekday()].capitalize()} {now.day} {MONTHS[now.month - 1]} {now.year}"
@@ -144,7 +189,7 @@ def build(request):
 
     return {
         'todo': todo, 'todo_total': total_todo, 'comments': comments, 'latest_comments': latest[:6], 'messages_latest': messages_latest,
-        'stats': stats, 'days': days, 'app_days': app_days, 'actions': actions, 'today': today, 'hero_kpis': hero_kpis,
+        'argent': argent, 'stats': stats, 'days': days, 'app_days': app_days, 'actions': actions, 'today': today, 'hero_kpis': hero_kpis,
         'mail_from': getattr(settings, 'DEFAULT_FROM_EMAIL', '') or getattr(settings, 'EMAIL_HOST_USER', ''),
         'greeting': request.user.first_name or request.user.email,
     }

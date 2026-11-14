@@ -28,11 +28,36 @@ class FormationAdminForm(forms.ModelForm):
 @admin.register(Formation)
 class FormationAdmin(admin.ModelAdmin):
     form = FormationAdminForm
-    list_display = ('title', 'category', 'formation_type', 'level', 'price', 'old_price', 'is_featured', 'author', 'is_published', 'created_at')
+    list_display = ('title', 'category', 'formation_type', 'prix', 'inscrits', 'payeurs', 'encaisse', 'is_published')
     list_filter = ('category', 'formation_type', 'is_published', 'is_featured', 'level', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
     exclude = ('author',)
+
+    def get_queryset(self, request):
+        from django.db.models import Count, Q, Sum
+        return super().get_queryset(request).annotate(
+            _inscrits=Count('registrations', distinct=True),
+            _payeurs=Count('payments', filter=Q(payments__status='approved'), distinct=True),
+            _encaisse=Sum('payments__amount', filter=Q(payments__status='approved')))
+
+    @admin.display(description="Prix", ordering='price')
+    def prix(self, obj):
+        from Payments.admin import francs
+        return francs(obj.price) if obj.price else 'Gratuit'
+
+    @admin.display(description="Inscrits", ordering='_inscrits')
+    def inscrits(self, obj):
+        return obj._inscrits
+
+    @admin.display(description="Payeurs", ordering='_payeurs')
+    def payeurs(self, obj):
+        return obj._payeurs
+
+    @admin.display(description="Encaissé", ordering='_encaisse')
+    def encaisse(self, obj):
+        from Payments.admin import francs
+        return francs(obj._encaisse)
 
     def save_model(self, request, obj, form, change):
         # L'auteur n'est jamais choisi dans le formulaire : c'est toujours

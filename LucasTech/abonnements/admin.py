@@ -49,7 +49,12 @@ def _log(request, sub, action, details=''):
 
 @admin.register(UserSubscription)
 class UserSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'plan', 'period', 'status', 'start_at', 'end_at', 'price_paid', 'n_contests')
+    list_display = ('id', 'user', 'plan', 'period', 'status', 'start_at', 'end_at', 'montant', 'n_contests')
+
+    @admin.display(description="Montant", ordering='price_paid')
+    def montant(self, obj):
+        from Payments.admin import francs
+        return francs(obj.price_paid)
     list_filter = ('status', 'plan', 'period')
     search_fields = ('user__email', 'user__first_name', 'user__last_name', 'payment__reference')
     raw_id_fields = ('user', 'payment', 'merged_into')

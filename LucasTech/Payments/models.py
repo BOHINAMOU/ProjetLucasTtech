@@ -34,6 +34,7 @@ class Payment(models.Model):
         ('approved', 'Payé'),
         ('declined', 'Refusé'),
         ('canceled', 'Annulé'),
+        ('refunded', 'Remboursé'),
     ]
 
     reference = models.CharField(max_length=20, unique=True, default=_new_reference, editable=False,

@@ -240,7 +240,7 @@ class SubscriptionRulesTests(TestCase):
     def test_achat_complet_en_mode_demo(self):
         """Formulaire -> paiement en attente (aucun droit) -> paiement confirmé -> abonnement actif."""
         self.client.force_login(self.user)
-        form = {'first_name': 'Ama', 'last_name': 'K', 'whatsapp': '90000000', 'city': 'Lomé', 'country': 'tg',
+        form = {'first_name': 'Ama', 'last_name': 'Koffi', 'whatsapp': '90000000', 'city': 'Lomé', 'country': 'tg',
                 'operator': 'togocel', 'phone': '90000000', 'periode': 'an', 'submission': 'abc'}
         r = self.client.post(reverse('abonnements:subscribe', args=['premium']), form)
         self.assertEqual(r.status_code, 302)

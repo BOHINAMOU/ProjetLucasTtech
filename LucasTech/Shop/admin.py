@@ -19,14 +19,18 @@ class ShopOrderItemInline(admin.TabularInline):
 @admin.register(ShopOrder)
 class ShopOrderAdmin(admin.ModelAdmin):
     # Les champs affichés correspondent maintenant au modèle
-    list_display = (
-        'receipt_number', 
-        'user', 
-        'total_price', 
-        'status', 
-        'payment_method', 
-        'created_at'
-    )
+    list_display = ('receipt_number', 'user', 'montant', 'status', 'payment_method', 'date')
+    date_hierarchy = 'created_at'
+
+    @admin.display(description="Montant", ordering='total_price')
+    def montant(self, obj):
+        from Payments.admin import francs
+        return francs(obj.total_price)
+
+    @admin.display(description="Date", ordering='created_at')
+    def date(self, obj):
+        from django.utils import timezone
+        return timezone.localtime(obj.created_at).strftime('%d/%m/%Y %H:%M')
     list_filter = ('status', 'payment_method', 'created_at')
     search_fields = ('receipt_number', 'user__email')
     inlines = [ShopOrderItemInline]
