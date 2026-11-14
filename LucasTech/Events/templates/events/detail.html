@@ -27,6 +27,7 @@
 .evd-act .ev-layout>*{min-width:0}
 @media(min-width:900px){.evd-act .ev-layout{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}}
 .evd-sticky{display:none}
+.evd-sticky.off,.evd-sticky[hidden]{display:none!important}
 @media(max-width:720px){.evd-sticky{display:flex;position:fixed;left:16px;right:16px;bottom:14px;z-index:40;justify-content:center;gap:.5rem;align-items:center;
   background:#0B7A4B;color:#fff;font-weight:800;border-radius:14px;padding:.95rem;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.2)}
   .bq{padding-bottom:84px}}
@@ -138,7 +139,7 @@
     {% endif %}
   </div>
   {% if not event.is_past and event.is_soutien or not event.is_past and event.ticket_types.all %}
-  <a href="#agir" class="evd-sticky">{% if event.is_soutien %}<i class="fa fa-heart"></i> Soutenir{% else %}<i class="fa fa-ticket"></i> Acheter un ticket{% endif %}</a>
+  <a href="#agir" class="evd-sticky" id="evdSticky">{% if event.is_soutien %}<i class="fa fa-heart"></i> Soutenir{% else %}<i class="fa fa-ticket"></i> Acheter un ticket{% endif %}</a>
   {% endif %}
   {{ selected|json_script:"ttSelected" }}
   {% include 'core/_toasts.html' %}
@@ -147,6 +148,13 @@
 
 {% block extra_scripts %}
 <script>
+(function(){var st=document.getElementById('evdSticky'),ag=document.getElementById('agir');
+  if(!st||!ag) return;
+  st.addEventListener('click',function(){st.hidden=true;});
+  /* Bouton collant masqué dès que le formulaire est à l'écran (ou dépassé). */
+  function maj(){var r=ag.getBoundingClientRect(); st.classList.toggle('off', r.top < window.innerHeight*0.85);}
+  window.addEventListener('scroll',maj,{passive:true}); maj();
+})();
 (function(){var d=document.getElementById('evdDesc'),b=document.getElementById('evdMore');
   if(d&&b&&d.scrollHeight>(parseFloat(getComputedStyle(d).lineHeight)||28)*4){d.classList.add('clip');b.hidden=false;}})();
 </script>
