@@ -294,7 +294,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
       <a class="btn-pay" href="{% url 'payments:checkout' 'boutique' order.pk %}" style="display:flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;margin-bottom:1.2rem">
         <i class="fa fa-lock"></i> Payer en ligne : Mobile Money ou carte
       </a>
-      <p class="py-hint" style="margin-bottom:1.2rem">Flooz, Mix by Yas, MTN, Moov ou carte bancaire, via FedaPay (paiement sécurisé, confirmation immédiate).</p>
+      <p class="py-hint" style="margin-bottom:1.2rem">Mixx by Yas, Moov, MTN ou carte bancaire.</p>
 
       <form method="post" id="payForm">
         {% csrf_token %}

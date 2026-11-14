@@ -1,6 +1,6 @@
 {% extends 'core/base.html' %}
 {% block title %}Paiement — {{ description }} — Lantante Technologie{% endblock %}
-{% block meta_description %}Paiement sécurisé avec FedaPay.{% endblock %}
+{% block meta_description %}Paiement par Mobile Money.{% endblock %}
 {% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">{% endblock %}
 
 {% block content %}
@@ -39,7 +39,7 @@
       </div>
 
       <div class="wz-foot">
-        <span><i class="fa fa-shield-halved"></i> Paiement sécurisé FedaPay</span>
+        <span><i class="fa fa-shield-halved"></i> Vous confirmerez sur votre téléphone</span>
         {% if whatsapp_url and enabled %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Une question ?</a>{% endif %}
       </div>
     </div>
