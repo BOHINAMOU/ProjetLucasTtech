@@ -157,9 +157,14 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
   ag.addEventListener('click',function(){fini=true;maj();});
   ag.addEventListener('focusin',function(){fini=true;maj();});
   /* Bouton collant masqué dès que la section Soutenir / Tickets est à l'écran (ou dépassée). */
-  function maj(){var r=ag.getBoundingClientRect(), off=fini||r.top<window.innerHeight*0.85;
+  var visible=false;
+  function maj(){var r=ag.getBoundingClientRect(), off=fini||visible||r.top<window.innerHeight*0.85;
     st.classList.toggle('off',off); document.body.classList.toggle('evd-sticky-on',!off);}
-  window.addEventListener('scroll',maj,{passive:true}); maj();
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(e){visible=e[0].isIntersecting||e[0].boundingClientRect.top<0;maj();},
+      {rootMargin:'0px 0px -15% 0px'}).observe(ag);
+  }
+  document.addEventListener('scroll',maj,{passive:true,capture:true}); maj();
 })();
 (function(){var d=document.getElementById('evdDesc'),b=document.getElementById('evdMore');
   if(d&&b&&d.scrollHeight>(parseFloat(getComputedStyle(d).lineHeight)||28)*4){d.classList.add('clip');b.hidden=false;}})();
