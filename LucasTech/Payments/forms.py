@@ -72,9 +72,12 @@ class CustomerForm(forms.Form):
         if purpose == 'produit':
             self.fields['city'].label = "Localité (livraison)"
             self.fields['city'].widget.attrs['placeholder'] = 'Ville, quartier, repère'
-        if self.user or purpose == 'ticket':
+        if self.user or purpose in ('ticket', 'soutien'):
             for name in ('account', 'password1', 'password2'):
                 self.fields.pop(name)
+        if purpose == 'soutien':  # don : nom et Mobile Money suffisent
+            self.fields['city'].required = False
+            self.fields['whatsapp'].required = False
         if self.user and not self.is_bound:
             self.initial.update({'first_name': self.user.first_name, 'last_name': self.user.last_name,
                                  'email': self.user.email, 'whatsapp': self.user.phone or '',
@@ -98,6 +101,8 @@ class CustomerForm(forms.Form):
                 data['phone'] = number
             except forms.ValidationError as exc:
                 self.add_error('operator' if 'opérateur disponible' in ' '.join(exc.messages) else 'phone', exc)
+        if self.purpose == 'soutien' and not (data.get('whatsapp') or '').strip() and data.get('phone'):
+            data['whatsapp'] = data['phone']
         wa = (data.get('whatsapp') or '').strip()
         if wa and (not re.fullmatch(r"\+?[0-9 .\-]+", wa) or not 8 <= len(re.sub(r'\D', '', wa)) <= 15):
             self.add_error('whatsapp', "Numéro WhatsApp invalide : chiffres uniquement.")

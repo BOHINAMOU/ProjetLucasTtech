@@ -47,8 +47,9 @@ class SoutienTests(APITestCase):
 
     def test_page_du_site(self):
         r = self.client.get(self.e.get_absolute_url())
-        self.assertContains(r, 'Soutenir')
+        self.assertContains(r, 'Soutenir cette cause')
         self.assertContains(r, 'Autre montant')
+        self.assertNotContains(r, 'Aperçu')  # plus d'assistant en 3 étapes pour un don
 
     def test_evenement_du_jour_pas_termine(self):
         e = Event.objects.create(title='Ce matin', description='x', location='Lomé', kind='soutien',
@@ -67,3 +68,14 @@ class SoutienTests(APITestCase):
             return [e['titre'] for e in (d['resultats'] if isinstance(d, dict) else d)]
         self.assertIn('Un sourire pour chaque orphelin', titres('?categorie=soutien'))
         self.assertNotIn('Un sourire pour chaque orphelin', titres('?categorie=tickets'))
+
+    @mock.patch('Payments.fedapay.is_enabled', return_value=True)
+    @mock.patch('Payments.fedapay.mode', return_value='demo')
+    def test_soutien_sur_le_site_un_seul_ecran(self, *_):
+        from Payments.models import Payment
+        r = self.client.post(self.e.get_absolute_url(), {
+            'montant': '2000', 'first_name': 'Ama', 'last_name': 'K', 'country': 'tg', 'operator': 'togocel',
+            'phone': '90000000', 'submission': 'x1'})
+        self.assertEqual(r.status_code, 302, r.content[:400])
+        p = Payment.objects.get(kind='soutien')
+        self.assertEqual((p.amount, p.event_id), (2000, self.e.pk))

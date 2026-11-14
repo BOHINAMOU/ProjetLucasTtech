@@ -50,7 +50,7 @@ def _selection(request, event):
 
 def event_detail(request, slug):
     event = get_object_or_404(Event.objects.prefetch_related('ticket_types'), slug=slug, is_published=True)
-    form = CustomerForm(request.POST or None, user=request.user, purpose='ticket')
+    form = CustomerForm(request.POST or None, user=request.user, purpose='soutien' if event.is_soutien else 'ticket')
     selected = {}
     if request.method == 'POST' and not event.is_past and event.is_soutien:
         try:

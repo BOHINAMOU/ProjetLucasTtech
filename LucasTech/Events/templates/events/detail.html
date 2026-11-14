@@ -60,27 +60,65 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
     {% if event.is_past %}
       <div class="ev-empty"><i class="fa fa-flag-checkered"></i><p>Cet événement est terminé. Merci à tous !</p></div>
     {% elif event.is_soutien %}
-    <form method="post" novalidate class="ct-form wz-form ev-layout">
-      {% csrf_token %}
-      <div class="ev-main">
-        <h2 class="ev-h">Soutenir</h2>
-        {% if nb_soutiens %}<p class="ev-soutiens"><i class="fa fa-heart"></i> {{ nb_soutiens }} personne{{ nb_soutiens|pluralize }} {{ nb_soutiens|pluralize:"a,ont" }} soutenu</p>{% endif %}
-        <div class="ev-montants">
-          {% for m in montants %}{% if m >= event.min_amount %}<label class="ev-montant"><input type="radio" name="montant_choix" value="{{ m }}" onclick="document.getElementById('montant').value=this.value"> {{ m|floatformat:"0g" }} F</label>{% endif %}{% endfor %}
-        </div>
-        <label class="wz-label" for="montant">Autre montant (FCFA)</label>
-        <input id="montant" name="montant" type="number" min="{{ event.min_amount }}" step="50" inputmode="numeric" required
-               value="{{ request.POST.montant|default:'' }}" placeholder="Minimum {{ event.min_amount }} F" class="wz-input">
+    <form method="post" novalidate class="sx" id="soutienForm">
+      {% csrf_token %}{{ form.submission }}{{ form.email.as_hidden }}
+      <h2 class="sx-t">Soutenir cette cause</h2>
+      {% if nb_soutiens %}<p class="sx-nb"><i class="fa fa-heart"></i> {{ nb_soutiens }} soutien{{ nb_soutiens|pluralize }}</p>{% endif %}
+      {% if form.non_field_errors %}<div class="ct-errors" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      <div class="sx-grid">
+        {% for m in montants %}{% if m >= event.min_amount %}
+        <label class="sx-m"><input type="radio" name="montant_choix" value="{{ m }}"><span>{{ m|floatformat:"0g" }} F</span></label>
+        {% endif %}{% endfor %}
       </div>
-      <aside class="ev-side">
-        <div class="wz-card ev-cart">
-          {% if enabled %}{% include 'payments/_customer_fields.html' %}{% else %}<p class="wz-pick">Soutien sur WhatsApp.</p>{% endif %}
-          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
+      <label class="sx-l" for="montant">Autre montant</label>
+      <div class="sx-in"><input id="montant" name="montant" type="number" min="{{ event.min_amount }}" step="50" inputmode="numeric" required
+             value="{{ request.POST.montant|default:'' }}" placeholder="Minimum {{ event.min_amount }}"><span>F</span></div>
+      <div class="sx-tot">Votre soutien : <strong id="sxTot">—</strong></div>
+
+      {% if user.is_authenticated and form.initial.first_name %}
+      <div class="sx-moi" id="sxMoi"><i class="fa fa-circle-user"></i> <span>{{ form.initial.first_name }} {{ form.initial.last_name }}</span>
+        <button type="button" onclick="document.getElementById('sxId').hidden=false;document.getElementById('sxMoi').hidden=true">Modifier</button></div>
+      <div id="sxId" hidden>
+      {% else %}<div id="sxId">{% endif %}
+        <div class="sx-row">
+          <div class="ct-field"><label for="id_first_name">Prénom</label>{{ form.first_name }}{% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+          <div class="ct-field"><label for="id_last_name">Nom</label>{{ form.last_name }}{% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
         </div>
-        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Mobile Money · reçu immédiat</p>
-      </aside>
+      </div>
+      <div class="sx-row">
+        <div class="ct-field"><label for="id_country">Pays</label>{{ form.country }}{% for e in form.country.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+        <div class="ct-field"><label for="id_operator">Opérateur</label>{{ form.operator }}{% for e in form.operator.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+      </div>
+      <div class="ct-field"><label for="id_phone">Numéro Mobile Money</label>{{ form.phone }}{% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}</div>
+      {% if enabled %}
+      <button type="submit" class="sx-btn" id="sxBtn"><i class="fa fa-heart"></i> <span>Soutenir</span></button>
+      <p class="sx-note"><i class="fa fa-shield-halved"></i> Validation sur votre téléphone</p>
+      {% elif whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="sx-btn"><i class="fab fa-whatsapp"></i> Soutenir sur WhatsApp</a>{% endif %}
     </form>
-    <style>.ev-montants{display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0 1.2rem}.ev-montant{border:1.5px solid #0B7A4B;border-radius:999px;padding:.5rem 1rem;font-weight:700;color:#0B7A4B;cursor:pointer}.ev-montant input{display:none}.ev-soutiens{color:#0B7A4B;font-weight:700}</style>
+    <style>
+    .sx{max-width:560px;margin:0 auto 2rem;background:#fff;border-radius:22px;padding:22px;box-shadow:0 4px 24px rgba(0,0,0,.07)}
+    .sx-t{font-size:1.35rem;font-weight:900;color:#064D2F;margin:0 0 .3rem}
+    .sx-nb{color:#B42318;font-weight:700;margin:0 0 .8rem;font-size:.92rem}
+    .sx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:.9rem 0 1rem}
+    @media(max-width:480px){.sx-grid{grid-template-columns:repeat(2,1fr)}}
+    .sx-m input{position:absolute;opacity:0;pointer-events:none}
+    .sx-m span{display:flex;align-items:center;justify-content:center;height:52px;border:1.5px solid #0B7A4B;border-radius:14px;font-weight:800;color:#0B7A4B;cursor:pointer;font-size:1rem}
+    .sx-m input:checked+span{background:#0B7A4B;color:#fff}
+    .sx-l{display:block;font-weight:700;font-size:.9rem;color:#3d4a44;margin-bottom:.35rem}
+    .sx-in{display:flex;align-items:center;border:1.5px solid #DCE3DF;border-radius:14px;background:#fff;padding:0 14px;height:52px}
+    .sx-in input{flex:1;border:0;outline:0;font-size:1.05rem;background:transparent;min-width:0}
+    .sx-in span{font-weight:800;color:#5b6b63}
+    .sx-tot{margin:1rem 0 1.1rem;font-size:1.05rem;color:#3d4a44}.sx-tot strong{font-size:1.5rem;color:#064D2F;margin-left:.3rem}
+    .sx-moi{display:flex;align-items:center;gap:.5rem;background:#E6F4EC;border-radius:12px;padding:.7rem .9rem;margin-bottom:.9rem;color:#064D2F;font-weight:700}
+    .sx-moi span{flex:1}.sx-moi button{background:none;border:0;color:#0B7A4B;font-weight:800;cursor:pointer}
+    .sx-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sx .ct-field{margin-bottom:.8rem}.sx .ct-field label{display:block;font-weight:700;font-size:.85rem;color:#3d4a44;margin-bottom:.3rem}
+    .sx .ct-field input,.sx .ct-field select{width:100%;height:48px;border:1.5px solid #DCE3DF;border-radius:12px;padding:0 12px;font-size:1rem;background:#fff;box-sizing:border-box}
+    .sx .err{color:#B42318;font-size:.82rem}
+    .sx-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;height:56px;border:0;border-radius:16px;background:#0B7A4B;color:#fff;font-weight:900;font-size:1.1rem;cursor:pointer;margin-top:.4rem;text-decoration:none}
+    .sx-btn:disabled{opacity:.7}
+    .sx-note{text-align:center;color:#5b6b63;font-size:.85rem;margin:.7rem 0 0}
+    </style>
     {% elif not event.ticket_types.all %}
       <div class="ev-empty"><i class="fa fa-ticket"></i><p>Billetterie bientôt ouverte.</p>
         {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Être prévenu</a>{% endif %}</div>
@@ -148,6 +186,22 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
+(function(){var f=document.getElementById('soutienForm'); if(!f) return;
+  var inp=document.getElementById('montant'), tot=document.getElementById('sxTot'), btn=document.getElementById('sxBtn');
+  function fmt(n){return n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' F';}
+  function maj(){var v=parseInt(inp.value,10)||0; tot.textContent=v?fmt(v):'—'; if(btn) btn.querySelector('span').textContent=v?'Soutenir · '+fmt(v):'Soutenir';}
+  f.querySelectorAll('input[name=montant_choix]').forEach(function(r){r.addEventListener('change',function(){inp.value=r.value;maj();});});
+  inp.addEventListener('input',function(){f.querySelectorAll('input[name=montant_choix]').forEach(function(r){r.checked=(r.value===inp.value);});maj();});
+  maj();
+  var c=f.querySelector('[data-pay-country]'), op=f.querySelector('[data-pay-operator]');
+  if(c&&op){var own={};(op.dataset.countries||'').split(',').forEach(function(x){var a=x.split(':');own[a[0]]=a[1];});
+    var fl=function(){Array.prototype.forEach.call(op.options,function(o){o.hidden=o.disabled=!!o.value&&own[o.value]!==c.value;});
+      if(op.selectedOptions[0]&&op.selectedOptions[0].disabled) op.value='';};
+    c.addEventListener('change',fl); fl();}
+  f.addEventListener('submit',function(){if(btn){setTimeout(function(){btn.disabled=true;btn.querySelector('span').textContent='Paiement en cours…';},0);}});
+})();
+</script>
 <script>
 (function(){var st=document.getElementById('evdSticky'),ag=document.getElementById('agir');
   if(!st||!ag) return;
