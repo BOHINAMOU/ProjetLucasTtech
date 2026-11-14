@@ -488,6 +488,7 @@ def version(request):
            'url_apk': absolute(request, data.get('url_apk') or settings.MEDIA_URL
                                + (f"app/Lantante-{data.get('version')}.apk" if data.get('version') else 'app/Lantante.apk')),
            'taille': int(data.get('taille') or 0), 'notes': str(data.get('notes') or ''),
+           'sha256': str(data.get('sha256') or ''),
            'obligatoire': bool(data.get('obligatoire'))}
     resp = Response(out)
     resp['Cache-Control'] = 'no-cache'
