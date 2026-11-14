@@ -9,6 +9,7 @@ urlpatterns = [
     # Compte
     path('auth/login/', views.login, name='login'),
     path('auth/register/', views.register, name='register'),
+    path('auth/google/', views.google, name='google'),
     path('auth/verify-email/', views.verify_email, name='verify_email'),
     path('auth/resend-code/', views.resend_code, name='resend_code'),
     path('auth/logout/', views.logout, name='logout'),

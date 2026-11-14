@@ -98,6 +98,69 @@ def login(request):
     return Response({'token': token.key, 'user': user_payload(request, user)})
 
 
+GOOGLE_ISSUERS = ('accounts.google.com', 'https://accounts.google.com')
+
+
+def verifier_jeton_google(id_token):
+    """Vérifie un id_token Google (signature, expiration, audience = ID client web du site, émetteur, e-mail
+    vérifié) auprès de Google. Renvoie les informations du compte, ou None."""
+    import requests
+    from django.conf import settings
+    audience = getattr(settings, 'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', None)
+    if not id_token or not audience:
+        return None
+    try:
+        r = requests.get('https://oauth2.googleapis.com/tokeninfo', params={'id_token': id_token}, timeout=10)
+    except requests.RequestException:
+        return None
+    if r.status_code != 200:
+        return None
+    info = r.json()
+    if info.get('aud') != audience or info.get('iss') not in GOOGLE_ISSUERS:
+        return None
+    if str(info.get('email_verified')).lower() != 'true' or not info.get('email') or not info.get('sub'):
+        return None
+    try:
+        if int(info.get('exp', 0)) < timezone.now().timestamp():
+            return None
+    except (TypeError, ValueError):
+        return None
+    return info
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def google(request):
+    """« Continuer avec Google » dans l'appli : même compte que sur le site (lié par l'e-mail)."""
+    if _too_many('google', request):
+        return error("Trop de tentatives. Réessayez dans 15 minutes.", 429, code='trop_de_tentatives')
+    info = verifier_jeton_google(str(request.data.get('id_token') or ''))
+    if not info:
+        _hit('google', request)
+        return error("Connexion Google impossible. Réessayez.", 400, code='google_invalide')
+    from social_django.models import UserSocialAuth
+    email = info['email'].strip().lower()
+    lien = UserSocialAuth.objects.filter(provider='google-oauth2', uid=info['sub']).select_related('user').first()
+    user = lien.user if lien else User.objects.filter(email__iexact=email).first()
+    if user is None:
+        user = User.objects.create_user(email=email, password=None,
+                                        first_name=(info.get('given_name') or '')[:150],
+                                        last_name=(info.get('family_name') or '')[:150])
+        user.set_unusable_password()
+        user.save()
+    if not user.is_active and user.is_verified:  # inactif mais déjà vérifié = suspendu par l'admin
+        return error("Ce compte est suspendu.", 403, code='compte_suspendu')
+    if not lien:
+        UserSocialAuth.objects.get_or_create(provider='google-oauth2', uid=info['sub'], defaults={'user': user})
+    if not user.is_verified:
+        verification.mark_verified(user)
+        user.refresh_from_db()
+    token, _ = Token.objects.get_or_create(user=user)
+    user.last_login = timezone.now()
+    user.save(update_fields=['last_login'])
+    return Response({'token': token.key, 'user': user_payload(request, user)})
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
