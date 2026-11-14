@@ -393,7 +393,7 @@ def home(request):
         d['image_vignette'] = catalog.vignette(request, c.cover or c.logo)
         concours.append(d)
     resp = Response({
-        'carrousel': catalog.carousel_items(request),
+        'carrousel': catalog.carousel_admin(request) or catalog.carousel_items(request),
         'concours_populaires': concours,
         'evenements': [catalog.event_item(request, e) for e in catalog._events()[:6]],
         'formations': [catalog.formation_item(request, f) for f in catalog._formations()[:6]],

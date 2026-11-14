@@ -14,10 +14,11 @@ class Event(models.Model):
     title = models.CharField(max_length=200, verbose_name="Titre")
     slug = models.SlugField(max_length=220, unique=True, blank=True, verbose_name="Slug (URL)")
     description = models.TextField(verbose_name="Description")
-    location = models.CharField(max_length=200, verbose_name="Lieu",
-                                help_text="Ex : Palais des Congrès, Lomé")
+    location = models.CharField(max_length=200, verbose_name="Lieu", blank=True,
+                                help_text="Facultatif. Ex : Palais des Congrès, Lomé")
     map_url = models.URLField(blank=True, verbose_name="Lien Google Maps (optionnel)")
-    starts_at = models.DateTimeField(verbose_name="Date et heure de début")
+    starts_at = models.DateTimeField(verbose_name="Date et heure de début", null=True, blank=True,
+                                     help_text="Facultatif (ex. une collecte de soutien sans date).")
     ends_at = models.DateTimeField(null=True, blank=True, verbose_name="Fin (optionnel)")
     cover = models.ImageField(upload_to='events/', verbose_name="Photo de couverture")
     organizer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
@@ -55,6 +56,8 @@ class Event(models.Model):
     def is_past(self):
         if self.ends_at:
             return self.ends_at < timezone.now()
+        if not self.starts_at:
+            return False  # sans date : toujours d'actualité
         # sans date de fin : terminé à la fin du jour où il commence
         debut_du_jour = timezone.localtime(timezone.now()).replace(hour=0, minute=0, second=0, microsecond=0)
         return self.starts_at < debut_du_jour
@@ -155,4 +158,5 @@ def a_venir_q(now=None):
     from django.utils import timezone
     now = now or timezone.now()
     debut_du_jour = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
-    return Q(ends_at__gte=now) | Q(ends_at__isnull=True, starts_at__gte=debut_du_jour)
+    return (Q(ends_at__gte=now) | Q(ends_at__isnull=True, starts_at__gte=debut_du_jour)
+            | Q(ends_at__isnull=True, starts_at__isnull=True))

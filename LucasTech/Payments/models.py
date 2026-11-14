@@ -28,6 +28,7 @@ class Payment(models.Model):
         ('ticket', "Tickets d'événement"),
         ('abonnement', 'Abonnement concours'),
         ('soutien', "Soutien d'un événement"),
+        ('concours', "Accès à un concours"),
     ]
     STATUS_CHOICES = [
         ('pending', 'En attente'),
@@ -65,6 +66,8 @@ class Payment(models.Model):
                                    related_name='payments', verbose_name="Commande boutique")
     product = models.ForeignKey('Shop.Product', on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='payments', verbose_name="Produit")
+    contest = models.ForeignKey('concours.Contest', on_delete=models.PROTECT, null=True, blank=True,
+                                related_name='payments', verbose_name="Concours")
     event = models.ForeignKey('Events.Event', on_delete=models.SET_NULL, null=True, blank=True,
                               related_name='payments', verbose_name="Événement")
     items = models.JSONField(default=list, blank=True, verbose_name="Détail",

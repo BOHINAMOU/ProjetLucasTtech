@@ -41,7 +41,7 @@
           {% elif contest.is_demo %}
             <span class="cc-na"><i class="fa fa-lock"></i> Exemple réservé à l'équipe</span>
           {% else %}
-            <a class="cc-btn cc-btn--lock" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock"></i> S'abonner pour lire</a>
+            <a class="cc-btn cc-btn--lock" href="{% url 'payments:checkout' 'concours' contest.pk %}"><i class="fa fa-lock-open"></i> Débloquer · {{ contest.access_price|floatformat:"0g" }} F</a>
             {% if not p.corrections.all %}<span class="cc-na">Corrigé non disponible</span>{% endif %}
           {% endif %}
         </div>

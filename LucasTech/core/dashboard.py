@@ -144,7 +144,7 @@ def build(request):
             ],
             'par_type': [
                 (label, f(somme(ok.filter(kind=k))), ok.filter(kind=k).count(), _url('Payments.Payment', f'?status__exact=approved&kind__exact={k}'))
-                for k, label in (('abonnement', 'Abonnements concours'), ('product', 'Boutique (produit)'), ('shop', 'Boutique (panier)'),
+                for k, label in (('concours', 'Concours débloqués'), ('abonnement', 'Abonnements (anciens)'), ('product', 'Boutique (produit)'), ('shop', 'Boutique (panier)'),
                                  ('formation', 'Formations'), ('ticket', "Tickets d'événement"), ('soutien', 'Soutiens'),
                                  ('service', 'Services'))
             ],

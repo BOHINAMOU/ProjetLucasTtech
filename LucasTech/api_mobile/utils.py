@@ -79,6 +79,10 @@ class Rights:
         """Fin du droit hors connexion : abonnement Premium / Ultimate actif (donc payé) couvrant le concours."""
         if not self.auth or not self.can_access(contest):
             return None
+        from abonnements.access import purchased_contest_ids
+        if contest.pk in purchased_contest_ids(self.user):
+            from datetime import timedelta
+            return self.now + timedelta(days=3650)  # achat à vie
         if self._offline is None:
             subs = active_subscriptions(self.user, self.now).filter(
                 Q(plan__code__in=OFFLINE_PLAN_CODES) | Q(is_unlimited=True))
@@ -118,6 +122,7 @@ def contest_payload(request, c, rights):
         'photo': media(request, c.logo), 'couverture': media(request, c.cover),
         'nb_annees': getattr(c, 'n_sessions', 0), 'nb_epreuves': getattr(c, 'n_papers', 0),
         'est_demo': bool(getattr(c, 'is_demo', False)), 'accessible': rights.can_access(c),
+        'prix_acces': c.access_price,
     }
 
 

@@ -437,7 +437,7 @@ def evenement(request, pk):
 # Carrousel d'accueil
 # ─────────────────────────────
 TYPE_LABELS = {'concours': 'Concours', 'evenement': 'Événement', 'formation': 'Formation', 'produit': 'Boutique',
-               'service': 'Service', 'publication': 'Actualité', 'partenaire': 'Partenaire'}
+               'service': 'Service', 'publication': 'Actualité', 'partenaire': 'Partenaire', 'lien': ''}
 
 
 def carousel_items(request, per_type=3):
@@ -469,10 +469,45 @@ def carousel_items(request, per_type=3):
     return items
 
 
+def carousel_admin(request):
+    """Éléments choisis dans l'admin (actifs, dans leurs dates), dans l'ordre. Liste vide si aucun."""
+    from .models import CarouselItem
+    now = timezone.now()
+    qs = CarouselItem.objects.filter(actif=True).filter(Q(debut__isnull=True) | Q(debut__lte=now)) \
+        .filter(Q(fin__isnull=True) | Q(fin__gte=now))
+    sources = {
+        'publication': (_publications, 'title', 'cover_image'), 'produit': (_products, 'name', 'image'),
+        'evenement': (lambda: _events(all_events=True), 'title', 'cover'), 'formation': (_formations, 'title', 'image'),
+        'service': (_services, 'title', 'image'),
+    }
+    out = []
+    for c in qs:
+        titre, image, slug, prix = c.titre, c.image, None, None
+        if c.cible == 'concours':
+            from concours.models import Contest
+            o = Contest.objects.published().filter(pk=c.cible_id).first()
+            if not o:
+                continue
+            titre, image, slug = titre or f"{o.acronym} — {o.name}", image or o.cover or o.logo, o.slug
+        elif c.cible in sources:
+            fn, champ_titre, champ_image = sources[c.cible]
+            o = fn().filter(pk=c.cible_id).first()
+            if not o:
+                continue
+            titre, image = titre or getattr(o, champ_titre), image or getattr(o, champ_image)
+            slug = getattr(o, 'slug', None)
+        if not image:
+            continue
+        out.append({'type': c.cible, 'type_libelle': TYPE_LABELS.get(c.cible, ''), 'id': c.cible_id, 'slug': slug,
+                    'lien': c.lien, 'titre': titre, 'sous_titre': '', 'prix': prix, 'image': media(request, image),
+                    'image_vignette': absolute(request, thumb_url(image, 800))})
+    return out
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def carrousel(request):
-    return Response(carousel_items(request))
+    return Response(carousel_admin(request) or carousel_items(request))
 
 
 # ─────────────────────────────
@@ -580,3 +615,56 @@ def espace_services(request):
         groupes.append({'id': 0, 'nom': 'Autres services', 'slug': 'autres', 'description': '', 'icone': '',
                         'services': sans})
     return Response(groupes)
+
+
+
+# ─────────────────────────────
+# Actualités lues (badge « Non lu »)
+# ─────────────────────────────
+@api_view(['GET'])
+def articles_lus(request):
+    from .models import ArticleLu
+    return Response(list(ArticleLu.objects.filter(user=request.user).values_list('publication_id', flat=True)))
+
+
+@api_view(['POST'])
+def article_lu(request, pk):
+    from .models import ArticleLu
+    p = _publications().filter(pk=pk).first()
+    if not p:
+        return error("Article introuvable.", 404, code='introuvable')
+    ArticleLu.objects.get_or_create(publication=p, user=request.user)
+    return Response({'lu': True})
+
+
+# ─────────────────────────────
+# Recherche globale (barre de l'accueil), résultats groupés par type
+# ─────────────────────────────
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@public_cache(60)
+def recherche(request):
+    from concours.models import Contest
+    from concours.search import search_contests
+    q = (request.GET.get('q') or '').strip()[:80]
+    if len(q) < 2:
+        return Response({'q': q, 'groupes': []})
+    n = 5
+    groupes = []
+
+    def groupe(code, titre, items):
+        if items:
+            groupes.append({'type': code, 'titre': titre, 'resultats': items})
+
+    concours = list(search_contests(Contest.objects.published(), q)[:n])
+    groupe('concours', 'Concours', [{'id': c.pk, 'slug': c.slug, 'titre': f"{c.acronym} — {c.name}",
+                                      'image_vignette': vignette(request, c.cover or c.logo)} for c in concours])
+    groupe('publication', 'Actualités',
+           [publication_item(request, p) for p in search(_publications(), request, 'title', 'content')[:n]])
+    groupe('produit', 'Boutique', [product_item(request, p) for p in search(_products(), request, 'name', 'description')[:n]])
+    groupe('formation', 'Formations',
+           [formation_item(request, f) for f in search(_formations(), request, 'title', 'description')[:n]])
+    groupe('evenement', 'Événements',
+           [event_item(request, e) for e in search(_events(), request, 'title', 'location', 'description')[:n]])
+    groupe('service', 'Services', [service_item(request, x) for x in search(_services(), request, 'title', 'description')[:n]])
+    return Response({'q': q, 'groupes': groupes})

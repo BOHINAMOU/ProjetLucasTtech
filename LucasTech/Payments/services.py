@@ -46,6 +46,22 @@ def refresh(payment):
 
 def mark_paid(payment):
     """Passe le paiement à « payé » et livre (une seule fois, même si webhook + retour arrivent ensemble)."""
+    p = _mark_paid(payment)
+    if p.status == 'approved' and p.user_id and not getattr(p, '_notifie', False):
+        try:
+            from api_mobile.models import Notification
+            from api_mobile.notifs import notifier
+            if not Notification.objects.filter(utilisateur_id=p.user_id, automatique=True,
+                                               message__contains=p.reference).exists():
+                titre = "Merci pour votre soutien !" if p.kind == 'soutien' else "Paiement réussi"
+                notifier(p.user, titre, f"{p.description} — {p.amount} F. Réf. {p.reference}")
+        except Exception:  # pragma: no cover
+            pass
+    return p
+
+
+def _mark_paid(payment):
+    """Passe le paiement à « payé » et livre (une seule fois, même si webhook + retour arrivent ensemble)."""
     with transaction.atomic():
         p = Payment.objects.select_for_update().get(pk=payment.pk)
         if p.fulfilled:

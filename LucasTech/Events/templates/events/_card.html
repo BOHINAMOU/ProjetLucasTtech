@@ -4,7 +4,7 @@
   </div>
   <div class="evx-body">
     <h3 class="evx-t">{{ ev.title }}</h3>
-    <div class="evx-m"><span><i class="fa fa-calendar"></i>{{ ev.starts_at|date:"j M, H\hi" }}</span><span><i class="fa fa-location-dot"></i>{{ ev.location|truncatechars:28 }}</span></div>
+    {% if ev.starts_at or ev.location %}<div class="evx-m">{% if ev.starts_at %}<span><i class="fa fa-calendar"></i>{{ ev.starts_at|date:"j M, H\hi" }}</span>{% endif %}{% if ev.location %}<span><i class="fa fa-location-dot"></i>{{ ev.location|truncatechars:28 }}</span>{% endif %}</div>{% endif %}
     <div class="evx-p">{% if ev.is_soutien %}Soutenir{% else %}{% with p=ev.min_price %}{% if p is None %}Bientôt{% elif p == 0 %}Gratuit{% else %}dès {{ p|floatformat:"0g" }} F{% endif %}{% endwith %}{% endif %}</div>
   </div>
 </a>

@@ -78,7 +78,7 @@ class EventAdmin(admin.ModelAdmin):
     @admin.display(description="Date", ordering='starts_at')
     def date_f(self, obj):
         from django.utils import timezone
-        return timezone.localtime(obj.starts_at).strftime('%d/%m/%Y %H:%M')
+        return timezone.localtime(obj.starts_at).strftime('%d/%m/%Y %H:%M') if obj.starts_at else '—'
 
     @admin.display(description="Payeurs", ordering='_payeurs')
     def payeurs(self, obj):

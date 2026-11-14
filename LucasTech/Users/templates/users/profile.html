@@ -66,7 +66,7 @@
       <a class="ap-item" href="{% url 'users:edit_profile' %}"><i class="fa fa-user"></i><span><b>Informations personnelles</b><small>{% if user.phone %}{{ user.phone }}{% else %}Téléphone non renseigné{% endif %}{% if user.city %} · {{ user.city }}{% endif %}{% if user.country %}, {{ user.country }}{% endif %}</small></span></a>
       <a class="ap-item" href="{% url 'shop:order_history' %}"><i class="fa fa-box"></i><span><b>Mes commandes boutique</b><small>Suivi et reçus</small></span></a>
       <a class="ap-item" href="{% url 'formations:cart' %}"><i class="fa fa-cart-shopping"></i><span><b>Mon panier</b><small>Formations en attente</small></span></a>
-      <a class="ap-item" href="{% url 'abonnements:plans' %}"><i class="fa fa-star"></i><span><b>Abonnements concours</b><small>Standard, Premium, Ultimate</small></span></a>
+      <a class="ap-item" href="{% url 'abonnements:space' %}"><i class="fa fa-star"></i><span><b>Mes concours</b><small>Concours débloqués</small></span></a>
     </div>
 
     <h2 class="ap-h">Sécurité</h2>

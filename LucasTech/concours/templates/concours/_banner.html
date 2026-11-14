@@ -14,11 +14,11 @@
         <span><i class="fa fa-location-dot"></i>{{ contest.country }}</span>
         {% if sessions is not None and not title %}<span><i class="fa fa-calendar"></i>{{ sessions|length }} année{{ sessions|length|pluralize }}</span>{% endif %}
         {% if n_papers %}<span><i class="fa fa-file-lines"></i>{{ n_papers }} épreuve{{ n_papers|pluralize }}</span>{% endif %}
-        {% if has_access %}<span><i class="fa fa-circle-check"></i>Inclus dans vos abonnements</span>{% endif %}
+        {% if has_access %}<span><i class="fa fa-circle-check"></i>Débloqué</span>{% endif %}
       </div>
     </div>
     {% if not has_access and not contest.is_demo %}
-    <div class="cx-banner__cta"><a class="cc-btn" href="{% url 'abonnements:plans' %}"><i class="fa fa-lock-open"></i> S'abonner</a></div>
+    <div class="cx-banner__cta"><a class="cc-btn" href="{% url 'payments:checkout' 'concours' contest.pk %}"><i class="fa fa-lock-open"></i> Débloquer ce concours · {{ contest.access_price|floatformat:"0g" }} F</a></div>
     {% endif %}
   </div>
 </section>

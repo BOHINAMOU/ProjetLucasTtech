@@ -31,6 +31,10 @@ def account_required(view):
 
 
 def plans(request):
+    # Les formules ne sont plus vendues : chaque concours se débloque à l'unité.
+    from django.contrib import messages as _m
+    _m.info(request, "Chaque concours se débloque désormais à l'unité, une seule fois, pour un accès à vie.")
+    return redirect('concours:index')
     plans = SubscriptionPlan.objects.filter(is_active=True)
     return render(request, 'abonnements/plans.html', {
         'plans': plans, 'options': ExtensionOption.objects.filter(is_active=True),
@@ -48,6 +52,7 @@ def _pay_context(form, amount, description, back_url, **extra):
 
 @account_required
 def subscribe(request, code):
+    return redirect('concours:index')  # formules plus vendues
     plan = get_object_or_404(SubscriptionPlan, code=code, is_active=True)
     period = request.POST.get('periode') or request.GET.get('periode') or 'mois'
     if period not in PERIOD_DAYS:

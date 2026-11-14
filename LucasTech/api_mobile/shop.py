@@ -86,6 +86,15 @@ def _cible(user, d):
         label = 'mois' if period == 'mois' else 'an'
         return ({'kind': 'abonnement'}, plan.price_for(period), f"Abonnement concours {plan.name} (1 {label})",
                 lambda payment: abo.create_pending_subscription(user, plan, period, payment=payment))
+    if kind == 'concours':
+        from abonnements.access import user_can_access
+        from concours.models import Contest
+        c = Contest.objects.published().filter(pk=pk, is_demo=False).first()
+        if not c:
+            raise ValidationError("Concours introuvable.")
+        if user_can_access(user, c):
+            raise ValidationError("Vous avez déjà accès à ce concours.")
+        return {'kind': 'concours', 'contest': c}, int(c.access_price), f"Concours : {c.acronym} — {c.name}", None
     if kind == 'soutien':
         from Events.models import Event
         e = Event.objects.filter(pk=pk, is_published=True, kind='soutien').first()

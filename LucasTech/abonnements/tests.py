@@ -1,3 +1,4 @@
+import unittest
 """Règles clés des abonnements cumulables aux concours."""
 import shutil
 import tempfile
@@ -218,7 +219,7 @@ class SubscriptionRulesTests(TestCase):
 
     def test_pages_publiques(self):
         self.assertEqual(self.client.get(reverse('concours:index')).status_code, 200)
-        self.assertEqual(self.client.get(reverse('abonnements:plans')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('abonnements:plans')).status_code, 302)  # plus vendues
         self.assertEqual(self.client.get(self.ens.get_absolute_url()).status_code, 200)
         ContestSession.objects.create(contest=self.ens, year=2023)
         r = self.client.get(reverse('concours:session', args=[self.ens.slug, 2023]))
@@ -236,6 +237,7 @@ class SubscriptionRulesTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertEqual(sub.contests.count(), 2)
 
+    @unittest.skip("Formules plus vendues : chaque concours se débloque à l'unité (décision du 14/11/2026).")
     @override_settings(DEBUG=True, FEDAPAY_SECRET_KEY='')
     def test_achat_complet_en_mode_demo(self):
         """Formulaire -> paiement en attente (aucun droit) -> paiement confirmé -> abonnement actif."""
@@ -253,6 +255,7 @@ class SubscriptionRulesTests(TestCase):
         self.assertEqual(sub.status, 'actif')
         self.assertEqual((sub.end_at - sub.start_at).days, 365)
 
+    @unittest.skip("Formules plus vendues : chaque concours se débloque à l'unité (décision du 14/11/2026).")
     def test_achat_impose_un_compte(self):
         url = reverse('abonnements:subscribe', args=['standard']) + '?periode=mois'
         r = self.client.get(url)
@@ -286,6 +289,7 @@ class SubscriptionRulesTests(TestCase):
 class LibreChoixFormuleTests(TestCase):
     """Aucune formule n'est imposée : on peut changer de formule et de durée jusqu'au paiement."""
 
+    @unittest.skip("Formules plus vendues : chaque concours se débloque à l'unité (décision du 14/11/2026).")
     def test_page_paiement_propose_les_trois_formules(self):
         u = get_user_model().objects.create_user(email='choix@example.com', password='x-Pass-12345',
                                                  is_verified=True)

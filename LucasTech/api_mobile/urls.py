@@ -1,7 +1,7 @@
 """API REST de l'application mobile Flutter : préfixe /api/mobile/v1/."""
 from django.urls import path
 
-from . import catalog, shop, views
+from . import notifs, catalog, shop, views
 
 app_name = 'api_mobile'
 
@@ -45,6 +45,13 @@ urlpatterns = [
     path('publications/', catalog.publications, name='publications'),
     path('publications/categories/', catalog.publication_categories, name='publication_categories'),
     path('publications/<int:pk>/', catalog.publication, name='publication'),
+    path('publications/lues/', catalog.articles_lus, name='articles_lus'),
+    path('publications/<int:pk>/lu/', catalog.article_lu, name='article_lu'),
+    path('recherche/', catalog.recherche, name='recherche'),
+    path('notifications/', notifs.liste, name='notifications'),
+    path('notifications/compteur/', notifs.compteur, name='notifications_compteur'),
+    path('notifications/lues/', notifs.lire, name='notifications_lues'),
+    path('notifications/<int:pk>/lue/', notifs.lire, name='notification_lue'),
     path('partenaires/', catalog.partenaires, name='partenaires'),
     path('partenaires/<int:pk>/', catalog.partenaire, name='partenaire'),
 

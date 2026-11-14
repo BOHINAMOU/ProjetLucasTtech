@@ -15,15 +15,15 @@
     </div>
   </div>
   <div class="bq-card__price">
-    {% if c.has_access %}<strong class="cx-incl">Inclus dans votre abonnement</strong>{% elif min_plan_price %}<strong>dès {{ min_plan_price|floatformat:"0g" }} FCFA</strong><small>/ mois</small>{% else %}<strong>Sur abonnement</strong>{% endif %}
+    {% if c.has_access %}<strong class="cx-incl">Débloqué</strong>{% else %}<strong>{{ c.access_price|floatformat:"0g" }} F</strong><small>une fois</small>{% endif %}
   </div>
   <div class="bq-card__actions">
     {% if c.has_access %}
     <a href="{{ c.get_absolute_url }}" class="bq-btn bq-btn--green"><i class="fa fa-book-open"></i> Lire</a>
     {% elif user.is_authenticated %}
-    <a href="{% url 'abonnements:plans' %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> S'abonner</a>
+    <a href="{% url 'payments:checkout' 'concours' c.pk %}" class="bq-btn bq-btn--green"><i class="fa fa-lock-open"></i> Débloquer</a>
     {% else %}
-    <a href="{% url 'users:login' %}?next={% url 'abonnements:plans' %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> S'abonner</a>
+    <a href="{% url 'users:login' %}?next={% url 'payments:checkout' 'concours' c.pk %}" class="bq-btn bq-btn--green"><i class="fa fa-lock-open"></i> Débloquer</a>
     {% endif %}
     <a href="{{ c.get_absolute_url }}" class="bq-btn bq-btn--dark">Voir détails</a>
   </div>

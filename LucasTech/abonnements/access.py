@@ -16,6 +16,15 @@ def has_unlimited(user, now=None):
     return active_subscriptions(user, now).filter(is_unlimited=True).exists()
 
 
+def purchased_contest_ids(user):
+    """Concours achetés à l'unité (paiement réussi ; un remboursement retire l'accès)."""
+    if not user or not user.is_authenticated:
+        return set()
+    from Payments.models import Payment
+    return set(Payment.objects.filter(user=user, kind='concours', status='approved')
+               .values_list('contest_id', flat=True))
+
+
 def accessible_contest_ids(user, now=None):
     """Ensemble des id de concours accessibles via les sélections des abonnements actifs
     (hors formule illimitée : voir has_unlimited)."""
@@ -31,6 +40,9 @@ def user_can_access(user, contest, now=None):
         return True
     if getattr(contest, 'is_demo', False):
         return False  # concours de démonstration : lisibles par l'équipe seulement
+    from Payments.models import Payment
+    if Payment.objects.filter(user=user, kind='concours', status='approved', contest=contest).exists():
+        return True  # achat unique : accès à vie
     now = now or timezone.now()
     if has_unlimited(user, now):
         return True
