@@ -17,6 +17,11 @@
 .evd-share a{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;text-decoration:none}
 .evd-share .w{background:#25d366}.evd-share .f{background:#3b5998}.evd-share .c{background:#0B7A4B}
 .evd-desc{line-height:1.75;color:#2b3631;font-size:1rem;margin-bottom:1rem}.evd-desc p{margin:0 0 .9rem}
+.evd-desc.clip{max-height:5.3em;overflow:hidden;margin-bottom:.3rem;-webkit-mask-image:linear-gradient(#000 60%,transparent);mask-image:linear-gradient(#000 60%,transparent)}
+.evd-desc.open{max-height:none;-webkit-mask-image:none;mask-image:none}
+.evd-more{background:none;border:0;color:#0B7A4B;font-weight:800;padding:0;margin-bottom:1rem;cursor:pointer;font-size:1rem}
+.ev-montant:has(input:checked){background:#0B7A4B;color:#fff}
+#montant{display:block;width:100%;max-width:320px;border:1.5px solid #DCE3DF;border-radius:12px;padding:.7rem .9rem;font-size:1rem;margin:.4rem 0 1.4rem;background:#fff}
 .evd-act{max-width:1100px}
 .evd-act .ev-layout{grid-template-columns:minmax(0,1fr)}
 .evd-act .ev-layout>*{min-width:0}
@@ -46,7 +51,7 @@
       <a class="f" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
       <a class="c" href="#" role="button" aria-label="Copier le lien" title="Copier le lien" onclick="navigator.clipboard&&navigator.clipboard.writeText('{{ request.build_absolute_uri }}').then(()=>{this.innerHTML='<i class=\'fa fa-check\'></i>'});return false;"><i class="fa fa-link"></i></a>
     </div>
-    {% if event.description %}<div class="evd-desc">{{ event.description|linebreaks }}</div>{% endif %}
+    {% if event.description %}<div class="evd-desc" id="evdDesc">{{ event.description|linebreaks }}</div><button type="button" class="evd-more" id="evdMore" hidden onclick="document.getElementById('evdDesc').classList.add('open');this.remove()">Lire plus</button>{% endif %}
   </div>
 
   <div class="bq-wrap evd-act" id="agir">
@@ -141,6 +146,10 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
+(function(){var d=document.getElementById('evdDesc'),b=document.getElementById('evdMore');
+  if(d&&b&&d.scrollHeight>(parseFloat(getComputedStyle(d).lineHeight)||28)*4){d.classList.add('clip');b.hidden=false;}})();
+</script>
 <script>
 (function(){
   var form=document.getElementById('ticketForm'); if(!form) return;
