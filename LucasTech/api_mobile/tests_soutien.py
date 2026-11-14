@@ -1,0 +1,57 @@
+"""Événements de soutien (dons) : API, paiement dans l'appli, historique, page du site."""
+from datetime import timedelta
+from unittest import mock
+
+from django.contrib.auth import get_user_model
+from django.test import override_settings
+from django.utils import timezone
+from rest_framework.test import APITestCase
+
+from Events.models import Event
+
+STORAGES = {'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+            'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+API = '/api/mobile/v1/'
+
+
+@override_settings(STORAGES=STORAGES)
+class SoutienTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(email='don@example.com', password='x-Pass-12345',
+                                                         first_name='Ama', last_name='K', is_verified=True)
+        self.e = Event.objects.create(title='Un sourire pour chaque orphelin', description='Aide.', location='Lomé',
+                                      starts_at=timezone.now() + timedelta(days=1), kind='soutien', min_amount=100)
+
+    def test_fiche_soutien(self):
+        d = self.client.get(f'{API}evenements/{self.e.pk}/').json()
+        self.assertEqual((d['type'], d['montant_min'], d['soutiens']), ('soutien', 100, 0))
+        self.assertEqual(d['montants'], [500, 1000, 2000, 5000])
+
+    @mock.patch('Payments.fedapay.is_enabled', return_value=True)
+    @mock.patch('Payments.fedapay.mode', return_value='demo')
+    def test_soutenir_dans_l_appli(self, *_):
+        self.client.force_authenticate(self.user)
+        r = self.client.post(API + 'paiements/', {'type': 'soutien', 'id': self.e.pk, 'montant': 50, 'pays': 'tg',
+                                                  'operateur': 'togocel', 'telephone': '90000000'}, format='json')
+        self.assertEqual(r.status_code, 400)  # sous le minimum
+        r = self.client.post(API + 'paiements/', {'type': 'soutien', 'id': self.e.pk, 'montant': 1000, 'pays': 'tg',
+                                                  'operateur': 'togocel', 'telephone': '90000000'}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.json()['montant'], 1000)
+        h = self.client.get(API + 'historique/').json()
+        self.assertEqual(h[0]['titre'], 'Soutien : Un sourire pour chaque orphelin')
+
+    def test_visiteur_ne_peut_pas_payer(self):
+        r = self.client.post(API + 'paiements/', {'type': 'soutien', 'id': self.e.pk, 'montant': 1000}, format='json')
+        self.assertEqual(r.status_code, 401)
+
+    def test_page_du_site(self):
+        r = self.client.get(self.e.get_absolute_url())
+        self.assertContains(r, 'Soutenir')
+        self.assertContains(r, 'Autre montant')
+
+    def test_evenement_du_jour_pas_termine(self):
+        e = Event.objects.create(title='Ce matin', description='x', location='Lomé', kind='soutien',
+                                 starts_at=max(timezone.now() - timedelta(minutes=5),
+                                               timezone.localtime(timezone.now()).replace(hour=0, minute=1)))
+        self.assertFalse(e.is_past)

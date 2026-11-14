@@ -7,7 +7,7 @@ from .utils import absolute, dt, media
 
 TYPES = ('tous', 'boutique', 'formations', 'services', 'concours', 'tickets', 'paiements')
 PAYMENT_TYPE = {'service': 'services', 'formation': 'formations', 'shop': 'boutique', 'product': 'boutique',
-                'ticket': 'tickets', 'abonnement': 'concours'}
+                'ticket': 'tickets', 'abonnement': 'concours', 'soutien': 'paiements'}
 PAYMENT_STATUS = {'approved': 'paye', 'pending': 'en_attente', 'declined': 'refuse', 'canceled': 'annule'}
 ORDER_STATUS = {'paid': 'paye', 'delivered': 'paye', 'shipped': 'paye', 'cancelled': 'annule'}
 

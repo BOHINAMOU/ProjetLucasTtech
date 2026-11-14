@@ -85,6 +85,20 @@ def _cible(user, d):
         label = 'mois' if period == 'mois' else 'an'
         return ({'kind': 'abonnement'}, plan.price_for(period), f"Abonnement concours {plan.name} (1 {label})",
                 lambda payment: abo.create_pending_subscription(user, plan, period, payment=payment))
+    if kind == 'soutien':
+        from Events.models import Event
+        e = Event.objects.filter(pk=pk, is_published=True, kind='soutien').first()
+        if not e or e.is_past:
+            raise ValidationError("Cet événement n'accepte plus de soutien.")
+        try:
+            montant = int(d.get('montant') or 0)
+        except (TypeError, ValueError):
+            montant = 0
+        if montant < e.min_amount:
+            raise ValidationError(f"Montant minimal : {e.min_amount} F.")
+        if montant > 5_000_000:
+            raise ValidationError("Montant trop élevé.")
+        return {'kind': 'soutien', 'event': e}, montant, f"Soutien : {e.title}", None
     if kind == 'ticket':
         from Events.models import Event, TicketType
         e = Event.objects.filter(pk=pk, is_published=True).first()

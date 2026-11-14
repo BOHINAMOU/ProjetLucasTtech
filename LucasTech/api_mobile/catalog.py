@@ -386,6 +386,7 @@ def event_item(request, e):
         'id': e.pk, 'slug': e.slug, 'titre': e.title, 'date': dt(e.starts_at), 'fin': dt(e.ends_at),
         'lieu': e.location, 'image': media(request, e.cover), 'image_vignette': vignette(request, e.cover),
         'prix_min': e.min_price, 'resume': short(e.description), 'passe': e.is_past,
+        'type': e.kind, 'montant_min': e.min_amount,
         'url_site': absolute(request, e.get_absolute_url()),
     }
 
@@ -418,6 +419,8 @@ def evenement(request, pk):
     data.update({
         'images': [grande(request, e.cover)] if e.cover else [], 'description': text(e.description),
         'carte': e.map_url,
+        'soutiens': e.soutiens().count() if e.is_soutien else 0,
+        'montants': [500, 1000, 2000, 5000] if e.is_soutien else [],
         'tickets': [{'id': t.pk, 'nom': t.name, 'detail': t.description, 'prix': t.price, 'restant': t.remaining,
                      'max_par_commande': t.max_per_order, 'image': media(request, t.cover)}
                     for t in e.ticket_types.all()],

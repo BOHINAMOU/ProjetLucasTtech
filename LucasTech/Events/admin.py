@@ -16,8 +16,9 @@ class TicketTypeInline(admin.TabularInline):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ['title', 'starts_at', 'location', 'organizer', 'tickets_sold', 'is_published']
-    list_filter = ['is_published', 'organizer']
+    list_display = ['title', 'kind', 'starts_at', 'location', 'organizer', 'tickets_sold', 'soutiens_display',
+                    'collecte_display', 'is_published']
+    list_filter = ['kind', 'is_published', 'organizer']
     search_fields = ['title', 'location', 'description']
     prepopulated_fields = {'slug': ('title',)}
     inlines = [TicketTypeInline]
@@ -26,6 +27,15 @@ class EventAdmin(admin.ModelAdmin):
     @admin.display(description="Tickets vendus")
     def tickets_sold(self, obj):
         return obj.tickets.count()
+
+    @admin.display(description="Soutiens")
+    def soutiens_display(self, obj):
+        return obj.soutiens().count() if obj.is_soutien else '—'
+
+    @admin.display(description="Collecté (FCFA)")
+    def collecte_display(self, obj):
+        from django.db.models import Sum
+        return obj.soutiens().aggregate(s=Sum('amount'))['s'] or 0 if obj.is_soutien else '—'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

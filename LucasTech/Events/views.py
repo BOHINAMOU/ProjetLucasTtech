@@ -46,7 +46,19 @@ def event_detail(request, slug):
     event = get_object_or_404(Event.objects.prefetch_related('ticket_types'), slug=slug, is_published=True)
     form = CustomerForm(request.POST or None, user=request.user, purpose='ticket')
     selected = {}
-    if request.method == 'POST' and not event.is_past:
+    if request.method == 'POST' and not event.is_past and event.is_soutien:
+        try:
+            montant = int(str(request.POST.get('montant') or '0').replace(' ', ''))
+        except ValueError:
+            montant = 0
+        if montant < event.min_amount:
+            messages.error(request, f"Montant minimal : {event.min_amount} FCFA.")
+        elif form.is_valid() and fedapay.is_enabled():
+            response = begin_payment(request, form, kind='soutien', event=event, amount=montant,
+                                     description=f"Soutien : {event.title}")
+            if response:
+                return response
+    elif request.method == 'POST' and not event.is_past:
         selected = {k[4:]: v for k, v in request.POST.items() if k.startswith('qty_')}
         try:
             with transaction.atomic():
@@ -75,7 +87,8 @@ def event_detail(request, slug):
                     return response
     return render(request, 'events/detail.html', {
         'event': event, 'form': form, 'selected': selected, 'enabled': fedapay.is_enabled(),
-        'mode': fedapay.mode(), 'pay_js': pay_js_data(),
+        'mode': fedapay.mode(), 'pay_js': pay_js_data(), 'montants': [500, 1000, 2000, 5000],
+        'nb_soutiens': event.soutiens().count() if event.is_soutien else 0,
         'whatsapp_url': whatsapp_link(f"Bonjour, je souhaite des tickets pour « {event.title} »."),
     })
 

@@ -24,6 +24,10 @@ class Event(models.Model):
                                   related_name='organized_events', verbose_name="Organisateur",
                                   help_text="Il ne verra que ses propres événements et ventes "
                                             "(espace organisateur : /evenements/organisateur/).")
+    TYPE_CHOICES = [('tickets', 'Tickets'), ('soutien', 'Soutien (don)')]
+    kind = models.CharField("Type", max_length=10, choices=TYPE_CHOICES, default='tickets',
+                            help_text="Tickets : vente de places. Soutien : chacun donne le montant qu'il veut.")
+    min_amount = models.PositiveIntegerField("Montant minimal du soutien (FCFA)", default=100)
     is_published = models.BooleanField(default=True, verbose_name="Publié")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -49,7 +53,18 @@ class Event(models.Model):
 
     @property
     def is_past(self):
-        return (self.ends_at or self.starts_at) < timezone.now()
+        if self.ends_at:
+            return self.ends_at < timezone.now()
+        # sans date de fin : terminé à la fin du jour où il commence
+        debut_du_jour = timezone.localtime(timezone.now()).replace(hour=0, minute=0, second=0, microsecond=0)
+        return self.starts_at < debut_du_jour
+
+    @property
+    def is_soutien(self):
+        return self.kind == 'soutien'
+
+    def soutiens(self):
+        return self.payments.filter(kind='soutien', status='approved')
 
     @property
     def min_price(self):

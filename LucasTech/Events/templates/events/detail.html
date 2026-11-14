@@ -30,6 +30,32 @@
   <div class="bq-wrap" id="tickets">
     {% if event.is_past %}
       <div class="ev-empty"><i class="fa fa-flag-checkered"></i><p>Cet événement est terminé. Merci à tous !</p></div>
+    {% elif event.is_soutien %}
+    <form method="post" novalidate class="ct-form wz-form ev-layout">
+      {% csrf_token %}
+      <div class="ev-main">
+        <h2 class="ev-h">Soutenir</h2>
+        {% if nb_soutiens %}<p class="ev-soutiens"><i class="fa fa-heart"></i> {{ nb_soutiens }} personne{{ nb_soutiens|pluralize }} {{ nb_soutiens|pluralize:"a,ont" }} soutenu</p>{% endif %}
+        <div class="ev-montants">
+          {% for m in montants %}{% if m >= event.min_amount %}<label class="ev-montant"><input type="radio" name="montant_choix" value="{{ m }}" onclick="document.getElementById('montant').value=this.value"> {{ m|floatformat:"0g" }} F</label>{% endif %}{% endfor %}
+        </div>
+        <label class="wz-label" for="montant">Autre montant (FCFA)</label>
+        <input id="montant" name="montant" type="number" min="{{ event.min_amount }}" step="50" inputmode="numeric" required
+               value="{{ request.POST.montant|default:'' }}" placeholder="Minimum {{ event.min_amount }} F" class="wz-input">
+        {% if event.description %}
+        <h2 class="ev-h" style="margin-top:2.4rem">À propos</h2>
+        <div class="ev-about">{{ event.description|linebreaks }}</div>
+        {% endif %}
+      </div>
+      <aside class="ev-side">
+        <div class="wz-card ev-cart">
+          {% if enabled %}{% include 'payments/_customer_fields.html' %}{% else %}<p class="wz-pick">Soutien sur WhatsApp.</p>{% endif %}
+          {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
+        </div>
+        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Mobile Money · reçu immédiat</p>
+      </aside>
+    </form>
+    <style>.ev-montants{display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0 1.2rem}.ev-montant{border:1.5px solid #0B7A4B;border-radius:999px;padding:.5rem 1rem;font-weight:700;color:#0B7A4B;cursor:pointer}.ev-montant input{display:none}.ev-soutiens{color:#0B7A4B;font-weight:700}</style>
     {% elif not event.ticket_types.all %}
       <div class="ev-empty"><i class="fa fa-ticket"></i><p>Billetterie bientôt ouverte.</p>
         {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Être prévenu</a>{% endif %}</div>
