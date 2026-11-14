@@ -200,7 +200,27 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
     var fl=function(){Array.prototype.forEach.call(op.options,function(o){o.hidden=o.disabled=!!o.value&&own[o.value]!==c.value;});
       if(op.selectedOptions[0]&&op.selectedOptions[0].disabled) op.value='';};
     c.addEventListener('change',fl); fl();}
-  f.addEventListener('submit',function(){if(btn){setTimeout(function(){btn.disabled=true;btn.querySelector('span').textContent='Paiement en cours…';},0);}});
+  /* Contrôle des saisies : chiffres seulement, bonne longueur selon le pays, message clair sous le champ. */
+  var LEN={tg:[8],bj:[8,10],ci:[10],ne:[8],sn:[9]}, ph=f.querySelector('#id_phone'), min=parseInt(inp.min,10)||100;
+  function chiffres(el,max){el.addEventListener('input',function(){var v=el.value.replace(/\D/g,'').slice(0,max);if(v!==el.value)el.value=v;});}
+  if(ph){ph.setAttribute('inputmode','numeric');ph.setAttribute('maxlength','10');chiffres(ph,10);}
+  inp.addEventListener('keydown',function(e){if(['e','E','+','-','.',','].indexOf(e.key)>=0)e.preventDefault();});
+  function err(el,msg){var p=el.closest('.ct-field')||el.parentElement.parentElement, e=p.querySelector('.err.js');
+    if(!msg){if(e)e.remove();el.removeAttribute('aria-invalid');return true;}
+    if(!e){e=document.createElement('span');e.className='err js';p.appendChild(e);} e.textContent=msg; el.setAttribute('aria-invalid','true'); return false;}
+  function verifier(){var ok=true, v=parseInt(inp.value,10)||0;
+    ok=err(inp, v<min?'Minimum '+min+' F.':'')&&ok;
+    var fn=f.querySelector('#id_first_name'), ln=f.querySelector('#id_last_name');
+    [fn,ln].forEach(function(x){if(x){var bad=!x.value.trim()||/\d/.test(x.value); if(bad){document.getElementById('sxId').hidden=false;var m=document.getElementById('sxMoi');if(m)m.hidden=true;}
+      ok=err(x,!x.value.trim()?'Obligatoire.':(/\d/.test(x.value)?'Lettres seulement.':''))&&ok;}});
+    if(op) ok=err(op,!op.value?'Choisissez un opérateur.':'')&&ok;
+    if(ph){var n=ph.value.replace(/\D/g,''), l=LEN[c?c.value:'tg']||[8];
+      ok=err(ph,!n?'Saisissez votre numéro.':(l.indexOf(n.length)<0?'Numéro à '+l.join(' ou ')+' chiffres.':''))&&ok;}
+    return ok;}
+  [ph,op,c].forEach(function(el){if(el)el.addEventListener('change',function(){if(f.dataset.essai)verifier();});});
+  f.addEventListener('submit',function(e){f.dataset.essai='1';
+    if(!verifier()){e.preventDefault();var x=f.querySelector('[aria-invalid=true]');if(x)x.focus();return;}
+    if(btn){setTimeout(function(){btn.disabled=true;btn.querySelector('span').textContent='Paiement en cours…';},0);}});
 })();
 </script>
 <script>
