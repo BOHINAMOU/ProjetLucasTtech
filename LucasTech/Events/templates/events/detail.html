@@ -28,6 +28,7 @@
 @media(min-width:900px){.evd-act .ev-layout{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}}
 .evd-sticky{display:none}
 .evd-sticky.off,.evd-sticky[hidden]{display:none!important}
+body.evd-sticky-on .lt-footer__totop{display:none!important}
 @media(max-width:720px){.evd-sticky{display:flex;position:fixed;left:16px;right:16px;bottom:14px;z-index:40;justify-content:center;gap:.5rem;align-items:center;
   background:#0B7A4B;color:#fff;font-weight:800;border-radius:14px;padding:.95rem;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.2)}
   .bq{padding-bottom:84px}}
@@ -150,9 +151,14 @@
 <script>
 (function(){var st=document.getElementById('evdSticky'),ag=document.getElementById('agir');
   if(!st||!ag) return;
-  st.addEventListener('click',function(){st.hidden=true;});
-  /* Bouton collant masqué dès que le formulaire est à l'écran (ou dépassé). */
-  function maj(){var r=ag.getBoundingClientRect(); st.classList.toggle('off', r.top < window.innerHeight*0.85);}
+  var top=document.getElementById('footerToTop'), fini=false;
+  /* Clic sur le bouton ou choix d'un montant : on est dans le parcours, le bouton collant ne revient plus. */
+  st.addEventListener('click',function(){fini=true;maj();});
+  ag.addEventListener('click',function(){fini=true;maj();});
+  ag.addEventListener('focusin',function(){fini=true;maj();});
+  /* Bouton collant masqué dès que la section Soutenir / Tickets est à l'écran (ou dépassée). */
+  function maj(){var r=ag.getBoundingClientRect(), off=fini||r.top<window.innerHeight*0.85;
+    st.classList.toggle('off',off); document.body.classList.toggle('evd-sticky-on',!off);}
   window.addEventListener('scroll',maj,{passive:true}); maj();
 })();
 (function(){var d=document.getElementById('evdDesc'),b=document.getElementById('evdMore');
