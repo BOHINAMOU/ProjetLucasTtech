@@ -155,3 +155,25 @@ class TexteEtImagesTests(APITestCase):
     def test_image_hors_site_inchangee(self):
         from api_mobile.catalog import grande_url
         self.assertEqual(grande_url(None, 'https://ailleurs.tg/a.jpg'), 'https://ailleurs.tg/a.jpg')
+
+
+
+@override_settings(STORAGES=STORAGES)
+class EvenementDuJourTests(APITestCase):
+    def test_evenement_sans_fin_commence_ce_matin_reste_visible(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from Events.models import Event
+        u = get_user_model().objects.create_user(email='org@example.com', password='x-Pass-12345', is_verified=True)
+        champs = {f.name for f in Event._meta.get_fields()}
+        extra = {'organizer': u} if 'organizer' in champs else {}
+        maintenant = timezone.now()
+        # commencé il y a quelques minutes (toujours aujourd'hui), sans date de fin
+        debut = max(maintenant - timedelta(minutes=5), timezone.localtime(maintenant).replace(hour=0, minute=1))
+        Event.objects.create(title='Journée de solidarité', starts_at=debut, is_published=True, **extra)
+        Event.objects.create(title='Ancien', starts_at=maintenant - timedelta(days=3), is_published=True, **extra)
+        d = self.client.get(API + 'evenements/').json()
+        titres = [e['titre'] for e in (d['resultats'] if isinstance(d, dict) else d)]
+        self.assertIn('Journée de solidarité', titres)
+        self.assertNotIn('Ancien', titres)
+        self.assertContains(self.client.get('/evenements/'), 'Journée de solidarité')

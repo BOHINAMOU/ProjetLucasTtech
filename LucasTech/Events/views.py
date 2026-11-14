@@ -11,13 +11,13 @@ from Payments.forms import CustomerForm
 from Payments.models import Payment
 from Payments.views import _remember, begin_payment, pay_js_data, whatsapp_link
 
-from .models import Event, Ticket, TicketType
+from .models import Event, Ticket, TicketType, a_venir_q
 
 
 def event_list(request):
     now = timezone.now()
     qs = Event.objects.filter(is_published=True).prefetch_related('ticket_types')
-    upcoming = qs.filter(Q(ends_at__gte=now) | Q(ends_at__isnull=True, starts_at__gte=now))
+    upcoming = qs.filter(a_venir_q(now))
     past = qs.exclude(pk__in=upcoming.values('pk')).order_by('-starts_at')[:6]
     return render(request, 'events/list.html', {'upcoming': upcoming, 'past': past})
 

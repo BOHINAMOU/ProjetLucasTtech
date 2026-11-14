@@ -394,8 +394,8 @@ def _events(all_events=False):
     from Events.models import Event
     qs = Event.objects.filter(is_published=True).prefetch_related('ticket_types')
     if not all_events:
-        now = timezone.now()
-        qs = qs.filter(Q(ends_at__gte=now) | Q(ends_at__isnull=True, starts_at__gte=now))
+        from Events.models import a_venir_q
+        qs = qs.filter(a_venir_q())
     return qs.order_by('starts_at')
 
 

@@ -131,3 +131,13 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"{self.code} — {self.ticket_type}"
+
+
+def a_venir_q(now=None):
+    """Événements encore à venir ou en cours. Sans date de fin, un événement reste visible jusqu'à la fin
+    du jour où il commence (heure locale) : créé le jour même, il n'est pas classé « passé »."""
+    from django.db.models import Q
+    from django.utils import timezone
+    now = now or timezone.now()
+    debut_du_jour = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
+    return Q(ends_at__gte=now) | Q(ends_at__isnull=True, starts_at__gte=debut_du_jour)
