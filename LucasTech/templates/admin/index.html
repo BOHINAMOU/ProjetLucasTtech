@@ -141,7 +141,15 @@
       <div class="ltd-date">{{ dash.today }}</div>
       <h2>Bonjour {{ dash.greeting }}</h2>
       <p>Voici l'essentiel de votre site aujourd'hui.</p>
-      <span class="ltd-pill {% if dash.argent %}
+      <span class="ltd-pill {% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
+        {% if dash.todo_total %}{{ dash.todo_total }} élément{{ dash.todo_total|pluralize }} à traiter{% else %}Tout est à jour{% endif %}</span>
+    </div>
+    <div class="ltd-kpis">
+      {% for k in dash.hero_kpis %}<div class="ltd-kpi {% if forloop.last and k.1 %}hot{% endif %}"><strong>{{ k.1 }}</strong><span>{{ k.0 }}</span></div>{% endfor %}
+    </div>
+  </div>
+
+{% if dash.argent %}
 <div class="ltd-h"><h3>Argent encaissé</h3><a href="{{ dash.argent.url }}">Tous les paiements →</a></div>
 <div class="ltd-grid">
   {% for p in dash.argent.periodes %}
@@ -182,14 +190,6 @@
   </table>
 </div>
 {% endif %}
-{% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
-        {% if dash.todo_total %}{{ dash.todo_total }} élément{{ dash.todo_total|pluralize }} à traiter{% else %}Tout est à jour{% endif %}</span>
-    </div>
-    <div class="ltd-kpis">
-      {% for k in dash.hero_kpis %}<div class="ltd-kpi {% if forloop.last and k.1 %}hot{% endif %}"><strong>{{ k.1 }}</strong><span>{{ k.0 }}</span></div>{% endfor %}
-    </div>
-  </div>
-
   <div class="ltd-h"><h3>Actions rapides</h3></div>
   <div class="ltd-actions">
     {% for a in dash.actions %}<a class="ltd-act {{ a.tone }}" href="{{ a.url }}"{% if a.url == '/' %} target="_blank"{% endif %}><i class="fas {{ a.icon }}"></i>{{ a.label }}</a>{% endfor %}
