@@ -2,32 +2,54 @@
 {% block title %}{{ event.title }} — Événements Lantante Technologie{% endblock %}
 {% block meta_description %}{{ event.starts_at|date:"j F Y" }} · {{ event.location }} — {{ event.description|striptags|truncatechars:120 }}{% endblock %}
 {% block og_title %}{{ event.title }}{% endblock %}
-{% block og_description %}{{ event.starts_at|date:"j F Y" }} · {{ event.location }}. Tickets en ligne.{% endblock %}
+{% block og_description %}{{ event.starts_at|date:"j F Y" }} · {{ event.location }}{% endblock %}
 {% block og_image %}{% if event.cover %}{{ event.cover.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
-{% block extra_head %}{% include 'core/_catalog_head.html' %}{% endblock %}
+{% block extra_head %}{% include 'core/_catalog_head.html' %}<style>
+.evd{max-width:860px;margin:0 auto;padding:1rem 16px 0}
+.evd-back{display:inline-flex;gap:.4rem;align-items:center;color:#0B7A4B;font-weight:700;text-decoration:none;margin-bottom:.8rem}
+.evd-img{aspect-ratio:16/9;border-radius:20px;background:#E6F4EC center/cover no-repeat;margin-bottom:1rem}
+.evd-pill{display:inline-block;background:#E6F4EC;color:#0B7A4B;font-weight:800;font-size:.8rem;border-radius:999px;padding:.25rem .8rem}
+.evd-pill.s{background:#FDECEC;color:#B42318}
+.evd-t{font-size:1.7rem;font-weight:900;line-height:1.2;color:#064D2F;margin:.6rem 0;overflow-wrap:anywhere}
+.evd-m{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;color:#3d4a44;font-size:.95rem}
+.evd-m i{color:#0B7A4B;margin-right:.3rem}.evd-m a{color:#3d4a44}
+.evd-share{display:flex;gap:.5rem;margin:1rem 0}
+.evd-share a{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;text-decoration:none}
+.evd-share .w{background:#25d366}.evd-share .f{background:#3b5998}.evd-share .c{background:#0B7A4B}
+.evd-desc{line-height:1.75;color:#2b3631;font-size:1rem;margin-bottom:1rem}.evd-desc p{margin:0 0 .9rem}
+.evd-act{max-width:1100px}
+.evd-act .ev-layout{grid-template-columns:minmax(0,1fr)}
+.evd-act .ev-layout>*{min-width:0}
+@media(min-width:900px){.evd-act .ev-layout{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}}
+.evd-sticky{display:none}
+@media(max-width:720px){.evd-sticky{display:flex;position:fixed;left:16px;right:16px;bottom:14px;z-index:40;justify-content:center;gap:.5rem;align-items:center;
+  background:#0B7A4B;color:#fff;font-weight:800;border-radius:14px;padding:.95rem;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  .bq{padding-bottom:84px}}
+.ev-montants{display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0 1.2rem}
+</style>{% endblock %}
 
 {% block content %}
 <div class="bq">
-  <!-- ═══ Bandeau photo ═══ -->
-  <section class="ev-hero"{% if event.cover %} style="background-image:url('{{ event.cover.url }}')"{% endif %}>
-    <div class="bq-wrap ev-hero__in">
-      <div class="ev-hero__top">
-        <a href="{% url 'events:list' %}" class="ev-chip ev-chip--glass"><i class="fa fa-arrow-left"></i> Événements</a>
-        {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
-      </div>
-      <div>
-        <div class="ev-date"><b>{{ event.starts_at|date:"j" }}</b><span>{{ event.starts_at|date:"M" }}</span></div>
-        <h1>{{ event.title }}</h1>
-        <div class="ev-meta">
-          <span><i class="fa fa-calendar"></i> {{ event.starts_at|date:"l j F" }}</span>
-          <span><i class="fa fa-clock"></i> {{ event.starts_at|date:"H\hi" }}{% if event.ends_at %} – {{ event.ends_at|date:"H\hi" }}{% endif %}</span>
-          {% if event.map_url %}<a href="{{ event.map_url }}" target="_blank" rel="noopener"><i class="fa fa-location-dot"></i> {{ event.location }}</a>{% else %}<span><i class="fa fa-location-dot"></i> {{ event.location }}</span>{% endif %}
-        </div>
-      </div>
+  <div class="evd">
+    <a href="{% url 'events:list' %}" class="evd-back"><i class="fa fa-arrow-left"></i> Événements</a>
+    {% if mode == 'sandbox' or mode == 'demo' %}<span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Mode test</span>{% endif %}
+    <div class="evd-img"{% if event.cover %} style="background-image:url('{{ event.cover.url }}')"{% endif %}></div>
+    <span class="evd-pill{% if event.is_soutien %} s{% endif %}">{% if event.is_soutien %}Soutien{% else %}Ticket{% endif %}</span>
+    <h1 class="evd-t">{{ event.title }}</h1>
+    <div class="evd-m">
+      <span><i class="fa fa-calendar"></i> {{ event.starts_at|date:"l j F" }}</span>
+      <span><i class="fa fa-clock"></i> {{ event.starts_at|date:"H\hi" }}{% if event.ends_at %} – {{ event.ends_at|date:"H\hi" }}{% endif %}</span>
+      {% if event.map_url %}<a href="{{ event.map_url }}" target="_blank" rel="noopener"><i class="fa fa-location-dot"></i> {{ event.location }}</a>{% else %}<span><i class="fa fa-location-dot"></i> {{ event.location }}</span>{% endif %}
     </div>
-  </section>
+    <div class="evd-share">
+      <a class="w" href="https://wa.me/?text={{ event.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      <a class="f" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a class="c" href="#" role="button" aria-label="Copier le lien" title="Copier le lien" onclick="navigator.clipboard&&navigator.clipboard.writeText('{{ request.build_absolute_uri }}').then(()=>{this.innerHTML='<i class=\'fa fa-check\'></i>'});return false;"><i class="fa fa-link"></i></a>
+    </div>
+    {% if event.description %}<div class="evd-desc">{{ event.description|linebreaks }}</div>{% endif %}
+  </div>
 
-  <div class="bq-wrap" id="tickets">
+  <div class="bq-wrap evd-act" id="agir">
     {% if event.is_past %}
       <div class="ev-empty"><i class="fa fa-flag-checkered"></i><p>Cet événement est terminé. Merci à tous !</p></div>
     {% elif event.is_soutien %}
@@ -42,10 +64,6 @@
         <label class="wz-label" for="montant">Autre montant (FCFA)</label>
         <input id="montant" name="montant" type="number" min="{{ event.min_amount }}" step="50" inputmode="numeric" required
                value="{{ request.POST.montant|default:'' }}" placeholder="Minimum {{ event.min_amount }} F" class="wz-input">
-        {% if event.description %}
-        <h2 class="ev-h" style="margin-top:2.4rem">À propos</h2>
-        <div class="ev-about">{{ event.description|linebreaks }}</div>
-        {% endif %}
       </div>
       <aside class="ev-side">
         <div class="wz-card ev-cart">
@@ -63,7 +81,7 @@
     <form method="post" novalidate id="ticketForm" class="ct-form wz-form ev-layout" data-order-label="" data-order-total="">
       {% csrf_token %}
       <div class="ev-main">
-        <h2 class="ev-h">Choisissez vos tickets</h2>
+        <h2 class="ev-h">Tickets</h2>
         <div class="ev-tickets">
           {% for tt in event.ticket_types.all %}
           <article class="tk{% if not tt.remaining %} is-out{% endif %}" data-tk>
@@ -92,10 +110,6 @@
           {% endfor %}
         </div>
 
-        {% if event.description %}
-        <h2 class="ev-h" style="margin-top:2.4rem">À propos</h2>
-        <div class="ev-about">{{ event.description|linebreaks }}</div>
-        {% endif %}
       </div>
 
       <aside class="ev-side">
@@ -113,11 +127,14 @@
           {% endif %}
           {% if whatsapp_url %}<a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="ct-walink"><i class="fab fa-whatsapp"></i> Une question ? WhatsApp</a>{% endif %}
         </div>
-        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Sans compte · reçu immédiat · Mobile Money</p>
+        <p class="ct-secure"><i class="fa fa-shield-halved"></i> Mobile Money · reçu immédiat</p>
       </aside>
     </form>
     {% endif %}
   </div>
+  {% if not event.is_past and event.is_soutien or not event.is_past and event.ticket_types.all %}
+  <a href="#agir" class="evd-sticky">{% if event.is_soutien %}<i class="fa fa-heart"></i> Soutenir{% else %}<i class="fa fa-ticket"></i> Acheter un ticket{% endif %}</a>
+  {% endif %}
   {{ selected|json_script:"ttSelected" }}
   {% include 'core/_toasts.html' %}
 </div>

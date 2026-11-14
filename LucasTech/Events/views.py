@@ -17,9 +17,15 @@ from .models import Event, Ticket, TicketType, a_venir_q
 def event_list(request):
     now = timezone.now()
     qs = Event.objects.filter(is_published=True).prefetch_related('ticket_types')
+    typ = request.GET.get('type') if request.GET.get('type') in ('tickets', 'soutien') else ''
+    q = (request.GET.get('q') or '').strip()[:80]
+    if typ:
+        qs = qs.filter(kind=typ)
+    if q:
+        qs = qs.filter(Q(title__icontains=q) | Q(location__icontains=q))
     upcoming = qs.filter(a_venir_q(now))
     past = qs.exclude(pk__in=upcoming.values('pk')).order_by('-starts_at')[:6]
-    return render(request, 'events/list.html', {'upcoming': upcoming, 'past': past})
+    return render(request, 'events/list.html', {'upcoming': upcoming, 'past': past, 'type': typ, 'q': q})
 
 
 def _selection(request, event):

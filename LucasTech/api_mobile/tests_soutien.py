@@ -55,3 +55,8 @@ class SoutienTests(APITestCase):
                                  starts_at=max(timezone.now() - timedelta(minutes=5),
                                                timezone.localtime(timezone.now()).replace(hour=0, minute=1)))
         self.assertFalse(e.is_past)
+
+    def test_liste_du_site_filtres(self):
+        self.assertContains(self.client.get('/evenements/?type=soutien'), 'Un sourire pour chaque orphelin')
+        self.assertNotContains(self.client.get('/evenements/?type=tickets'), 'Un sourire pour chaque orphelin')
+        self.assertContains(self.client.get('/evenements/?q=sourire'), 'Un sourire pour chaque orphelin')
