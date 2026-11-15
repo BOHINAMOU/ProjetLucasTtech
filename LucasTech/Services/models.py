@@ -34,6 +34,8 @@ class ServiceCategory(models.Model):
     icon        = models.CharField(max_length=60, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-code")
     slug        = models.SlugField(unique=True, verbose_name="Slug (URL)")
     order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+    image       = models.ImageField("Photo", upload_to='services/categories/', blank=True,
+                                    help_text="Affichée dans l'appli à la place de l'icône.")
     icone_appli = models.CharField("Icône dans l'appli", max_length=20, choices=ICONES_APPLI, default='widgets')
     couleur     = models.CharField("Couleur dans l'appli", max_length=10, choices=COULEURS_APPLI, default='vert')
     parent      = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='sous_categories',

@@ -12,6 +12,7 @@ from Emploi.webapp import webapp
 from .sitemaps import sitemaps
 
 urlpatterns = [
+    path('ecoles/fichier/<int:pk>/', __import__('Ecoles.views', fromlist=['fichier']).fichier, name='ecole_fichier'),
     path('ecoles/document/<int:pk>/', __import__('Ecoles.views', fromlist=['document']).document, name='ecole_document'),
     path(
         'ads.txt',

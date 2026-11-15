@@ -58,6 +58,7 @@ def ecole(request, slug):
     if not e:
         return error("École introuvable.", 404, code='introuvable')
     from Ecoles.models import CLASSES, NIVEAUX, SERIES_BAC
+    from Ecoles.formulaire import definition
     d = ecole_item(request, e)
     d.update({
         'description': text(e.description), 'telephone': e.telephone, 'whatsapp': e.whatsapp, 'email': e.email,
@@ -65,6 +66,8 @@ def ecole(request, slug):
         'photos': [{'image': grande(request, p.image), 'legende': p.legende} for p in e.photos.all()],
         'classes': {k: v for k, v in CLASSES.items() if k in (e.cycles or [])},
         'niveaux': NIVEAUX, 'series_bac': SERIES_BAC,
+        'champs': definition(e),
+        'masquer': {'email': e.masquer_email, 'message': e.masquer_message, 'document': e.masquer_document},
         'nouveautes': [{'id': n.pk, 'titre': n.titre, 'texte': n.texte, 'date': n.date.isoformat(),
                         'image': grande(request, n.image) if n.image else None}
                        for n in e.nouveautes.all() if n.publie],
@@ -105,7 +108,7 @@ def inscription(request, slug):
         filiere = e.filieres.filter(pk=d.get('filiere'), ouverte=True).first()
         if not filiere:
             erreurs['filiere'] = "Filière indisponible."
-    email = str(d.get('email') or '').strip()
+    email = '' if e.masquer_email else str(d.get('email') or '').strip()
     if email and '@' not in email:
         erreurs['email'] = "E-mail invalide."
     from Ecoles.models import CLASSES, NIVEAUX, SERIES_BAC
@@ -126,7 +129,10 @@ def inscription(request, slug):
                 erreurs['serie_bac'] = "Série invalide."
     if filiere is not None and cycle and filiere.cycle != cycle:
         erreurs['filiere'] = "Filière indisponible."
-    doc = request.FILES.get('document')
+    from Ecoles.formulaire import controler
+    reponses, fichiers, err_champs = controler(e, cycle if e.cycles else '', d, request.FILES)
+    erreurs.update(err_champs)
+    doc = None if e.masquer_document else request.FILES.get('document')
     if doc is not None:
         ext = doc.name.rsplit('.', 1)[-1].lower() if '.' in doc.name else ''
         if ext not in ('pdf', 'jpg', 'jpeg', 'png', 'webp'):
@@ -141,8 +147,11 @@ def inscription(request, slug):
                                         email=email or (user.email if user else ''),
                                         niveau_actuel=str(d.get('niveau_actuel') or '')[:80],
                                         cycle=cycle if e.cycles else '', classe=classe, niveau_etudes=niveau,
-                                        serie_bac=serie, document=doc,
-                                        message=str(d.get('message') or '')[:1000])
+                                        serie_bac=serie, document=doc, reponses=reponses,
+                                        message='' if e.masquer_message else str(d.get('message') or '')[:1000])
+    from Ecoles.models import FichierInscription
+    for c, f in fichiers.items():
+        FichierInscription.objects.create(inscription=i, champ=c, fichier=f)
     if user:
         from .notifs import notifier
         notifier(user, "Inscription envoyée", f"{e.nom}{' — ' + filiere.nom if filiere else ''} : l'école vous contactera.")

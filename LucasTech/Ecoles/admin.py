@@ -4,10 +4,11 @@ from django import forms
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
+from django.utils.safestring import mark_safe
 from django.utils import timezone
 
-from .models import CYCLES, NouveauteEcole, Ecole, Filiere, InscriptionEcole, MembreEcole, PhotoEcole
+from .models import CYCLES, ChampEcole, NouveauteEcole, Ecole, Filiere, InscriptionEcole, MembreEcole, PhotoEcole
 
 
 def mes_ecoles(user):
@@ -24,6 +25,8 @@ def export_excel(queryset, nom):
     ws.title = 'Inscriptions'
     entetes = ['Date', 'École', 'Cycle', 'Classe / niveau', 'Série', 'Filière', 'Prénom', 'Nom', 'Téléphone', 'E-mail',
                'Message', 'Statut', 'Document']
+    perso = list(ChampEcole.objects.filter(ecole__in=queryset.values('ecole')).order_by('ecole', 'ordre', 'id'))
+    entetes += [c.libelle for c in perso]
     from django.conf import settings
     site = getattr(settings, 'SITE_URL', 'https://lantantetechnologie.com').rstrip('/')
     ws.append(entetes)
@@ -31,9 +34,17 @@ def export_excel(queryset, nom):
         c.font = Font(bold=True)
     for i in queryset.select_related('ecole', 'filiere'):
         doc = f"{site}{reverse('ecole_document', args=[i.pk])}" if i.document else ''
+        fichiers = {f.champ_id: f for f in i.fichiers.all()}
+
+        def valeur(c):
+            if c.pk in fichiers:
+                return f"{site}{reverse('ecole_fichier', args=[fichiers[c.pk].pk])}"
+            v = (i.reponses or {}).get(str(c.pk), {}).get('valeur', '')
+            return ', '.join(v) if isinstance(v, list) else v
         ws.append([timezone.localtime(i.created_at).strftime('%d/%m/%Y %H:%M'), i.ecole.nom, i.get_cycle_display(),
                    i.classe or i.niveau_etudes or i.niveau_actuel, i.serie_bac, i.filiere.nom if i.filiere_id else '',
-                   i.prenom, i.nom, i.telephone, i.email, i.message, i.get_statut_display(), doc])
+                   i.prenom, i.nom, i.telephone, i.email, i.message, i.get_statut_display(), doc]
+                  + [valeur(c) if c.ecole_id == i.ecole_id else '' for c in perso])
         if doc:
             ws.cell(row=ws.max_row, column=len(entetes)).hyperlink = doc
     for col in ws.columns:
@@ -44,6 +55,12 @@ def export_excel(queryset, nom):
                      content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     r['Content-Disposition'] = f'attachment; filename="{nom}-{timezone.localdate():%Y-%m-%d}.xlsx"'
     return r
+
+
+class ChampInline(admin.TabularInline):
+    model = ChampEcole
+    extra = 0
+    fields = ['ordre', 'libelle', 'type', 'choix', 'obligatoire', 'cycle']
 
 
 class NouveauteInline(admin.StackedInline):
@@ -96,13 +113,15 @@ class EcoleAdmin(admin.ModelAdmin):
     list_display = ['nom', 'type', 'ville', 'nb_filieres', 'nb_inscriptions', 'nouvelles', 'publie']
     list_filter = ['type', 'publie', 'ville']
     search_fields = ['nom', 'ville']
-    inlines = [NouveauteInline, FiliereInline, PhotoInline, MembreInline]
+    inlines = [NouveauteInline, FiliereInline, ChampInline, PhotoInline, MembreInline]
     form = EcoleForm
     readonly_fields = ['resume']
     fieldsets = [
         (None, {'fields': ['resume', 'nom', 'type', 'cycles', 'ville', 'logo', 'couverture', 'description']}),
         ("Contact", {'fields': [('telephone', 'whatsapp'), ('email', 'site_web')]}),
         ("Publication", {'fields': [('publie', 'inscriptions_ouvertes', 'ordre')]}),
+        ("Formulaire d'inscription", {'fields': [('masquer_email', 'masquer_message', 'masquer_document')],
+                                      'description': "Ajoutez vos propres champs plus bas (« Champs du formulaire »)."}),
     ]
 
     def get_queryset(self, request):
@@ -142,7 +161,8 @@ class EcoleAdmin(admin.ModelAdmin):
 @admin.register(InscriptionEcole)
 class InscriptionEcoleAdmin(admin.ModelAdmin):
     list_display = ['date', 'prenom', 'nom', 'telephone', 'ecole', 'cycle', 'classe_niveau', 'filiere', 'doc', 'statut']
-    readonly_fields = ['doc']
+    readonly_fields = ['doc', 'reponses_lisibles']
+    exclude = ['reponses']
     list_filter = ['statut', 'cycle', ('ecole', admin.RelatedOnlyFieldListFilter), 'created_at']
     search_fields = ['nom', 'prenom', 'telephone', 'email']
     list_editable = ['statut']
@@ -163,6 +183,15 @@ class InscriptionEcoleAdmin(admin.ModelAdmin):
     @admin.display(description="Classe / niveau")
     def classe_niveau(self, i):
         return ' '.join(x for x in (i.classe or i.niveau_etudes, i.serie_bac and f"(série {i.serie_bac})") if x)
+
+    @admin.display(description="Réponses")
+    def reponses_lisibles(self, i):
+        lignes = [format_html('<b>{}</b> : {}', r.get('libelle', ''),
+                              ', '.join(r['valeur']) if isinstance(r.get('valeur'), list) else r.get('valeur', ''))
+                  for r in (i.reponses or {}).values()]
+        lignes += [format_html('<b>{}</b> : <a href="{}" target="_blank">Ouvrir</a>', f.champ.libelle if f.champ else 'Fichier',
+                               reverse('ecole_fichier', args=[f.pk])) for f in i.fichiers.all()]
+        return format_html_join(mark_safe('<br>'), '{}', ((x,) for x in lignes)) if lignes else '—'
 
     @admin.display(description="Document")
     def doc(self, i):

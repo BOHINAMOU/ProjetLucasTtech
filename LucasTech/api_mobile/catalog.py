@@ -724,7 +724,7 @@ def rubriques_services(request):
     def groupe(c):
         items = [service_item(request, x) for x in c.services.all() if x.is_active]
         return {'id': c.pk, 'nom': c.name, 'slug': c.slug, 'description': c.description, 'icone': c.icon,
-                'icone_appli': c.icone_appli, 'couleur': c.couleur,
+                'icone_appli': c.icone_appli, 'couleur': c.couleur, 'image': vignette(request, c.image) if c.image else None,
                 'services': [dict(it, icone_appli=x.icone_appli or c.icone_appli, couleur=c.couleur)
                              for it, x in zip(items, [y for y in c.services.all() if y.is_active])]} if items else None
 
@@ -733,6 +733,7 @@ def rubriques_services(request):
         groupes = [g for g in [groupe(r)] + [groupe(c) for c in toutes if c.parent_id == r.pk] if g]
         if groupes:
             out.append({'id': r.pk, 'nom': r.name, 'icone': r.icon, 'icone_appli': r.icone_appli, 'couleur': r.couleur,
+                        'image': vignette(request, r.image) if r.image else None,
                         'nb': sum(len(g['services']) for g in groupes),
                         'groupes': groupes})
     return Response(out)

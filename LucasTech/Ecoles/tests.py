@@ -128,3 +128,80 @@ class CyclesTests(APITestCase):
         from openpyxl import load_workbook
         ws = load_workbook(io.BytesIO(r.content)).active
         self.assertIn(f'/ecoles/document/{i.pk}/', ws.cell(row=2, column=13).value)
+
+
+@override_settings(STORAGES=STORAGES)
+class ChampsPersonnalisesTests(APITestCase):
+    def setUp(self):
+        from .models import ChampEcole
+        U = get_user_model()
+        self.e = Ecole.objects.create(nom='École Les Palmiers', type='primaire', cycles=['primaire', 'college'],
+                                      masquer_email=True)
+        self.age = ChampEcole.objects.create(ecole=self.e, libelle='Âge', type='nombre', obligatoire=True, ordre=1)
+        self.ne = ChampEcole.objects.create(ecole=self.e, libelle='Né le', type='date', ordre=2)
+        self.cantine = ChampEcole.objects.create(ecole=self.e, libelle='Cantine', type='oui_non', ordre=3)
+        self.langues = ChampEcole.objects.create(ecole=self.e, libelle='Langues', type='choix_multiple',
+                                                 choix='Anglais\nEspagnol\nAllemand', ordre=4, cycle='college')
+        self.bulletin = ChampEcole.objects.create(ecole=self.e, libelle='Bulletin', type='fichier', ordre=5,
+                                                  cycle='college', obligatoire=True)
+        self.resp = U.objects.create_user(email='p@example.com', password='x-Pass-12345', is_verified=True)
+        MembreEcole.objects.create(ecole=self.e, user=self.resp, role='proprietaire')
+        self.url = f'{API}ecoles/{self.e.slug}/inscription/'
+
+    def _post(self, **d):
+        base = {'nom': 'Koffi', 'prenom': 'Ama', 'telephone': '90000000', 'cycle': 'primaire', 'classe': 'CP1'}
+        base.update(d)
+        return self.client.post(self.url, base, format='multipart')
+
+    def test_definition_et_champs_masques(self):
+        f = self.client.get(f'{API}ecoles/{self.e.slug}/').json()
+        self.assertEqual([c['libelle'] for c in f['champs']], ['Âge', 'Né le', 'Cantine', 'Langues', 'Bulletin'])
+        self.assertEqual(f['champs'][3]['choix'], ['Anglais', 'Espagnol', 'Allemand'])
+        self.assertTrue(f['masquer']['email'])
+
+    def test_obligatoire_type_invalide_et_cycle(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        r = self._post()
+        self.assertEqual(r.json()['erreurs'][f'champ_{self.age.pk}'], "Obligatoire.")
+        r = self._post(**{f'champ_{self.age.pk}': 'six', f'champ_{self.ne.pk}': '31/02/2020'})
+        self.assertEqual((r.json()['erreurs'][f'champ_{self.age.pk}'], r.json()['erreurs'][f'champ_{self.ne.pk}']),
+                         ("Nombre attendu.", "Date invalide."))
+        # au primaire, les champs du collège ne sont pas demandés
+        r = self._post(**{f'champ_{self.age.pk}': '6', f'champ_{self.cantine.pk}': 'oui', 'email': 'x@example.com'})
+        self.assertEqual(r.status_code, 201, r.content)
+        i = InscriptionEcole.objects.latest('pk')
+        self.assertEqual(i.reponses[str(self.cantine.pk)]['valeur'], 'Oui')
+        self.assertEqual(i.email, '')  # e-mail masqué par l'école
+        # au collège : choix multiple contrôlé et fichier obligatoire
+        r = self._post(cycle='college', classe='6e', **{f'champ_{self.age.pk}': '11', f'champ_{self.langues.pk}': 'Anglais|Chinois'})
+        self.assertEqual(r.json()['erreurs'][f'champ_{self.langues.pk}'], "Choix invalide.")
+        self.assertEqual(r.json()['erreurs'][f'champ_{self.bulletin.pk}'], "Obligatoire.")
+        pdf = SimpleUploadedFile('bulletin.pdf', b'%PDF-1.4 x', content_type='application/pdf')
+        r = self._post(cycle='college', classe='6e', **{f'champ_{self.age.pk}': '11',
+                                                        f'champ_{self.langues.pk}': 'Anglais|Espagnol',
+                                                        f'champ_{self.bulletin.pk}': pdf})
+        self.assertEqual(r.status_code, 201, r.content)
+        i = InscriptionEcole.objects.latest('pk')
+        self.assertEqual(i.reponses[str(self.langues.pk)]['valeur'], ['Anglais', 'Espagnol'])
+        self.assertEqual(i.fichiers.count(), 1)
+
+    def test_admin_et_export_avec_colonnes(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        pdf = SimpleUploadedFile('bulletin.pdf', b'%PDF-1.4 x', content_type='application/pdf')
+        self._post(cycle='college', classe='5e', **{f'champ_{self.age.pk}': '12', f'champ_{self.bulletin.pk}': pdf})
+        i = InscriptionEcole.objects.get()
+        self.client.force_login(self.resp)
+        self.assertContains(self.client.get(f'{A}Ecoles/inscriptionecole/{i.pk}/change/'), 'Âge')
+        r = self.client.post(f'{A}Ecoles/inscriptionecole/', {'action': 'exporter_excel', '_selected_action': [i.pk]})
+        import io
+        from openpyxl import load_workbook
+        ws = load_workbook(io.BytesIO(r.content)).active
+        entetes = [c.value for c in ws[1]]
+        self.assertEqual(entetes[-5:], ['Âge', 'Né le', 'Cantine', 'Langues', 'Bulletin'])
+        ligne = [c.value for c in ws[2]]
+        self.assertEqual(ligne[entetes.index('Âge')], '12')
+        self.assertIn('/ecoles/fichier/', ligne[entetes.index('Bulletin')])
+        f = i.fichiers.get()
+        self.assertEqual(self.client.get(f'/ecoles/fichier/{f.pk}/').status_code, 200)
+        self.client.logout()
+        self.assertEqual(self.client.get(f'/ecoles/fichier/{f.pk}/').status_code, 302)

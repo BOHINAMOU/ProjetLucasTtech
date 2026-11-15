@@ -36,6 +36,9 @@ class Ecole(models.Model):
     cycles = models.JSONField("Cycles", default=list, blank=True,
                               help_text="Primaire, Collège, Lycée, Université / Supérieur, Autre (plusieurs possibles).")
     inscriptions_ouvertes = models.BooleanField("Inscriptions ouvertes", default=True)
+    masquer_email = models.BooleanField("Masquer l'e-mail", default=False)
+    masquer_message = models.BooleanField("Masquer le message", default=False)
+    masquer_document = models.BooleanField("Masquer le document joint", default=False)
     publie = models.BooleanField("Publiée", default=True)
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
     created_at = models.DateTimeField("Créée le", auto_now_add=True)
@@ -110,6 +113,7 @@ class InscriptionEcole(models.Model):
     document = models.FileField("Document", storage=private_storage, upload_to='ecoles/documents/%Y/', blank=True,
                                 validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png', 'webp'])])
     message = models.TextField("Message", blank=True)
+    reponses = models.JSONField("Réponses aux champs de l'école", default=dict, blank=True)
     statut = models.CharField("Statut", max_length=10, choices=STATUTS, default='nouvelle')
     created_at = models.DateTimeField("Reçue le", auto_now_add=True)
 
@@ -174,3 +178,40 @@ class NouveauteEcole(models.Model):
 
     def __str__(self):
         return self.titre
+
+
+
+class ChampEcole(models.Model):
+    """Champ ajouté par l'école à son formulaire d'inscription."""
+    TYPES = [('texte', 'Texte'), ('nombre', 'Nombre'), ('date', 'Date'), ('choix', 'Choix unique'),
+             ('choix_multiple', 'Choix multiple'), ('fichier', 'Fichier'), ('oui_non', 'Oui / Non')]
+    ecole = models.ForeignKey(Ecole, on_delete=models.CASCADE, related_name='champs')
+    libelle = models.CharField("Libellé", max_length=120)
+    type = models.CharField("Type", max_length=16, choices=TYPES, default='texte')
+    choix = models.TextField("Choix possibles", blank=True, help_text="Un choix par ligne (choix unique ou multiple).")
+    obligatoire = models.BooleanField("Obligatoire", default=False)
+    cycle = models.CharField("Cycle", max_length=10, choices=CYCLES, blank=True, help_text="Vide = tous les cycles.")
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+
+    class Meta:
+        ordering = ['ordre', 'id']
+        verbose_name = "Champ du formulaire"
+        verbose_name_plural = "Champs du formulaire d'inscription"
+
+    def __str__(self):
+        return self.libelle
+
+    @property
+    def options(self):
+        return [x.strip() for x in self.choix.splitlines() if x.strip()]
+
+
+class FichierInscription(models.Model):
+    """Fichier envoyé pour un champ « fichier » de l'école (stockage privé)."""
+    inscription = models.ForeignKey(InscriptionEcole, on_delete=models.CASCADE, related_name='fichiers')
+    champ = models.ForeignKey(ChampEcole, on_delete=models.SET_NULL, null=True, related_name='+')
+    fichier = models.FileField(storage=private_storage, upload_to='ecoles/documents/%Y/')
+
+    class Meta:
+        verbose_name = "Fichier"
+        verbose_name_plural = "Fichiers joints"
