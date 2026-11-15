@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.http import HttpResponse
+from core import views as core_views
 from django.urls import path, include, re_path
 from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve as serve_static
@@ -23,6 +24,7 @@ urlpatterns = [
     re_path(r'^(?:emploi|app)(?:/.*)?$', RedirectView.as_view(url='/', permanent=False)),
     re_path(r'^app/(?P<path>.*)$', webapp, name='webapp'),
     path('users/',        include('Users.urls', namespace='users')),
+    path('lantanteAdminTech/section/<slug:code>/', core_views.admin_section, name='admin_section'),
     path('lantanteAdminTech/', admin.site.urls),
     path('shop/',         include('Shop.urls')),
     path('',              include('core.urls')),

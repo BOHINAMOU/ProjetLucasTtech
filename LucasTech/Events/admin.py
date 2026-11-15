@@ -70,10 +70,11 @@ class EventAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         from django.db.models import Count, Q, Sum
+        from core.delegations import evenements_visibles
         qs = super().get_queryset(request).annotate(
             _payeurs=Count('payments', filter=Q(payments__status='approved')),
             _encaisse=Sum('payments__amount', filter=Q(payments__status='approved')))
-        return qs if request.user.is_superuser else qs.filter(organizer=request.user)
+        return evenements_visibles(request.user, qs)
 
     @admin.display(description="Date", ordering='starts_at')
     def date_f(self, obj):
@@ -135,5 +136,8 @@ class TicketAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
+        from Events.models import Event
+        from core.delegations import evenements_visibles
         qs = super().get_queryset(request).select_related('event', 'ticket_type')
-        return qs if request.user.is_superuser else qs.filter(event__organizer=request.user)
+        return qs if request.user.is_superuser else qs.filter(
+            event__in=evenements_visibles(request.user, Event.objects.all()))

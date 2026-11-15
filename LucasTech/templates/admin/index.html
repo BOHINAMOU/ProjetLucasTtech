@@ -12,6 +12,24 @@
 {% endblock %}
 
 {% block content %}
+{% if delegue %}
+<div style="max-width:1100px">
+  <h2 style="font-weight:800;margin:6px 0 16px">Bonjour {{ delegue.greeting }}</h2>
+  {% if not delegue.cartes %}<p>Aucune tâche ne vous est confiée pour le moment.</p>{% endif %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+    {% for c in delegue.cartes %}
+    <div style="background:#fff;border:1px solid #e6eaee;border-left:4px solid #0B7A4B;border-radius:14px;padding:16px 18px">
+      <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.06em">{{ c.type }}</div>
+      <div style="font-weight:800;margin:4px 0 8px">{{ c.titre }}</div>
+      <div style="font-size:26px;font-weight:800;color:#0B7A4B">{{ c.chiffre }}</div>
+      <div style="color:#64748b;font-size:13px;margin-bottom:10px">{{ c.detail }}</div>
+      <a class="btn btn-sm btn-outline-success" href="{{ c.url }}">Ouvrir</a>
+      <a class="btn btn-sm btn-success" href="{{ c.url2 }}">{{ c.lien2 }}</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
 <style>
 .ltd { --g:#0f7a45; --g2:#0b6137; --gd:#0b2e1d; --gold:#c9a84c; --navy:#0d3b7a; --ink:#0f172a; --muted:#64748b; --line:#e6eaee; max-width:1280px; font-family:inherit; }
 .ltd * { box-sizing:border-box; }
@@ -272,4 +290,5 @@
     {% endfor %}
   </div>
 </div>
+{% endif %}
 {% endblock %}

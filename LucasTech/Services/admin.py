@@ -45,9 +45,12 @@ class ServiceAdmin(admin.ModelAdmin):
     exclude       = ['admin']
 
     def get_queryset(self, request):
-        # Tout admin ayant accès à ce module voit tous les services
-        # (et pas seulement les siens).
-        return super().get_queryset(request)
+        # L'équipe voit tout ; un délégué ne voit que les services qui lui sont confiés.
+        from core.delegations import services_visibles
+        return services_visibles(request.user, super().get_queryset(request))
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser or super().has_add_permission(request) and not request.user.delegations.exists()
 
     def save_model(self, request, obj, form, change):
         # L'admin responsable n'est jamais choisi dans le formulaire :
@@ -80,6 +83,13 @@ class InscriptionServiceAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+    def get_queryset(self, request):
+        from core.delegations import services_visibles
+        from .models import Service
+        qs = super().get_queryset(request)
+        return qs if request.user.is_superuser else qs.filter(
+            service__in=services_visibles(request.user, Service.objects.all()))
 
     @admin.display(description="Date", ordering='created_at')
     def date(self, i):

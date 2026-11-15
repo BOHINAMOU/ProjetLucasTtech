@@ -193,3 +193,88 @@ def build(request):
         'mail_from': getattr(settings, 'DEFAULT_FROM_EMAIL', '') or getattr(settings, 'EMAIL_HOST_USER', ''),
         'greeting': request.user.first_name or request.user.email,
     }
+
+
+
+def _f(n):
+    return f"{int(n or 0):,} F".replace(',', '\u202f')
+
+
+def build_delegue(request):
+    """Ce que voit un délégué : ses événements, services, écoles, et leurs chiffres."""
+    from django.db.models import Count, Q
+    from django.urls import reverse
+    from .delegations import evenements_visibles, ids, services_visibles
+    u = request.user
+    cartes = []
+    from Events.models import Event
+    for e in evenements_visibles(u, Event.objects.all()):
+        ok = e.payments.filter(status='approved')
+        cartes.append({'titre': e.title, 'type': 'Événement', 'chiffre': _f(ok.aggregate(s=Sum('amount'))['s']),
+                       'detail': f"{ok.count()} payeur(s) · {e.payments.filter(status='pending').count()} en attente",
+                       'url': reverse('admin:Events_event_change', args=[e.pk]),
+                       'url2': reverse('admin:Payments_payment_changelist') + f'?event__id__exact={e.pk}', 'lien2': 'Paiements'})
+    from Services.models import Service
+    for s_ in services_visibles(u, Service.objects.all()):
+        n = s_.inscriptions.count()
+        cartes.append({'titre': s_.title, 'type': 'Service', 'chiffre': str(n),
+                       'detail': f"inscription(s) · {s_.inscriptions.filter(statut='nouvelle').count()} nouvelle(s)",
+                       'url': reverse('admin:Services_service_change', args=[s_.pk]),
+                       'url2': reverse('admin:Services_inscriptionservice_changelist') + f'?service__id__exact={s_.pk}',
+                       'lien2': 'Inscriptions'})
+    try:
+        from Ecoles.admin import mes_ecoles
+        for e in mes_ecoles(u):
+            cartes.append({'titre': e.nom, 'type': 'École', 'chiffre': str(e.inscriptions.count()),
+                           'detail': f"inscription(s) · {e.inscriptions.filter(statut='nouvelle').count()} nouvelle(s)",
+                           'url': reverse('admin:Ecoles_ecole_change', args=[e.pk]),
+                           'url2': reverse('admin:Ecoles_inscriptionecole_changelist') + f'?ecole__id__exact={e.pk}',
+                           'lien2': 'Inscriptions'})
+    except Exception:  # pragma: no cover
+        pass
+    if u.delegations.filter(type='publications').exists():
+        from Publications.models import Publication
+        cartes.append({'titre': 'Actualités', 'type': 'Publications', 'chiffre': str(Publication.objects.count()),
+                       'detail': 'article(s)', 'url': reverse('admin:Publications_publication_changelist'),
+                       'url2': reverse('admin:Publications_publication_add'), 'lien2': 'Publier'})
+    return {'greeting': u.first_name or u.email, 'cartes': cartes}
+
+
+SECTIONS = {
+    'paiements': ("Paiements", [('Payments.Payment', 'Paiements')]),
+    'concours': ("Concours", [('concours.Contest', 'Concours'), ('concours.ContestSession', 'Années'),
+                              ('concours.ExamPaper', 'Épreuves'), ('concours.Correction', 'Corrigés'),
+                              ('abonnements.UserSubscription', 'Abonnements (anciens)')]),
+    'boutique': ("Boutique", [('Shop.Product', 'Produits'), ('Shop.Category', 'Catégories'), ('Shop.ShopOrder', 'Commandes')]),
+    'formations': ("Formations", [('Formations.Formation', 'Formations'), ('Formations.Registration', 'Inscriptions')]),
+    'evenements': ("Événements", [('Events.Event', 'Événements'), ('Events.Ticket', 'Tickets')]),
+    'ecoles': ("Écoles", [('Ecoles.Ecole', 'Écoles'), ('Ecoles.InscriptionEcole', 'Inscriptions')]),
+    'publications': ("Actualités", [('Publications.Publication', 'Articles'), ('Publications.PublicationCategory', 'Catégories'),
+                                    ('Publications.PublicationComment', 'Commentaires')]),
+    'services': ("Services", [('Services.Service', 'Services'), ('Services.InscriptionService', 'Inscriptions'),
+                              ('Services.ServiceCategory', 'Catégories')]),
+    'notifications': ("Notifications et accueil", [('api_mobile.Notification', 'Notifications'),
+                                                   ('api_mobile.CarouselItem', "Carrousel de l'accueil")]),
+    'utilisateurs': ("Utilisateurs et rôles", [('Users.User', 'Utilisateurs'), ('core.Delegation', 'Rôles délégués')]),
+}
+
+
+def build_section(request, code):
+    """Page d'un grand titre : chiffres de chaque élément + liens « Gérer » / « Ajouter »."""
+    titre, modeles = SECTIONS[code]
+    lignes = []
+    for label, nom in modeles:
+        m = _model(label)
+        if not m:
+            continue
+        lignes.append({'nom': nom, 'n': m.objects.count(), 'url': _url(label), 'ajout': _url(label, add=True)})
+    extra = []
+    P = _model('Payments.Payment')
+    kinds = {'paiements': None, 'concours': ('concours', 'abonnement'), 'boutique': ('product', 'shop'),
+             'formations': ('formation',), 'evenements': ('ticket', 'soutien'), 'services': ('service',)}
+    if P and code in kinds:
+        ok = P.objects.filter(status='approved')
+        if kinds[code]:
+            ok = ok.filter(kind__in=kinds[code])
+        extra = [('Encaissé', _f(ok.aggregate(s=Sum('amount'))['s'])), ('Paiements réussis', ok.count())]
+    return {'titre': titre, 'lignes': lignes, 'extra': extra}

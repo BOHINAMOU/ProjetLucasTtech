@@ -346,3 +346,38 @@ class SiteSettings(models.Model):
     def load(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+
+
+class Delegation(models.Model):
+    """Rôle confié à un utilisateur : il se connecte à l'admin et ne voit QUE ce qui lui est confié."""
+    TYPES = [('evenement', 'Un événement (tickets / soutiens)'), ('service', 'Un service (inscriptions)'),
+             ('ecole', 'Une école'), ('publications', 'Les actualités')]
+    user = models.ForeignKey('Users.User', on_delete=models.CASCADE, related_name='delegations', verbose_name="Utilisateur")
+    type = models.CharField("Rôle", max_length=14, choices=TYPES)
+    event = models.ForeignKey('Events.Event', on_delete=models.CASCADE, null=True, blank=True, verbose_name="Événement")
+    service = models.ForeignKey('Services.Service', on_delete=models.CASCADE, null=True, blank=True, verbose_name="Service")
+    ecole = models.ForeignKey('Ecoles.Ecole', on_delete=models.CASCADE, null=True, blank=True, verbose_name="École")
+    created_at = models.DateTimeField("Créé le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Rôle délégué"
+        verbose_name_plural = "Rôles délégués"
+
+    def __str__(self):
+        return f"{self.user} — {self.get_type_display()} {self.cible or ''}"
+
+    @property
+    def cible(self):
+        return self.event or self.service or self.ecole
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        besoin = {'evenement': 'event', 'service': 'service', 'ecole': 'ecole'}.get(self.type)
+        if besoin and not getattr(self, f'{besoin}_id'):
+            raise ValidationError("Choisissez l'élément confié.")
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        from .delegations import appliquer
+        appliquer(self)

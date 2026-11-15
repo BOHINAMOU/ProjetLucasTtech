@@ -331,7 +331,19 @@ JAZZMIN_SETTINGS = {
     "login_logo": "images/logo.png",
     "site_icon": "images/logo.png",
     "site_logo_classes": "img-circle",
-    "navigation_expanded": True,
+    "navigation_expanded": False,
+    # Un lien « Tableau de bord » en tête de chaque grand titre (statistiques + gestion).
+    "custom_links": {
+        "Payments": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/paiements/", "icon": "fas fa-chart-pie", "permissions": ["Payments.view_payment"]}],
+        "concours": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/concours/", "icon": "fas fa-chart-pie", "permissions": ["concours.view_contest"]}],
+        "Shop": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/boutique/", "icon": "fas fa-chart-pie", "permissions": ["Shop.view_product"]}],
+        "Formations": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/formations/", "icon": "fas fa-chart-pie", "permissions": ["Formations.view_formation"]}],
+        "Events": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/evenements/", "icon": "fas fa-chart-pie", "permissions": ["auth.view_user"]}],
+        "Ecoles": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/ecoles/", "icon": "fas fa-chart-pie", "permissions": ["auth.view_user"]}],
+        "Publications": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/publications/", "icon": "fas fa-chart-pie", "permissions": ["auth.view_user"]}],
+        "Services": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/services/", "icon": "fas fa-chart-pie", "permissions": ["auth.view_user"]}],
+        "api_mobile": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/notifications/", "icon": "fas fa-chart-pie", "permissions": ["auth.view_user"]}],
+    },
 
     "usermenu_links": [
         {

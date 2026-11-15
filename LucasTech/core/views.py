@@ -264,3 +264,19 @@ def monetization_page(request):
 
 def monetization_thanks(request):
     return render(request, 'core/monetization_thanks.html')
+
+
+
+from django.contrib.admin.views.decorators import staff_member_required  # noqa: E402
+
+
+@staff_member_required
+def admin_section(request, code):
+    """Page d'un grand titre de l'admin (statistiques + gestion)."""
+    from django.contrib import admin as _admin
+    from django.http import Http404
+    from .dashboard import SECTIONS, build_section
+    if code not in SECTIONS or not request.user.is_superuser:
+        raise Http404
+    ctx = dict(_admin.site.each_context(request), section=build_section(request, code), title=SECTIONS[code][0])
+    return render(request, 'admin/section.html', ctx)

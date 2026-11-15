@@ -195,8 +195,29 @@ _original_index = admin.site.index
 
 def _dashboard_index(request, extra_context=None):
     extra = dict(extra_context or {})
-    extra['dash'] = _build_dashboard(request)
+    if request.user.is_superuser:
+        extra['dash'] = _build_dashboard(request)
+    else:
+        # Délégués et équipes d'école : uniquement LEURS tâches et LEURS chiffres.
+        from .dashboard import build_delegue
+        extra['delegue'] = build_delegue(request)
     return _original_index(request, extra)
 
 
 admin.site.index = _dashboard_index
+
+
+from .models import Delegation  # noqa: E402
+
+
+@admin.register(Delegation)
+class DelegationAdmin(admin.ModelAdmin):
+    list_display = ['user', 'type', 'cible', 'created_at']
+    list_filter = ['type']
+    search_fields = ['user__email', 'user__first_name', 'user__last_name']
+    autocomplete_fields = ['user', 'event', 'service', 'ecole']
+    fields = ['user', 'type', 'event', 'service', 'ecole']
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+

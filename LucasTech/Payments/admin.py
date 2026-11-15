@@ -57,6 +57,10 @@ class PaymentAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+    def get_queryset(self, request):
+        from core.delegations import paiements_visibles
+        return paiements_visibles(request.user, super().get_queryset(request))
+
     def has_delete_permission(self, request, obj=None):
         # Un paiement réussi ou remboursé reste dans l'historique (trace de l'argent).
         if obj is not None and obj.status in PAYES:
