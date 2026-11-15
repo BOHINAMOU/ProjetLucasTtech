@@ -1,4 +1,4 @@
-"""Paiement direct Mobile Money en panne chez l'opérateur : bascule sur la page FedaPay de la même transaction."""
+"""Paiement direct Mobile Money en panne chez l'opérateur : message court, aucune page de paiement ouverte."""
 from unittest import mock
 
 from django.test import TestCase, override_settings
@@ -31,14 +31,14 @@ class SecoursTests(TestCase):
         return Payment.objects.create(kind='soutien', amount=500, description='Soutien', first_name='Ama',
                                       last_name='Koffi', phone='+22892000000', operator='togocel', mode='live')
 
-    def test_erreur_500_de_l_operateur_page_fedapay(self):
+    def test_erreur_500_de_l_operateur_message_court_sans_page(self):
         p = self._p()
-        with mock.patch('Payments.fedapay.requests.request', side_effect=faux(500)), \
-                mock.patch('Payments.fedapay.secret_key', return_value='sk'):
-            url = fedapay.start(p, 'https://x/cb')
+        with mock.patch('Payments.fedapay.requests.request', side_effect=faux(500)),                 mock.patch('Payments.fedapay.secret_key', return_value='sk'),                 self.assertRaises(fedapay.FedaPayError) as e:
+            fedapay.start(p, 'https://x/cb')
+        self.assertEqual(str(e.exception.args[0]), "Paiement indisponible pour le moment. Réessayez plus tard.")
+        self.assertNotIn('FedaPay', str(e.exception.args[0]))
         p.refresh_from_db()
-        self.assertEqual((url, p.status, p.payment_url, p.fedapay_id), ('https://process.fedapay.com/tk', 'pending',
-                                                                           'https://process.fedapay.com/tk', '42'))
+        self.assertEqual(p.payment_url, '')
 
     def test_numero_refuse_reste_une_erreur(self):
         p = self._p()

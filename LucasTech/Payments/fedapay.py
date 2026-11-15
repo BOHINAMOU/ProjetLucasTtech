@@ -144,15 +144,9 @@ def start(payment, callback_url):
                 raise FedaPayError(
                     "Paiement échoué. Vérifiez le numéro et l'opérateur.",
                     exc.detail, exc.status) from exc
-            # Envoi direct indisponible chez l'opérateur (HTTP 5xx) : on bascule sur la page de paiement FedaPay
-            # de la MÊME transaction (le paiement reste en attente, le statut est relu avant toute livraison).
-            if token.get('url'):
-                logger.warning('Paiement direct %s indisponible : page FedaPay pour %s', payment.operator,
-                               payment.reference)
-                payment.payment_url = token['url']
-                payment.save(update_fields=['payment_url'])
-                return token['url']
-            raise
+            # Service de l'opérateur en panne (HTTP 5xx) : message court, aucune autre page ne s'ouvre.
+            raise FedaPayError("Paiement indisponible pour le moment. Réessayez plus tard.",
+                               exc.detail, exc.status) from exc
         return None
     url = token.get('url')
     if not url:
