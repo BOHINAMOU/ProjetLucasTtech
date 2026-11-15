@@ -725,7 +725,7 @@ def rubriques_services(request):
         items = [service_item(request, x) for x in c.services.all() if x.is_active]
         return {'id': c.pk, 'nom': c.name, 'slug': c.slug, 'description': c.description, 'icone': c.icon,
                 'icone_appli': c.icone_appli, 'couleur': c.couleur,
-                'services': [dict(it, icone_appli=x.icone_appli or c.icone_appli, couleur=x.couleur or c.couleur)
+                'services': [dict(it, icone_appli=x.icone_appli or c.icone_appli, couleur=c.couleur)
                              for it, x in zip(items, [y for y in c.services.all() if y.is_active])]} if items else None
 
     out = []

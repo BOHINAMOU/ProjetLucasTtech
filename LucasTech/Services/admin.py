@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from .models import ServiceCategory, Service, ServiceContact
 
@@ -137,3 +138,22 @@ class InscriptionServiceAdmin(admin.ModelAdmin):
         r = HttpResponse(buf.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         r['Content-Disposition'] = f'attachment; filename="inscriptions-services-{timezone.localdate():%Y-%m-%d}.xlsx"'
         return r
+
+
+
+from .models import ICONES_APPLI, Service, ServiceCategory  # noqa: E402
+from .widgets import ChoixIcone  # noqa: E402
+
+
+def _avec_icones(admin_cls, modele, vide):
+    class Form(forms.ModelForm):
+        class Meta:
+            model = modele
+            fields = '__all__'
+            widgets = {'icone_appli': ChoixIcone(choices=([('', 'Icône de la catégorie')] if vide else []) + ICONES_APPLI)}
+    admin_cls.form = Form
+
+
+_avec_icones(ServiceCategoryAdmin, ServiceCategory, False)
+_avec_icones(ServiceAdmin, Service, True)
+ServiceCategoryAdmin.list_editable = ['order']  # l'icône se choisit dans la fiche (grille visuelle)

@@ -11,12 +11,20 @@ from Payments.models import private_storage
 # ─────────────────────────────
 
 # Icône et couleur dans l'appli (même style que « Explorez nos services »)
-ICONES_APPLI = [('widgets', 'Grille'), ('code', 'Code'), ('web', 'Site web'), ('phone_android', 'Téléphone'),
-                ('campaign', 'Publicité'), ('brush', 'Graphisme'), ('school', 'Formation'),
-                ('shopping_bag', 'Commande'), ('storefront', 'Boutique'), ('cloud', 'Cloud'), ('security', 'Sécurité'),
-                ('print', 'Impression'), ('photo_camera', 'Photo / vidéo'), ('support_agent', 'Assistance'),
-                ('wifi', 'Réseau'), ('computer', 'Ordinateur'), ('trending_up', 'Marketing'), ('share', 'Réseaux sociaux'),
-                ('build', 'Maintenance'), ('local_shipping', 'Livraison')]
+ICONES_APPLI = [
+    # (code, libellé) ; marques : logos officiels (Font Awesome), sinon icônes Material
+    ('widgets', 'Grille'), ('language', 'Site web'), ('phone_android', 'Application mobile'), ('code', 'Code'),
+    ('storefront', 'Boutique en ligne'), ('shopping_bag', 'Commande'), ('campaign', 'Publicité'),
+    ('trending_up', 'Marketing'), ('smart_toy', 'Automatisation / IA'), ('person_add', 'Création de compte'),
+    ('share', 'Réseaux sociaux'), ('youtube', 'YouTube'), ('tiktok', 'TikTok'), ('facebook', 'Facebook'),
+    ('instagram', 'Instagram'), ('whatsapp', 'WhatsApp'), ('windows', 'Windows'), ('microsoft', 'Microsoft Office'),
+    ('description', 'Document'), ('settings', 'Configuration'), ('computer', 'Ordinateur / système'),
+    ('build', 'Dépannage'), ('backup', 'Sauvegarde'), ('wifi', 'Réseau WiFi'), ('security', 'Sécurité'),
+    ('cloud', 'Cloud'), ('key', 'Activation / licence'), ('brush', 'Graphisme'), ('photo_camera', 'Photo / vidéo'),
+    ('print', 'Impression'), ('school', 'Formation'), ('support_agent', 'Assistance'),
+    ('local_shipping', 'Livraison'), ('music_note', 'Musique'),
+]
+MARQUES = {'youtube', 'tiktok', 'facebook', 'instagram', 'whatsapp', 'windows', 'microsoft'}
 COULEURS_APPLI = [('vert', 'Vert'), ('bleu', 'Bleu'), ('violet', 'Violet'), ('orange', 'Orange'), ('rose', 'Rose'),
                   ('cyan', 'Cyan'), ('rouge', 'Rouge'), ('gris', 'Gris')]
 

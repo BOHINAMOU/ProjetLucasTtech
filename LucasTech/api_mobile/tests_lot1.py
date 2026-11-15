@@ -152,3 +152,23 @@ class RubriquesServicesTests(APITestCase):
         self.assertEqual([r['nom'] for r in d], ['Services numériques'])  # « Vide » n'apparaît pas
         self.assertEqual((d[0]['nb'], d[0]['groupes'][0]['nom']), (1, 'Développement'))
         self.assertEqual(vide.sous_categories.count(), 0)
+
+
+
+@override_settings(STORAGES={'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+                             'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
+class IconesServicesTests(APITestCase):
+    def test_icone_propre_au_service_couleur_de_la_categorie_et_selecteur(self):
+        from Services.models import Service, ServiceCategory
+        admin = get_user_model().objects.create_superuser(email='ic@example.com', password='x-Pass-12345')
+        num = ServiceCategory.objects.create(name='Services numériques', slug='num', icone_appli='computer', couleur='vert')
+        soc = ServiceCategory.objects.create(name='Réseaux', slug='soc', parent=num, icone_appli='share', couleur='rose')
+        Service.objects.create(title='Monétisation YouTube', category=soc, is_active=True, description='x', admin=admin,
+                               icone_appli='youtube', couleur='bleu')
+        Service.objects.create(title='Création de comptes', category=soc, is_active=True, description='x', admin=admin)
+        s = self.client.get(API + 'services/rubriques/').json()[0]['groupes'][0]['services']
+        self.assertCountEqual([(x['icone_appli'], x['couleur']) for x in s], [('youtube', 'rose'), ('share', 'rose')])
+        self.client.force_login(admin)
+        r = self.client.get('/lantanteAdminTech/Services/service/add/')
+        self.assertContains(r, 'fa-youtube')
+        self.assertContains(r, 'material-icons')
