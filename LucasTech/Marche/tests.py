@@ -106,9 +106,19 @@ class MarcheTests(APITestCase):
         from Shop.models import Category
         cat = Category.objects.create(name='Mode')
         r = self.client.post('/lantanteAdminTech/Shop/product/add/', {
-            'category': cat.pk, 'name': 'Pagne', 'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
+            'category': cat.pk, 'name': 'Pagne', 'contact_whatsapp': '', 'livrable': 'on', 'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
             'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})
-        self.assertEqual(r.status_code, 302, r.context and (r.context['adminform'].form.errors, [f.formset.prefix for f in r.context['inline_admin_formsets']], r.context['errors']))
+        self.assertEqual(r.status_code, 200)  # WhatsApp obligatoire
+        self.assertContains(r, 'obligatoire')
+        self.assertContains(self.client.get('/lantanteAdminTech/Shop/product/add/'), '22890112233')  # pré-rempli
+        self.assertContains(self.client.get('/lantanteAdminTech/Shop/product/add/'), 'carte_produit.js')  # carte
+        r = self.client.post('/lantanteAdminTech/Shop/product/add/', {
+            'category': cat.pk, 'name': 'Pagne', 'contact_whatsapp': '+228 90 11 22 33', 'livrable': 'on',
+            'retrait_latitude': '6.130000', 'retrait_longitude': '1.220000',
+            'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
+            'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})
+        self.assertEqual(r.status_code, 302, r.context and r.context['adminform'].form.errors)
+        self.assertEqual(Product.objects.get(name='Pagne').contact_whatsapp, '22890112233')
         self.assertEqual(Product.objects.get(name='Pagne').vendeur, self.v)
 
     # ── Codes promo ──
@@ -131,14 +141,15 @@ class MarcheTests(APITestCase):
         autre = Product.objects.create(name='Autre', description='x', price=4000, stock=3)
         cible = CodePromo.objects.create(code='SACS', valeur=50)
         cible.produits.add(autre)
-        for code, attendu in [('VIEUX', 'expiré'), ('GROS', 'dès'), ('INCONNU', 'invalide'), ('SACS', "ne s'applique")]:
+        for code, attendu in [('VIEUX', 'Code expiré'), ('GROS', 'dès'), ('INCONNU', 'Code invalide'),
+                              ('SACS', 'Code non valable ici')]:
             r = self._mm(ville='Lomé', code_promo=code)
             self.assertEqual(r.status_code, 400, code)
             self.assertIn(attendu, r.json()['detail'])
             self.assertEqual(r.json()['code'], 'code_promo')
         self.assertEqual(self._mm(ville='Lomé', code_promo='UNE').status_code, 201)
         r = self._mm(ville='Lomé', code_promo='UNE')  # 1re utilisation encore en attente : réservée
-        self.assertIn('nombre de fois', r.json()['detail'])
+        self.assertEqual(r.json()['detail'], 'Code épuisé')
         Payment.objects.filter(code_promo=c).update(status='canceled')
         self.assertEqual(self._mm(ville='Lomé', code_promo='UNE').status_code, 201)  # libéré
         self.assertEqual(Payment.objects.filter(code_promo__isnull=False).count(), 2)
@@ -153,7 +164,7 @@ class MarcheTests(APITestCase):
         self.assertEqual(r.json()['montant'], 5000 + 1000 - 2000)
         r = self.client.post(API + 'paiements/', {'type': 'produit', 'id': self.p.pk, 'quantite': 1, 'ville': 'Lomé',
                                                   'moyen': 'solde', 'code_promo': 'MOI'}, format='json')
-        self.assertIn('déjà utilisé', r.json()['detail'])
+        self.assertEqual(r.json()['detail'], 'Code déjà utilisé')
         r = self.client.post(API + 'paiements/', {'type': 'depot', 'montant': 1000, 'pays': 'tg', 'operateur': 'togocel',
                                                   'telephone': '90000000', 'code_promo': 'MOI'}, format='json')
         self.assertEqual(r.status_code, 400)
@@ -163,3 +174,20 @@ class MarcheTests(APITestCase):
         r = self.client.post(API + 'paiements/devis/', {'type': 'produit', 'id': self.p.pk, 'ville': 'Lomé',
                                                        'code_promo': 'TOUT'}, format='json').json()
         self.assertEqual((r['remise'], r['total']), (5000, 1000))  # la livraison reste due
+
+
+    def test_produit_non_livrable_et_depart_par_defaut(self, *_):
+        formation = Product.objects.create(name='Cours PDF', description='x', price=2000, stock=9, livrable=False)
+        r = self.client.post(API + 'paiements/devis/', {'type': 'produit', 'id': formation.pk}, format='json').json()
+        self.assertEqual((r['livraison'], r['total']), (0, 2000))  # rien à livrer, pas de position demandée
+        lantante = Product.objects.create(name='Clé USB', description='x', price=6000, stock=9,
+                                          contact_whatsapp='22890000000')
+        # 2 km au sud de l'Université de Lomé (point par défaut)
+        r = self.client.post(API + 'paiements/devis/', {'type': 'produit', 'id': lantante.pk,
+                                                       'lat': 6.1583, 'lng': 1.2128}, format='json').json()
+        self.assertEqual((r['livraison'], r['total']), (700, 6700))
+        r = self.client.post(API + 'paiements/devis/', {'type': 'produit', 'id': lantante.pk}, format='json')
+        self.assertEqual((r.status_code, r.json()['code']), (400, 'livraison'))
+        d = self.client.get(f"{API}boutique/produits/{lantante.pk}/").json()
+        self.assertEqual((d['whatsapp'], d['livrable']), ('22890000000', True))
+        self.assertFalse(self.client.get(f"{API}boutique/produits/{formation.pk}/").json()['livrable'])

@@ -41,7 +41,7 @@ class AppliSansSiteTests(APITestCase):
                                                   'ville': 'Lomé, Bè'}, format='json')
         self.assertEqual(r.status_code, 201, r.content)
         d = r.json()
-        self.assertEqual((d['statut'], d['montant']), ('en_attente', 6000))
+        self.assertEqual((d['statut'], d['montant'], d['livraison']), ('en_attente', 7000, 1000))  # + livraison à Lomé
         self.assertNotIn('lantantetechnologie.com', d['url_fedapay'])
         s = self.client.get(f"{API}paiements/{d['reference']}/").json()
         self.assertEqual(s['reference'], d['reference'])

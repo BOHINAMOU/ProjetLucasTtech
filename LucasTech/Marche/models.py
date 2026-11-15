@@ -12,6 +12,10 @@ class ReglageLivraison(models.Model):
     rayon_ville_km = models.PositiveIntegerField(
         "Rayon « même ville » (km)", default=25,
         help_text="Au-delà de cette distance du point de retrait, le prix fixe « autre ville » du produit s'applique.")
+    depart_ville = models.CharField("Ville de départ par défaut", max_length=80, default="Lomé")
+    depart_latitude = models.DecimalField("Latitude par défaut", max_digits=9, decimal_places=6, default=6.175300,
+                                          help_text="Université de Lomé : pour les produits sans emplacement.")
+    depart_longitude = models.DecimalField("Longitude par défaut", max_digits=9, decimal_places=6, default=1.212800)
     distance_defaut_km = models.PositiveIntegerField(
         "Distance par défaut (km)", default=5,
         help_text="Utilisée quand l'acheteur saisit seulement sa ville (sans position GPS).")

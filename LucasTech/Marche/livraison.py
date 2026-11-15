@@ -35,28 +35,30 @@ def _float(v):
 
 
 def calculer(produit, ville='', lat=None, lng=None):
-    """Retourne {'frais', 'mode', 'detail'}. Lève ValidationError si la livraison est impossible."""
-    v = getattr(produit, 'vendeur', None)
-    if v is None:
+    """Retourne {'frais', 'mode', 'detail'}. Lève ValidationError si la livraison est impossible.
+    Départ : emplacement du produit, sinon celui du vendeur, sinon le point par défaut (Université de Lomé)."""
+    if not getattr(produit, 'livrable', True):
         return {'frais': 0, 'mode': '', 'detail': ''}
     from .models import ReglageLivraison
     r = ReglageLivraison.load()
+    v = getattr(produit, 'vendeur', None)
+    ville_depart = (v.ville if v else '') or r.depart_ville
     lat, lng = _float(lat), _float(lng)
-    if lat is not None and not (-90 <= lat <= 90 and -180 <= lng <= 180 if lng is not None else False):
+    if lat is None or lng is None or not (-90 <= lat <= 90 and -180 <= lng <= 180):
         lat = lng = None
-    plat = produit.retrait_latitude if produit.retrait_latitude is not None else v.latitude
-    plng = produit.retrait_longitude if produit.retrait_longitude is not None else v.longitude
+    plat, plng = produit.retrait_latitude, produit.retrait_longitude
+    if plat is None or plng is None:
+        plat, plng = (v.latitude, v.longitude) if v and v.latitude is not None else (r.depart_latitude, r.depart_longitude)
     distance = None
-    if lat is not None and lng is not None and plat is not None and plng is not None:
+    if lat is not None:
         distance = haversine(lat, lng, float(plat), float(plng))
-    elif ville and _norm(ville) == _norm(v.ville):
+    elif ville and _norm(ville).startswith(_norm(ville_depart)):
         distance = float(r.distance_defaut_km)
-    elif not ville and lat is None:
-        raise ValidationError("Indiquez votre position ou votre ville pour la livraison.")
+    elif not ville:
+        raise ValidationError("Activez la localisation ou choisissez votre ville.")
     if distance is not None and distance <= r.rayon_ville_km:
         km = max(1, math.ceil(distance))
-        return {'frais': _arrondi(r.tarif_base + km * r.prix_km), 'mode': 'km',
-                'detail': f"{km} km depuis {v.ville}"}
+        return {'frais': _arrondi(r.tarif_base + km * r.prix_km), 'mode': 'km', 'detail': f"{km} km"}
     if produit.livraison_autre_ville is None:
-        raise ValidationError(f"Ce vendeur livre seulement à {v.ville}.")
-    return {'frais': int(produit.livraison_autre_ville), 'mode': 'ville', 'detail': f"Envoi depuis {v.ville}"}
+        raise ValidationError(f"Livraison seulement à {ville_depart}.")
+    return {'frais': int(produit.livraison_autre_ville), 'mode': 'ville', 'detail': f"Depuis {ville_depart}"}

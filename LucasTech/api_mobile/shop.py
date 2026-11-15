@@ -76,15 +76,15 @@ def _cible(user, d):
         fields = {'kind': 'product', 'product': p,
                   'items': [{'product': p.pk, 'name': p.name, 'quantity': qty, 'price': int(unit)}]}
         articles = int(unit) * qty
+        if p.vendeur_id and not p.vendeur.actif:
+            raise ValidationError("Ce produit n'est plus disponible.")
+        from Marche.livraison import calculer
+        liv = calculer(p, str(d.get('ville') or ''), d.get('lat'), d.get('lng'))
+        if liv['frais']:
+            fields.update(livraison=liv['frais'], livraison_detail=liv['detail'])
         if p.vendeur_id:
-            if not p.vendeur.actif:
-                raise ValidationError("Ce produit n'est plus disponible.")
-            from Marche.livraison import calculer
-            liv = calculer(p, str(d.get('ville') or ''), d.get('lat'), d.get('lng'))
-            fields.update(vendeur=p.vendeur, livraison=liv['frais'], livraison_detail=liv['detail'],
-                          commission=int(round(articles * float(p.vendeur.commission_pct) / 100)))
-            return fields, articles + liv['frais'], desc, None
-        return fields, articles, desc, None
+            fields.update(vendeur=p.vendeur, commission=int(round(articles * float(p.vendeur.commission_pct) / 100)))
+        return fields, articles + liv['frais'], desc, None
     if kind == 'abonnement':
         raise ValidationError("Les formules ne sont plus vendues : débloquez chaque concours à l'unité.")
     if kind == 'abonnement_ancien':  # gardé pour mémoire, inaccessible
@@ -223,9 +223,9 @@ def payer(request):
 
 def _code_erreur(e):
     m = e.messages[0] if e.messages else ''
-    if 'promo' in m.lower() or 'code' in m.lower():
+    if 'promo' in m.lower() or m.startswith('Code') or 'trop faible' in m:
         return 'code_promo'
-    if 'livr' in m.lower() or 'position' in m.lower():
+    if 'livr' in m.lower() or 'position' in m.lower() or 'localisation' in m.lower():
         return 'livraison'
     return 'donnees_invalides'
 

@@ -41,6 +41,30 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'order')
     prepopulated_fields = {'slug': ('name',)}
 
+from django import forms  # noqa: E402
+
+
+class ProduitForm(forms.ModelForm):
+    """WhatsApp obligatoire : le bouton du produit contacte celui qui l'a ajouté."""
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        f = self.fields.get('contact_whatsapp')
+        if f:
+            f.required = True
+            f.label = "WhatsApp de contact"
+            f.help_text = "Numéro de celui qui vend ce produit. Format : 22890000000."
+
+    def clean_contact_whatsapp(self):
+        v = ''.join(c for c in (self.cleaned_data.get('contact_whatsapp') or '') if c.isdigit())
+        if len(v) < 8:
+            raise forms.ValidationError("Numéro WhatsApp invalide.")
+        return v
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'old_price', 'stock', 'is_available', 'is_featured')
@@ -51,9 +75,23 @@ class ProductAdmin(admin.ModelAdmin):
         (None, {'fields': ('category', 'name', 'short_description', 'description')}),
         ('Prix', {'fields': ('price', 'old_price', 'bulk_price', 'bulk_min_qty')}),
         ('Photos et vidéo', {'fields': ('image', 'video')}),
-        ('Stock et affichage', {'fields': ('stock', 'is_available', 'is_featured', 'contact_whatsapp')}),
-        ('Vendeur et livraison', {'fields': ('vendeur', 'livraison_autre_ville', 'retrait_latitude', 'retrait_longitude')}),
+        ('Stock et affichage', {'fields': ('stock', 'is_available', 'is_featured')}),
+        ('Contact et livraison', {'fields': ('contact_whatsapp', 'livrable', 'retrait_latitude', 'retrait_longitude',
+                                             'livraison_autre_ville', 'vendeur')}),
     )
+
+    class Media:
+        css = {'all': ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',)}
+        js = ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'admin/carte_produit.js')
+
+    def get_form(self, request, obj=None, **kwargs):
+        from Marche.acces import vendeur_de
+        kwargs['form'] = ProduitForm
+        form = super().get_form(request, obj, **kwargs)
+        v = vendeur_de(request.user)
+        if obj is None and 'contact_whatsapp' in form.base_fields:
+            form.base_fields['contact_whatsapp'].initial = v.whatsapp if v else ''
+        return form
 
     # Un vendeur ne voit et ne modifie que SES produits ; le vendeur est mis d'office.
     def get_queryset(self, request):
@@ -71,7 +109,8 @@ class ProductAdmin(admin.ModelAdmin):
             ('Prix', {'fields': ('price', 'old_price')}),
             ('Photos', {'fields': ('image',)}),
             ('Stock', {'fields': ('stock', 'is_available')}),
-            ('Livraison', {'fields': ('livraison_autre_ville', 'retrait_latitude', 'retrait_longitude')}),
+            ('Contact et livraison', {'fields': ('contact_whatsapp', 'livrable', 'retrait_latitude', 'retrait_longitude',
+                                                 'livraison_autre_ville')}),
         )
 
     def get_list_filter(self, request):

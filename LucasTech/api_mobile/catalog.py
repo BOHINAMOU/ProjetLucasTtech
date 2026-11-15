@@ -167,10 +167,10 @@ def produit(request, pk):
         'description': text(p.description), 'stock': p.stock,
         'prix_gros': money(p.bulk_price), 'quantite_min_gros': p.bulk_min_qty if p.bulk_price else None,
         'video': media(request, p.video),
-        'whatsapp': (p.vendeur.whatsapp if p.vendeur_id else '') or p.contact_whatsapp or '',
+        'whatsapp': p.contact_whatsapp or (p.vendeur.whatsapp if p.vendeur_id else '') or _whatsapp_lantante(),
         'vendeur': p.vendeur.boutique if p.vendeur_id else '',
         'vendeur_ville': p.vendeur.ville if p.vendeur_id else '',
-        'livraison_vendeur': bool(p.vendeur_id),
+        'livraison_vendeur': bool(p.livrable), 'livrable': bool(p.livrable),
         'url_paiement': paiement(request, reverse('payments:checkout', args=['produit', p.pk])) if p.stock > 0 else None,
     })
     return Response(data)
@@ -701,3 +701,12 @@ def recherche(request):
     groupe('ecole', 'Écoles', [ecole_item(request, e) for e in _ecoles().filter(
         Q(nom__icontains=q) | Q(ville__icontains=q) | Q(filieres__nom__icontains=q)).distinct()[:n]])
     return Response({'q': q, 'groupes': groupes})
+
+
+
+def _whatsapp_lantante():
+    try:
+        from core.models import SiteSettings
+        return SiteSettings.load().whatsapp_1 or ''
+    except Exception:
+        return ''

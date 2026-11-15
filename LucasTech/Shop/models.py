@@ -101,12 +101,15 @@ class Product(models.Model):
     vendeur = models.ForeignKey('Marche.Vendeur', on_delete=models.PROTECT, null=True, blank=True,
                                 related_name='produits', verbose_name="Vendeur",
                                 help_text="Vide = produit vendu par Lantante.")
+    livrable = models.BooleanField(
+        "Produit livrable", default=True,
+        help_text="Décoché (formation, PDF, contenu numérique) : pas de frais de livraison, pas de position demandée.")
     livraison_autre_ville = models.PositiveIntegerField(
         "Livraison autre ville (F)", null=True, blank=True,
         help_text="Prix fixe d'envoi hors de la ville du vendeur. Vide = livraison seulement dans sa ville.")
-    retrait_latitude = models.DecimalField("Latitude du point de retrait", max_digits=9, decimal_places=6,
-                                           null=True, blank=True, help_text="Vide = celle du vendeur.")
-    retrait_longitude = models.DecimalField("Longitude du point de retrait", max_digits=9, decimal_places=6,
+    retrait_latitude = models.DecimalField("Latitude du point de départ", max_digits=9, decimal_places=6,
+                                           null=True, blank=True, help_text="Choisissez sur la carte.")
+    retrait_longitude = models.DecimalField("Longitude du point de départ", max_digits=9, decimal_places=6,
                                             null=True, blank=True)
     created_at   = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     updated_at   = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
