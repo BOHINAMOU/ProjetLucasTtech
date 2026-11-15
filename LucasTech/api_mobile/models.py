@@ -92,3 +92,20 @@ class ArticleLu(models.Model):
 
     class Meta:
         unique_together = [('publication', 'user')]
+
+
+
+class Appareil(models.Model):
+    """Téléphone qui reçoit les notifications push (jeton Firebase Cloud Messaging)."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appareils',
+                             verbose_name="Utilisateur")
+    jeton = models.CharField("Jeton FCM", max_length=255, unique=True)
+    plateforme = models.CharField("Plateforme", max_length=10, blank=True)
+    updated_at = models.DateTimeField("Vu le", auto_now=True)
+
+    class Meta:
+        verbose_name = "Téléphone (notifications)"
+        verbose_name_plural = "Téléphones (notifications)"
+
+    def __str__(self):
+        return f"{self.user} ({self.plateforme})"

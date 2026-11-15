@@ -26,3 +26,17 @@ class NotificationAdmin(admin.ModelAdmin):
     @admin.display(description="Lue par")
     def lectures_n(self, n):
         return n.lectures.count()
+
+
+
+from .models import Appareil  # noqa: E402
+
+
+@admin.register(Appareil)
+class AppareilAdmin(admin.ModelAdmin):
+    list_display = ['user', 'plateforme', 'updated_at']
+    search_fields = ['user__email']
+    readonly_fields = ['user', 'jeton', 'plateforme', 'updated_at']
+
+    def has_add_permission(self, request):
+        return False

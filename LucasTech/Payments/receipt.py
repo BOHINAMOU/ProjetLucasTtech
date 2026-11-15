@@ -99,7 +99,7 @@ def build_receipt(p):
     if p.fedapay_id:
         row("Transaction FedaPay", p.fedapay_id)
     row("Date", local(p.paid_at or p.created_at))
-    row("Moyen de paiement", p.operator_label or "Mobile Money")
+    row("Moyen de paiement", "Solde Lantante" if p.mode == "solde" else (p.operator_label or "Mobile Money"))
     row("Objet", p.description, bold=True)
     row("Montant payé", money(p.amount), bold=True)
 
@@ -146,9 +146,28 @@ def build_receipt(p):
             title("Articles")
             for it in p.items:
                 row(f"{it.get('name', 'Article')}", f"{it.get('quantity', 1)} x {money(it.get('price'))}")
+            articles = sum(int(it.get('price') or 0) * int(it.get('quantity') or 1) for it in p.items)
+            row("Sous-total", money(articles))
+            if p.livraison:
+                row("Livraison", f"{money(p.livraison)}  {p.livraison_detail}".strip())
+            if p.remise:
+                row(f"Code promo {p.code_promo.code if p.code_promo_id else ''}".strip(), "- " + money(p.remise))
+            row("Total payé", money(p.amount), bold=True)
+        if p.vendeur_id:
+            v = p.vendeur
+            title("Vendeur")
+            row("Boutique", v.boutique, bold=True)
+            row("Ville", v.ville)
+            if v.adresse_retrait:
+                row("Point de retrait", v.adresse_retrait)
+            row("WhatsApp", v.whatsapp)
+        if p.address:
+            row("Livraison à", p.address)
         note = ("- Nous vous appelons pour convenir de la livraison.\n"
                 "- Conservez ce reçu : il vous sera demandé en cas de réclamation.")
     else:
+        if p.remise:
+            row(f"Code promo {p.code_promo.code if p.code_promo_id else ''}".strip(), "- " + money(p.remise))
         note = ("- Conservez ce reçu : il vous sera demandé en cas de réclamation.\n"
                 "- Notre équipe vous contacte pour la suite si nécessaire.")
 

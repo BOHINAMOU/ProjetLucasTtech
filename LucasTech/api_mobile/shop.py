@@ -73,9 +73,18 @@ def _cible(user, d):
         qty = max(1, min(qty, p.stock))
         unit = p.bulk_price if (p.bulk_price and qty >= p.bulk_min_qty) else p.price
         desc = f"{p.name} × {qty}" if qty > 1 else p.name
-        return ({'kind': 'product', 'product': p,
-                 'items': [{'product': p.pk, 'name': p.name, 'quantity': qty, 'price': int(unit)}]},
-                int(unit) * qty, desc, None)
+        fields = {'kind': 'product', 'product': p,
+                  'items': [{'product': p.pk, 'name': p.name, 'quantity': qty, 'price': int(unit)}]}
+        articles = int(unit) * qty
+        if p.vendeur_id:
+            if not p.vendeur.actif:
+                raise ValidationError("Ce produit n'est plus disponible.")
+            from Marche.livraison import calculer
+            liv = calculer(p, str(d.get('ville') or ''), d.get('lat'), d.get('lng'))
+            fields.update(vendeur=p.vendeur, livraison=liv['frais'], livraison_detail=liv['detail'],
+                          commission=int(round(articles * float(p.vendeur.commission_pct) / 100)))
+            return fields, articles + liv['frais'], desc, None
+        return fields, articles, desc, None
     if kind == 'abonnement':
         raise ValidationError("Les formules ne sont plus vendues : débloquez chaque concours à l'unité.")
     if kind == 'abonnement_ancien':  # gardé pour mémoire, inaccessible
@@ -157,7 +166,17 @@ def payment_payload(p):
         'telephone': p.phone_display if p.phone else '', 'url_fedapay': p.payment_url or '',
         'message': p.failure_reason or '', 'date': dt(p.created_at), 'tickets': tickets,
         'telechargement': bool(p.is_paid and p.downloadable_file),
+        'livraison': p.livraison, 'remise': p.remise, 'code_promo': p.code_promo.code if p.code_promo_id else '',
+        'facture': _facture(p),
     }
+
+
+def _facture(p):
+    if not p.is_paid or p.amount <= 0:
+        return ''
+    from django.conf import settings
+    base = getattr(settings, 'SITE_URL', 'https://lantantetechnologie.com').rstrip('/')
+    return f"{base}{reverse('payments:receipt', args=[p.reference])}?t={p.access_token}"
 
 
 @api_view(['POST'])
@@ -172,31 +191,20 @@ def payer(request):
         return error("Le paiement en ligne est momentanément indisponible.", 503, code='paiement_indisponible')
     country = str(d.get('pays') or mm.DEFAULT_COUNTRY)
     operator = str(d.get('operateur') or '')
+    from django.db import transaction
     try:
         phone = mm.normalize(str(d.get('telephone') or ''), country)
         mm.check_operator(phone, country, operator)
-        fields, amount, description, before = _cible(user, d)
+        with transaction.atomic():
+            fields, amount, description, before = _cible(user, d)
+            amount = _appliquer_promo(user, d, fields, amount)
+            p = _creer_paiement_mm(user, d, fields, amount, description, before, phone, operator)
     except ValidationError as e:
-        return error(e.messages[0], 400, code='donnees_invalides')
-    if amount <= 0 and fields['kind'] == 'ticket':  # tickets gratuits : pas de FedaPay
-        p = Payment.objects.create(user=user, amount=0, description=description, mode='free',
-                                   first_name=user.first_name or '-', last_name=user.last_name or '-',
-                                   email=user.email, phone=phone, whatsapp=user.phone or phone, operator=operator,
-                                   **fields)
+        return error(e.messages[0], 400, code=_code_erreur(e))
+    if p.mode == 'free':
         services.mark_paid(p)
         p.refresh_from_db()
         return Response(payment_payload(p), status=201)
-    city = str(d.get('ville') or '')[:255]
-    p = Payment.objects.create(
-        user=user, amount=amount, description=description[:255],
-        first_name=(user.first_name or str(d.get('prenom') or '') or '-')[:100],
-        last_name=(user.last_name or str(d.get('nom') or '') or '-')[:100],
-        email=user.email, phone=phone, whatsapp=(user.phone or phone)[:30], operator=operator,
-        city=city, address=city if fields['kind'] == 'product' else '', **fields)
-    if before:
-        before(p)
-    p.mode = fedapay.mode()
-    p.save(update_fields=['mode'])
     try:
         if p.mode == 'demo':
             url = None
@@ -216,6 +224,76 @@ def payer(request):
     return Response(data, status=201)
 
 
+def _code_erreur(e):
+    m = e.messages[0] if e.messages else ''
+    if 'promo' in m.lower() or 'code' in m.lower():
+        return 'code_promo'
+    if 'livr' in m.lower() or 'position' in m.lower():
+        return 'livraison'
+    return 'donnees_invalides'
+
+
+def _appliquer_promo(user, d, fields, amount):
+    """Applique le code promo (à appeler dans une transaction : le code est verrouillé)."""
+    from Payments.promo import remise
+    r, code = remise(d.get('code_promo'), user, fields, amount, verrou=True)
+    if code:
+        fields.update(remise=r, code_promo=code)
+    return amount - r
+
+
+def _creer_paiement_mm(user, d, fields, amount, description, before, phone, operator):
+    from Payments import fedapay
+    from Payments.models import Payment
+    if amount <= 0 and fields['kind'] == 'ticket':  # tickets gratuits : pas de FedaPay
+        return Payment.objects.create(user=user, amount=0, description=description, mode='free',
+                                      first_name=user.first_name or '-', last_name=user.last_name or '-',
+                                      email=user.email, phone=phone, whatsapp=user.phone or phone, operator=operator,
+                                      **fields)
+    city = str(d.get('ville') or '')[:255]
+    p = Payment.objects.create(
+        user=user, amount=amount, description=description[:255],
+        first_name=(user.first_name or str(d.get('prenom') or '') or '-')[:100],
+        last_name=(user.last_name or str(d.get('nom') or '') or '-')[:100],
+        email=user.email, phone=phone, whatsapp=(user.phone or phone)[:30], operator=operator,
+        city=city, address=_adresse(d, fields), **fields)
+    if before:
+        before(p)
+    p.mode = fedapay.mode()
+    p.save(update_fields=['mode'])
+    return p
+
+
+def _adresse(d, fields):
+    if fields['kind'] != 'product':
+        return ''
+    a = str(d.get('adresse') or d.get('ville') or '').strip()
+    if d.get('lat') not in (None, '') and d.get('lng') not in (None, ''):
+        a = f"{a} (GPS {d.get('lat')}, {d.get('lng')})".strip()
+    return a[:255]
+
+
+@api_view(['POST'])
+def devis(request):
+    """Récapitulatif avant paiement : articles + livraison - remise = total (rien n'est créé)."""
+    user, d = request.user, request.data
+    try:
+        fields, amount, _, _ = _cible(user, d)
+    except ValidationError as e:
+        return error(e.messages[0], 400, code=_code_erreur(e))
+    from Payments.promo import remise
+    livraison = int(fields.get('livraison') or 0)
+    rep = {'articles': amount - livraison, 'livraison': livraison, 'livraison_detail': fields.get('livraison_detail', ''),
+           'remise': 0, 'total': amount, 'code_promo': '', 'message_promo': ''}
+    if str(d.get('code_promo') or '').strip():
+        try:
+            r, code = remise(d.get('code_promo'), user, fields, amount)
+            rep.update(remise=r, total=amount - r, code_promo=code.code)
+        except ValidationError as e:
+            rep['message_promo'] = e.messages[0]
+    return Response(rep)
+
+
 def _payer_avec_solde(request):
     """Paiement avec le solde Lantante : débit et livraison dans la même transaction."""
     from django.db import transaction
@@ -226,26 +304,29 @@ def _payer_avec_solde(request):
     try:
         fields, amount, description, before = _cible(user, d)
     except ValidationError as e:
-        return error(e.messages[0], 400, code='donnees_invalides')
+        return error(e.messages[0], 400, code=_code_erreur(e))
     if fields['kind'] == 'depot':
         return error("On recharge son solde par Mobile Money.", 400, code='donnees_invalides')
     if amount <= 0:
         return error("Montant invalide.", 400, code='donnees_invalides')
     try:
         with transaction.atomic():
+            amount = _appliquer_promo(user, d, fields, amount)
             city = str(d.get('ville') or '')[:255]
             p = Payment.objects.create(
                 user=user, amount=amount, description=description[:255], mode='solde', operator='',
                 first_name=(user.first_name or str(d.get('prenom') or '') or '-')[:100],
                 last_name=(user.last_name or str(d.get('nom') or '') or '-')[:100],
                 email=user.email, phone=(user.phone or '')[:30], whatsapp=(user.phone or '')[:30],
-                city=city, address=city if fields['kind'] == 'product' else '', **fields)
+                city=city, address=_adresse(d, fields), **fields)
             if before:
                 before(p)
             payer_avec_solde(user, amount, p)
             services.mark_paid(p)
     except SoldeInsuffisant:
         return error("Solde insuffisant.", 400, code='solde_insuffisant')
+    except ValidationError as e:
+        return error(e.messages[0], 400, code=_code_erreur(e))
     p.refresh_from_db()
     return Response(payment_payload(p), status=201)
 

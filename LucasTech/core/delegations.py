@@ -46,7 +46,8 @@ def paiements_visibles(user, qs):
         return qs
     from Events.models import Event
     evts = evenements_visibles(user, Event.objects.all()).values_list('pk', flat=True)
-    return qs.filter(Q(event_id__in=evts) | Q(service_id__in=ids(user, 'service')))
+    return qs.filter(Q(event_id__in=evts) | Q(service_id__in=ids(user, 'service')) |
+                     Q(vendeur__user=user, vendeur__statut='valide'))
 
 
 def services_visibles(user, qs):

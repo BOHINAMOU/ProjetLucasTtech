@@ -71,6 +71,14 @@ class Payment(models.Model):
                                 related_name='payments', verbose_name="Concours")
     event = models.ForeignKey('Events.Event', on_delete=models.SET_NULL, null=True, blank=True,
                               related_name='payments', verbose_name="Événement")
+    vendeur = models.ForeignKey('Marche.Vendeur', on_delete=models.PROTECT, null=True, blank=True,
+                                related_name='paiements', verbose_name="Vendeur")
+    livraison = models.PositiveIntegerField("Livraison (F)", default=0)
+    livraison_detail = models.CharField("Détail livraison", max_length=120, blank=True)
+    remise = models.PositiveIntegerField("Remise (F)", default=0)
+    code_promo = models.ForeignKey('CodePromo', on_delete=models.PROTECT, null=True, blank=True,
+                                   related_name='paiements', verbose_name="Code promo")
+    commission = models.PositiveIntegerField("Commission Lantante (F)", default=0)
     items = models.JSONField(default=list, blank=True, verbose_name="Détail",
                              help_text="Tickets demandés : [{ticket_type, name, quantity, price}]")
 
@@ -174,3 +182,37 @@ class MouvementSolde(models.Model):
 
     def __str__(self):
         return f"{self.get_type_display()} {self.montant:+} F"
+
+
+
+class CodePromo(models.Model):
+    TYPES = [('pct', 'Pourcentage'), ('montant', 'Montant fixe')]
+    code = models.CharField("Code", max_length=30, unique=True, help_text="Lettres et chiffres, ex. RENTREE25.")
+    type = models.CharField("Type", max_length=8, choices=TYPES, default='pct')
+    valeur = models.PositiveIntegerField("Valeur", help_text="% ou F selon le type.")
+    debut = models.DateTimeField("Début", null=True, blank=True)
+    fin = models.DateTimeField("Fin", null=True, blank=True)
+    max_utilisations = models.PositiveIntegerField("Utilisations max. (total)", null=True, blank=True,
+                                                   help_text="Vide = illimité.")
+    max_par_personne = models.PositiveIntegerField("Utilisations max. par personne", null=True, blank=True, default=1,
+                                                   help_text="Vide = illimité.")
+    minimum_achat = models.PositiveIntegerField("Achat minimum (F)", default=0)
+    actif = models.BooleanField("Actif", default=True)
+    produits = models.ManyToManyField('Shop.Product', blank=True, verbose_name="Produits")
+    concours = models.ManyToManyField('concours.Contest', blank=True, verbose_name="Concours")
+    formations = models.ManyToManyField('Formations.Formation', blank=True, verbose_name="Formations")
+    evenements = models.ManyToManyField('Events.Event', blank=True, verbose_name="Événements")
+    vendeurs = models.ManyToManyField('Marche.Vendeur', blank=True, verbose_name="Vendeurs")
+    created_at = models.DateTimeField("Créé le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Code promo"
+        verbose_name_plural = "Codes promo"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.code
+
+    def save(self, *a, **kw):
+        self.code = ''.join(self.code.split()).upper()
+        super().save(*a, **kw)

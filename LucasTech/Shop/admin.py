@@ -52,7 +52,38 @@ class ProductAdmin(admin.ModelAdmin):
         ('Prix', {'fields': ('price', 'old_price', 'bulk_price', 'bulk_min_qty')}),
         ('Photos et vidéo', {'fields': ('image', 'video')}),
         ('Stock et affichage', {'fields': ('stock', 'is_available', 'is_featured', 'contact_whatsapp')}),
+        ('Vendeur et livraison', {'fields': ('vendeur', 'livraison_autre_ville', 'retrait_latitude', 'retrait_longitude')}),
     )
+
+    # Un vendeur ne voit et ne modifie que SES produits ; le vendeur est mis d'office.
+    def get_queryset(self, request):
+        from Marche.acces import vendeur_de
+        qs = super().get_queryset(request)
+        v = vendeur_de(request.user)
+        return qs.filter(vendeur=v) if v else qs
+
+    def get_fieldsets(self, request, obj=None):
+        from Marche.acces import vendeur_de
+        if not vendeur_de(request.user):
+            return self.fieldsets
+        return (
+            (None, {'fields': ('category', 'name', 'short_description', 'description')}),
+            ('Prix', {'fields': ('price', 'old_price')}),
+            ('Photos', {'fields': ('image',)}),
+            ('Stock', {'fields': ('stock', 'is_available')}),
+            ('Livraison', {'fields': ('livraison_autre_ville', 'retrait_latitude', 'retrait_longitude')}),
+        )
+
+    def get_list_filter(self, request):
+        from Marche.acces import vendeur_de
+        return ('is_available',) if vendeur_de(request.user) else ('category', 'vendeur', 'is_available', 'is_featured')
+
+    def save_model(self, request, obj, form, change):
+        from Marche.acces import vendeur_de
+        v = vendeur_de(request.user)
+        if v:
+            obj.vendeur = v
+        super().save_model(request, obj, form, change)
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):

@@ -14,6 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+# Clé du compte de service Firebase (notifications push), hors du dépôt.
+FIREBASE_SA_PATH = os.getenv("FIREBASE_SA_PATH", "")
 if not SECRET_KEY:
     if DEBUG:
         # OK for local dev only — never used if SECRET_KEY is set in the environment.
@@ -105,6 +107,7 @@ INSTALLED_APPS = [
     'abonnements',
     'api_mobile',
     'Ecoles',
+    'Marche',
 
     'social_django',
 

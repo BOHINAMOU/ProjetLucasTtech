@@ -60,3 +60,24 @@ def lire(request, pk=None):
     for n in qs:
         NotificationLue.objects.get_or_create(notification=n, user=request.user)
     return Response({'non_lues': non_lues(request.user)})
+
+
+
+@api_view(['POST'])
+def appareil(request):
+    """Enregistre (ou rafraîchit) le jeton FCM du téléphone pour l'utilisateur connecté."""
+    from .models import Appareil
+    jeton = str(request.data.get('jeton') or '').strip()
+    if not 20 <= len(jeton) <= 255:
+        return Response({'detail': 'Jeton invalide.'}, status=400)
+    Appareil.objects.update_or_create(jeton=jeton, defaults={
+        'user': request.user, 'plateforme': str(request.data.get('plateforme') or '')[:10]})
+    return Response({'ok': True})
+
+
+@api_view(['POST'])
+def oublier_appareil(request):
+    """Déconnexion : ce téléphone ne reçoit plus les notifications de ce compte."""
+    from .models import Appareil
+    Appareil.objects.filter(user=request.user, jeton=str(request.data.get('jeton') or '')).delete()
+    return Response({'ok': True})

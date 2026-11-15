@@ -167,7 +167,10 @@ def produit(request, pk):
         'description': text(p.description), 'stock': p.stock,
         'prix_gros': money(p.bulk_price), 'quantite_min_gros': p.bulk_min_qty if p.bulk_price else None,
         'video': media(request, p.video),
-        'whatsapp': p.contact_whatsapp or '',
+        'whatsapp': (p.vendeur.whatsapp if p.vendeur_id else '') or p.contact_whatsapp or '',
+        'vendeur': p.vendeur.boutique if p.vendeur_id else '',
+        'vendeur_ville': p.vendeur.ville if p.vendeur_id else '',
+        'livraison_vendeur': bool(p.vendeur_id),
         'url_paiement': paiement(request, reverse('payments:checkout', args=['produit', p.pk])) if p.stock > 0 else None,
     })
     return Response(data)

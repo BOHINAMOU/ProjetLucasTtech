@@ -243,3 +243,44 @@ class MouvementSoldeAdmin(admin.ModelAdmin):
             return
         obj.pk = m.pk
         self.message_user(request, f"Ajustement enregistré. Nouveau solde : {francs(m.solde_apres)}.")
+
+
+
+from .models import CodePromo  # noqa: E402
+
+
+class UtilisationsInline(admin.TabularInline):
+    model = Payment
+    fk_name = 'code_promo'
+    extra = 0
+    can_delete = False
+    fields = ['reference', 'created_at', 'user', 'description', 'remise', 'amount', 'status']
+    readonly_fields = fields
+    verbose_name = "Utilisation"
+    verbose_name_plural = "Utilisations (journal)"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(CodePromo)
+class CodePromoAdmin(admin.ModelAdmin):
+    list_display = ['code', 'valeur_f', 'debut', 'fin', 'utilises', 'max_utilisations', 'actif']
+    list_filter = ['actif', 'type']
+    search_fields = ['code']
+    autocomplete_fields = ['produits', 'concours', 'formations', 'evenements', 'vendeurs']
+    inlines = [UtilisationsInline]
+    fieldsets = (
+        (None, {'fields': ('code', 'type', 'valeur', 'actif')}),
+        ('Conditions', {'fields': ('debut', 'fin', 'minimum_achat', 'max_utilisations', 'max_par_personne')}),
+        ('Limité à', {'fields': ('produits', 'concours', 'formations', 'evenements', 'vendeurs'),
+                      'description': "Tout vide = valable sur tous les achats (sauf recharge du solde)."}),
+    )
+
+    @admin.display(description="Réduction")
+    def valeur_f(self, c):
+        return f"{c.valeur} %" if c.type == 'pct' else francs(c.valeur)
+
+    @admin.display(description="Utilisé")
+    def utilises(self, c):
+        return c.paiements.filter(status='approved').count()

@@ -94,8 +94,9 @@ def _fulfill(p):
                 user_id=p.user_id, total_price=p.amount, status='paid', payment_method='fedapay',
                 cash_delivery_name=p.full_name, cash_delivery_phone=p.whatsapp or p.phone,
                 cash_delivery_message=p.address)
+            unit = int((p.items[0] or {}).get('price') or 0) if p.items else 0
             ShopOrderItem.objects.create(order=order, product_id=p.product_id, quantity=qty,
-                                         price=p.amount // qty)
+                                         price=unit or p.amount // qty)
     elif p.kind == 'abonnement':
         from abonnements.services import fulfill_payment
         fulfill_payment(p)
