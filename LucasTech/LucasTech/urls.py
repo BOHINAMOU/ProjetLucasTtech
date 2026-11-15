@@ -12,8 +12,6 @@ from Emploi.webapp import webapp
 from .sitemaps import sitemaps
 
 urlpatterns = [
-    path('ecoles/fichier/<int:pk>/', __import__('Ecoles.views', fromlist=['fichier']).fichier, name='ecole_fichier'),
-    path('ecoles/document/<int:pk>/', __import__('Ecoles.views', fromlist=['document']).document, name='ecole_document'),
     path(
         'ads.txt',
         lambda request: HttpResponse("google.com, pub-2908722543426563, DIRECT, f08c47fec0942fa0", content_type="text/plain"),

@@ -352,7 +352,7 @@ class SiteSettings(models.Model):
 class Delegation(models.Model):
     """Rôle confié à un utilisateur : il se connecte à l'admin et ne voit QUE ce qui lui est confié."""
     TYPES = [('evenement', 'Un événement (tickets / soutiens)'), ('service', 'Un service (inscriptions)'),
-             ('ecole', 'Une école'), ('publications', 'Les actualités')]
+             ('ecole', 'Une école'), ('publications', 'Les actualités'), ('repetiteurs', 'Répétiteur - École')]
     user = models.ForeignKey('Users.User', on_delete=models.CASCADE, related_name='delegations', verbose_name="Utilisateur")
     type = models.CharField("Rôle", max_length=14, choices=TYPES)
     event = models.ForeignKey('Events.Event', on_delete=models.CASCADE, null=True, blank=True, verbose_name="Événement")

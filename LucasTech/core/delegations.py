@@ -6,6 +6,7 @@ PERMS = {
                   ('Events', 'ticket', ('view',)), ('Payments', 'payment', ('view', 'delete'))],
     'service': [('Services', 'service', ('view', 'change')), ('Services', 'champinscription', ('view', 'add', 'change', 'delete')),
                 ('Services', 'inscriptionservice', ('view', 'change')), ('Payments', 'payment', ('view',))],
+    'repetiteurs': [('Repetiteurs', 'repetiteur', ('view', 'add', 'change', 'delete'))],
     'publications': [('Publications', m, ('view', 'add', 'change', 'delete'))
                      for m in ('publication', 'publicationcategory', 'publicationcomment')],
 }

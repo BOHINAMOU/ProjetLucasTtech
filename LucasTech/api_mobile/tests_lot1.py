@@ -212,3 +212,18 @@ class LieuxTests(APITestCase):
         with mock.patch('api_mobile.lieux.LIMITE', 2), mock.patch('api_mobile.lieux.requests.get', return_value=self._rep([])):
             codes = [self.client.get(API + f'lieux/?q=lieu{i}').status_code for i in range(4)]
         self.assertEqual(codes[-1], 429)
+
+
+class SupportFormulaireTests(APITestCase):
+    def test_piece_jointe_facultative_controlee(self):
+        from django.core import mail
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        r = self.client.post(API + 'contact/', {'sujet': 'Aide', 'message': 'Je ne trouve pas mon épreuve.',
+                                                'piece': SimpleUploadedFile('capture.png', b'\x89PNG x', content_type='image/png')},
+                             format='multipart')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(mail.outbox[-1].attachments[0][0], 'capture.png')
+        r = self.client.post(API + 'contact/', {'message': 'Bonjour à vous', 'piece': SimpleUploadedFile('a.exe', b'MZ')},
+                             format='multipart')
+        self.assertEqual(r.status_code, 400)
+        self.assertNotIn('WhatsApp', self.client.post(API + 'contact/', {'message': 'x'}).json()['detail'])

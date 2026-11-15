@@ -382,6 +382,13 @@ def contact(request):
     sujet = str(d.get('sujet') or 'Message depuis l\'application').strip()[:120]
     if len(message) < 5:
         return error("Écrivez votre message.", 400, code='donnees_invalides')
+    piece = request.FILES.get('piece')
+    if piece is not None:
+        ext = piece.name.rsplit('.', 1)[-1].lower() if '.' in piece.name else ''
+        if ext not in ('pdf', 'jpg', 'jpeg', 'png', 'webp'):
+            return error("Pièce jointe : PDF ou image seulement.", 400, code='donnees_invalides')
+        if piece.size > 5 * 1024 * 1024:
+            return error("Pièce jointe trop lourde (5 Mo max).", 400, code='donnees_invalides')
     u = request.user if request.user.is_authenticated else None
     nom = (u.get_full_name() if u else str(d.get('nom') or '')).strip() or 'Utilisateur de l\'application'
     reply = (u.email if u else str(d.get('email') or '')).strip()
@@ -390,11 +397,14 @@ def contact(request):
             f"Téléphone / WhatsApp : {tel or '-'}\nSujet : {sujet}\n\n{message}\n")
     try:
         from django.core.mail import EmailMessage
-        EmailMessage(subject=f"[Appli] {sujet}", body=body, from_email=settings.DEFAULT_FROM_EMAIL,
-                     to=[email], reply_to=[reply] if reply else None).send(fail_silently=False)
+        m = EmailMessage(subject=f"[Appli] {sujet}", body=body, from_email=settings.DEFAULT_FROM_EMAIL,
+                         to=[email], reply_to=[reply] if reply else None)
+        if piece is not None:
+            m.attach(piece.name, piece.read(), piece.content_type or 'application/octet-stream')
+        m.send(fail_silently=False)
     except Exception:
         logger.exception("Contact appli : e-mail non envoyé")
-        return error("Le message n'a pas pu être envoyé. Écrivez-nous sur WhatsApp.", 503, code='envoi_impossible')
+        return error("Le message n'a pas pu être envoyé. Réessayez.", 503, code='envoi_impossible')
     return Response({'detail': "Merci ! Votre message a bien été envoyé. Nous vous répondons très vite."})
 
 
