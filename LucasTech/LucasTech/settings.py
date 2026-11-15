@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'concours',
     'abonnements',
     'api_mobile',
+    'Ecoles',
 
     'social_django',
 
@@ -359,7 +360,7 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": [
         # Ventes et paiements, Concours et abonnements, Boutique, Formations, Événements, Actualités,
         # Partenaires et services, Utilisateurs, Paramètres
-        "Payments", "abonnements", "concours", "Shop", "Formations", "Events", "Publications", "Services",
+        "Payments", "abonnements", "concours", "Shop", "Formations", "Events", "Ecoles", "Publications", "Services",
         "core", "Portfolio", "Users", "auth", "social_django",
         "Emploi", "Emploi.candidateprofile", "Emploi.employerprofile",
         "Emploi.staffingrequest", "Emploi.joboffer", "Emploi.application", "Emploi.conversation",

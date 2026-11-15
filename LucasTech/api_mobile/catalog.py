@@ -667,4 +667,7 @@ def recherche(request):
     groupe('evenement', 'Événements',
            [event_item(request, e) for e in search(_events(), request, 'title', 'location', 'description')[:n]])
     groupe('service', 'Services', [service_item(request, x) for x in search(_services(), request, 'title', 'description')[:n]])
+    from .ecoles import _ecoles, ecole_item
+    groupe('ecole', 'Écoles', [ecole_item(request, e) for e in _ecoles().filter(
+        Q(nom__icontains=q) | Q(ville__icontains=q) | Q(filieres__nom__icontains=q)).distinct()[:n]])
     return Response({'q': q, 'groupes': groupes})

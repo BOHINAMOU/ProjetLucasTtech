@@ -400,6 +400,7 @@ def home(request):
         'produits': [catalog.product_item(request, p) for p in catalog._products()[:6]],
         'services': [catalog.service_item(request, x) for x in catalog._services()[:6]],
         'actualites': [catalog.publication_item(request, x) for x in catalog._publications()[:6]],
+        'ecoles': _ecoles_accueil(request),
     })
     resp['Cache-Control'] = 'private, max-age=30'
     return resp
@@ -642,3 +643,9 @@ def telechargement(request, reference):
     resp = FileResponse(fh, as_attachment=True, filename=f.name.rsplit('/', 1)[-1])
     resp['Cache-Control'] = 'private, no-store, max-age=0'
     return resp
+
+
+
+def _ecoles_accueil(request):
+    from .ecoles import _ecoles, ecole_item
+    return [ecole_item(request, e) for e in _ecoles()[:10]]
