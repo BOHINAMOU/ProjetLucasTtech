@@ -29,6 +29,7 @@ class Payment(models.Model):
         ('abonnement', 'Abonnement concours'),
         ('soutien', "Soutien d'un événement"),
         ('concours', "Accès à un concours"),
+        ('depot', "Recharge du solde"),
     ]
     STATUS_CHOICES = [
         ('pending', 'En attente'),
@@ -129,3 +130,47 @@ class Payment(models.Model):
 
     def get_absolute_url(self):
         return reverse('payments:result', args=[self.reference]) + f'?t={self.access_token}'
+
+
+
+class Portefeuille(models.Model):
+    """Solde Lantante d'un utilisateur : rechargé par Mobile Money, utilisé pour payer dans Lantante.
+    Pas de retrait (non remboursable en espèces). Le solde ne bouge QUE via Payments.solde (mouvements tracés)."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='portefeuille',
+                                verbose_name="Utilisateur")
+    solde = models.PositiveIntegerField("Solde (FCFA)", default=0, editable=False)
+    updated_at = models.DateTimeField("Mis à jour", auto_now=True)
+
+    class Meta:
+        verbose_name = "Portefeuille"
+        verbose_name_plural = "Soldes des utilisateurs"
+
+    def __str__(self):
+        return f"{self.user} — {self.solde} F"
+
+
+class MouvementSolde(models.Model):
+    TYPES = [('depot', 'Dépôt'), ('paiement', 'Paiement'), ('remboursement', 'Remboursement'),
+             ('ajustement', "Ajustement par l'équipe")]
+    portefeuille = models.ForeignKey(Portefeuille, on_delete=models.PROTECT, related_name='mouvements')
+    type = models.CharField("Type", max_length=14, choices=TYPES)
+    montant = models.IntegerField("Montant (FCFA)", help_text="Positif = crédit, négatif = débit.")
+    solde_apres = models.PositiveIntegerField("Solde après")
+    payment = models.ForeignKey('Payment', on_delete=models.PROTECT, null=True, blank=True, related_name='mouvements_solde',
+                                verbose_name="Paiement lié")
+    motif = models.CharField("Motif", max_length=255, blank=True)
+    par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                            related_name='+', verbose_name="Fait par")
+    created_at = models.DateTimeField("Date", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+        verbose_name = "Mouvement du solde"
+        verbose_name_plural = "Mouvements des soldes"
+        constraints = [
+            # un paiement Mobile Money ne crédite le solde qu'UNE fois, même si le webhook arrive deux fois
+            models.UniqueConstraint(fields=['payment', 'type'], name='un_mouvement_par_paiement_et_type'),
+        ]
+
+    def __str__(self):
+        return f"{self.get_type_display()} {self.montant:+} F"

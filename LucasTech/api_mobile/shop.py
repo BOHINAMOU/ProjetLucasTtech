@@ -88,6 +88,15 @@ def _cible(user, d):
         label = 'mois' if period == 'mois' else 'an'
         return ({'kind': 'abonnement'}, plan.price_for(period), f"Abonnement concours {plan.name} (1 {label})",
                 lambda payment: abo.create_pending_subscription(user, plan, period, payment=payment))
+    if kind == 'depot':
+        from Payments.solde import MAX_DEPOT, MIN_DEPOT
+        try:
+            montant = int(d.get('montant') or 0)
+        except (TypeError, ValueError):
+            montant = 0
+        if not MIN_DEPOT <= montant <= MAX_DEPOT:
+            raise ValidationError(f"Montant entre {MIN_DEPOT} F et {MAX_DEPOT:,} F.".replace(',', ' '))
+        return {'kind': 'depot'}, montant, "Recharge du solde Lantante", None
     if kind == 'concours':
         from abonnements.access import user_can_access
         from concours.models import Contest
@@ -157,6 +166,8 @@ def payer(request):
     from Payments import fedapay, mobile_money as mm, services
     from Payments.models import Payment
     user, d = request.user, request.data
+    if str(d.get('moyen') or '') == 'solde':
+        return _payer_avec_solde(request)
     if not fedapay.is_enabled():
         return error("Le paiement en ligne est momentanément indisponible.", 503, code='paiement_indisponible')
     country = str(d.get('pays') or mm.DEFAULT_COUNTRY)
@@ -203,6 +214,54 @@ def payer(request):
     data['url_fedapay'] = url or ''
     data['ussd'] = mm.USSD.get(operator, '')
     return Response(data, status=201)
+
+
+def _payer_avec_solde(request):
+    """Paiement avec le solde Lantante : débit et livraison dans la même transaction."""
+    from django.db import transaction
+    from Payments import services
+    from Payments.models import Payment
+    from Payments.solde import SoldeInsuffisant, payer_avec_solde
+    user, d = request.user, request.data
+    try:
+        fields, amount, description, before = _cible(user, d)
+    except ValidationError as e:
+        return error(e.messages[0], 400, code='donnees_invalides')
+    if fields['kind'] == 'depot':
+        return error("On recharge son solde par Mobile Money.", 400, code='donnees_invalides')
+    if amount <= 0:
+        return error("Montant invalide.", 400, code='donnees_invalides')
+    try:
+        with transaction.atomic():
+            city = str(d.get('ville') or '')[:255]
+            p = Payment.objects.create(
+                user=user, amount=amount, description=description[:255], mode='solde', operator='',
+                first_name=(user.first_name or str(d.get('prenom') or '') or '-')[:100],
+                last_name=(user.last_name or str(d.get('nom') or '') or '-')[:100],
+                email=user.email, phone=(user.phone or '')[:30], whatsapp=(user.phone or '')[:30],
+                city=city, address=city if fields['kind'] == 'product' else '', **fields)
+            if before:
+                before(p)
+            payer_avec_solde(user, amount, p)
+            services.mark_paid(p)
+    except SoldeInsuffisant:
+        return error("Solde insuffisant.", 400, code='solde_insuffisant')
+    p.refresh_from_db()
+    return Response(payment_payload(p), status=201)
+
+
+@api_view(['GET'])
+def solde(request):
+    """Solde et derniers mouvements (dépôts, paiements)."""
+    from Payments.solde import MAX_DEPOT, MIN_DEPOT, portefeuille
+    pf = portefeuille(request.user)
+    return Response({
+        'solde': pf.solde, 'min_depot': MIN_DEPOT, 'max_depot': MAX_DEPOT,
+        'mouvements': [{'id': m.pk, 'type': m.type, 'libelle': m.get_type_display(), 'montant': m.montant,
+                        'solde_apres': m.solde_apres, 'motif': m.motif, 'date': dt(m.created_at),
+                        'reference': m.payment.reference if m.payment_id else ''}
+                       for m in pf.mouvements.select_related('payment')[:50]],
+    })
 
 
 @api_view(['GET'])

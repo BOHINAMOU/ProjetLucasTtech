@@ -8,7 +8,7 @@ from .utils import absolute, dt, media
 TYPES = ('tous', 'boutique', 'formations', 'services', 'concours', 'tickets', 'paiements')
 PAYMENT_TYPE = {'service': 'services', 'formation': 'formations', 'shop': 'boutique', 'product': 'boutique',
                 'ticket': 'tickets', 'abonnement': 'concours', 'soutien': 'paiements',
-                'concours': 'concours'}
+                'concours': 'concours', 'depot': 'paiements'}
 PAYMENT_STATUS = {'approved': 'paye', 'pending': 'en_attente', 'declined': 'refuse', 'canceled': 'annule',
                   'refunded': 'rembourse'}
 ORDER_STATUS = {'paid': 'paye', 'delivered': 'paye', 'shipped': 'paye', 'cancelled': 'annule'}
@@ -131,7 +131,8 @@ def detail(request, user, cle):
             'montant': p.amount, 'devise': 'FCFA', 'quantite': qty,
             'statut': PAYMENT_STATUS.get(p.status, 'en_attente'), 'statut_libelle': p.get_status_display(),
             'date': dt(p.created_at), 'paye_le': dt(p.paid_at), 'mis_a_jour': dt(p.updated_at),
-            'moyen': 'Mobile Money' if p.operator else '', 'operateur': p.operator_short if p.operator else '',
+            'moyen': 'Solde Lantante' if p.mode == 'solde' else ('Mobile Money' if p.operator else ''),
+            'operateur': p.operator_short if p.operator else '',
             'telephone': _masque(p.phone), 'motif': p.failure_reason or '',
             'url_fedapay': p.payment_url if p.status == 'pending' else '',
             'lien_telechargement': lien, 'achat': achat,

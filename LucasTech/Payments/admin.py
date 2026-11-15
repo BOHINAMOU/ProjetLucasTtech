@@ -131,3 +131,115 @@ class PaymentAdmin(admin.ModelAdmin):
         for p in queryset.filter(status='pending'):
             services.refresh(p)
         messages.success(request, "Statuts revérifiés auprès de FedaPay.")
+
+
+
+from django import forms  # noqa: E402
+
+from .models import MouvementSolde, Portefeuille  # noqa: E402
+
+
+class MouvementInline(admin.TabularInline):
+    model = MouvementSolde
+    extra = 0
+    can_delete = False
+    fields = ['created_at', 'type', 'montant', 'solde_apres', 'motif', 'payment', 'par']
+    readonly_fields = fields
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Portefeuille)
+class PortefeuilleAdmin(admin.ModelAdmin):
+    list_display = ['user', 'solde_f', 'updated_at']
+    search_fields = ['user__email', 'user__first_name', 'user__last_name']
+    readonly_fields = ['user', 'solde', 'updated_at']
+    inlines = [MouvementInline]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Solde", ordering='solde')
+    def solde_f(self, pf):
+        return francs(pf.solde)
+
+    def changelist_view(self, request, extra_context=None):
+        total = Portefeuille.objects.aggregate(s=Sum('solde'))['s'] or 0
+        self.message_user(request, f"Total des soldes : {francs(total)} (argent dû en services aux clients).",
+                          messages.INFO)
+        return super().changelist_view(request, extra_context)
+
+
+class AjustementForm(forms.ModelForm):
+    utilisateur = forms.ModelChoiceField(queryset=None, label="Utilisateur")
+
+    class Meta:
+        model = MouvementSolde
+        fields = ['montant', 'motif']
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        from django.contrib.auth import get_user_model
+        self.fields['utilisateur'].queryset = get_user_model().objects.order_by('email')
+        self.fields['motif'].required = True
+        self.fields['montant'].help_text = "Positif = crédit, négatif = débit. Le solde ne peut pas devenir négatif."
+
+    def clean(self):
+        d = super().clean()
+        u, m = d.get('utilisateur'), d.get('montant')
+        if u is not None and m is not None:
+            if m == 0:
+                self.add_error('montant', "Montant non nul.")
+            pf = Portefeuille.objects.filter(user=u).first()
+            if (pf.solde if pf else 0) + m < 0:
+                self.add_error('montant', f"Refusé : solde actuel {francs(pf.solde if pf else 0)}.")
+        return d
+
+
+@admin.register(MouvementSolde)
+class MouvementSoldeAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'portefeuille', 'type', 'montant_f', 'solde_apres', 'motif', 'par']
+    list_filter = ['type', 'created_at']
+    search_fields = ['portefeuille__user__email', 'motif', 'payment__reference']
+    date_hierarchy = 'created_at'
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs['form'] = AjustementForm
+        return super().get_form(request, obj, **kwargs)
+
+    def get_fields(self, request, obj=None):
+        return ['utilisateur', 'montant', 'motif'] if obj is None else \
+            ['portefeuille', 'type', 'montant', 'solde_apres', 'payment', 'motif', 'par', 'created_at']
+
+    def get_readonly_fields(self, request, obj=None):
+        return [] if obj is None else ['portefeuille', 'type', 'montant', 'solde_apres', 'payment', 'motif', 'par',
+                                       'created_at']
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return obj is None and request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Montant", ordering='montant')
+    def montant_f(self, m):
+        return f"{m.montant:+,} F".replace(',', '\u202f')
+
+    def save_model(self, request, obj, form, change):
+        from .solde import SoldeInsuffisant, ajuster
+        try:
+            m = ajuster(form.cleaned_data['utilisateur'], form.cleaned_data['montant'], form.cleaned_data['motif'],
+                        request.user)
+        except SoldeInsuffisant:
+            self.message_user(request, "Refusé : le solde deviendrait négatif.", messages.ERROR)
+            return
+        obj.pk = m.pk
+        self.message_user(request, f"Ajustement enregistré. Nouveau solde : {francs(m.solde_apres)}.")

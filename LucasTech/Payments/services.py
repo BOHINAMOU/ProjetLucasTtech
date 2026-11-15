@@ -30,7 +30,7 @@ def start(request, payment):
 
 def refresh(payment):
     """Relit le statut chez FedaPay et livre si payé. Renvoie le paiement à jour."""
-    if payment.status != 'pending' or not payment.fedapay_id or payment.mode == 'demo':
+    if payment.status != 'pending' or not payment.fedapay_id or payment.mode in ('demo', 'solde', 'free'):
         return payment
     status = fedapay.transaction_status(payment)
     if status in fedapay.PAID_STATUSES:
@@ -99,6 +99,9 @@ def _fulfill(p):
     elif p.kind == 'abonnement':
         from abonnements.services import fulfill_payment
         fulfill_payment(p)
+    elif p.kind == 'depot' and p.user_id:
+        from .solde import crediter_depot
+        crediter_depot(p)
     elif p.kind == 'ticket' and p.event_id:
         from Events.services import issue_tickets
         issue_tickets(p)
