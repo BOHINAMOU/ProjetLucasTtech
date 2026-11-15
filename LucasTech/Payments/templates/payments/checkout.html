@@ -4,7 +4,7 @@
 {% block extra_head %}{% include 'core/_catalog_head.html' %}<meta name="robots" content="noindex">
 {% if livraison %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>#liv-carte{height:240px;border-radius:14px;margin:6px 0 4px}.liv-l{display:flex;justify-content:space-between;font-size:.95rem;margin:2px 0}.liv-err{color:#c0392b;font-size:.9rem}</style>{% endif %}{% endblock %}
+<style>#liv-carte{height:320px;border-radius:14px;margin:6px 0 4px}.liv-l{display:flex;justify-content:space-between;font-size:.95rem;margin:2px 0}.liv-err{color:#c0392b;font-size:.9rem}</style>{% endif %}{% endblock %}
 
 {% block content %}
 <div class="bq">
@@ -35,7 +35,15 @@
           <div class="liv" data-url="{% url 'payments:livraison' obj.pk %}" data-qty="{{ qty }}"
                data-lat="{{ livraison.lat }}" data-lng="{{ livraison.lng }}">
             <strong>Livraison</strong>
-            <div id="liv-carte"></div>
+            <div style="position:relative">
+              <div id="liv-carte"></div>
+              <div style="position:absolute;top:10px;left:10px;right:10px;z-index:1000">
+                <input type="text" id="liv-q" placeholder="Rechercher un lieu" autocomplete="off"
+                       style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d5dcd8;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+                <div id="liv-sugg" style="display:none;background:#fff;border-radius:12px;margin-top:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);overflow:hidden"></div>
+              </div>
+            </div>
+            <div id="liv-adresse" style="font-weight:600;font-size:.95rem;margin:4px 0"></div>
             <input type="hidden" name="lat" id="liv-lat"><input type="hidden" name="lng" id="liv-lng">
             <div class="liv-l"><span>Livraison <small id="liv-detail"></small></span><span id="liv-frais">—</span></div>
             <div class="liv-l"><b>Total</b><b id="liv-total">{{ amount|floatformat:"0g" }} CFA</b></div>
@@ -83,10 +91,23 @@
       var f=document.querySelector('.wz-form'); if(f) f.dataset.orderTotal=fmt(d.total);
     });
   }
-  function poser(p){
+  var adr=document.getElementById('liv-adresse');
+  function nommer(p){fetch('/api/mobile/v1/lieux/inverse/?lat='+p.lat+'&lng='+p.lng).then(function(r){return r.json();}).then(function(d){adr.textContent=d.nom?'📍 '+d.nom:'';}).catch(function(){});}
+  function poser(p,nom){
     if(!moi){moi=L.marker(p,{draggable:true}).addTo(carte);moi.on('dragend',function(){poser(moi.getLatLng());});}
     moi.setLatLng(p); lat.value=p.lat.toFixed(6); lng.value=p.lng.toFixed(6); calc();
+    if(nom) adr.textContent='📍 '+nom; else nommer(p);
   }
+  var q=document.getElementById('liv-q'), sg=document.getElementById('liv-sugg'), tm=null;
+  q.addEventListener('keydown',function(e){if(e.key==='Enter')e.preventDefault();});
+  q.addEventListener('input',function(){
+    clearTimeout(tm); var v=q.value.trim(); if(v.length<2){sg.style.display='none';return;}
+    tm=setTimeout(function(){fetch('/api/mobile/v1/lieux/?q='+encodeURIComponent(v)).then(function(r){return r.json();}).then(function(d){
+      var res=d.resultats||[]; sg.innerHTML=res.length?'':'<div style="padding:10px 12px;color:#777">Aucun lieu trouvé</div>';
+      res.forEach(function(x){var a=document.createElement('div');a.textContent=x.nom;a.style.cssText='padding:10px 12px;cursor:pointer;border-top:1px solid #f0f2f1';
+        a.onclick=function(){var p=L.latLng(x.lat,x.lng);poser(p,x.nom);carte.setView(p,15);sg.style.display='none';q.value=x.nom;};sg.appendChild(a);});
+      sg.style.display='block';}).catch(function(){});},400);
+  });
   carte.on('click',function(e){poser(e.latlng);});
   if(ville) ville.addEventListener('change',function(){ if(!lat.value) calc(); });
   if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(pos){

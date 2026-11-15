@@ -172,3 +172,43 @@ class IconesServicesTests(APITestCase):
         r = self.client.get('/lantanteAdminTech/Services/service/add/')
         self.assertContains(r, 'fa-youtube')
         self.assertContains(r, 'material-icons')
+
+
+class LieuxTests(APITestCase):
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+
+    @staticmethod
+    def _rep(features):
+        r = mock.Mock(status_code=200)
+        r.json.return_value = {'features': features}
+        r.raise_for_status.return_value = None
+        return r
+
+    def test_recherche_togo_cache_et_inverse(self):
+        f = {'geometry': {'coordinates': [1.2128, 6.1753]},
+             'properties': {'name': 'Université de Lomé', 'city': 'Lomé', 'countrycode': 'TG', 'country': 'Togo'}}
+        with mock.patch('api_mobile.lieux.requests.get', return_value=self._rep([f])) as get:
+            d = self.client.get(API + 'lieux/?q=universite lome').json()
+            self.client.get(API + 'lieux/?q=universite lome')  # 2e fois : cache
+        self.assertEqual(d['resultats'], [{'nom': 'Université de Lomé, Lomé', 'lat': 6.1753, 'lng': 1.2128}])
+        self.assertEqual(get.call_count, 1)
+        params = get.call_args.kwargs['params']
+        self.assertEqual((params['lang'], params['bbox'][:5]), ('fr', '-0.15'))
+        self.assertIn('LantanteTechnologie', get.call_args.kwargs['headers']['User-Agent'])
+        with mock.patch('api_mobile.lieux.requests.get', return_value=self._rep([f])):
+            self.assertEqual(self.client.get(API + 'lieux/inverse/?lat=6.1753&lng=1.2128').json()['nom'],
+                             'Université de Lomé, Lomé')
+        self.assertEqual(self.client.get(API + 'lieux/inverse/?lat=abc&lng=1').status_code, 400)
+
+    def test_aucun_resultat_panne_et_debit(self):
+        with mock.patch('api_mobile.lieux.requests.get', return_value=self._rep([])):
+            self.assertEqual(self.client.get(API + 'lieux/?q=zzzzzz').json()['resultats'], [])
+        self.assertEqual(self.client.get(API + 'lieux/?q=a').json()['resultats'], [])  # trop court : pas d'appel
+        import requests as rq
+        with mock.patch('api_mobile.lieux.requests.get', side_effect=rq.Timeout()):
+            self.assertEqual(self.client.get(API + 'lieux/?q=kara').status_code, 503)
+        with mock.patch('api_mobile.lieux.LIMITE', 2), mock.patch('api_mobile.lieux.requests.get', return_value=self._rep([])):
+            codes = [self.client.get(API + f'lieux/?q=lieu{i}').status_code for i in range(4)]
+        self.assertEqual(codes[-1], 429)
