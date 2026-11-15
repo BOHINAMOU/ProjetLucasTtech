@@ -138,3 +138,17 @@ class AchatConcoursTests(APITestCase):
         self.client.force_login(self.user)
         self.assertContains(self.client.get('/paiement/acces/0/'), 'Accès Épreuves')
         self.assertEqual(self.client.get('/abonnements/').status_code, 302)  # formules plus vendues
+
+
+class RubriquesServicesTests(APITestCase):
+    def test_grandes_categories_et_sous_categories(self):
+        from Services.models import Service, ServiceCategory
+        num = ServiceCategory.objects.create(name='Services numériques', slug='numeriques', order=0)
+        dev = ServiceCategory.objects.create(name='Développement', slug='dev', parent=num)
+        vide = ServiceCategory.objects.create(name='Vide', slug='vide')
+        admin = get_user_model().objects.create_superuser(email='r@example.com', password='x-Pass-12345')
+        Service.objects.create(title='Site web', category=dev, is_active=True, description='x', admin=admin)
+        d = self.client.get(API + 'services/rubriques/').json()
+        self.assertEqual([r['nom'] for r in d], ['Services numériques'])  # « Vide » n'apparaît pas
+        self.assertEqual((d[0]['nb'], d[0]['groupes'][0]['nom']), (1, 'Développement'))
+        self.assertEqual(vide.sous_categories.count(), 0)

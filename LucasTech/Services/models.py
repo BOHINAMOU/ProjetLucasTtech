@@ -15,6 +15,9 @@ class ServiceCategory(models.Model):
     icon        = models.CharField(max_length=60, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-code")
     slug        = models.SlugField(unique=True, verbose_name="Slug (URL)")
     order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+    parent      = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='sous_categories',
+                                    verbose_name="Grande catégorie",
+                                    help_text="Vide = grande catégorie (carte de la page Services, ex. « Services numériques »).")
 
     class Meta:
         ordering = ['order', 'name']

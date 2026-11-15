@@ -710,3 +710,25 @@ def _whatsapp_lantante():
         return SiteSettings.load().whatsapp_1 or ''
     except Exception:
         return ''
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def rubriques_services(request):
+    """Page Services : grandes catégories (cartes), chacune avec ses sous-catégories et leurs services."""
+    from Services.models import ServiceCategory
+    toutes = list(ServiceCategory.objects.prefetch_related('services').order_by('order', 'name'))
+
+    def groupe(c):
+        items = [service_item(request, x) for x in c.services.all() if x.is_active]
+        return {'id': c.pk, 'nom': c.name, 'slug': c.slug, 'description': c.description, 'icone': c.icon,
+                'services': items} if items else None
+
+    out = []
+    for r in [c for c in toutes if c.parent_id is None]:
+        groupes = [g for g in [groupe(r)] + [groupe(c) for c in toutes if c.parent_id == r.pk] if g]
+        if groupes:
+            out.append({'id': r.pk, 'nom': r.name, 'icone': r.icon, 'nb': sum(len(g['services']) for g in groupes),
+                        'groupes': groupes})
+    return Response(out)
