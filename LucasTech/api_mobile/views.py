@@ -483,7 +483,7 @@ def concours_annee(request, slug, pk):
         out.append({
             'id': p.pk, 'titre': p.title, 'matiere': p.subject, 'duree': p.duration,
             'coefficient': float(p.coefficient) if p.coefficient is not None else None,
-            'description': p.description, 'gratuite': False, 'accessible': ok,
+            'description': p.description, 'gratuite': p.is_free, 'accessible': ok,
             'hors_ligne_autorise': ok and rights.offline_allowed(p, contest),
             'document_disponible': bool(p.file),
             'corriges': [{'id': c.pk, 'titre': c.get_kind_display() + (f" — {c.author}" if c.author else ''),

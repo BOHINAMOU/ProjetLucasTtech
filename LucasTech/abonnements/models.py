@@ -201,3 +201,44 @@ class SubscriptionAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.created_at:%d/%m/%Y %H:%M} — {self.action}"
+
+
+
+class ReglageAcces(models.Model):
+    """Abonnement unique « Accès Épreuves » : toutes les épreuves de tous les concours pendant [duree_jours]."""
+    prix = models.PositiveIntegerField("Prix (FCFA)", default=5000)
+    duree_jours = models.PositiveSmallIntegerField("Durée (jours)", default=365)
+
+    class Meta:
+        verbose_name = "Réglage de l'abonnement"
+        verbose_name_plural = "Réglage de l'abonnement"
+
+    def __str__(self):
+        return f"Accès Épreuves : {self.prix} F / {self.duree_jours} jours"
+
+    @classmethod
+    def load(cls):
+        return cls.objects.first() or cls.objects.create()
+
+
+class AccesEpreuves(models.Model):
+    """Une période payée. Un renouvellement avant la fin commence à la fin de la période en cours."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='acces_epreuves',
+                             verbose_name="Utilisateur")
+    debut = models.DateTimeField("Début")
+    fin = models.DateTimeField("Fin", db_index=True)
+    prix_paye = models.PositiveIntegerField("Prix payé (FCFA)", default=0)
+    payment = models.OneToOneField('Payments.Payment', on_delete=models.PROTECT, null=True, blank=True,
+                                   related_name='acces_epreuves', verbose_name="Paiement")
+    rappel_7 = models.BooleanField(default=False, editable=False)
+    rappel_1 = models.BooleanField(default=False, editable=False)
+    rappel_fin = models.BooleanField(default=False, editable=False)
+    created_at = models.DateTimeField("Créé le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-fin']
+        verbose_name = "Abonnement Accès Épreuves"
+        verbose_name_plural = "Abonnements Accès Épreuves"
+
+    def __str__(self):
+        return f"{self.user} → {self.fin:%d/%m/%Y}"

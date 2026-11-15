@@ -82,7 +82,11 @@ class Rights:
         from abonnements.access import purchased_contest_ids
         if contest.pk in purchased_contest_ids(self.user):
             from datetime import timedelta
-            return self.now + timedelta(days=3650)  # achat à vie
+            return self.now + timedelta(days=3650)  # ancien achat à l'unité
+        from abonnements.annuel import fin_acces
+        fin = fin_acces(self.user, self.now)
+        if fin:
+            return fin  # hors ligne lisible jusqu'à la fin de l'abonnement
         if self._offline is None:
             subs = active_subscriptions(self.user, self.now).filter(
                 Q(plan__code__in=OFFLINE_PLAN_CODES) | Q(is_unlimited=True))
@@ -122,7 +126,7 @@ def contest_payload(request, c, rights):
         'photo': media(request, c.logo), 'couverture': media(request, c.cover),
         'nb_annees': getattr(c, 'n_sessions', 0), 'nb_epreuves': getattr(c, 'n_papers', 0),
         'est_demo': bool(getattr(c, 'is_demo', False)), 'accessible': rights.can_access(c),
-        'prix_acces': c.access_price,
+        'prix_acces': 0,
     }
 
 

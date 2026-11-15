@@ -19,9 +19,11 @@ def utilisations(code, user=None):
 def _cible_ok(c, fields):
     listes = {'produits': c.produits.all(), 'concours': c.concours.all(), 'formations': c.formations.all(),
               'evenements': c.evenements.all(), 'vendeurs': c.vendeurs.all()}
-    if not any(l.exists() for l in listes.values()):
-        return True  # valable partout
     kind = fields.get('kind')
+    if not c.abonnement and not any(l.exists() for l in listes.values()):
+        return True  # valable partout
+    if kind == 'acces':
+        return c.abonnement
     p = fields.get('product')
     if kind == 'product' and p is not None:
         return listes['produits'].filter(pk=p.pk).exists() or \

@@ -113,31 +113,28 @@ class AchatConcoursTests(APITestCase):
         p.save()
         self.assertFalse(user_can_access(self.user, self.c))  # un remboursement retire l'accès
 
-    def test_api_prix_achat_et_hors_ligne(self):
+    def test_api_plus_de_vente_a_l_unite_mais_achat_conserve_hors_ligne(self):
         self.client.force_authenticate(self.user)
         d = next(x for x in self.client.get(API + 'concours/').json() if x['sigle'] == 'IAI')
-        self.assertEqual((d['prix_acces'], d['accessible']), (1500, False))
+        self.assertEqual((d['prix_acces'], d['accessible']), (0, False))
         with mock.patch('Payments.fedapay.is_enabled', return_value=True), \
                 mock.patch('Payments.fedapay.mode', return_value='demo'):
             r = self.client.post(API + 'paiements/', {'type': 'concours', 'id': self.c.pk, 'pays': 'tg',
                                                       'operateur': 'togocel', 'telephone': '90000000'}, format='json')
-        self.assertEqual(r.status_code, 201, r.content)
-        self.assertEqual(r.json()['montant'], 1500)
-        self._payer()
+        self.assertEqual(r.status_code, 400)  # plus vendu à l'unité
+        self._payer()  # ancien achat
         d = next(x for x in self.client.get(API + 'concours/').json() if x['sigle'] == 'IAI')
         self.assertTrue(d['accessible'])
         from api_mobile.utils import Rights
         self.assertTrue(Rights(self.user).offline_allowed(self.paper))
-        with mock.patch('Payments.fedapay.is_enabled', return_value=True):
-            r = self.client.post(API + 'paiements/', {'type': 'concours', 'id': self.c.pk, 'pays': 'tg',
-                                                      'operateur': 'togocel', 'telephone': '90000000'}, format='json')
-        self.assertEqual(r.status_code, 400)  # déjà débloqué
 
-    def test_site_debloquer(self):
+    def test_site_propose_l_abonnement(self):
         r = self.client.get(self.c.get_absolute_url())
-        self.assertContains(r, 'Débloquer ce concours')
-        r = self.client.get(f'/paiement/concours/{self.c.pk}/')
-        self.assertEqual(r.status_code, 302)  # connexion demandée
+        self.assertContains(r, "S'abonner")
+        self.assertNotContains(r, 'Débloquer')
+        self.assertRedirects(self.client.get(f'/paiement/concours/{self.c.pk}/'), '/paiement/acces/0/',
+                             fetch_redirect_response=False)
+        self.assertEqual(self.client.get('/paiement/acces/0/').status_code, 302)  # connexion demandée
         self.client.force_login(self.user)
-        self.assertContains(self.client.get(f'/paiement/concours/{self.c.pk}/'), 'IAI')
+        self.assertContains(self.client.get('/paiement/acces/0/'), 'Accès Épreuves')
         self.assertEqual(self.client.get('/abonnements/').status_code, 302)  # formules plus vendues

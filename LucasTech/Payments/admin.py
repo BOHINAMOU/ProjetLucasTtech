@@ -273,7 +273,7 @@ class CodePromoAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('code', 'type', 'valeur', 'actif')}),
         ('Conditions', {'fields': ('debut', 'fin', 'minimum_achat', 'max_utilisations', 'max_par_personne')}),
-        ('Limité à', {'fields': ('produits', 'concours', 'formations', 'evenements', 'vendeurs'),
+        ('Limité à', {'fields': ('abonnement', 'produits', 'concours', 'formations', 'evenements', 'vendeurs'),
                       'description': "Tout vide = valable sur tous les achats (sauf recharge du solde)."}),
     )
 

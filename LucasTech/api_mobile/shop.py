@@ -106,15 +106,12 @@ def _cible(user, d):
         if not MIN_DEPOT <= montant <= MAX_DEPOT:
             raise ValidationError(f"Montant entre {MIN_DEPOT} F et {MAX_DEPOT:,} F.".replace(',', ' '))
         return {'kind': 'depot'}, montant, "Recharge du solde Lantante", None
+    if kind == 'acces':
+        from abonnements.models import ReglageAcces
+        r = ReglageAcces.load()
+        return {'kind': 'acces'}, int(r.prix), "Abonnement Accès Épreuves (1 an)", None
     if kind == 'concours':
-        from abonnements.access import user_can_access
-        from concours.models import Contest
-        c = Contest.objects.published().filter(pk=pk, is_demo=False).first()
-        if not c:
-            raise ValidationError("Concours introuvable.")
-        if user_can_access(user, c):
-            raise ValidationError("Vous avez déjà accès à ce concours.")
-        return {'kind': 'concours', 'contest': c}, int(c.access_price), f"Concours : {c.acronym} — {c.name}", None
+        raise ValidationError("Les concours ne sont plus vendus à l'unité : prenez l'abonnement.")
     if kind == 'soutien':
         from Events.models import Event
         e = Event.objects.filter(pk=pk, is_published=True, kind='soutien').first()
@@ -452,3 +449,15 @@ def abonnement_concours(request, pk):
         'concours': [{'id': c.pk, 'sigle': c.acronym, 'nom': c.name, 'categorie': c.category.name, 'etat': st}
                      for c, st in states],
     })
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def abonnement(request):
+    """Abonnement « Accès Épreuves » : prix, durée, et fin si l'utilisateur est abonné."""
+    from abonnements.annuel import fin_acces
+    from abonnements.models import ReglageAcces
+    r = ReglageAcces.load()
+    fin = fin_acces(request.user)
+    return Response({'prix': r.prix, 'duree_jours': r.duree_jours, 'actif': fin is not None, 'fin': dt(fin) if fin else None})

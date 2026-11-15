@@ -180,17 +180,18 @@ class ApiMobileTests(APITestCase):
 
     def test_document_connecte_sans_abonnement_403(self):
         self._login()
-        for url in self._urls():  # y compris l'épreuve marquée « gratuite »
+        payants = [u for u in self._urls() if f'/{self.free.pk}/' not in u or 'corrige' in u]
+        for url in payants:
             r = self.client.get(url)
             self.assertEqual(r.status_code, 403, url)
             self.assertEqual(r.json()['code'], 'abonnement_requis')
+        self.assertEqual(self.client.get(f'{API}documents/epreuve/{self.free.pk}/').status_code, 200)  # épreuve libre
         self.assertEqual(self.client.get(f'{API}documents/epreuve/999999/').json()['code'], 'indisponible')
         annee = self.client.get(f'{API}concours/{self.ens.slug}/annees/{self.session.pk}/').json()
         for e in annee['epreuves']:
-            self.assertFalse(e['accessible'])
-            self.assertFalse(e['gratuite'])
+            libre = e['titre'] == 'Français'
+            self.assertEqual((e['accessible'], e['gratuite']), (libre, libre))
             self.assertFalse(e['hors_ligne_autorise'])
-            self.assertTrue(all(not c['accessible'] for c in e['corriges']))
 
     def test_document_concours_demo_reserve_equipe(self):
         demo = Contest.objects.create(acronym='DEMO', name='Concours démo', category=self.ens.category,
@@ -253,6 +254,8 @@ class ApiMobileTests(APITestCase):
         self.assertEqual(pending.status, 'en_attente')
         self._login()
         for url in self._urls():
+            if f'epreuve/{self.free.pk}/' in url:
+                continue  # épreuve libre : lisible sans abonnement
             self.assertEqual(self.client.get(url).status_code, 403, url)
 
     # ── Historique ──

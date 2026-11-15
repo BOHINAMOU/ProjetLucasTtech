@@ -147,8 +147,8 @@ class ExamPaper(models.Model):
     description = models.TextField("Description", blank=True)
     file = models.FileField("Fichier du sujet (PDF ou image)", storage=private_storage,
                             upload_to='concours/epreuves/%Y/', validators=[FileExtensionValidator(ALLOWED_EXT)])
-    is_free = models.BooleanField("Gratuite", default=False,
-                                  help_text="Indication seulement : la lecture exige toujours un compte et un abonnement.")
+    is_free = models.BooleanField("Épreuve libre", default=False,
+                                  help_text="Lisible sans abonnement (compte requis).")
     is_published = models.BooleanField("Publiée", default=True)
     order = models.PositiveSmallIntegerField("Ordre", default=0)
     created_at = models.DateTimeField(auto_now_add=True)

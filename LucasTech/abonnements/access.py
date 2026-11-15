@@ -42,8 +42,11 @@ def user_can_access(user, contest, now=None):
         return False  # concours de démonstration : lisibles par l'équipe seulement
     from Payments.models import Payment
     if Payment.objects.filter(user=user, kind='concours', status='approved', contest=contest).exists():
-        return True  # achat unique : accès à vie
+        return True  # ancien achat à l'unité : accès conservé
     now = now or timezone.now()
+    from .annuel import actif
+    if actif(user, now):
+        return True  # abonnement « Accès Épreuves » : tous les concours
     if has_unlimited(user, now):
         return True
     return SubscriptionContest.objects.filter(
@@ -51,6 +54,9 @@ def user_can_access(user, contest, now=None):
 
 
 def can_view_paper(user, paper):
-    """Lire un document (sujet ou corrigé) = être connecté ET avoir un abonnement actif couvrant
-    son concours (ou être de l'équipe). Règle stricte : la case « gratuite » n'ouvre plus l'accès."""
+    """Lire un document (sujet ou corrigé) = être connecté ET (épreuve libre, ou accès au concours)."""
+    if not user or not user.is_authenticated:
+        return False
+    if paper.is_free and not getattr(paper.session.contest, 'is_demo', False):
+        return True
     return user_can_access(user, paper.session.contest)

@@ -108,3 +108,27 @@ class SubscriptionAuditLogAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+
+
+from .models import AccesEpreuves, ReglageAcces  # noqa: E402
+
+
+@admin.register(ReglageAcces)
+class ReglageAccesAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'prix', 'duree_jours']
+
+    def has_add_permission(self, request):
+        return not ReglageAcces.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(AccesEpreuves)
+class AccesEpreuvesAdmin(admin.ModelAdmin):
+    list_display = ['user', 'debut', 'fin', 'prix_paye', 'payment']
+    search_fields = ['user__email', 'payment__reference']
+    date_hierarchy = 'fin'
+    autocomplete_fields = ['user']
+    readonly_fields = ['payment', 'created_at']

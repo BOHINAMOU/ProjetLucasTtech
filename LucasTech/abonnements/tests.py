@@ -141,7 +141,7 @@ class SubscriptionRulesTests(TestCase):
         self.assertFalse(user_can_access(self.user, self.ens))
 
     def test_lecture_exige_connexion_et_abonnement(self):
-        """Règle stricte : aucun document lisible sans compte + abonnement actif (même « gratuit »)."""
+        """Aucun document sans compte ; sans abonnement, seule l'épreuve libre (choisie par l'admin) se lit."""
         free = self._paper(self.ens, free=True)
         paid = self._paper(self.ens, free=False)
         corr = Correction.objects.create(paper=paid, kind='officiel', file=paid.file.name)
@@ -149,10 +149,12 @@ class SubscriptionRulesTests(TestCase):
                 for k, pk in (('sujet', free.pk), ('sujet', paid.pk), ('corrige', corr.pk))]
         for url in urls:  # anonyme
             self.assertIn(self.client.get(url).status_code, (302, 403), url)
-        self.assertFalse(can_view_paper(self.user, free))
+        self.assertTrue(can_view_paper(self.user, free))  # libre : compte suffit
+        self.assertFalse(can_view_paper(self.user, paid))
         self.client.force_login(self.user)  # connecté sans abonnement
         for url in urls:
-            self.assertEqual(self.client.get(url).status_code, 403, url)
+            attendu = 200 if f'/sujet/{free.pk}/' in url else 403
+            self.assertEqual(self.client.get(url).status_code, attendu, url)
         sub = self._active(self.standard)  # abonné au concours
         services.add_contests(sub, [self.ens])
         for url in urls:

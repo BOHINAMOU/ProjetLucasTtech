@@ -57,19 +57,18 @@ class SoldeTests(APITestCase):
         self.assertEqual((d['solde'], d['mouvements'][0]['type']), (1500, 'depot'))
 
     def test_payer_avec_solde_et_solde_insuffisant(self):
-        from concours.models import Contest, ContestCategory
-        cat = ContestCategory.objects.get(slug='enseignement')
-        c = Contest.objects.create(acronym='IAI', name='IAI', category=cat, is_published=True, access_price=1000)
-        r = self.client.post(API + 'paiements/', {'type': 'concours', 'id': c.pk, 'moyen': 'solde'}, format='json')
+        from abonnements.models import ReglageAcces
+        ReglageAcces.objects.create(prix=1000)
+        r = self.client.post(API + 'paiements/', {'type': 'acces', 'moyen': 'solde'}, format='json')
         self.assertEqual((r.status_code, r.json()['code']), (400, 'solde_insuffisant'))
-        self.assertFalse(Payment.objects.filter(kind='concours').exists())  # rien de créé
+        self.assertFalse(Payment.objects.filter(kind='acces').exists())  # rien de créé
         services.mark_paid(self._depot(1500))
-        r = self.client.post(API + 'paiements/', {'type': 'concours', 'id': c.pk, 'moyen': 'solde'}, format='json')
+        r = self.client.post(API + 'paiements/', {'type': 'acces', 'moyen': 'solde'}, format='json')
         self.assertEqual(r.status_code, 201, r.content)
         self.assertEqual(r.json()['statut'], 'paye')
         self.assertEqual(portefeuille(self.user).solde, 500)
-        from abonnements.access import user_can_access
-        self.assertTrue(user_can_access(self.user, c))
+        from abonnements.annuel import actif
+        self.assertTrue(actif(self.user))
         h = self.client.get(f"{API}historique/paiement-{r.json()['reference']}/").json()
         self.assertEqual(h['moyen'], 'Solde Lantante')
 

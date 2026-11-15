@@ -119,11 +119,10 @@ def _target(request, kind, pk):
         return obj, amount, desc, {'kind': 'product', 'product': obj,
                                    'items': [{'product': obj.pk, 'name': obj.name, 'quantity': qty,
                                               'price': int(unit)}]},             reverse('shop:product_detail', args=[obj.pk])
-    if kind == 'concours':
-        from concours.models import Contest
-        obj = get_object_or_404(Contest.objects.published(), pk=pk, is_demo=False)
-        return obj, int(obj.access_price), f"Concours : {obj.acronym} — {obj.name}", \
-            {'kind': 'concours', 'contest': obj}, obj.get_absolute_url()
+    if kind == 'acces':
+        from abonnements.models import ReglageAcces
+        obj = ReglageAcces.load()
+        return obj, int(obj.prix), "Abonnement Accès Épreuves (1 an)", {'kind': 'acces'}, reverse('concours:index')
     if kind == 'boutique':
         from Shop.models import ShopOrder
         if not request.user.is_authenticated:
@@ -135,14 +134,12 @@ def _target(request, kind, pk):
 
 
 def checkout(request, kind, pk):
-    if kind == 'concours' and not request.user.is_authenticated:
+    if kind == 'concours':
+        return redirect(reverse('payments:checkout', args=['acces', 0]))  # plus de vente à l'unité
+    if kind == 'acces' and not request.user.is_authenticated:
         from django.contrib.auth.views import redirect_to_login
         return redirect_to_login(request.get_full_path())  # l'accès est attaché au compte
     obj, amount, description, link_fields, back_url = _target(request, kind, pk)
-    if kind == 'concours':
-        from abonnements.access import user_can_access
-        if user_can_access(request.user, obj):
-            return redirect(obj.get_absolute_url())
     if kind == 'produit' and not obj.stock:
         raise Http404
     form = CustomerForm(request.POST or None, user=request.user, purpose=kind)

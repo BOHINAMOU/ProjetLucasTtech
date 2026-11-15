@@ -21,6 +21,7 @@ urlpatterns = [
     path('pages/<slug:slug>/', shop.page, name='page'),
     path('paiements/moyens/', shop.moyens, name='moyens'),
     path('solde/', shop.solde, name='solde'),
+    path('abonnement/', shop.abonnement, name='abonnement'),
     path('paiements/devis/', shop.devis, name='devis'),
     path('paiements/', shop.payer, name='payer'),
     path('paiements/<str:reference>/', shop.paiement, name='paiement'),

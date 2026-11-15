@@ -30,6 +30,7 @@ class Payment(models.Model):
         ('soutien', "Soutien d'un événement"),
         ('concours', "Accès à un concours"),
         ('depot', "Recharge du solde"),
+        ('acces', "Abonnement Accès Épreuves"),
     ]
     STATUS_CHOICES = [
         ('pending', 'En attente'),
@@ -203,6 +204,7 @@ class CodePromo(models.Model):
     formations = models.ManyToManyField('Formations.Formation', blank=True, verbose_name="Formations")
     evenements = models.ManyToManyField('Events.Event', blank=True, verbose_name="Événements")
     vendeurs = models.ManyToManyField('Marche.Vendeur', blank=True, verbose_name="Vendeurs")
+    abonnement = models.BooleanField("Abonnement Accès Épreuves", default=False)
     created_at = models.DateTimeField("Créé le", auto_now_add=True)
 
     class Meta:

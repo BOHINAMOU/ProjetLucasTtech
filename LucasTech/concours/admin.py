@@ -25,8 +25,8 @@ class SpecialtyInline(admin.TabularInline):
 
 @admin.register(Contest)
 class ContestAdmin(admin.ModelAdmin):
-    list_display = ('acronym', 'name', 'category', 'access_price', 'is_published', 'n_sessions')
-    list_editable = ('access_price',)
+    list_display = ('acronym', 'name', 'category', 'is_published', 'n_sessions')
+    exclude = ('access_price',)  # plus de vente à l'unité (abonnement unique)
     list_filter = ('is_published', 'is_demo', 'category', 'country')
     list_editable = ('is_published',)
     search_fields = ('acronym', 'name')

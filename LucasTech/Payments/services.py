@@ -100,6 +100,9 @@ def _fulfill(p):
     elif p.kind == 'abonnement':
         from abonnements.services import fulfill_payment
         fulfill_payment(p)
+    elif p.kind == 'acces' and p.user_id:
+        from abonnements.annuel import prolonger
+        prolonger(p)
     elif p.kind == 'depot' and p.user_id:
         from .solde import crediter_depot
         crediter_depot(p)
