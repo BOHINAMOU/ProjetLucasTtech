@@ -62,7 +62,11 @@ class Lot1Tests(APITestCase):
         self.assertEqual((d['non_lues'], len(d['resultats'])), (2, 2))
         nid = d['resultats'][0]['id']
         self.assertEqual(self.client.post(f'{API}notifications/{nid}/lue/').json()['non_lues'], 1)
+        d = self.client.get(API + 'notifications/').json()
+        self.assertNotIn(nid, [n['id'] for n in d['resultats']])  # lue = retirée de la liste
+        self.assertEqual(len(d['resultats']), 1)
         self.assertEqual(self.client.post(API + 'notifications/lues/').json()['non_lues'], 0)
+        self.assertEqual(self.client.get(API + 'notifications/').json()['resultats'], [])
         self.client.force_authenticate(None)
         self.assertEqual(self.client.get(API + 'notifications/').status_code, 401)
 

@@ -38,7 +38,9 @@ def item(n, lues):
 def liste(request):
     qs = list(pour(request.user)[:60])
     lues = set(NotificationLue.objects.filter(user=request.user, notification__in=qs).values_list('notification_id', flat=True))
-    return Response({'non_lues': sum(1 for n in qs if n.pk not in lues), 'resultats': [item(n, lues) for n in qs]})
+    # Une notification lue disparaît de la liste : seules les non lues sont renvoyées.
+    restantes = [n for n in qs if n.pk not in lues]
+    return Response({'non_lues': len(restantes), 'resultats': [item(n, lues) for n in restantes]})
 
 
 def non_lues(user):
