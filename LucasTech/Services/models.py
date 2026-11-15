@@ -9,12 +9,25 @@ from Payments.models import private_storage
 # ─────────────────────────────
 # 📂 CATÉGORIE DE SERVICE
 # ─────────────────────────────
+
+# Icône et couleur dans l'appli (même style que « Explorez nos services »)
+ICONES_APPLI = [('widgets', 'Grille'), ('code', 'Code'), ('web', 'Site web'), ('phone_android', 'Téléphone'),
+                ('campaign', 'Publicité'), ('brush', 'Graphisme'), ('school', 'Formation'),
+                ('shopping_bag', 'Commande'), ('storefront', 'Boutique'), ('cloud', 'Cloud'), ('security', 'Sécurité'),
+                ('print', 'Impression'), ('photo_camera', 'Photo / vidéo'), ('support_agent', 'Assistance'),
+                ('wifi', 'Réseau'), ('computer', 'Ordinateur'), ('trending_up', 'Marketing'), ('share', 'Réseaux sociaux'),
+                ('build', 'Maintenance'), ('local_shipping', 'Livraison')]
+COULEURS_APPLI = [('vert', 'Vert'), ('bleu', 'Bleu'), ('violet', 'Violet'), ('orange', 'Orange'), ('rose', 'Rose'),
+                  ('cyan', 'Cyan'), ('rouge', 'Rouge'), ('gris', 'Gris')]
+
 class ServiceCategory(models.Model):
     name        = models.CharField(max_length=100, verbose_name="Nom")
     description = models.TextField(blank=True, verbose_name="Description")
     icon        = models.CharField(max_length=60, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-code")
     slug        = models.SlugField(unique=True, verbose_name="Slug (URL)")
     order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+    icone_appli = models.CharField("Icône dans l'appli", max_length=20, choices=ICONES_APPLI, default='widgets')
+    couleur     = models.CharField("Couleur dans l'appli", max_length=10, choices=COULEURS_APPLI, default='vert')
     parent      = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='sous_categories',
                                     verbose_name="Grande catégorie",
                                     help_text="Vide = grande catégorie (carte de la page Services, ex. « Services numériques »).")
@@ -44,6 +57,10 @@ class Service(models.Model):
     description = models.TextField(verbose_name="Description")
     icon        = models.CharField(max_length=60, blank=True, verbose_name="Icône",
                                    help_text="Classe Font Awesome ex: fa-desktop (sinon, icône de la catégorie)")
+    icone_appli = models.CharField("Icône dans l'appli", max_length=20, choices=ICONES_APPLI, blank=True,
+                                   help_text="Vide = icône de la catégorie.")
+    couleur     = models.CharField("Couleur dans l'appli", max_length=10, choices=COULEURS_APPLI, blank=True,
+                                   help_text="Vide = couleur de la catégorie.")
     image       = models.ImageField(upload_to='services/', blank=True, null=True, verbose_name="Image")
     video       = models.FileField(upload_to='services/videos/', blank=True, null=True, verbose_name="Vidéo")
     price_from  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Prix à partir de",

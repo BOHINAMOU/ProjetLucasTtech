@@ -133,7 +133,7 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
           <article class="tk{% if not tt.remaining %} is-out{% endif %}" data-tk>
             <div class="tk__img"{% if tt.cover %} style="background-image:url('{{ tt.cover.url }}')"{% endif %}>
               <span class="tk__name">{{ tt.name }}</span>
-              <span class="tk__price">{% if tt.price %}{{ tt.price|floatformat:"0g" }} <small>FCFA</small>{% else %}Gratuit{% endif %}</span>
+              <span class="tk__price">{% if tt.price %}{{ tt.price|floatformat:"0g" }} <small>CFA</small>{% else %}Gratuit{% endif %}</span>
               {% if not tt.remaining %}<span class="tk__out">Complet</span>{% endif %}
             </div>
             <div class="tk__cut" aria-hidden="true"></div>

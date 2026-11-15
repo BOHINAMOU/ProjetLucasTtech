@@ -185,7 +185,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
         </div>
 
         <div class="ct-item-right">
-          <div class="ct-item-price">{{ item.total_price }} <sub>FCFA</sub></div>
+          <div class="ct-item-price">{{ item.total_price }} <sub>CFA</sub></div>
           <a href="{% url 'formations:cart_remove' item.id %}" class="btn-remove">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             Retirer
@@ -206,7 +206,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--
       </div>
       <div class="ct-summary-total">
         <span>Total</span>
-        <div class="ct-total-price">{{ total }} <sub>FCFA</sub></div>
+        <div class="ct-total-price">{{ total }} <sub>CFA</sub></div>
       </div>
       <a href="{% url 'formations:checkout' %}" class="btn-checkout">
         ✓ &nbsp;Passer la commande

@@ -20,7 +20,7 @@
         <div class="wz-order">
           <span class="wz-order__ico"><i class="fa fa-circle-plus"></i></span>
           <div class="wz-order__txt"><strong>+{{ option.slots }} concours</strong><small>Jusqu'au {{ sub.end_at|date:"j F Y" }}</small></div>
-          <b class="wz-order__price">{{ amount|floatformat:"0g" }} <small>FCFA</small></b>
+          <b class="wz-order__price">{{ amount|floatformat:"0g" }} <small>CFA</small></b>
         </div>
         {% include 'abonnements/_pay.html' %}
       </div>

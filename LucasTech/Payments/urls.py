@@ -6,6 +6,7 @@ app_name = 'payments'
 
 urlpatterns = [
     path('fedapay/webhook/', views.webhook, name='webhook'),
+    path('livraison/<int:pk>/', views.livraison_json, name='livraison'),
     path('<slug:kind>/<int:pk>/', views.checkout, name='checkout'),
     path('retour/<str:reference>/', views.callback, name='callback'),
     path('recu/<str:reference>/', views.result, name='result'),

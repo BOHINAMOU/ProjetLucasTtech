@@ -64,7 +64,7 @@
           <h1>Confirmez sur votre téléphone</h1>
           <p class="pw-sub">Saisissez votre code secret{% if p.operator_label %} {{ p.operator_short }}{% endif %}.</p>
           <div class="pw-ticket">
-            <strong>{{ p.amount|floatformat:"0g" }} <small>FCFA</small></strong>
+            <strong>{{ p.amount|floatformat:"0g" }} <small>CFA</small></strong>
             <span>{{ p.phone_display }}</span>
           </div>
           {% if not direct and p.payment_url %}

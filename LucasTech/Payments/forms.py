@@ -143,6 +143,13 @@ class CustomerForm(forms.Form):
                                         last_name=d['last_name'], phone=d.get('whatsapp') or d['phone'],
                                         city=(d.get('city') or '')[:100], account_type='member')
 
+    def _adresse(self):
+        a = (self.cleaned_data.get('city') or '').strip()
+        lat, lng = self.data.get('lat'), self.data.get('lng')
+        if lat and lng:
+            a = f"{a} (GPS {lat}, {lng})".strip()
+        return a[:255]
+
     def payment_fields(self):
         d = self.cleaned_data
         return {
@@ -150,5 +157,5 @@ class CustomerForm(forms.Form):
             'email': (d.get('email') or '').strip(), 'phone': d['phone'],
             'whatsapp': (d.get('whatsapp') or '').strip() or d['phone'],
             'city': (d.get('city') or '').strip(), 'operator': d['operator'],
-            'address': (d.get('city') or '').strip() if self.purpose == 'produit' else '',
+            'address': self._adresse() if self.purpose == 'produit' else '',
         }

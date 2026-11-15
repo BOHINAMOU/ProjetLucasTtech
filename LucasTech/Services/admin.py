@@ -4,7 +4,8 @@ from .models import ServiceCategory, Service, ServiceContact
 
 @admin.register(ServiceCategory)
 class ServiceCategoryAdmin(admin.ModelAdmin):
-    list_display  = ['name', 'parent', 'icon', 'order']
+    list_display  = ['name', 'parent', 'icone_appli', 'couleur', 'order']
+    list_editable = ['icone_appli', 'couleur', 'order']
     list_filter = ['parent']
     prepopulated_fields = {'slug': ('name',)}
     ordering = ['order', 'name']

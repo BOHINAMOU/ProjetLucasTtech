@@ -266,7 +266,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
         <div class="ct-item-qty">Quantité : {{ item.quantity }}</div>
       </div>
       <div class="ct-item-right">
-        <div class="ct-item-price">{{ item.total_price }}<small> FCFA</small></div>
+        <div class="ct-item-price">{{ item.total_price }}<small> CFA</small></div>
         <a href="{% url 'shop:cart_remove' item.id %}" class="btn-remove">
           <i class="fa fa-times"></i> Retirer
         </a>
@@ -283,7 +283,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
     <hr class="ct-divider">
     <div class="ct-total">
       <span>Total estimé</span>
-      <div class="ct-total-price">{{ total_price }}<small> FCFA</small></div>
+      <div class="ct-total-price">{{ total_price }}<small> CFA</small></div>
     </div>
     <a href="{% url 'shop:checkout' %}" class="btn-checkout">
       <i class="fa fa-lock"></i> Passer la commande

@@ -62,3 +62,18 @@ def calculer(produit, ville='', lat=None, lng=None):
     if produit.livraison_autre_ville is None:
         raise ValidationError(f"Livraison seulement à {ville_depart}.")
     return {'frais': int(produit.livraison_autre_ville), 'mode': 'ville', 'detail': f"Depuis {ville_depart}"}
+
+
+
+def depart(produit):
+    """(lat, lng, ville) du point de départ : produit, sinon vendeur, sinon défaut (Université de Lomé)."""
+    from .models import ReglageLivraison
+    r = ReglageLivraison.load()
+    v = getattr(produit, 'vendeur', None)
+    if produit.retrait_latitude is not None and produit.retrait_longitude is not None:
+        lat, lng = produit.retrait_latitude, produit.retrait_longitude
+    elif v and v.latitude is not None:
+        lat, lng = v.latitude, v.longitude
+    else:
+        lat, lng = r.depart_latitude, r.depart_longitude
+    return float(lat), float(lng), (v.ville if v else '') or r.depart_ville

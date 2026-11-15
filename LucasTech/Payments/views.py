@@ -143,6 +143,25 @@ def checkout(request, kind, pk):
     if kind == 'produit' and not obj.stock:
         raise Http404
     form = CustomerForm(request.POST or None, user=request.user, purpose=kind)
+    livraison = None
+    if kind == 'produit' and obj.livrable:
+        from django.core.exceptions import ValidationError
+        from Marche.livraison import calculer, depart
+        lat, lng, ville_depart = depart(obj)
+        livraison = {'lat': lat, 'lng': lng, 'ville': ville_depart, 'frais': 0, 'detail': ''}
+        if request.method == 'POST':
+            try:
+                liv = calculer(obj, request.POST.get('city') or '', request.POST.get('lat'), request.POST.get('lng'))
+                livraison.update(frais=liv['frais'], detail=liv['detail'])
+                amount += liv['frais']
+                link_fields.update(livraison=liv['frais'], livraison_detail=liv['detail'])
+                if obj.vendeur_id:
+                    articles = amount - liv['frais']
+                    link_fields.update(vendeur=obj.vendeur,
+                                       commission=int(round(articles * float(obj.vendeur.commission_pct) / 100)))
+            except ValidationError as e:
+                form.is_valid()
+                form.add_error(None, e.messages[0])
     if request.method == 'POST' and fedapay.is_enabled() and form.is_valid():
         response = begin_payment(request, form, amount=amount, description=description, **link_fields)
         if response:
@@ -151,11 +170,31 @@ def checkout(request, kind, pk):
     qty = link_fields.get('items', [{}])[0].get('quantity', 1) if kind == 'produit' else 1
     return render(request, 'payments/checkout.html', {
         'form': form, 'obj': obj, 'kind': kind, 'amount': amount, 'description': description, 'qty': qty,
-        'back_url': back_url, 'has_file': has_file, 'enabled': fedapay.is_enabled(),
+        'back_url': back_url, 'has_file': has_file, 'enabled': fedapay.is_enabled(), 'livraison': livraison,
         'mode': fedapay.mode(), 'pay_js': pay_js_data(),
         'pay_label': f"Payer {amount:,} CFA".replace(',', ' '),
         'whatsapp_url': whatsapp_link(f"Bonjour, je suis intéressé(e) par : {description} ({amount} CFA)."),
     })
+
+
+def livraison_json(request, pk):
+    """Frais de livraison en direct (carte du paiement sur le site)."""
+    from django.core.exceptions import ValidationError
+    from Shop.models import Product
+    from Marche.livraison import calculer
+    p = get_object_or_404(Product, pk=pk, is_available=True)
+    try:
+        qty = max(1, min(int(request.GET.get('qty') or 1), p.stock or 1))
+    except ValueError:
+        qty = 1
+    unit = p.bulk_price if (p.bulk_price and qty >= p.bulk_min_qty) else p.price
+    articles = int(unit) * qty
+    try:
+        liv = calculer(p, request.GET.get('ville') or '', request.GET.get('lat'), request.GET.get('lng'))
+    except ValidationError as e:
+        return JsonResponse({'erreur': e.messages[0], 'articles': articles})
+    return JsonResponse({'frais': liv['frais'], 'detail': liv['detail'], 'articles': articles,
+                         'total': articles + liv['frais']})
 
 
 def pay_js_data():

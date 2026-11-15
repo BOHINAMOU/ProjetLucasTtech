@@ -171,6 +171,7 @@ def produit(request, pk):
         'vendeur': p.vendeur.boutique if p.vendeur_id else '',
         'vendeur_ville': p.vendeur.ville if p.vendeur_id else '',
         'livraison_vendeur': bool(p.livrable), 'livrable': bool(p.livrable),
+        'depart': _depart(p),
         'url_paiement': paiement(request, reverse('payments:checkout', args=['produit', p.pk])) if p.stock > 0 else None,
     })
     return Response(data)
@@ -723,12 +724,24 @@ def rubriques_services(request):
     def groupe(c):
         items = [service_item(request, x) for x in c.services.all() if x.is_active]
         return {'id': c.pk, 'nom': c.name, 'slug': c.slug, 'description': c.description, 'icone': c.icon,
-                'services': items} if items else None
+                'icone_appli': c.icone_appli, 'couleur': c.couleur,
+                'services': [dict(it, icone_appli=x.icone_appli or c.icone_appli, couleur=x.couleur or c.couleur)
+                             for it, x in zip(items, [y for y in c.services.all() if y.is_active])]} if items else None
 
     out = []
     for r in [c for c in toutes if c.parent_id is None]:
         groupes = [g for g in [groupe(r)] + [groupe(c) for c in toutes if c.parent_id == r.pk] if g]
         if groupes:
-            out.append({'id': r.pk, 'nom': r.name, 'icone': r.icon, 'nb': sum(len(g['services']) for g in groupes),
+            out.append({'id': r.pk, 'nom': r.name, 'icone': r.icon, 'icone_appli': r.icone_appli, 'couleur': r.couleur,
+                        'nb': sum(len(g['services']) for g in groupes),
                         'groupes': groupes})
     return Response(out)
+
+
+
+def _depart(p):
+    if not p.livrable:
+        return None
+    from Marche.livraison import depart
+    lat, lng, ville = depart(p)
+    return {'lat': lat, 'lng': lng, 'ville': ville}

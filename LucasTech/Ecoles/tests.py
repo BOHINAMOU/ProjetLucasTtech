@@ -64,3 +64,67 @@ class EcolesTests(APITestCase):
         self.assertFalse(MembreInline(Ecole, site).has_add_permission(rq, self.e))
         rq.user = self.resp
         self.assertTrue(MembreInline(Ecole, site).has_add_permission(rq, self.e))
+
+
+@override_settings(STORAGES=STORAGES)
+class CyclesTests(APITestCase):
+    def setUp(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from .models import NouveauteEcole
+        U = get_user_model()
+        self.e = Ecole.objects.create(nom='Complexe Les Élites', type='lycee', ville='Lomé',
+                                      cycles=['primaire', 'lycee', 'superieur'])
+        self.calme = Ecole.objects.create(nom='AAA École calme', type='primaire', ville='Lomé', ordre=0)
+        self.info = Filiere.objects.create(ecole=self.e, cycle='superieur', nom='Informatique')
+        NouveauteEcole.objects.create(ecole=self.e, titre='Bourses 2027', texte='Dossiers ouverts')
+        NouveauteEcole.objects.create(ecole=self.calme, titre='Vieille', date=timezone.localdate() - timedelta(days=90))
+        self.resp = U.objects.create_user(email='r@example.com', password='x-Pass-12345', is_verified=True)
+        MembreEcole.objects.create(ecole=self.e, user=self.resp, role='proprietaire')
+        self.url = f'{API}ecoles/{self.e.slug}/inscription/'
+
+    def _post(self, **d):
+        base = {'nom': 'Koffi', 'prenom': 'Ama', 'telephone': '90000000'}
+        base.update(d)
+        return self.client.post(self.url, base, format='multipart')
+
+    def test_fiche_cycles_classes_nouveautes_et_badge(self):
+        liste = self.client.get(API + 'ecoles/').json()
+        liste = liste['resultats'] if isinstance(liste, dict) else liste
+        self.assertEqual(liste[0]['nom'], 'Complexe Les Élites')  # nouveauté récente : en tête
+        self.assertEqual([x['nouveau'] for x in liste], [True, False])
+        f = self.client.get(f'{API}ecoles/{self.e.slug}/').json()
+        self.assertEqual([c['code'] for c in f['cycles']], ['primaire', 'lycee', 'superieur'])
+        self.assertEqual(f['classes']['lycee'], ['2nde', '1re', 'Tle'])
+        self.assertNotIn('college', f['classes'])
+        self.assertEqual(f['nouveautes'][0]['titre'], 'Bourses 2027')
+        self.assertEqual(f['filieres'][0]['cycle'], 'superieur')
+
+    def test_inscription_par_cycle_et_document_prive(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.assertEqual(self._post().json()['erreurs']['cycle'], "Choisissez le cycle.")
+        self.assertIn('classe', self._post(cycle='lycee', classe='CM2').json()['erreurs'])
+        self.assertEqual(self._post(cycle='lycee', classe='Tle').status_code, 201)
+        self.assertIn('niveau', self._post(cycle='superieur').json()['erreurs'])
+        gros = SimpleUploadedFile('a.pdf', b'%PDF' + b'0' * (5 * 1024 * 1024 + 1), content_type='application/pdf')
+        self.assertIn('document', self._post(cycle='superieur', niveau='Bac', document=gros).json()['erreurs'])
+        exe = SimpleUploadedFile('a.exe', b'MZ', content_type='application/octet-stream')
+        self.assertIn('document', self._post(cycle='superieur', niveau='Bac', document=exe).json()['erreurs'])
+        pdf = SimpleUploadedFile('releve.pdf', b'%PDF-1.4 releve', content_type='application/pdf')
+        r = self._post(cycle='superieur', niveau='Bac', serie_bac='D', filiere=self.info.pk, document=pdf)
+        self.assertEqual(r.status_code, 201, r.content)
+        i = InscriptionEcole.objects.get(serie_bac='D')
+        self.assertEqual((i.cycle, i.niveau_etudes, i.filiere, bool(i.document)), ('superieur', 'Bac', self.info, True))
+        url = f'/ecoles/document/{i.pk}/'
+        self.assertEqual(self.client.get(url).status_code, 302)  # anonyme : connexion admin
+        autre = get_user_model().objects.create_user(email='x@example.com', password='x-Pass-12345', is_staff=True)
+        self.client.force_login(autre)
+        self.assertEqual(self.client.get(url).status_code, 404)  # pas de son école
+        self.client.force_login(self.resp)
+        self.assertEqual(self.client.get(url).status_code, 200)
+        r = self.client.post(f'{A}Ecoles/inscriptionecole/', {'action': 'exporter_excel', '_selected_action': [i.pk]})
+        self.assertEqual(r.status_code, 200)
+        import io
+        from openpyxl import load_workbook
+        ws = load_workbook(io.BytesIO(r.content)).active
+        self.assertIn(f'/ecoles/document/{i.pk}/', ws.cell(row=2, column=13).value)

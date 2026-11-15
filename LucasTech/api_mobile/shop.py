@@ -282,6 +282,11 @@ def devis(request):
     livraison = int(fields.get('livraison') or 0)
     rep = {'articles': amount - livraison, 'livraison': livraison, 'livraison_detail': fields.get('livraison_detail', ''),
            'remise': 0, 'total': amount, 'code_promo': '', 'message_promo': ''}
+    p = fields.get('product')
+    if p is not None and p.livrable:
+        from Marche.livraison import depart
+        lat, lng, ville = depart(p)
+        rep['depart'] = {'lat': lat, 'lng': lng, 'ville': ville}
     if str(d.get('code_promo') or '').strip():
         try:
             r, code = remise(d.get('code_promo'), user, fields, amount)
