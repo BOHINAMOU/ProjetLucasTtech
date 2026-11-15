@@ -59,7 +59,7 @@ class Filiere(models.Model):
     nom = models.CharField("Filière", max_length=140)
     niveau = models.CharField("Niveau", max_length=60, blank=True)
     duree = models.CharField("Durée", max_length=40, blank=True)
-    frais = models.PositiveIntegerField("Frais (FCFA)", null=True, blank=True)
+    frais = models.PositiveIntegerField("Frais (CFA)", null=True, blank=True)
     image = models.ImageField("Photo", upload_to='ecoles/filieres/', blank=True)
     description = models.TextField("Description", blank=True)
     ouverte = models.BooleanField("Ouverte aux inscriptions", default=True)

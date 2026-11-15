@@ -54,7 +54,7 @@ def mark_paid(payment):
             if not Notification.objects.filter(utilisateur_id=p.user_id, automatique=True,
                                                message__contains=p.reference).exists():
                 titre = "Merci pour votre soutien !" if p.kind == 'soutien' else "Paiement réussi"
-                notifier(p.user, titre, f"{p.description} — {p.amount} F. Réf. {p.reference}")
+                notifier(p.user, titre, f"{p.description} — {p.amount} CFA. Réf. {p.reference}")
         except Exception:  # pragma: no cover
             pass
     return p
@@ -123,7 +123,7 @@ def _send_confirmation(p):
         site = getattr(settings, 'SITE_URL', '').rstrip('/') or 'https://lantantetechnologie.com'
         link = site + p.get_absolute_url()
         body = (f"Bonjour {p.first_name},\n\n"
-                f"Nous avons bien reçu votre paiement de {p.amount:,} FCFA pour : {p.description}.\n"
+                f"Nous avons bien reçu votre paiement de {p.amount:,} CFA pour : {p.description}.\n"
                 f"Référence : {p.reference}\n\n").replace(',', ' ')
         if p.kind == 'ticket':
             body += (f"Votre reçu et vos tickets :\n{link}\n\n"

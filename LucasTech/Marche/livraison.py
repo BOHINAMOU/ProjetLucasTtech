@@ -23,7 +23,7 @@ def _norm(s):
 
 
 def _arrondi(x):
-    return int(math.ceil(x / 50.0) * 50)  # au 50 F supérieur
+    return int(math.ceil(x / 50.0) * 50)  # au 50 CFA supérieur
 
 
 def _float(v):

@@ -57,7 +57,7 @@ def remise(texte, user, fields, montant, verrou=False):
         raise ValidationError("Code non valable ici")
     articles = montant - int(fields.get('livraison') or 0)
     if articles < c.minimum_achat:
-        raise ValidationError(f"Code dès {c.minimum_achat:,} F d'achat".replace(',', ' '))
+        raise ValidationError(f"Code dès {c.minimum_achat:,} CFA d'achat".replace(',', ' '))
     if c.max_utilisations is not None and utilisations(c).count() >= c.max_utilisations:
         raise ValidationError("Code épuisé")
     if c.max_par_personne is not None and utilisations(c, user).count() >= c.max_par_personne:

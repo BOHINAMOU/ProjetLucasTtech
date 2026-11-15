@@ -35,8 +35,8 @@
 
         <div class="pp-buy">
           <div class="pp-price">
-            {% if service.price %}<strong>{{ service.price|floatformat:"0g" }} FCFA</strong>
-            {% elif service.price_from %}<span style="color:var(--bq-muted)">À partir de</span> <strong>{{ service.price_from|floatformat:"0g" }} FCFA</strong>
+            {% if service.price %}<strong>{{ service.price|floatformat:"0g" }} CFA</strong>
+            {% elif service.price_from %}<span style="color:var(--bq-muted)">À partir de</span> <strong>{{ service.price_from|floatformat:"0g" }} CFA</strong>
             {% else %}<strong style="font-size:1.6rem">Prix sur devis</strong>{% endif %}
           </div>
           <div style="margin-top:1.2rem">
@@ -97,7 +97,7 @@
 
   {% if service.price %}
   <div class="pp-sticky" id="ppSticky">
-    <div><strong>{{ service.price|floatformat:"0g" }} FCFA</strong><small>{{ service.title }}</small></div>
+    <div><strong>{{ service.price|floatformat:"0g" }} CFA</strong><small>{{ service.title }}</small></div>
     <a href="{% url 'payments:checkout' 'service' service.pk %}" class="pp-btn pp-btn--main">Payer</a>
   </div>
   {% endif %}

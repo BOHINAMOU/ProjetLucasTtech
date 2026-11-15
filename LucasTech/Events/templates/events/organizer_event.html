@@ -13,7 +13,7 @@
 
     <div class="ct-kpis">
       <div class="ct-kpi"><small>Tickets vendus</small><strong>{{ sold }}</strong></div>
-      <div class="ct-kpi"><small>Encaissé</small><strong>{{ revenue|floatformat:"0g" }} FCFA</strong></div>
+      <div class="ct-kpi"><small>Encaissé</small><strong>{{ revenue|floatformat:"0g" }} CFA</strong></div>
       <div class="ct-kpi"><small>Entrées validées</small><strong>{{ used }}</strong></div>
       <div class="ct-kpi"><small>Commandes</small><strong>{{ payments|length }}</strong></div>
     </div>
@@ -23,7 +23,7 @@
         <h2>Par type de ticket</h2>
         <table class="ct-table">
           <thead><tr><th>Type</th><th>Prix</th><th>Vendus</th><th>Restants</th><th>Total</th></tr></thead>
-          <tbody>{% for t in types %}<tr><td>{{ t.tt.name }}</td><td>{{ t.tt.price|floatformat:"0g" }}</td><td>{{ t.sold }} / {{ t.tt.quantity }}</td><td>{{ t.left }}</td><td>{{ t.revenue|floatformat:"0g" }} FCFA</td></tr>{% endfor %}</tbody>
+          <tbody>{% for t in types %}<tr><td>{{ t.tt.name }}</td><td>{{ t.tt.price|floatformat:"0g" }}</td><td>{{ t.sold }} / {{ t.tt.quantity }}</td><td>{{ t.left }}</td><td>{{ t.revenue|floatformat:"0g" }} CFA</td></tr>{% endfor %}</tbody>
         </table>
       </div>
       <div class="ct-box ct-form">
@@ -58,7 +58,7 @@
               <td>{{ p.full_name }}</td>
               <td><a href="tel:{{ p.phone }}">{{ p.phone_display }}</a>{% if p.whatsapp and p.whatsapp != p.phone %}<br><a href="https://wa.me/{{ p.whatsapp|cut:'+'|cut:' ' }}" target="_blank" rel="noopener" style="color:#128c4a"><i class="fab fa-whatsapp"></i> {{ p.whatsapp }}</a>{% endif %}{% if p.email %}<br><small style="color:var(--bq-muted)">{{ p.email }}</small>{% endif %}</td>
               <td>{% for t in p.tickets.all %}<code>{{ t.code }}</code> {{ t.ticket_type.name }}{% if t.used_at %} ✓{% endif %}<br>{% endfor %}</td>
-              <td>{{ p.amount|floatformat:"0g" }} FCFA</td>
+              <td>{{ p.amount|floatformat:"0g" }} CFA</td>
             </tr>
           {% empty %}
             <tr><td colspan="5" style="color:var(--bq-muted);padding:1.5rem .5rem">Aucune vente pour l'instant.</td></tr>

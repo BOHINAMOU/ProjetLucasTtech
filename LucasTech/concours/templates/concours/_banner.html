@@ -18,7 +18,7 @@
       </div>
     </div>
     {% if not has_access and not contest.is_demo %}
-    <div class="cx-banner__cta"><a class="cc-btn" href="{% url 'payments:checkout' 'acces' 0 %}"><i class="fa fa-lock-open"></i> S'abonner · {{ abo_prix }} F / an</a></div>
+    <div class="cx-banner__cta"><a class="cc-btn" href="{% url 'payments:checkout' 'acces' 0 %}"><i class="fa fa-lock-open"></i> S'abonner · {{ abo_prix }} CFA / an</a></div>
     {% endif %}
   </div>
 </section>

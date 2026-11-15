@@ -1,5 +1,5 @@
 {% if enabled %}
-<form method="post" class="ct-form wz-form" novalidate data-order-label="{{ description }}" data-order-total="{{ amount|floatformat:'0g' }} FCFA">
+<form method="post" class="ct-form wz-form" novalidate data-order-label="{{ description }}" data-order-total="{{ amount|floatformat:'0g' }} CFA">
   {% csrf_token %}
   {% if period %}<input type="hidden" name="periode" value="{{ period }}">{% endif %}
   {% if option %}<input type="hidden" name="slots" value="{{ option.slots }}">{% endif %}

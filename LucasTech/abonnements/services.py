@@ -31,7 +31,7 @@ def create_pending_subscription(user, plan, period, payment=None):
 
 def extension_price(option, subscription, now=None):
     """Prix d'une extension au prorata des jours restants de l'abonnement principal
-    (base : prix pour 30 jours), arrondi aux 5 F supérieurs, minimum 100 F."""
+    (base : prix pour 30 jours), arrondi aux 5 CFA supérieurs, minimum 100 CFA."""
     now = now or timezone.now()
     secs = max(0, (subscription.end_at - now).total_seconds()) if subscription.end_at else 0
     days = max(1, math.ceil(secs / 86400))
@@ -64,8 +64,8 @@ def advice_for(user, plan):
         return ''
     return (f"Vous avez déjà {same} abonnement{'s' if same > 1 else ''} {plan.name}. "
             f"Le {better.name} est plus avantageux : {better.contest_limit} concours pour "
-            f"{better.monthly_price:,} F au lieu de {plan.contest_limit * 2} concours pour "
-            f"{plan.monthly_price * 2:,} F avec deux {plan.name}.").replace(',', ' ')
+            f"{better.monthly_price:,} CFA au lieu de {plan.contest_limit * 2} concours pour "
+            f"{plan.monthly_price * 2:,} CFA avec deux {plan.name}.").replace(',', ' ')
 
 
 def ultimate_to_extend(user):

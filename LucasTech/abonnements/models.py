@@ -23,8 +23,8 @@ STATUS_CHOICES = [
 class SubscriptionPlan(models.Model):
     code = models.SlugField("Code", max_length=30, unique=True, help_text="standard, premium, ultimate…")
     name = models.CharField("Nom", max_length=60)
-    monthly_price = models.PositiveIntegerField("Prix mensuel (FCFA)")
-    yearly_price = models.PositiveIntegerField("Prix annuel (FCFA)")
+    monthly_price = models.PositiveIntegerField("Prix mensuel (CFA)")
+    yearly_price = models.PositiveIntegerField("Prix annuel (CFA)")
     contest_limit = models.PositiveSmallIntegerField("Nombre de concours", null=True, blank=True,
                                                      help_text="Laisser vide si illimité.")
     is_unlimited = models.BooleanField("Illimité", default=False,
@@ -60,7 +60,7 @@ class SubscriptionPlan(models.Model):
 
 class ExtensionOption(models.Model):
     slots = models.PositiveSmallIntegerField("Concours supplémentaires", unique=True)
-    price = models.PositiveIntegerField("Prix pour 30 jours (FCFA)",
+    price = models.PositiveIntegerField("Prix pour 30 jours (CFA)",
                                         help_text="Le prix réel est calculé au prorata des jours restants "
                                                   "de l'abonnement principal.")
     is_active = models.BooleanField("En vente", default=True)
@@ -71,7 +71,7 @@ class ExtensionOption(models.Model):
         verbose_name_plural = "Options d'extension"
 
     def __str__(self):
-        return f"+{self.slots} concours — {self.price} FCFA / 30 j"
+        return f"+{self.slots} concours — {self.price} CFA / 30 j"
 
 
 class UserSubscriptionQuerySet(models.QuerySet):
@@ -87,7 +87,7 @@ class UserSubscription(models.Model):
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT, related_name='subscriptions',
                              verbose_name="Formule")
     period = models.CharField("Durée", max_length=4, choices=PERIOD_CHOICES, default='mois')
-    price_paid = models.PositiveIntegerField("Prix payé (FCFA)")
+    price_paid = models.PositiveIntegerField("Prix payé (CFA)")
     contest_limit = models.PositiveSmallIntegerField("Limite de concours (figée)", null=True, blank=True)
     is_unlimited = models.BooleanField("Illimité (figé)", default=False)
     start_at = models.DateTimeField("Début", null=True, blank=True)
@@ -169,7 +169,7 @@ class SubscriptionExtension(models.Model):
     subscription = models.ForeignKey(UserSubscription, on_delete=models.CASCADE, related_name='extensions',
                                      verbose_name="Abonnement principal")
     slots = models.PositiveSmallIntegerField("Concours supplémentaires")
-    price_paid = models.PositiveIntegerField("Prix payé (FCFA)")
+    price_paid = models.PositiveIntegerField("Prix payé (CFA)")
     status = models.CharField("Statut", max_length=12, choices=STATUS_CHOICES, default='en_attente', db_index=True)
     payment = models.ForeignKey('Payments.Payment', on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='subscription_extensions', verbose_name="Paiement")
@@ -206,7 +206,7 @@ class SubscriptionAuditLog(models.Model):
 
 class ReglageAcces(models.Model):
     """Abonnement unique « Accès Épreuves » : toutes les épreuves de tous les concours pendant [duree_jours]."""
-    prix = models.PositiveIntegerField("Prix (FCFA)", default=5000)
+    prix = models.PositiveIntegerField("Prix (CFA)", default=5000)
     duree_jours = models.PositiveSmallIntegerField("Durée (jours)", default=365)
 
     class Meta:
@@ -214,7 +214,7 @@ class ReglageAcces(models.Model):
         verbose_name_plural = "Réglage de l'abonnement"
 
     def __str__(self):
-        return f"Accès Épreuves : {self.prix} F / {self.duree_jours} jours"
+        return f"Accès Épreuves : {self.prix} CFA / {self.duree_jours} jours"
 
     @classmethod
     def load(cls):
@@ -227,7 +227,7 @@ class AccesEpreuves(models.Model):
                              verbose_name="Utilisateur")
     debut = models.DateTimeField("Début")
     fin = models.DateTimeField("Fin", db_index=True)
-    prix_paye = models.PositiveIntegerField("Prix payé (FCFA)", default=0)
+    prix_paye = models.PositiveIntegerField("Prix payé (CFA)", default=0)
     payment = models.OneToOneField('Payments.Payment', on_delete=models.PROTECT, null=True, blank=True,
                                    related_name='acces_epreuves', verbose_name="Paiement")
     rappel_7 = models.BooleanField(default=False, editable=False)

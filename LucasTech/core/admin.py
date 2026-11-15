@@ -22,7 +22,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ('Prix des publications', {
             'fields': ('publication_price',),
-            'description': "Prix unique d'une publication (actualité, offre d'emploi, publicité) : 2 500 FCFA par défaut. "
+            'description': "Prix unique d'une publication (actualité, offre d'emploi, publicité) : 2 500 CFA par défaut. "
                            "Il s'applique à tous les tarifs de publication, pour les entreprises et les particuliers.",
         }),
         ('Réseaux sociaux', {

@@ -313,8 +313,8 @@ class SiteSettings(models.Model):
     payment_tmoney = models.CharField(max_length=20, blank=True, verbose_name="Numéro T-Money pour les paiements",
                                       help_text="Numéro complet ex : 22890000000. Affiché aux entreprises qui paient une publication.")
     publication_price = models.PositiveIntegerField(
-        default=2500, verbose_name="Prix d'une publication (FCFA)",
-        help_text="Prix unique d'une publication (actualité, offre d'emploi, publicité). Par défaut 2 500 FCFA. "
+        default=2500, verbose_name="Prix d'une publication (CFA)",
+        help_text="Prix unique d'une publication (actualité, offre d'emploi, publicité). Par défaut 2 500 CFA. "
                   "Les tarifs correspondants se mettent à jour automatiquement.")
     facebook_url   = models.URLField(blank=True, verbose_name="Lien Facebook")
     instagram_url  = models.URLField(blank=True, verbose_name="Lien Instagram")

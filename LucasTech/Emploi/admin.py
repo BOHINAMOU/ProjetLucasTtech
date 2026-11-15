@@ -790,7 +790,7 @@ class ServicePlanAdmin(admin.ModelAdmin):
     prepopulated_fields = {'code': ('name',)}
 
     def get_readonly_fields(self, request, obj=None):
-        # Actualité, offre d'emploi et publicité : prix unique, réglé dans « Réglages du site » (2 500 FCFA par défaut).
+        # Actualité, offre d'emploi et publicité : prix unique, réglé dans « Réglages du site » (2 500 CFA par défaut).
         if obj and obj.kind in ServicePlan.PUBLICATION_KINDS:
             return ('price', 'price_from')
         return ()

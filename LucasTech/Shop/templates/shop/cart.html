@@ -277,8 +277,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
 
   <div class="ct-summary">
     <p class="ct-summary-title">Résumé</p>
-    <div class="ct-row"><span>Sous-total</span><span>{{ total_price }} FCFA</span></div>
-    <div class="ct-row"><span>Livraison (Lomé)</span><span>1 000 FCFA</span></div>
+    <div class="ct-row"><span>Sous-total</span><span>{{ total_price }} CFA</span></div>
+    <div class="ct-row"><span>Livraison (Lomé)</span><span>1 000 CFA</span></div>
     <div class="ct-row"><span>Frais de service</span><span>Gratuit</span></div>
     <hr class="ct-divider">
     <div class="ct-total">
@@ -329,7 +329,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);}
         <div class="ct-reco-name">{{ p.name }}</div>
         <div class="ct-reco-price">
           {% if p.is_on_sale %}<span class="ct-reco-price-old">{{ p.old_price }}</span>{% endif %}
-          {{ p.price }} FCFA
+          {{ p.price }} CFA
         </div>
       </div>
     </a>

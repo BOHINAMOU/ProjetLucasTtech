@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="bq-card__price">
-    {% if f.price %}<strong>{{ f.price|floatformat:"0g" }} FCFA</strong>{% if f.is_on_sale %}<s>{{ f.old_price|floatformat:"0g" }} FCFA</s>{% endif %}{% else %}<strong>Gratuit</strong>{% endif %}
+    {% if f.price %}<strong>{{ f.price|floatformat:"0g" }} CFA</strong>{% if f.is_on_sale %}<s>{{ f.old_price|floatformat:"0g" }} CFA</s>{% endif %}{% else %}<strong>Gratuit</strong>{% endif %}
   </div>
   <div class="bq-card__actions">
     {% if f.can_pay_online %}

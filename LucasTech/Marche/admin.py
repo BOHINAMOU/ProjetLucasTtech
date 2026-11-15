@@ -5,7 +5,7 @@ from .models import ReglageLivraison, Reversement, Vendeur
 
 
 def francs(n):
-    return f"{int(n or 0):,} F".replace(',', '\u202f')
+    return f"{int(n or 0):,} CFA".replace(',', '\u202f')
 
 
 def comptes(v):

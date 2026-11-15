@@ -38,7 +38,7 @@
         <div><h1>Historique</h1><p>Vos achats, formations, abonnements et tickets.</p></div>
       </div>
       <div class="ap-stats">
-        <div><b>{{ total_paid|floatformat:"0g" }} F</b><small>Total payé</small></div>
+        <div><b>{{ total_paid|floatformat:"0g" }} CFA</b><small>Total payé</small></div>
         <div><b>{{ n_paid }}</b><small>Achat{{ n_paid|pluralize }} réussi{{ n_paid|pluralize }}</small></div>
       </div>
     </section>
@@ -61,7 +61,7 @@
             <small>{{ e.date|date:"H:i" }}{% if e.ref %} · {{ e.ref }}{% endif %}</small>
           </span>
           <span class="hx-end">
-            {% if e.amount is not None %}<strong>{{ e.amount|floatformat:"0g" }} F</strong>{% endif %}
+            {% if e.amount is not None %}<strong>{{ e.amount|floatformat:"0g" }} CFA</strong>{% endif %}
             <span class="ap-pill ap-pill--{{ e.cls }}">{{ e.status }}</span>
           </span>
           {% if e.extra %}<a class="hx-dl" href="{{ e.extra.0 }}" title="{{ e.extra.2 }}" aria-label="{{ e.extra.2 }}"><i class="fa {{ e.extra.1 }}"></i></a>{% else %}<i class="fa fa-chevron-right hx-chev"></i>{% endif %}

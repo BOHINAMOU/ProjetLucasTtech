@@ -41,7 +41,7 @@
           {% elif contest.is_demo %}
             <span class="cc-na"><i class="fa fa-lock"></i> Exemple réservé à l'équipe</span>
           {% else %}
-            <a class="cc-btn cc-btn--lock" href="{% url 'payments:checkout' 'acces' 0 %}"><i class="fa fa-lock-open"></i> S'abonner · {{ abo_prix }} F / an</a>
+            <a class="cc-btn cc-btn--lock" href="{% url 'payments:checkout' 'acces' 0 %}"><i class="fa fa-lock-open"></i> S'abonner · {{ abo_prix }} CFA / an</a>
             {% if not p.corrections.all %}<span class="cc-na">Corrigé non disponible</span>{% endif %}
           {% endif %}
         </div>

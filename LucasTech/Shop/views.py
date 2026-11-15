@@ -64,7 +64,7 @@ def shop(request):
             Q(description__icontains=search_query)
         )
 
-    # Filtre par prix (FCFA)
+    # Filtre par prix (CFA)
     def _num(v):
         try:
             return int(str(v).replace(' ', '')) if str(v).strip() else None
@@ -222,8 +222,8 @@ def checkout(request):
             wa_number = _cart_whatsapp_number(order.items.select_related('product').all())
             lines = [f"Commande #{order.receipt_number} — Lantante Technologie"]
             for oi in order.items.all():
-                lines.append(f"• {oi.product.name} ×{oi.quantity} = {oi.total_price()} FCFA")
-            lines.append(f"\nTotal : {order.total_price} FCFA")
+                lines.append(f"• {oi.product.name} ×{oi.quantity} = {oi.total_price()} CFA")
+            lines.append(f"\nTotal : {order.total_price} CFA")
             wa_url = f"https://wa.me/{wa_number}?text={urllib.parse.quote(chr(10).join(lines))}"
             # Marquer comme payé (WhatsApp = accord direct)
             order.status = 'paid'

@@ -128,7 +128,7 @@ def build(request):
         def somme(qs):
             return qs.aggregate(s=Sum('amount'))['s'] or 0
         def f(n):
-            return f"{int(n):,} F".replace(',', '\u202f')
+            return f"{int(n):,} CFA".replace(',', '\u202f')
         d30 = now - timedelta(days=30)
         argent = {
             'periodes': [
@@ -197,7 +197,7 @@ def build(request):
 
 
 def _f(n):
-    return f"{int(n or 0):,} F".replace(',', '\u202f')
+    return f"{int(n or 0):,} CFA".replace(',', '\u202f')
 
 
 def build_delegue(request):

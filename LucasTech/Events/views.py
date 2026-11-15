@@ -58,7 +58,7 @@ def event_detail(request, slug):
         except ValueError:
             montant = 0
         if montant < event.min_amount:
-            messages.error(request, f"Montant minimal : {event.min_amount} FCFA.")
+            messages.error(request, f"Montant minimal : {event.min_amount} CFA.")
         elif form.is_valid() and fedapay.is_enabled():
             response = begin_payment(request, form, kind='soutien', event=event, amount=montant,
                                      description=f"Soutien : {event.title}")

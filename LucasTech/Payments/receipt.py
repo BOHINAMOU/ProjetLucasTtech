@@ -23,7 +23,7 @@ def txt(value):
 
 
 def money(n):
-    return f"{int(n or 0):,}".replace(",", " ") + " FCFA"
+    return f"{int(n or 0):,}".replace(",", " ") + " CFA"
 
 
 def local(dt, fmt="%d/%m/%Y à %H:%M"):

@@ -63,7 +63,7 @@ class Contest(models.Model):
                                     help_text="Auteur et licence des photos, si elles ne vous appartiennent pas.")
     photo_credit_url = models.URLField("Lien du crédit photo", blank=True)
     description = models.TextField("Description", blank=True)
-    access_price = models.PositiveIntegerField("Prix d'accès (FCFA)", default=1000,
+    access_price = models.PositiveIntegerField("Prix d'accès (CFA)", default=1000,
                                                help_text="Payé une seule fois : accès à vie à tous les sujets et "
                                                          "corrigés de ce concours, années futures comprises.")
     is_demo = models.BooleanField("Démonstration", default=False,

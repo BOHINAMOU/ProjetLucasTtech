@@ -9,7 +9,7 @@
       {% if p.is_paid %}
         <div class="ct-result__icon ok"><i class="fa fa-check"></i></div>
         <h1>Paiement réussi</h1>
-        <p class="lead">Merci {{ p.first_name }} · <strong>{{ p.amount|floatformat:"0g" }} FCFA</strong> · {{ p.reference }}</p>
+        <p class="lead">Merci {{ p.first_name }} · <strong>{{ p.amount|floatformat:"0g" }} CFA</strong> · {{ p.reference }}</p>
 
         {% url 'payments:receipt' p.reference as receipt_url %}
         <div class="ct-box" style="margin-top:1.4rem">

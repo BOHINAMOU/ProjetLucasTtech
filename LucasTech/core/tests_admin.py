@@ -27,13 +27,13 @@ class AdminTests(TestCase):
     def test_tableau_de_bord(self):
         r = self.client.get(A + '')
         self.assertContains(r, 'Argent encaissé')
-        self.assertContains(r, '2\u202f000 F')
+        self.assertContains(r, '2\u202f000 CFA')
         self.assertContains(r, '10 derniers paiements')
 
     def test_liste_evenements_payeurs_et_total(self):
         r = self.client.get(A + 'Events/event/')
         self.assertContains(r, 'Un sourire')
-        self.assertContains(r, '2\u202f000 F')
+        self.assertContains(r, '2\u202f000 CFA')
         r = self.client.get(A + f'Events/event/{self.e.pk}/change/')
         self.assertContains(r, 'Participants et donateurs')
         self.assertContains(r, 'Gérer les paiements')

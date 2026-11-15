@@ -48,7 +48,7 @@ class Service(models.Model):
     video       = models.FileField(upload_to='services/videos/', blank=True, null=True, verbose_name="Vidéo")
     price_from  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Prix à partir de",
                                       help_text="Prix à partir de (optionnel)")
-    price       = models.PositiveIntegerField(null=True, blank=True, verbose_name="Prix payable en ligne (FCFA)",
+    price       = models.PositiveIntegerField(null=True, blank=True, verbose_name="Prix payable en ligne (CFA)",
                                       help_text="Si rempli, un bouton « Payer » (FedaPay) apparaît sur la page du service.")
     file        = models.FileField(upload_to='services/fichiers/', storage=private_storage, blank=True, null=True,
                                    verbose_name="PDF remis après paiement",

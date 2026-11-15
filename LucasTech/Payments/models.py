@@ -45,7 +45,7 @@ class Payment(models.Model):
     kind = models.CharField(max_length=12, choices=KIND_CHOICES, verbose_name="Type")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', db_index=True,
                               verbose_name="Statut")
-    amount = models.PositiveIntegerField(verbose_name="Montant (FCFA)")
+    amount = models.PositiveIntegerField(verbose_name="Montant (CFA)")
     description = models.CharField(max_length=255, verbose_name="Description")
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
@@ -147,7 +147,7 @@ class Portefeuille(models.Model):
     Pas de retrait (non remboursable en espèces). Le solde ne bouge QUE via Payments.solde (mouvements tracés)."""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='portefeuille',
                                 verbose_name="Utilisateur")
-    solde = models.PositiveIntegerField("Solde (FCFA)", default=0, editable=False)
+    solde = models.PositiveIntegerField("Solde (CFA)", default=0, editable=False)
     updated_at = models.DateTimeField("Mis à jour", auto_now=True)
 
     class Meta:
@@ -155,7 +155,7 @@ class Portefeuille(models.Model):
         verbose_name_plural = "Soldes des utilisateurs"
 
     def __str__(self):
-        return f"{self.user} — {self.solde} F"
+        return f"{self.user} — {self.solde} CFA"
 
 
 class MouvementSolde(models.Model):
@@ -163,7 +163,7 @@ class MouvementSolde(models.Model):
              ('ajustement', "Ajustement par l'équipe")]
     portefeuille = models.ForeignKey(Portefeuille, on_delete=models.PROTECT, related_name='mouvements')
     type = models.CharField("Type", max_length=14, choices=TYPES)
-    montant = models.IntegerField("Montant (FCFA)", help_text="Positif = crédit, négatif = débit.")
+    montant = models.IntegerField("Montant (CFA)", help_text="Positif = crédit, négatif = débit.")
     solde_apres = models.PositiveIntegerField("Solde après")
     payment = models.ForeignKey('Payment', on_delete=models.PROTECT, null=True, blank=True, related_name='mouvements_solde',
                                 verbose_name="Paiement lié")
@@ -182,7 +182,7 @@ class MouvementSolde(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.get_type_display()} {self.montant:+} F"
+        return f"{self.get_type_display()} {self.montant:+} CFA"
 
 
 

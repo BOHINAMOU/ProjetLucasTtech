@@ -6,7 +6,7 @@
   <div class="bq-wrap">
     <div class="ct-result">
       <span class="ct-badge ct-badge--test"><i class="fa fa-flask"></i> Démo locale : remplace la page FedaPay tant que les clés ne sont pas configurées</span>
-      <h1 style="margin-top:1rem">Payer {{ p.amount|floatformat:"0g" }} FCFA</h1>
+      <h1 style="margin-top:1rem">Payer {{ p.amount|floatformat:"0g" }} CFA</h1>
       <p class="lead">{{ p.description }} · {{ p.full_name }} · {{ p.phone }}</p>
       <form method="post" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.6rem">
         {% csrf_token %}

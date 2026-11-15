@@ -28,7 +28,7 @@
         <h2>Concours à débloquer</h2>
         <p>Payez une seule fois et lisez tous les sujets et corrigés de <b>{{ contest.acronym }}</b>, à vie.</p>
         <div class="cc-actions" style="justify-content:center;margin-top:1rem">
-          <a class="cc-btn" href="{% url 'payments:checkout' 'acces' 0 %}">S'abonner · {{ abo_prix }} F / an</a>
+          <a class="cc-btn" href="{% url 'payments:checkout' 'acces' 0 %}">S'abonner · {{ abo_prix }} CFA / an</a>
           {% if user.is_authenticated %}<a class="cc-btn cc-btn--ghost" href="{% url 'abonnements:space' %}">Mes concours</a>
           {% else %}<a class="cc-btn cc-btn--ghost" href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}">Se connecter</a>{% endif %}
         </div>

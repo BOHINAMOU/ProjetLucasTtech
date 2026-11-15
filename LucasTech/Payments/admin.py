@@ -16,7 +16,7 @@ COULEURS = {'approved': ('#0B7A4B', '#E3F5EC'), 'pending': ('#9A6700', '#FFF4D6'
 
 
 def francs(n):
-    return f"{int(n or 0):,} F".replace(',', '\u202f')
+    return f"{int(n or 0):,} CFA".replace(',', '\u202f')
 
 
 def badge_statut(p):

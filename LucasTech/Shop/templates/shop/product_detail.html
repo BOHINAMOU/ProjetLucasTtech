@@ -74,11 +74,11 @@
 
       <div class="pp-buy">
         <div class="pp-price">
-          <strong>{{ product.price|floatformat:"0g" }} FCFA</strong>
-          {% if product.is_on_sale %}<s>{{ product.old_price|floatformat:"0g" }} FCFA</s><span class="pp-save">-{{ product.discount_percent }}%</span>{% endif %}
+          <strong>{{ product.price|floatformat:"0g" }} CFA</strong>
+          {% if product.is_on_sale %}<s>{{ product.old_price|floatformat:"0g" }} CFA</s><span class="pp-save">-{{ product.discount_percent }}%</span>{% endif %}
         </div>
         {% if product.bulk_price %}
-        <div class="pp-bulk"><i class="fa fa-boxes-stacked"></i> Prix de gros&nbsp;: <strong>{{ product.bulk_price|floatformat:"0g" }} FCFA</strong> l'unité dès {{ product.bulk_min_qty }} pièces.</div>
+        <div class="pp-bulk"><i class="fa fa-boxes-stacked"></i> Prix de gros&nbsp;: <strong>{{ product.bulk_price|floatformat:"0g" }} CFA</strong> l'unité dès {{ product.bulk_min_qty }} pièces.</div>
         {% endif %}
 
         {% if product.stock == 0 %}<div class="pp-stock out"><i class="fa fa-circle"></i> Épuisé</div>{% endif %}
@@ -188,8 +188,8 @@
         </div>
         <div class="bq-card__foot">
           <div class="bq-price">
-            <strong>{{ rp.price|floatformat:"0g" }} FCFA</strong>
-            {% if rp.is_on_sale %}<s>{{ rp.old_price|floatformat:"0g" }} FCFA</s>{% endif %}
+            <strong>{{ rp.price|floatformat:"0g" }} CFA</strong>
+            {% if rp.is_on_sale %}<s>{{ rp.old_price|floatformat:"0g" }} CFA</s>{% endif %}
           </div>
         </div>
       </article>
@@ -202,7 +202,7 @@
 
 <!-- Barre d'achat sur téléphone -->
 <div class="pp-sticky" id="ppSticky" aria-hidden="true">
-  <div><small>{{ product.name }}</small><strong>{{ product.price|floatformat:"0g" }} FCFA</strong></div>
+  <div><small>{{ product.name }}</small><strong>{{ product.price|floatformat:"0g" }} CFA</strong></div>
   {% if product.stock > 0 %}
   <button type="button" class="pp-btn pp-btn--main" id="ppStickyBtn" tabindex="-1"><i class="fa fa-lock"></i> Payer</button>
   {% endif %}

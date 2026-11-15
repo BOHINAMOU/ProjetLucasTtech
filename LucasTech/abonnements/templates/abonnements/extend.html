@@ -13,7 +13,7 @@
       <div class="cc-note cc-note--info"><span>Abonnement {{ sub.plan.name }} #{{ sub.pk }} : se termine le {{ sub.end_at|date:"j F Y" }} ({{ sub.days_left }} jour{{ sub.days_left|pluralize }}). L'extension prend fin à la même date ; son prix est calculé au prorata.</span></div>
       <nav class="ct-chips" style="margin:.6rem 0 1rem">
         {% for o, price in options %}
-        <a class="ct-chip{% if o.slots == option.slots %} is-on{% endif %}" href="?slots={{ o.slots }}">+{{ o.slots }} concours · {{ price|floatformat:"0g" }} F</a>
+        <a class="ct-chip{% if o.slots == option.slots %} is-on{% endif %}" href="?slots={{ o.slots }}">+{{ o.slots }} concours · {{ price|floatformat:"0g" }} CFA</a>
         {% endfor %}
       </nav>
       <div class="wz-card">

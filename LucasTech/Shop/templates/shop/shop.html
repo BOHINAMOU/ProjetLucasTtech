@@ -88,8 +88,8 @@
         </div>
 
         <div class="bq-card__price">
-          <strong>{{ product.price|floatformat:"0g" }} FCFA</strong>
-          {% if product.is_on_sale %}<s>{{ product.old_price|floatformat:"0g" }} FCFA</s>{% endif %}
+          <strong>{{ product.price|floatformat:"0g" }} CFA</strong>
+          {% if product.is_on_sale %}<s>{{ product.old_price|floatformat:"0g" }} CFA</s>{% endif %}
         </div>
         <div class="bq-card__actions">
           {% if request.user.is_authenticated %}

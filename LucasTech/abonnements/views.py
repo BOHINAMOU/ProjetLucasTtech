@@ -44,8 +44,8 @@ def plans(request):
 def _pay_context(form, amount, description, back_url, **extra):
     ctx = {'form': form, 'amount': amount, 'description': description, 'back_url': back_url,
            'enabled': fedapay.is_enabled(), 'mode': fedapay.mode(), 'pay_js': pay_js_data(),
-           'pay_label': f"Payer {amount:,} FCFA".replace(',', ' '),
-           'whatsapp_url': whatsapp_link(f"Bonjour, je souhaite : {description} ({amount} FCFA).")}
+           'pay_label': f"Payer {amount:,} CFA".replace(',', ' '),
+           'whatsapp_url': whatsapp_link(f"Bonjour, je souhaite : {description} ({amount} CFA).")}
     ctx.update(extra)
     return ctx
 

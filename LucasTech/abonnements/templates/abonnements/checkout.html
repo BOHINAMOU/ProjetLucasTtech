@@ -21,14 +21,14 @@
           <div class="ab-choice__row">
             {% for p in plans %}
             <a class="ab-opt{% if p.pk == plan.pk %} is-on{% endif %}" href="{% url 'abonnements:subscribe' p.code %}?periode={{ period }}"{% if p.pk == plan.pk %} aria-current="true"{% endif %}>
-              <b>{{ p.name }}</b><small>{{ p.limit_label }} · {% if period == 'an' %}{{ p.yearly_price|floatformat:"0g" }} F/an{% else %}{{ p.monthly_price|floatformat:"0g" }} F/mois{% endif %}</small>
+              <b>{{ p.name }}</b><small>{{ p.limit_label }} · {% if period == 'an' %}{{ p.yearly_price|floatformat:"0g" }} CFA/an{% else %}{{ p.monthly_price|floatformat:"0g" }} CFA/mois{% endif %}</small>
             </a>
             {% endfor %}
           </div>
           <span class="ab-choice__label">Durée</span>
           <div class="ab-choice__row">
-            <a class="ab-opt{% if period == 'mois' %} is-on{% endif %}" href="?periode=mois"><b>1 mois</b><small>{{ plan.monthly_price|floatformat:"0g" }} F</small></a>
-            <a class="ab-opt{% if period == 'an' %} is-on{% endif %}" href="?periode=an"><b>1 an</b><small>{{ plan.yearly_price|floatformat:"0g" }} F{% if plan.yearly_saving %} · −{{ plan.yearly_saving|floatformat:"0g" }} F{% endif %}</small></a>
+            <a class="ab-opt{% if period == 'mois' %} is-on{% endif %}" href="?periode=mois"><b>1 mois</b><small>{{ plan.monthly_price|floatformat:"0g" }} CFA</small></a>
+            <a class="ab-opt{% if period == 'an' %} is-on{% endif %}" href="?periode=an"><b>1 an</b><small>{{ plan.yearly_price|floatformat:"0g" }} CFA{% if plan.yearly_saving %} · −{{ plan.yearly_saving|floatformat:"0g" }} CFA{% endif %}</small></a>
           </div>
         </div>
         <style>

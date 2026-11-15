@@ -14,7 +14,7 @@
             <td><strong>{{ ev.title }}</strong><br><small style="color:var(--bq-muted)">{{ ev.location }}{% if not ev.is_published %} · non publié{% endif %}</small></td>
             <td>{{ ev.starts_at|date:"j M Y, H\hi" }}</td>
             <td>{{ ev.sold }}</td>
-            <td>{{ revenue|floatformat:"0g" }} FCFA</td>
+            <td>{{ revenue|floatformat:"0g" }} CFA</td>
             <td><a href="{% url 'events:organizer_event' ev.slug %}" class="bq-btn bq-btn--dark">Détails</a></td>
           </tr>
         {% empty %}

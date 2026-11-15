@@ -28,7 +28,7 @@ class Event(models.Model):
     TYPE_CHOICES = [('tickets', 'Tickets'), ('soutien', 'Soutien (don)')]
     kind = models.CharField("Type", max_length=10, choices=TYPE_CHOICES, default='tickets',
                             help_text="Tickets : vente de places. Soutien : chacun donne le montant qu'il veut.")
-    min_amount = models.PositiveIntegerField("Montant minimal du soutien (FCFA)", default=100)
+    min_amount = models.PositiveIntegerField("Montant minimal du soutien (CFA)", default=100)
     is_published = models.BooleanField(default=True, verbose_name="Publié")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -83,7 +83,7 @@ class TicketType(models.Model):
                                    help_text="Ex : accès zone VIP, boisson offerte")
     image = models.ImageField(upload_to='events/tickets/', blank=True, null=True, verbose_name="Photo du ticket",
                               help_text="Photo de couverture du lot (sinon, celle de l'événement).")
-    price = models.PositiveIntegerField(verbose_name="Prix (FCFA)", help_text="0 = gratuit")
+    price = models.PositiveIntegerField(verbose_name="Prix (CFA)", help_text="0 = gratuit")
     quantity = models.PositiveIntegerField(verbose_name="Nombre de places")
     max_per_order = models.PositiveIntegerField(default=10, verbose_name="Maximum par commande")
     order = models.PositiveIntegerField(default=0, verbose_name="Ordre")

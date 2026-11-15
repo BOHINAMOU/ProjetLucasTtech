@@ -67,7 +67,7 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
       {% if form.non_field_errors %}<div class="ct-errors" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
       <div class="sx-grid">
         {% for m in montants %}{% if m >= event.min_amount %}
-        <label class="sx-m"><input type="radio" name="montant_choix" value="{{ m }}"><span>{{ m|floatformat:"0g" }} F</span></label>
+        <label class="sx-m"><input type="radio" name="montant_choix" value="{{ m }}"><span>{{ m|floatformat:"0g" }} CFA</span></label>
         {% endif %}{% endfor %}
       </div>
       <label class="sx-l" for="montant">Autre montant</label>
@@ -162,7 +162,7 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
         <div class="wz-card ev-cart">
           <div class="ev-cart__head">
             <span>Votre commande</span>
-            <strong id="ttTotal">0 FCFA</strong>
+            <strong id="ttTotal">0 CFA</strong>
           </div>
           <ul class="ev-cart__lines" id="ttLines"></ul>
           {% if enabled %}
@@ -190,7 +190,7 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
 <script>
 (function(){var f=document.getElementById('soutienForm'); if(!f) return;
   var inp=document.getElementById('montant'), tot=document.getElementById('sxTot'), btn=document.getElementById('sxBtn');
-  function fmt(n){return n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' F';}
+  function fmt(n){return n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' CFA';}
   function maj(){var v=parseInt(inp.value,10)||0; tot.textContent=v?fmt(v):'—'; if(btn) btn.querySelector('span').textContent=v?'Soutenir · '+fmt(v):'Soutenir';}
   f.querySelectorAll('input[name=montant_choix]').forEach(function(r){r.addEventListener('change',function(){inp.value=r.value;maj();});});
   inp.addEventListener('input',function(){f.querySelectorAll('input[name=montant_choix]').forEach(function(r){r.checked=(r.value===inp.value);});maj();});
@@ -262,11 +262,11 @@ body.evd-sticky-on .lt-footer__totop{display:none!important}
       i.closest('[data-tk]').classList.toggle('is-picked',q>0);
       if(q){count+=q; sum+=q*p; parts.push(q+' × '+i.dataset.name);
         var li=document.createElement('li'); li.innerHTML='<span></span><b></b>';
-        li.firstChild.textContent=q+' × '+i.dataset.name; li.lastChild.textContent=p?fmt(q*p)+' FCFA':'Gratuit'; lines.appendChild(li);}});
-    total.textContent=count?(sum?fmt(sum)+' FCFA':'Gratuit'):'0 FCFA';
+        li.firstChild.textContent=q+' × '+i.dataset.name; li.lastChild.textContent=p?fmt(q*p)+' CFA':'Gratuit'; lines.appendChild(li);}});
+    total.textContent=count?(sum?fmt(sum)+' CFA':'Gratuit'):'0 CFA';
     if(buyer) buyer.hidden=!count; if(pick) pick.hidden=!!count;
-    form.dataset.orderLabel=parts.join(', '); form.dataset.orderTotal=sum?fmt(sum)+' FCFA':'Gratuit';
-    if(pay) pay.querySelector('span').textContent=sum?'Payer '+fmt(sum)+' FCFA':'Réserver';
+    form.dataset.orderLabel=parts.join(', '); form.dataset.orderTotal=sum?fmt(sum)+' CFA':'Gratuit';
+    if(pay) pay.querySelector('span').textContent=sum?'Payer '+fmt(sum)+' CFA':'Réserver';
   }
   form.querySelectorAll('[data-tk-step]').forEach(function(b){b.addEventListener('click',function(){
     var i=b.parentNode.querySelector('input'); i.value=(+i.value||0)+(+b.dataset.tkStep); sync();});});

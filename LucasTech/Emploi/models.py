@@ -715,7 +715,7 @@ class ServicePlan(models.Model):
     kind = models.CharField(max_length=12, choices=KIND, verbose_name="Type de service")
     name = models.CharField(max_length=100, verbose_name="Nom affiché")
     description = models.TextField(blank=True, verbose_name="Ce qui est inclus")
-    price = models.PositiveIntegerField(default=0, verbose_name="Prix (FCFA)",
+    price = models.PositiveIntegerField(default=0, verbose_name="Prix (CFA)",
                                         help_text="0 = gratuit. Pour un service sur devis, laissez 0 et cochez « Sur devis ».")
     price_from = models.BooleanField(default=False, verbose_name="« À partir de »")
     quote_only = models.BooleanField(default=False, verbose_name="Sur devis",
@@ -757,7 +757,7 @@ class ServicePlan(models.Model):
         if self.price == 0:
             return "Gratuit"
         amount = f"{self.price:,}".replace(",", " ")
-        return f"{'À partir de ' if self.price_from else ''}{amount} FCFA"
+        return f"{'À partir de ' if self.price_from else ''}{amount} CFA"
 
 
 class PublicationOrder(models.Model):
@@ -783,7 +783,7 @@ class PublicationOrder(models.Model):
                                       related_name='boost_orders', verbose_name="Offre mise en avant")
     plan = models.ForeignKey(ServicePlan, on_delete=models.PROTECT, related_name='orders', verbose_name="Service")
     status = models.CharField(max_length=20, choices=STATUS, default='awaiting_payment', verbose_name="Statut")
-    amount = models.PositiveIntegerField(default=0, verbose_name="Montant (FCFA)")
+    amount = models.PositiveIntegerField(default=0, verbose_name="Montant (CFA)")
 
     # contenu à publier (actualité, mise en avant, publicité)
     title = models.CharField(max_length=160, blank=True, verbose_name="Titre")
@@ -848,7 +848,7 @@ class PublicationOrder(models.Model):
     def amount_label(self):
         if self.amount == 0:
             return "Gratuit" if self.status != 'quote' else "Devis en attente"
-        return f"{self.amount:,}".replace(",", " ") + " FCFA"
+        return f"{self.amount:,}".replace(",", " ") + " CFA"
 
     @property
     def can_pay(self):
@@ -935,7 +935,7 @@ class BoostOrder(models.Model):
                                     related_name='boosts', verbose_name="Candidature boostée",
                                     help_text="Vide = boost du profil entier.")
     status = models.CharField(max_length=20, choices=STATUS, default='awaiting_payment', verbose_name="Statut")
-    amount = models.PositiveIntegerField(default=0, verbose_name="Montant (FCFA)")
+    amount = models.PositiveIntegerField(default=0, verbose_name="Montant (CFA)")
     provider = models.CharField(max_length=10, default='manual', verbose_name="Mode d'encaissement")
     payment_method = models.CharField(max_length=10, choices=METHODS, blank=True, verbose_name="Moyen de paiement")
     payer_phone = models.CharField(max_length=30, blank=True, verbose_name="Numéro ayant payé")
@@ -961,7 +961,7 @@ class BoostOrder(models.Model):
 
     @property
     def amount_label(self):
-        return f"{self.amount:,}".replace(",", " ") + " FCFA"
+        return f"{self.amount:,}".replace(",", " ") + " CFA"
 
     @property
     def is_live(self):

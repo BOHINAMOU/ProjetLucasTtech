@@ -104,7 +104,7 @@ def _cible(user, d):
         except (TypeError, ValueError):
             montant = 0
         if not MIN_DEPOT <= montant <= MAX_DEPOT:
-            raise ValidationError(f"Montant entre {MIN_DEPOT} F et {MAX_DEPOT:,} F.".replace(',', ' '))
+            raise ValidationError(f"Montant entre {MIN_DEPOT} CFA et {MAX_DEPOT:,} CFA.".replace(',', ' '))
         return {'kind': 'depot'}, montant, "Recharge du solde Lantante", None
     if kind == 'acces':
         from abonnements.models import ReglageAcces
@@ -122,9 +122,9 @@ def _cible(user, d):
         except (TypeError, ValueError):
             montant = 0
         if montant < e.min_amount:
-            raise ValidationError(f"Montant minimal : {e.min_amount} F.")
+            raise ValidationError(f"Montant minimal : {e.min_amount} CFA.")
         if montant > 1_000_000:
-            raise ValidationError("Maximum 1 000 000 F.")
+            raise ValidationError("Maximum 1 000 000 CFA.")
         return {'kind': 'soutien', 'event': e}, montant, f"Soutien : {e.title}", None
     if kind == 'ticket':
         from Events.models import Event, TicketType

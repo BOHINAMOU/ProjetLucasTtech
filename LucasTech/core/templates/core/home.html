@@ -178,7 +178,7 @@
         <h3>{{ p.name }}</h3>
         <p>{{ p.card_description }}</p>
         <div class="lx-prod__price">
-          <strong>{{ p.price|floatformat:"0g" }} FCFA</strong>
+          <strong>{{ p.price|floatformat:"0g" }} CFA</strong>
           {% if p.is_on_sale %}<s>{{ p.old_price|floatformat:"0g" }}</s>{% endif %}
         </div>
       </div>

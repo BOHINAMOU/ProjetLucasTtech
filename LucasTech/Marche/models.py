@@ -25,7 +25,7 @@ class ReglageLivraison(models.Model):
         verbose_name_plural = "Réglage de livraison"
 
     def __str__(self):
-        return f"{self.tarif_base} F + {self.prix_km} F/km"
+        return f"{self.tarif_base} CFA + {self.prix_km} CFA/km"
 
     @classmethod
     def load(cls):
@@ -85,4 +85,4 @@ class Reversement(models.Model):
         ordering = ['-date', '-id']
 
     def __str__(self):
-        return f"{self.vendeur} — {self.montant} F"
+        return f"{self.vendeur} — {self.montant} CFA"

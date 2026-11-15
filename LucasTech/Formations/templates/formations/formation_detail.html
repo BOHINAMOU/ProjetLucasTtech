@@ -30,8 +30,8 @@
 
         <div class="pp-buy">
           <div class="pp-price">
-            {% if formation.price %}<strong>{{ formation.price|floatformat:"0g" }} FCFA</strong>{% else %}<strong>Gratuit</strong>{% endif %}
-            {% if formation.is_on_sale %}<s>{{ formation.old_price|floatformat:"0g" }} FCFA</s><span class="pp-save">-{{ formation.discount_percent }}%</span>{% endif %}
+            {% if formation.price %}<strong>{{ formation.price|floatformat:"0g" }} CFA</strong>{% else %}<strong>Gratuit</strong>{% endif %}
+            {% if formation.is_on_sale %}<s>{{ formation.old_price|floatformat:"0g" }} CFA</s><span class="pp-save">-{{ formation.discount_percent }}%</span>{% endif %}
           </div>
           <ul class="ct-facts">
             <li><i class="fa fa-signal"></i>Niveau {{ formation.get_level_display|lower }}</li>
@@ -84,7 +84,7 @@
 
   {% if formation.can_pay_online and not has_purchased %}
   <div class="pp-sticky" id="ppSticky">
-    <div><strong>{{ formation.price|floatformat:"0g" }} FCFA</strong><small>{{ formation.title }}</small></div>
+    <div><strong>{{ formation.price|floatformat:"0g" }} CFA</strong><small>{{ formation.title }}</small></div>
     <a href="{% url 'payments:checkout' 'formation' formation.pk %}" class="pp-btn pp-btn--main">Acheter</a>
   </div>
   {% endif %}

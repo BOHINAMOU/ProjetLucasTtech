@@ -115,7 +115,7 @@ class EventAdmin(admin.ModelAdmin):
     def soutiens_display(self, obj):
         return obj.soutiens().count() if obj.is_soutien else '—'
 
-    @admin.display(description="Collecté (FCFA)")
+    @admin.display(description="Collecté (CFA)")
     def collecte_display(self, obj):
         from django.db.models import Sum
         return obj.soutiens().aggregate(s=Sum('amount'))['s'] or 0 if obj.is_soutien else '—'

@@ -35,7 +35,7 @@ class RolesTests(TestCase):
         self.client.force_login(self.d)
         r = self.client.get(A)
         self.assertContains(r, 'Gala des orphelins')
-        self.assertContains(r, '2\u202f000 F')
+        self.assertContains(r, '2\u202f000 CFA')
         self.assertNotContains(r, 'Concert secret')
         self.assertNotContains(r, 'Argent encaissé')  # pas les chiffres globaux
         r = self.client.get(A + 'Events/event/')
@@ -55,5 +55,5 @@ class RolesTests(TestCase):
         for code in ('paiements', 'evenements', 'services', 'ecoles', 'publications', 'concours', 'utilisateurs'):
             r = self.client.get(f'{A}section/{code}/')
             self.assertEqual(r.status_code, 200, code)
-        self.assertContains(self.client.get(A + 'section/evenements/'), '11\u202f000 F')
+        self.assertContains(self.client.get(A + 'section/evenements/'), '11\u202f000 CFA')
         self.assertContains(self.client.get(A), 'Argent encaissé')
