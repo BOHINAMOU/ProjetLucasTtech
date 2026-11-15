@@ -139,6 +139,11 @@ from django import forms  # noqa: E402
 from .models import MouvementSolde, Portefeuille  # noqa: E402
 
 
+def cfa(n):
+    """Montants du Solde : « 5 000 CFA »."""
+    return f"{int(n or 0):,} CFA".replace(',', ' ')
+
+
 class MouvementInline(admin.TabularInline):
     model = MouvementSolde
     extra = 0
@@ -165,11 +170,11 @@ class PortefeuilleAdmin(admin.ModelAdmin):
 
     @admin.display(description="Solde", ordering='solde')
     def solde_f(self, pf):
-        return francs(pf.solde)
+        return cfa(pf.solde)
 
     def changelist_view(self, request, extra_context=None):
         total = Portefeuille.objects.aggregate(s=Sum('solde'))['s'] or 0
-        self.message_user(request, f"Total des soldes : {francs(total)} (argent dû en services aux clients).",
+        self.message_user(request, f"Total des soldes : {cfa(total)} (argent dû en services aux clients).",
                           messages.INFO)
         return super().changelist_view(request, extra_context)
 
@@ -196,7 +201,7 @@ class AjustementForm(forms.ModelForm):
                 self.add_error('montant', "Montant non nul.")
             pf = Portefeuille.objects.filter(user=u).first()
             if (pf.solde if pf else 0) + m < 0:
-                self.add_error('montant', f"Refusé : solde actuel {francs(pf.solde if pf else 0)}.")
+                self.add_error('montant', f"Refusé : solde actuel {cfa(pf.solde if pf else 0)}.")
         return d
 
 
@@ -231,7 +236,7 @@ class MouvementSoldeAdmin(admin.ModelAdmin):
 
     @admin.display(description="Montant", ordering='montant')
     def montant_f(self, m):
-        return f"{m.montant:+,} F".replace(',', '\u202f')
+        return f"{m.montant:+,} CFA".replace(',', '\u202f')
 
     def save_model(self, request, obj, form, change):
         from .solde import SoldeInsuffisant, ajuster
@@ -242,7 +247,7 @@ class MouvementSoldeAdmin(admin.ModelAdmin):
             self.message_user(request, "Refusé : le solde deviendrait négatif.", messages.ERROR)
             return
         obj.pk = m.pk
-        self.message_user(request, f"Ajustement enregistré. Nouveau solde : {francs(m.solde_apres)}.")
+        self.message_user(request, f"Ajustement enregistré. Nouveau solde : {cfa(m.solde_apres)}.")
 
 
 
