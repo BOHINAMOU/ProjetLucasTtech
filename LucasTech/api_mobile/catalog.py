@@ -269,8 +269,35 @@ def service(request, pk):
         'images': [grande(request, s.image)] if s.image else [], 'description': text(s.description),
         'video': media(request, s.video), 'whatsapp': s.whatsapp or '', 'telephone': s.phone or '',
         'url_paiement': paiement(request, reverse('payments:checkout', args=['service', s.pk])) if s.price else None,
+        'inscription': {
+            'ouverte': bool(s.inscriptions_ouvertes and s.champs.exists()),
+            'champs': [{'id': c.pk, 'libelle': c.libelle, 'type': c.type, 'obligatoire': c.obligatoire,
+                        'choix': c.options()} for c in s.champs.all()],
+        },
     })
     return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def service_inscription(request, pk):
+    from Services.inscriptions import valider
+    from Services.models import InscriptionService
+    s = _services().filter(pk=pk).first()
+    if not s:
+        return error("Service introuvable.", 404, code='introuvable')
+    if not (s.inscriptions_ouvertes and s.champs.exists()):
+        return error("Les inscriptions sont fermées.", 400, code='ferme')
+    reponses, erreurs = valider(s, request.data.get('reponses') or {}, str(request.data.get('pays') or 'tg'))
+    if erreurs:
+        return Response({'detail': next(iter(erreurs.values())), 'code': 'donnees_invalides', 'erreurs': erreurs},
+                        status=400)
+    user = request.user if request.user.is_authenticated else None
+    i = InscriptionService.objects.create(service=s, user=user, reponses=reponses)
+    if user:
+        from .notifs import notifier
+        notifier(user, "Inscription envoyée", f"{s.title} : nous vous contacterons.", cible='service', cible_id=s.pk)
+    return Response({'id': i.pk, 'detail': "Inscription envoyée."}, status=201)
 
 
 @api_view(['GET'])

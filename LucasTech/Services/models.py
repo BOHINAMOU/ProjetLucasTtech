@@ -55,6 +55,9 @@ class Service(models.Model):
     phone       = models.CharField(max_length=20, blank=True, verbose_name="Téléphone",
                                    help_text="Numéro de téléphone affiché")
     is_active   = models.BooleanField(default=True, verbose_name="Actif")
+    inscriptions_ouvertes = models.BooleanField(default=False, verbose_name="Inscriptions ouvertes",
+                                                help_text="Affiche « S'inscrire » avec le formulaire ci-dessous. "
+                                                          "Décochez pour clôturer.")
     is_featured = models.BooleanField(default=False, verbose_name="Mis en avant")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     updated_at  = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
@@ -124,3 +127,44 @@ class ServiceContact(models.Model):
                     )
                 except Exception:
                     pass
+
+
+class ChampInscription(models.Model):
+    """Champ du formulaire d'inscription d'un service (configuré dans l'admin)."""
+    TYPES = [('texte', 'Texte'), ('long', 'Texte long'), ('nombre', 'Nombre'), ('telephone', 'Téléphone'),
+             ('email', 'E-mail'), ('date', 'Date'), ('choix', 'Liste de choix')]
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='champs')
+    libelle = models.CharField("Libellé", max_length=80)
+    type = models.CharField("Type", max_length=10, choices=TYPES, default='texte')
+    obligatoire = models.BooleanField("Obligatoire", default=True)
+    choix = models.CharField("Choix (séparés par des virgules)", max_length=400, blank=True)
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+
+    class Meta:
+        ordering = ['ordre', 'id']
+        verbose_name = "Champ du formulaire"
+        verbose_name_plural = "Formulaire d'inscription"
+
+    def __str__(self):
+        return self.libelle
+
+    def options(self):
+        return [c.strip() for c in self.choix.split(',') if c.strip()]
+
+
+class InscriptionService(models.Model):
+    STATUTS = [('nouvelle', 'Nouvelle'), ('traitee', 'Traitée'), ('annulee', 'Annulée')]
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='inscriptions', verbose_name="Service")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name='inscriptions_services', verbose_name="Compte")
+    reponses = models.JSONField("Réponses", default=dict)
+    statut = models.CharField("Statut", max_length=10, choices=STATUTS, default='nouvelle')
+    created_at = models.DateTimeField("Reçue le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Inscription à un service"
+        verbose_name_plural = "Inscriptions aux services"
+
+    def __str__(self):
+        return f"{self.service} — {self.created_at:%d/%m/%Y}"
