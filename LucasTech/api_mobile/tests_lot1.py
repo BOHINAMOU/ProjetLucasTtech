@@ -227,3 +227,17 @@ class SupportFormulaireTests(APITestCase):
                              format='multipart')
         self.assertEqual(r.status_code, 400)
         self.assertNotIn('WhatsApp', self.client.post(API + 'contact/', {'message': 'x'}).json()['detail'])
+
+
+
+class ToutLuTests(APITestCase):
+    def test_tout_marquer_comme_lu(self):
+        from Publications.models import Publication
+        u = get_user_model().objects.create_user(email='lu@example.com', password='x-Pass-12345', is_verified=True)
+        for t in ('A', 'B', 'C'):
+            Publication.objects.create(author=u, title=t, content='x', is_published=True, show_in_app=True)
+        self.client.force_authenticate(u)
+        d = self.client.post(API + 'publications/lues/tout/').json()
+        self.assertEqual(len(d['lus']), 3)
+        self.assertEqual(len(self.client.get(API + 'publications/lues/').json()), 3)
+        self.assertEqual(len(self.client.post(API + 'publications/lues/tout/').json()['lus']), 3)  # pas de doublon

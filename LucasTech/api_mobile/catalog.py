@@ -668,6 +668,17 @@ def article_lu(request, pk):
     return Response({'lu': True})
 
 
+@api_view(['POST'])
+def articles_tout_lu(request):
+    """« Tout marquer comme lu » : toutes les actualités de l'appli."""
+    from .models import ArticleLu
+    deja = set(ArticleLu.objects.filter(user=request.user).values_list('publication_id', flat=True))
+    nouveaux = [ArticleLu(publication_id=pk, user=request.user)
+                for pk in _publications().values_list('pk', flat=True) if pk not in deja]
+    ArticleLu.objects.bulk_create(nouveaux, ignore_conflicts=True)
+    return Response({'lus': list(ArticleLu.objects.filter(user=request.user).values_list('publication_id', flat=True))})
+
+
 # ─────────────────────────────
 # Recherche globale (barre de l'accueil), résultats groupés par type
 # ─────────────────────────────

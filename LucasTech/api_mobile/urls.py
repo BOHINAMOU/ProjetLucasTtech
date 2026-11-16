@@ -55,6 +55,7 @@ urlpatterns = [
     path('publications/categories/', catalog.publication_categories, name='publication_categories'),
     path('publications/<int:pk>/', catalog.publication, name='publication'),
     path('publications/lues/', catalog.articles_lus, name='articles_lus'),
+    path('publications/lues/tout/', catalog.articles_tout_lu, name='articles_tout_lu'),
     path('publications/<int:pk>/lu/', catalog.article_lu, name='article_lu'),
     path('recherche/', catalog.recherche, name='recherche'),
     path('ecoles/', ecoles.ecoles, name='ecoles'),

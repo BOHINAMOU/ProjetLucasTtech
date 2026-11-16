@@ -4,8 +4,8 @@
 (function () {
   var API = '/api/mobile/v1/lieux/';
   function init() {
-    var lat = document.getElementById('id_retrait_latitude');
-    var lng = document.getElementById('id_retrait_longitude');
+    var lat = document.getElementById('id_retrait_latitude') || document.getElementById('id_latitude');
+    var lng = document.getElementById('id_retrait_longitude') || document.getElementById('id_longitude');
     if (!lat || !lng || !window.L) return;
     var bloc = document.createElement('div');
     bloc.style.margin = '8px 0 16px';

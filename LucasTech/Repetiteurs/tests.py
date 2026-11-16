@@ -42,3 +42,14 @@ class RepetiteursTests(APITestCase):
         self.assertTrue(u.is_staff and u.has_perm('Repetiteurs.add_repetiteur'))
         self.client.force_login(u)
         self.assertContains(self.client.get('/lantanteAdminTech/Repetiteurs/repetiteur/'), 'Kossi')
+
+    def test_formulaire_admin_simple_avec_carte(self):
+        admin = get_user_model().objects.create_superuser(email='ad@example.com', password='x-Pass-12345')
+        self.client.force_login(admin)
+        r = self.client.get('/lantanteAdminTech/Repetiteurs/repetiteur/add/')
+        self.assertContains(r, 'carte_produit.js')
+        r = self.client.post('/lantanteAdminTech/Repetiteurs/repetiteur/add/', {
+            'nom': 'Essai', 'matieres': 'Français', 'ville': 'Lomé', 'actif': 'on', 'ordre': 0,
+            'latitude': '6.130000', 'longitude': '1.220000'})
+        self.assertEqual(r.status_code, 302, r.content[:500])
+        self.assertTrue(Repetiteur.objects.filter(nom='Essai', latitude__isnull=False).exists())
