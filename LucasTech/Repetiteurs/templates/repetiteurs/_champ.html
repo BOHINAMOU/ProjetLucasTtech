@@ -1,0 +1,6 @@
+<div class="rp-field{% if f.errors %} rp-err{% endif %}">
+  <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <b>*</b>{% endif %}</label>
+  {{ f }}
+  {% if f.help_text %}<small>{{ f.help_text }}</small>{% endif %}
+  {% for e in f.errors %}<em>{{ e }}</em>{% endfor %}
+</div>

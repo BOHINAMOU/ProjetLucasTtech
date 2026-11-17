@@ -35,3 +35,103 @@ class Repetiteur(models.Model):
     @property
     def liste_matieres(self):
         return [m.strip() for m in self.matieres.split(',') if m.strip()]
+
+
+# ── Candidatures : un répétiteur remplit le formulaire du site, paie, puis l'équipe vérifie ──
+
+def _stockage_prive():
+    """Pièces d'identité : hors de /media/ (jamais publiques), lues seulement par l'équipe via une vue protégée."""
+    from Payments.models import private_storage
+    return private_storage()
+
+
+class ReglageCandidature(models.Model):
+    prix = models.PositiveIntegerField("Frais de candidature (CFA)", default=2000)
+
+    class Meta:
+        verbose_name = verbose_name_plural = "Frais de candidature"
+
+    def __str__(self):
+        return f"{self.prix} CFA"
+
+    @classmethod
+    def load(cls):
+        return cls.objects.get_or_create(pk=1)[0]
+
+
+class Candidature(models.Model):
+    STATUTS = [
+        ('a_payer', "En attente de paiement"),
+        ('a_verifier', "Payé, en vérification"),
+        ('a_corriger', "À corriger"),
+        ('rejetee', "Rejeté"),
+        ('validee', "Validé"),
+    ]
+    PIECES = [('cni', "Carte nationale d'identité"), ('electeur', "Carte d'électeur"), ('passeport', "Passeport")]
+
+    user = models.ForeignKey('Users.User', on_delete=models.CASCADE, related_name='candidatures_repetiteur')
+    statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='a_payer', db_index=True)
+    motif = models.TextField("Motif (à corriger / rejet)", blank=True)
+    # identité
+    prenom = models.CharField("Prénom", max_length=80)
+    nom = models.CharField("Nom", max_length=80)
+    telephone = models.CharField("Téléphone", max_length=30)
+    whatsapp = models.CharField("WhatsApp", max_length=30, blank=True)
+    email = models.EmailField("E-mail", blank=True)
+    # profil
+    photo = models.ImageField("Photo", upload_to='repetiteurs/candidatures/')
+    matieres = models.CharField("Matières", max_length=250, help_text="Séparées par des virgules.")
+    niveaux = models.CharField("Niveaux", max_length=200, blank=True)
+    ville = models.CharField("Ville", max_length=80)
+    quartier = models.CharField("Quartier", max_length=120, blank=True)
+    latitude = models.DecimalField("Latitude", max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField("Longitude", max_digits=9, decimal_places=6, null=True, blank=True)
+    experience = models.CharField("Expérience", max_length=200, blank=True)
+    description = models.TextField("Présentation", blank=True)
+    tarif = models.CharField("Tarif", max_length=80, blank=True)
+    # pièce d'identité (privée)
+    piece_type = models.CharField("Type de pièce", max_length=10, choices=PIECES)
+    piece_numero = models.CharField("Numéro de la pièce", max_length=40)
+    piece_recto = models.FileField("Pièce : recto", upload_to='candidatures/pieces/', storage=_stockage_prive)
+    piece_verso = models.FileField("Pièce : verso", upload_to='candidatures/pieces/', storage=_stockage_prive, blank=True)
+    # suivi
+    paiement = models.ForeignKey('Payments.Payment', on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='candidatures', verbose_name="Paiement")
+    repetiteur = models.OneToOneField(Repetiteur, on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='candidature', verbose_name="Fiche publiée")
+    decide_le = models.DateTimeField("Décision finale le", null=True, blank=True)
+    pieces_supprimees = models.BooleanField("Pièce supprimée", default=False)
+    created_at = models.DateTimeField("Déposée le", auto_now_add=True)
+    updated_at = models.DateTimeField("Modifiée le", auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = "Candidature répétiteur"
+        verbose_name_plural = "Candidatures répétiteurs"
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom} ({self.get_statut_display()})"
+
+    @property
+    def nom_complet(self):
+        return f"{self.prenom} {self.nom}".strip()
+
+    @property
+    def modifiable(self):
+        return self.statut in ('a_payer', 'a_corriger')
+
+
+class HistoriqueCandidature(models.Model):
+    candidature = models.ForeignKey(Candidature, on_delete=models.CASCADE, related_name='historique')
+    date = models.DateTimeField(auto_now_add=True)
+    auteur = models.CharField("Par", max_length=150, blank=True)
+    action = models.CharField("Action", max_length=120)
+    motif = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Historique"
+        verbose_name_plural = "Historique"
+
+    def __str__(self):
+        return self.action

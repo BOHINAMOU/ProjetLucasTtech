@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Devenir répétiteur — Lantante Technologie{% endblock %}
+{% block meta_description %}Proposez vos cours : déposez votre candidature de répétiteur. Après vérification, votre profil est visible dans l'application Lantante.{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% include 'repetiteurs/_style.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="rp">
+  <header class="rp-hero">
+    <p class="rp-kicker">Répétiteur - École</p>
+    <h1>Devenir répétiteur</h1>
+    <p class="rp-sub">Remplissez votre dossier, réglez les frais de candidature ({{ prix }} CFA). Après vérification, votre profil apparaît dans l'application.</p>
+    <ol class="rp-steps"><li>Identité</li><li>Profil</li><li>Pièce d'identité</li><li>Récapitulatif</li></ol>
+  </header>
+
+  {% if c and c.statut == 'a_corriger' %}
+  <div class="rp-alert"><b>À corriger :</b> {{ c.motif|linebreaksbr }}<br><small>Modifiez votre dossier puis renvoyez-le. Vous ne payez pas une deuxième fois.</small></div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="rp-form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="rp-alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    <section class="rp-card">
+      <h2><span>1</span> Identité</h2>
+      <div class="rp-grid">
+        {% include 'repetiteurs/_champ.html' with f=form.prenom %}
+        {% include 'repetiteurs/_champ.html' with f=form.nom %}
+        {% include 'repetiteurs/_champ.html' with f=form.telephone %}
+        {% include 'repetiteurs/_champ.html' with f=form.whatsapp %}
+        {% include 'repetiteurs/_champ.html' with f=form.email %}
+      </div>
+    </section>
+
+    <section class="rp-card">
+      <h2><span>2</span> Profil</h2>
+      <div class="rp-grid">
+        {% include 'repetiteurs/_champ.html' with f=form.photo %}
+        {% include 'repetiteurs/_champ.html' with f=form.matieres %}
+        {% include 'repetiteurs/_champ.html' with f=form.niveaux %}
+        {% include 'repetiteurs/_champ.html' with f=form.experience %}
+        {% include 'repetiteurs/_champ.html' with f=form.ville %}
+        {% include 'repetiteurs/_champ.html' with f=form.quartier %}
+        {% include 'repetiteurs/_champ.html' with f=form.tarif %}
+      </div>
+      {% include 'repetiteurs/_champ.html' with f=form.description %}
+      <p class="rp-label">Où donnez-vous vos cours ? <small>(facultatif : recherchez un lieu ou touchez la carte)</small></p>
+      <div class="form-row">{{ form.latitude }}{{ form.longitude }}</div>
+    </section>
+
+    <section class="rp-card">
+      <h2><span>3</span> Pièce d'identité</h2>
+      <p class="rp-note">Obligatoire. Elle sert seulement à vérifier votre identité : elle n'est jamais publiée et elle est supprimée 90 jours après la décision.</p>
+      <div class="rp-grid">
+        {% include 'repetiteurs/_champ.html' with f=form.piece_type %}
+        {% include 'repetiteurs/_champ.html' with f=form.piece_numero %}
+        {% include 'repetiteurs/_champ.html' with f=form.piece_recto %}
+        {% include 'repetiteurs/_champ.html' with f=form.piece_verso %}
+      </div>
+      <p class="rp-note">PDF ou photo, 5 Mo maximum. Le verso est demandé pour la carte d'identité et la carte d'électeur.</p>
+    </section>
+
+    <section class="rp-card">
+      <h2><span>4</span> Récapitulatif</h2>
+      <dl class="rp-recap" id="rp-recap"></dl>
+      <button type="submit" class="rp-btn">{% if c and c.statut == 'a_corriger' %}Renvoyer mon dossier{% else %}Continuer vers le paiement · {{ prix }} CFA{% endif %}</button>
+    </section>
+  </form>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'admin/carte_produit.js' %}"></script>
+<script>
+(function () {
+  var champs = [['id_prenom','Prénom'],['id_nom','Nom'],['id_telephone','Téléphone'],['id_matieres','Matières'],
+                ['id_niveaux','Niveaux'],['id_ville','Ville'],['id_quartier','Quartier'],['id_piece_type','Pièce']];
+  var dl = document.getElementById('rp-recap');
+  function maj() {
+    dl.innerHTML = '';
+    champs.forEach(function (c) {
+      var el = document.getElementById(c[0]); if (!el) return;
+      var v = el.tagName === 'SELECT' ? (el.options[el.selectedIndex] || {}).text : el.value;
+      if (!v || v.indexOf('---') === 0) return;
+      var dt = document.createElement('dt'); dt.textContent = c[1];
+      var dd = document.createElement('dd'); dd.textContent = v;
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+  }
+  document.querySelector('.rp-form').addEventListener('input', maj);
+  document.querySelector('.rp-form').addEventListener('change', maj);
+  maj();
+})();
+</script>
+{% endblock %}

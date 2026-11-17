@@ -123,6 +123,12 @@ def _target(request, kind, pk):
         from abonnements.models import ReglageAcces
         obj = ReglageAcces.load()
         return obj, int(obj.prix), "Abonnement Accès Épreuves (1 an)", {'kind': 'acces'}, reverse('concours:index')
+    if kind == 'candidature':
+        from Repetiteurs.models import Candidature, ReglageCandidature
+        if not request.user.is_authenticated:
+            raise Http404
+        obj = get_object_or_404(Candidature, pk=pk, user=request.user, statut='a_payer')
+        return obj, int(ReglageCandidature.load().prix), f"Candidature répétiteur : {obj.nom_complet}",             {'kind': 'candidature', 'items': [{'candidature': obj.pk}]}, reverse('repetiteurs:devenir')
     if kind == 'boutique':
         from Shop.models import ShopOrder
         if not request.user.is_authenticated:
@@ -136,7 +142,7 @@ def _target(request, kind, pk):
 def checkout(request, kind, pk):
     if kind == 'concours':
         return redirect(reverse('payments:checkout', args=['acces', 0]))  # plus de vente à l'unité
-    if kind == 'acces' and not request.user.is_authenticated:
+    if kind in ('acces', 'candidature') and not request.user.is_authenticated:
         from django.contrib.auth.views import redirect_to_login
         return redirect_to_login(request.get_full_path())  # l'accès est attaché au compte
     obj, amount, description, link_fields, back_url = _target(request, kind, pk)

@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+{% block title %}Ma candidature — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}{% endblock %}
+
+{% block content %}
+<div class="rp">
+  <header class="rp-hero">
+    <p class="rp-kicker">Répétiteur - École</p>
+    <h1>Ma candidature</h1>
+  </header>
+  <section class="rp-card">
+    <h2>{{ c.nom_complet }}</h2>
+    <p><span class="rp-statut {{ c.statut }}">{{ c.get_statut_display }}</span></p>
+    {% if c.statut == 'a_payer' %}
+      <p class="rp-note">Votre dossier est enregistré. Réglez les frais de candidature ({{ prix }} CFA) pour qu'il soit vérifié.</p>
+      <a class="rp-btn" href="{% url 'payments:checkout' 'candidature' c.pk %}">Payer {{ prix }} CFA</a>
+      <p style="margin-top:10px"><a class="rp-btn rp-btn--ghost" href="{% url 'repetiteurs:devenir' %}">Modifier mon dossier</a></p>
+    {% elif c.statut == 'a_verifier' %}
+      <p class="rp-note">Paiement reçu. Nous vérifions votre dossier et revenons vers vous rapidement.</p>
+    {% elif c.statut == 'a_corriger' %}
+      <div class="rp-alert"><b>À corriger :</b> {{ c.motif|linebreaksbr }}</div>
+      <a class="rp-btn" href="{% url 'repetiteurs:devenir' %}">Corriger mon dossier</a>
+      <p class="rp-note" style="margin-top:8px">Vous ne payez pas une deuxième fois.</p>
+    {% elif c.statut == 'validee' %}
+      <div class="rp-alert rp-ok">Votre profil est visible dans l'application Lantante, rubrique « Répétiteur - École ».</div>
+    {% elif c.statut == 'rejetee' %}
+      <div class="rp-alert"><b>Refusée :</b> {{ c.motif|linebreaksbr }}</div>
+      <a class="rp-btn rp-btn--ghost" href="{% url 'repetiteurs:devenir' %}">Déposer une nouvelle candidature</a>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

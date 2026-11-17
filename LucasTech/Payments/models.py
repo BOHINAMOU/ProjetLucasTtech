@@ -31,6 +31,7 @@ class Payment(models.Model):
         ('concours', "Accès à un concours"),
         ('depot', "Recharge du solde"),
         ('acces', "Abonnement Accès Épreuves"),
+        ('candidature', "Candidature répétiteur"),
     ]
     STATUS_CHOICES = [
         ('pending', 'En attente'),
