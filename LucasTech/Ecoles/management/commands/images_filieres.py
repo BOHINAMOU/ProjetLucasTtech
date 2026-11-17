@@ -29,7 +29,13 @@ DOMAINES = [
     ('management', ['management', 'projet', 'commerce', 'marketing']),
 ]
 
-CAMPUS = {'universite-de-lome': 'campus-universite-de-lome.webp'}
+# Couvertures : photo du campus (site officiel) ou photo libre de droits (CC0, Stocksnap) sur le thème des études.
+CAMPUS = {
+    'universite-de-lome': 'campus-universite-de-lome.webp',
+    **{slug: f'couverture-{slug}.webp' for slug in (
+        'institut-africain-dinformatique-iai-togo', 'ucao-uut', 'ipnet-institute-of-technology', 'esgis-togo',
+        'lycee-francais-de-lome')},
+}
 
 
 def _simple(t):

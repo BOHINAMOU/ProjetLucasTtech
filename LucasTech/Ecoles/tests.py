@@ -85,3 +85,18 @@ class ImagesFilieresTests(TestCase):
         f.refresh_from_db()
         self.assertTrue(f.image.name.endswith('.webp'))
         f.image.delete(save=False)
+
+
+class TextesFilieresTests(TestCase):
+    def test_textes_completes_sans_ecraser(self):
+        from django.core.management import call_command
+        e = Ecole.objects.create(nom='Essai', type='universite')
+        a = Filiere.objects.create(ecole=e, nom='Licence Cybersécurité')
+        b = Filiere.objects.create(ecole=e, nom='Master en Droit', debouches='Texte saisi')
+        call_command('textes_filieres', stdout=open(os.devnull, 'w'))
+        a.refresh_from_db(); b.refresh_from_db()
+        self.assertIn('sécurité', a.description)
+        self.assertIn('cybersécurité', a.debouches)
+        self.assertEqual((a.duree, b.duree), ('3 ans', '2 ans'))
+        self.assertEqual(b.debouches, 'Texte saisi')
+        self.assertIn('Licence', b.conditions)
