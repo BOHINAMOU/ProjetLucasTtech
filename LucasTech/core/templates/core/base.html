@@ -99,7 +99,6 @@
         </ul>
       </li>
       <li><a href="{% url 'core:monetization' %}">Monétisation</a></li>
-      <li><a href="{% url 'repetiteurs:devenir' %}">Devenir répétiteur</a></li>
     </ul>
 
     <div class="nav-auth">
@@ -141,7 +140,6 @@
         </ul>
       </li>
       <li><a href="{% url 'core:monetization' %}">Monétisation</a></li>
-      <li><a href="{% url 'repetiteurs:devenir' %}">Devenir répétiteur</a></li>
     </ul>
     <div class="drawer-auth">
       {% if user.is_authenticated %}
@@ -537,5 +535,15 @@ revEls.forEach(el=>revObs.observe(el));
 </script>
 
 <script src="{% static 'core/js/effects.js' %}" defer></script>
+<script>
+/* Champs téléphone de tout le site : chiffres, espaces et « + » seulement (saisie et collage). */
+document.addEventListener('input', function (e) {
+  var el = e.target;
+  if (el && el.tagName === 'INPUT' && el.type === 'tel') {
+    var v = el.value.replace(/[^0-9+ ]/g, '');
+    if (v !== el.value) el.value = v;
+  }
+});
+</script>
 </body>
 </html>

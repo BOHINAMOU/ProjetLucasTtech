@@ -32,7 +32,7 @@ class CustomerForm(forms.Form):
                                 widget=forms.TextInput(attrs={'autocomplete': 'family-name'}))
     whatsapp = forms.CharField(label="Numéro (WhatsApp)", max_length=30,
                                error_messages={'required': "Saisissez votre numéro."},
-                               widget=forms.TextInput(attrs={'inputmode': 'tel', 'autocomplete': 'tel-national',
+                               widget=forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel', 'autocomplete': 'tel-national',
                                                              'placeholder': 'Ex. 90 00 00 00'}))
     city = forms.CharField(label="Localité", max_length=255,
                            error_messages={'required': "Indiquez votre localité."},

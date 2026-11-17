@@ -30,7 +30,12 @@ class CandidatureForm(forms.ModelForm):
             'niveaux': forms.HiddenInput(),
             'experience': forms.TextInput(attrs={'placeholder': "Ex. 6 ans, professeur certifié"}),
             'tarif': forms.TextInput(attrs={'placeholder': "Ex. 15 000 CFA / mois"}),
-            'whatsapp': forms.TextInput(attrs={'placeholder': "Ex. +228 90 12 34 56", 'inputmode': 'tel'}),
+            'whatsapp': forms.TextInput(attrs={
+                'type': 'tel', 'inputmode': 'tel', 'class': 'rp-tel', 'placeholder': "+228 90 12 34 56",
+                'pattern': r'^\s*(\+?\s*228)?(\s*\d){8}\s*$', 'title': "+228 suivi de 8 chiffres"}),
+            'telephone': forms.TextInput(attrs={
+                'type': 'tel', 'inputmode': 'tel', 'class': 'rp-tel', 'placeholder': "90 12 34 56",
+                'pattern': r'^[\d\s+]{8,20}$', 'title': "Chiffres uniquement"}),
             'photo': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
             # jamais de lien vers la pièce déjà envoyée (elle est privée)
             'piece_recto': forms.FileInput(attrs={'accept': 'image/*,application/pdf'}),
@@ -44,6 +49,13 @@ class CandidatureForm(forms.ModelForm):
         if self.cleaned_data.get('site_internet'):
             raise forms.ValidationError("Envoi refusé.")
         return ''
+
+    def clean_telephone(self):
+        t = self.cleaned_data.get('telephone') or ''
+        chiffres = ''.join(c for c in t if c.isdigit())
+        if len(chiffres) < 8 or any(c not in '0123456789+ ' for c in t):
+            raise forms.ValidationError("Numéro invalide : chiffres uniquement.")
+        return t.strip()
 
     def clean_whatsapp(self):
         from .models import whatsapp_togo
