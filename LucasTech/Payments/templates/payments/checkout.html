@@ -20,7 +20,7 @@
           {% if obj.image %}<img src="{{ obj.image.url }}" alt="">{% else %}<span class="wz-order__ico"><i class="fa fa-bag-shopping"></i></span>{% endif %}
           <div class="wz-order__txt">
             <strong>{% if kind == 'produit' %}{{ obj.name }}{% else %}{{ obj.title|default:description }}{% endif %}</strong>
-            <small>{% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% elif kind == 'produit' %}Quantité : {{ qty }}{% else %}Commande boutique{% endif %}{% if has_file %} · PDF inclus{% endif %}</small>
+            <small>{% if kind == 'service' %}Service{% elif kind == 'formation' %}Formation{% elif kind == 'produit' %}Quantité : {{ qty }}{% elif kind == 'candidature' %}Frais de candidature{% elif kind == 'acces' %}Abonnement{% else %}Commande boutique{% endif %}{% if has_file %} · PDF inclus{% endif %}</small>
           </div>
           <b class="wz-order__price">{{ amount|floatformat:"0g" }} <small>CFA</small></b>
         </div>

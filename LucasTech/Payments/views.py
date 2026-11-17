@@ -151,7 +151,11 @@ def checkout(request, kind, pk):
     obj, amount, description, link_fields, back_url = _target(request, kind, pk)
     if kind == 'produit' and not obj.stock:
         raise Http404
-    form = CustomerForm(request.POST or None, user=request.user, purpose=kind)
+    initial = {}
+    if kind == 'candidature':  # déjà saisi dans le dossier : rien à retaper
+        initial = {'first_name': obj.prenom, 'last_name': obj.nom, 'email': obj.email,
+                   'whatsapp': obj.whatsapp[-8:], 'city': ', '.join(x for x in (obj.quartier, obj.ville) if x)}
+    form = CustomerForm(request.POST or None, user=request.user, purpose=kind, initial=initial)
     livraison = None
     if kind == 'produit' and obj.livrable:
         from django.core.exceptions import ValidationError
