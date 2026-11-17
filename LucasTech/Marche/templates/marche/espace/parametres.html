@@ -1,0 +1,17 @@
+{% extends 'marche/espace/base.html' %}
+{% block titre %}Paramètres{% endblock %}
+{% block contenu %}
+<div class="tete"><h1>Paramètres</h1></div>
+{% if ok %}<div class="alerte ok">Enregistré.</div>{% endif %}
+<form method="post" enctype="multipart/form-data" class="carte">
+  {% csrf_token %}
+  <div class="grille">
+    {% for f in form %}{% if f.name != 'description' %}
+    <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} *{% endif %}</label>{{ f }}
+      {% if f.help_text %}<small>{{ f.help_text }}</small>{% endif %}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
+    {% endif %}{% endfor %}
+  </div>
+  <div class="champ"><label for="{{ form.description.id_for_label }}">Description</label>{{ form.description }}</div>
+  <button class="btn" type="submit">Enregistrer</button>
+</form>
+{% endblock %}

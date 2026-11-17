@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{% block titre %}{{ v.boutique }}{% endblock %} · Espace vendeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --g:#0f7a45; --gd:#0b2e1d; --gl:#e6f4ec; --ink:#16201b; --mut:#6b7570; --line:#e4e9e6; --bg:#f5f7f6; --danger:#c62828; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, system-ui, sans-serif; color: var(--ink); background: var(--bg); font-size: 15px; }
+a { color: inherit; text-decoration: none; }
+.app { display: flex; min-height: 100vh; }
+.side { width: 240px; background: #fff; border-right: 1px solid var(--line); padding: 20px 14px; position: sticky; top: 0; height: 100vh; flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.brand img, .brand .ini { width: 40px; height: 40px; border-radius: 12px; object-fit: cover; background: var(--gl); color: var(--g); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+.brand b { font-size: .98rem; line-height: 1.2; }
+.brand small { display: block; color: var(--mut); font-weight: 500; font-size: .78rem; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-weight: 600; color: #3b4540; margin-bottom: 2px; }
+.nav a svg { width: 19px; height: 19px; flex-shrink: 0; }
+.nav a:hover { background: var(--bg); }
+.nav a.on { background: var(--gl); color: var(--gd); }
+.nav .bas { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+main { flex: 1; min-width: 0; padding: 28px clamp(16px, 4vw, 40px) 60px; max-width: 1100px; }
+h1 { font-size: 1.55rem; margin: 0 0 18px; letter-spacing: -.02em; }
+.tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.tete h1 { margin: 0; }
+.carte { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; padding: 0 18px; border-radius: 12px; border: 0; background: var(--g); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.btn:hover { background: #0b6137; }
+.btn.ghost { background: #fff; color: var(--g); border: 1.5px solid var(--g); }
+.btn.danger { background: #fff; color: var(--danger); border: 1.5px solid #f0c9c9; }
+.btn.small { height: 34px; padding: 0 12px; font-size: .88rem; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { color: var(--mut); font-weight: 600; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+.thumb { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: var(--gl); display: block; }
+.pastille { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .8rem; font-weight: 700; background: var(--gl); color: var(--gd); }
+.pastille.off { background: #f1f1f1; color: var(--mut); }
+.grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 18px; }
+.champ { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.champ label { font-weight: 600; font-size: .9rem; }
+.champ input[type=text], .champ input[type=email], .champ input[type=tel], .champ input[type=number], .champ input[type=password],
+.champ input[type=file], .champ select, .champ textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #d6ded9; border-radius: 11px; font: inherit; background: #fff; }
+.champ input:focus, .champ select:focus, .champ textarea:focus { outline: none; border-color: var(--g); }
+.champ small { color: var(--mut); font-size: .82rem; }
+.champ em { color: var(--danger); font-style: normal; font-size: .85rem; }
+.case { flex-direction: row; align-items: center; gap: 8px; }
+.alerte { background: #fff4e5; border: 1px solid #f3c27a; color: #6b3d00; border-radius: 12px; padding: 11px 14px; margin-bottom: 16px; }
+.ok { background: #eaf7ef; border-color: #a8dcbc; color: var(--gd); }
+.vide { text-align: center; color: var(--mut); padding: 36px 10px; }
+.menu-tel { display: none; }
+@media (max-width: 820px) {
+  .app { flex-direction: column; }
+  .side { width: 100%; height: auto; position: static; padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand { border: 0; padding: 0 4px 10px; margin: 0; }
+  .nav { display: flex; gap: 4px; overflow-x: auto; }
+  .nav a { white-space: nowrap; margin: 0; padding: 9px 11px; }
+  .nav .bas { margin: 0; padding: 0; border: 0; display: contents; }
+  main { padding-top: 18px; }
+  .masquer-tel { display: none; }
+}
+</style>
+{% block tete %}{% endblock %}
+</head>
+<body>
+{% block corps %}
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      {% if v.logo %}<img src="{{ v.logo.url }}" alt="">{% else %}<span class="ini">{{ v.boutique|slice:":1"|upper }}</span>{% endif %}
+      <div><b>{{ v.boutique }}</b><small>Espace vendeur</small></div>
+    </div>
+    <nav class="nav">
+      <a href="{% url 'espace:tableau' v.code %}" class="{% if page == 'tableau' %}on{% endif %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Tableau de bord</a>
+      <a href="{% url 'espace:produits' v.code %}" class="{% if page == 'produits' %}on{% endif %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Produits</a>
+      <a href="{% url 'espace:categories' v.code %}" class="{% if page == 'categories' %}on{% endif %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Catégories</a>
+      <a href="{% url 'espace:commandes' v.code %}" class="{% if page == 'commandes' %}on{% endif %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M4 10h16"/></svg>Commandes</a>
+      <a href="{% url 'espace:parametres' v.code %}" class="{% if page == 'parametres' %}on{% endif %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Paramètres</a>
+      <div class="bas"><a href="{% url 'espace:deconnexion' v.code %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Déconnexion</a></div>
+    </nav>
+  </aside>
+  <main>{% block contenu %}{% endblock %}</main>
+</div>
+{% endblock %}
+<script>
+document.addEventListener('input', function (e) {
+  var el = e.target;
+  if (el && el.tagName === 'INPUT' && el.type === 'tel') { var v = el.value.replace(/[^0-9+ ]/g, ''); if (v !== el.value) el.value = v; }
+});
+</script>
+</body>
+</html>

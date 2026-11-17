@@ -58,3 +58,7 @@ class ModeCommandeTests(TestCase):
         self.assertIsNone(d['url_paiement'])
         self.assertTrue(d['lien'].startswith('http'))
         self.assertEqual(d['whatsapp'], '22890000000')
+        from core.models import SiteSettings
+        st = SiteSettings.load(); st.whatsapp_1 = '22892967700'; st.save()
+        d = APIClient().get(f'/api/mobile/v1/boutique/produits/{p.pk}/').json()
+        self.assertEqual(d['whatsapp_commande'], '22892967700')  # Lantante, pas le contact du produit

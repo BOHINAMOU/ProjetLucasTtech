@@ -1,0 +1,23 @@
+{% extends 'marche/espace/base.html' %}
+{% block titre %}Catégories{% endblock %}
+{% block contenu %}
+<div class="tete"><h1>Catégories</h1></div>
+<form method="post" class="carte" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+  {% csrf_token %}
+  <div class="champ" style="flex:1;min-width:200px;margin:0"><label for="nom">Nouvelle catégorie</label><input type="text" id="nom" name="nom" maxlength="80" required></div>
+  <button class="btn" type="submit">Ajouter</button>
+</form>
+{% if erreur %}<div class="alerte">{{ erreur }}</div>{% endif %}
+<div class="carte" style="padding:6px 12px">
+{% if cats %}
+<table>
+  <tr><th>Nom</th><th>Produits</th><th></th></tr>
+  {% for c in cats %}
+  <tr><td><b>{{ c.nom }}</b></td><td>{{ c.n }}</td>
+    <td style="text-align:right"><form method="post" onsubmit="return confirm('Supprimer cette catégorie ? Les produits restent.')">{% csrf_token %}
+      <button class="btn small danger" name="supprimer" value="{{ c.pk }}">Supprimer</button></form></td></tr>
+  {% endfor %}
+</table>
+{% else %}<div class="vide">Aucune catégorie. Elles servent seulement à ranger vos produits.</div>{% endif %}
+</div>
+{% endblock %}

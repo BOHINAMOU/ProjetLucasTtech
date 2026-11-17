@@ -1,0 +1,31 @@
+{% extends 'marche/espace/base.html' %}
+{% load montants %}
+{% block titre %}Produits{% endblock %}
+{% block contenu %}
+<div class="tete"><h1>Produits</h1><a class="btn" href="{% url 'espace:produit_ajouter' v.code %}">Ajouter un produit</a></div>
+{% if categories %}
+<p style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px">
+  <a class="pastille {% if cat %}off{% endif %}" href="?">Toutes</a>
+  {% for c in categories %}<a class="pastille {% if cat != c.pk|stringformat:'s' %}off{% endif %}" href="?categorie={{ c.pk }}">{{ c.nom }}</a>{% endfor %}
+</p>
+{% endif %}
+<div class="carte" style="padding:6px 12px">
+{% if produits %}
+<table>
+  <tr><th></th><th>Nom</th><th>Prix</th><th class="masquer-tel">Stock</th><th class="masquer-tel">Statut</th><th></th></tr>
+  {% for p in produits %}
+  <tr>
+    <td style="width:56px">{% if p.image %}<img class="thumb" src="{{ p.image.url }}" alt="">{% else %}<span class="thumb"></span>{% endif %}</td>
+    <td><a href="{% url 'espace:produit' v.code p.pk %}"><b>{{ p.name }}</b></a>{% if p.categorie_vendeur %}<br><small style="color:var(--mut)">{{ p.categorie_vendeur }}</small>{% endif %}</td>
+    <td>{{ p.price|cfa }}</td>
+    <td class="masquer-tel">{{ p.stock }}</td>
+    <td class="masquer-tel">{% if p.is_available %}<span class="pastille">En vente</span>{% else %}<span class="pastille off">Retiré</span>{% endif %}</td>
+    <td style="text-align:right;white-space:nowrap"><a class="btn small ghost" href="{% url 'espace:produit' v.code p.pk %}">Modifier</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<div class="vide">Aucun produit pour le moment.</div>
+{% endif %}
+</div>
+{% endblock %}

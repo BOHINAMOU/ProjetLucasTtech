@@ -1,0 +1,18 @@
+{% extends 'marche/espace/base.html' %}
+{% load montants %}
+{% block titre %}Commandes{% endblock %}
+{% block contenu %}
+<div class="tete"><h1>Commandes</h1></div>
+<div class="carte" style="padding:6px 12px">
+{% if commandes %}
+<table>
+  <tr><th>Date</th><th>Produit</th><th>Montant</th><th class="masquer-tel">Client</th><th>Statut</th></tr>
+  {% for c in commandes %}
+  <tr><td>{{ c.created_at|date:"d/m/Y" }}</td><td>{{ c.description }}</td><td>{{ c.amount|cfa }}</td>
+    <td class="masquer-tel">{{ c.first_name }} {{ c.last_name }}</td>
+    <td>{% if c.status == 'approved' %}<span class="pastille">Payé</span>{% else %}<span class="pastille off">{{ c.get_status_display }}</span>{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<div class="vide">Aucune commande pour le moment.</div>{% endif %}
+</div>
+{% endblock %}

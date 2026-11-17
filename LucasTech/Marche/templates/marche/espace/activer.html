@@ -1,0 +1,13 @@
+{% extends 'marche/espace/_auth.html' %}
+{% block titre %}Mot de passe{% endblock %}
+{% block auth %}
+<h1>Créer votre mot de passe</h1>
+<p class="sous">{{ v.user.email }}</p>
+<form method="post">
+  {% csrf_token %}
+  {% for f in form %}
+  <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
+  {% endfor %}
+  <button class="btn" type="submit">Enregistrer</button>
+</form>
+{% endblock %}

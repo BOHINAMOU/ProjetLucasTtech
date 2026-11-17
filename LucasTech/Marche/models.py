@@ -32,6 +32,11 @@ class ReglageLivraison(models.Model):
         return cls.objects.first() or cls.objects.create()
 
 
+def _code_espace():
+    import secrets
+    return secrets.token_urlsafe(12)
+
+
 class Vendeur(models.Model):
     STATUTS = [('en_attente', 'En attente'), ('valide', 'Validé'), ('suspendu', 'Suspendu')]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='vendeur',
@@ -47,6 +52,12 @@ class Vendeur(models.Model):
     numero_reversement = models.CharField("Numéro de reversement", max_length=30, blank=True,
                                           help_text="Mobile Money où l'on reverse ses ventes.")
     statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente')
+    # Espace vendeur séparé : lien propre à chaque vendeur + connexion obligatoire
+    code = models.CharField("Code du lien", max_length=32, unique=True, default=_code_espace, editable=False)
+    activation = models.CharField(max_length=64, blank=True, editable=False)
+    logo = models.ImageField("Logo", upload_to='vendeurs/logos/', blank=True)
+    telephone = models.CharField("Téléphone", max_length=30, blank=True)
+    description = models.TextField("Description", blank=True)
     created_at = models.DateTimeField("Créé le", auto_now_add=True)
 
     class Meta:
@@ -61,11 +72,9 @@ class Vendeur(models.Model):
     def actif(self):
         return self.statut == 'valide'
 
-    def save(self, *a, **kw):
-        super().save(*a, **kw)
-        if self.actif:
-            from .acces import donner_acces
-            donner_acces(self.user)
+    def lien_espace(self):
+        from django.urls import reverse
+        return reverse('espace:connexion', args=[self.code])
 
 
 class Reversement(models.Model):

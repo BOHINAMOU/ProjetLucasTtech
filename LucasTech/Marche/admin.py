@@ -34,16 +34,40 @@ class ReversementInline(admin.TabularInline):
         return False
 
 
+from django import forms as _f  # noqa: E402
+
+
+class _NouveauVendeur(_f.ModelForm):
+    email = _f.EmailField(label="E-mail du vendeur", help_text="Son identifiant de connexion.")
+
+    class Meta:
+        model = Vendeur
+        fields = ['boutique', 'whatsapp', 'ville', 'commission_pct']
+
+    def clean_whatsapp(self):
+        from Repetiteurs.models import whatsapp_togo
+        return whatsapp_togo(self.cleaned_data.get('whatsapp'))
+
+    def clean_email(self):
+        from django.contrib.auth import get_user_model
+        e = self.cleaned_data['email'].strip().lower()
+        u = get_user_model().objects.filter(email__iexact=e).first()
+        if u and Vendeur.objects.filter(user=u).exists():
+            raise _f.ValidationError("Ce compte a déjà un espace vendeur.")
+        return e
+
+
 @admin.register(Vendeur)
 class VendeurAdmin(admin.ModelAdmin):
-    list_display = ['boutique', 'user', 'ville', 'statut', 'commission_pct', 'ventes', 'du_f', 'reste_f']
+    list_display = ['boutique', 'user', 'ville', 'statut', 'lien', 'ventes', 'du_f', 'reste_f']
+    actions = ['envoyer_les_acces', 'regenerer_lien']
     list_filter = ['statut', 'ville']
     search_fields = ['boutique', 'user__email', 'ville']
     autocomplete_fields = ['user']
     inlines = [ReversementInline]
-    readonly_fields = ['chiffres']
+    readonly_fields = ['chiffres', 'lien']
     fieldsets = (
-        (None, {'fields': ('user', 'boutique', 'whatsapp', 'statut')}),
+        (None, {'fields': ('user', 'boutique', 'whatsapp', 'statut', 'lien')}),
         ('Point de retrait', {'fields': ('ville', 'adresse_retrait', 'latitude', 'longitude'),
                               'description': "Position GPS : dans Google Maps, appui long sur le lieu, puis copier les deux nombres."}),
         ('Argent', {'fields': ('commission_pct', 'numero_reversement', 'chiffres')}),
@@ -64,6 +88,64 @@ class VendeurAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs['form'] = _NouveauVendeur
+        return super().get_form(request, obj, **kwargs)
+
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return ((None, {'fields': ('boutique', 'email', 'whatsapp', 'ville', 'commission_pct'),
+                            'description': "Le vendeur reçoit par e-mail son lien d'espace et crée son mot de passe."}),)
+        return super().get_fieldsets(request, obj)
+
+    def get_inlines(self, request, obj):
+        return [] if obj is None else super().get_inlines(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            from django.contrib.auth import get_user_model
+            from .espace import envoyer_acces
+            User = get_user_model()
+            e = form.cleaned_data['email']
+            u = User.objects.filter(email__iexact=e).first()
+            if not u:
+                u = User.objects.create_user(email=e, password=None)
+                u.set_unusable_password()
+                u.save()
+            obj.user, obj.statut = u, 'valide'
+            super().save_model(request, obj, form, change)
+            envoyer_acces(obj)
+            self.message_user(request, "Espace créé : le lien a été envoyé au vendeur par e-mail.", messages.SUCCESS)
+            return
+        super().save_model(request, obj, form, change)
+
+    @admin.display(description="Lien de l'espace")
+    def lien(self, v):
+        from django.utils.html import format_html
+        if not v.pk:
+            return '—'
+        from .espace import _site
+        url = _site() + v.lien_espace()
+        return format_html('<code style="font-size:12px">{}</code> <button type="button" class="button" '
+                           'onclick="navigator.clipboard.writeText(\'{}\');this.textContent=\'Copié\'">Copier le lien</button>',
+                           url, url)
+
+    @admin.action(description="Envoyer les accès (lien pour créer le mot de passe)")
+    def envoyer_les_acces(self, request, queryset):
+        from .espace import envoyer_acces
+        for v in queryset:
+            envoyer_acces(v)
+        self.message_user(request, f"Accès envoyés à {queryset.count()} vendeur(s).", messages.SUCCESS)
+
+    @admin.action(description="Régénérer le lien (l'ancien ne marche plus)")
+    def regenerer_lien(self, request, queryset):
+        from .models import _code_espace
+        for v in queryset:
+            v.code = _code_espace()
+            v.save(update_fields=['code'])
+        self.message_user(request, "Nouveau lien créé. Pensez à l'envoyer au vendeur.", messages.SUCCESS)
 
     @admin.display(description="Ventes")
     def ventes(self, v):

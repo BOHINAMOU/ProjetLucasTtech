@@ -1,0 +1,18 @@
+{% extends 'marche/espace/base.html' %}
+{% block tete %}<style>
+.auth { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.auth .carte { width: 100%; max-width: 400px; padding: 28px; }
+.auth .logo { width: 56px; height: 56px; border-radius: 16px; object-fit: cover; background: var(--gl); color: var(--g); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; margin-bottom: 16px; }
+.auth h1 { margin: 0 0 4px; font-size: 1.4rem; }
+.auth p.sous { color: var(--mut); margin: 0 0 20px; }
+.auth .btn { width: 100%; height: 46px; }
+.auth .lien { display: block; text-align: center; margin-top: 14px; color: var(--g); font-weight: 600; font-size: .92rem; }
+</style>{% endblock %}
+{% block corps %}
+<div class="auth">
+  <div class="carte">
+    {% if v.logo %}<img class="logo" src="{{ v.logo.url }}" alt="">{% else %}<span class="logo">{{ v.boutique|slice:":1"|upper }}</span>{% endif %}
+    {% block auth %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

@@ -38,7 +38,8 @@ class ShopOrderAdmin(admin.ModelAdmin):
 # Enregistrement des autres modèles pour que l'admin fonctionne
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'order')
+    list_display = ('name', 'order', 'slug')
+    list_editable = ('order',)
     prepopulated_fields = {'slug': ('name',)}
 
 from django import forms  # noqa: E402

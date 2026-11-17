@@ -1,17 +1,16 @@
 import shutil
 import tempfile
-from pathlib import Path
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.core.cache import cache
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 
+from Payments.models import Payment
 from Shop.models import Product
 
-from . import demandes
-from .models import CategorieVendeur, DemandeVendeur, Vendeur
+from .espace import envoyer_acces
+from .models import CategorieVendeur, Vendeur
 
 MEDIA = tempfile.mkdtemp()
 STORAGES = {'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
@@ -19,77 +18,103 @@ STORAGES = {'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'
 
 
 @override_settings(MEDIA_ROOT=MEDIA, STORAGES=STORAGES, EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-class VendreTests(TestCase):
+class EspaceVendeurTests(TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(MEDIA, ignore_errors=True)
-        for f in Path(settings.PRIVATE_MEDIA_ROOT, 'vendeurs', 'pieces').glob('piece*'):
-            f.unlink(missing_ok=True)
 
     def setUp(self):
         cache.clear()
+        self.admin = get_user_model().objects.create_superuser(email='ad@example.com', password='x-Pass-12345')
 
-    def _deposer(self, url='/vendre/', **extra):
-        d = {'boutique': 'Chez Ama', 'activite': 'Pagnes', 'ville': 'Lomé', 'prenom': 'Ama', 'nom': 'Koffi',
-             'telephone': '90000000', 'whatsapp': '+228 90 00 00 00', 'email': 'ama@example.com',
-             'piece_type': 'passeport', 'piece_numero': 'P123',
-             'piece': SimpleUploadedFile('piece.pdf', b'%PDF-1.4 test', content_type='application/pdf')}
-        d.update(extra)
-        return self.client.post(url, d)
-
-    def test_demande_sans_compte_suivi_et_acceptation(self):
-        self.assertEqual(self.client.get('/vendre/').status_code, 200)
-        r = self._deposer()
-        d = DemandeVendeur.objects.get()
-        self.assertEqual(r['Location'], d.get_absolute_url())
-        self.assertContains(self.client.get(d.get_absolute_url()), d.numero)
-        self.assertEqual(self.client.get('/vendre/dossier/faux/').status_code, 404)
-        self.assertEqual(self._deposer(whatsapp='kkk').status_code, 200)  # refusé
-        v = demandes.accepter(d)
-        self.assertEqual(v.statut, 'valide')
-        self.assertTrue(v.user.is_staff)
-        self.assertTrue(v.user.has_perm('Marche.add_categorievendeur'))
-
-    def test_categories_privees_et_produits_du_vendeur(self):
-        self._deposer()
-        v = demandes.accepter(DemandeVendeur.objects.get())
-        autre = Vendeur.objects.create(user=get_user_model().objects.create_user(email='b@example.com', password='x'),
-                                       boutique='B', whatsapp='22891111111', ville='Kara', statut='valide')
-        mienne = CategorieVendeur.objects.create(vendeur=v, nom='Pagnes wax')
-        CategorieVendeur.objects.create(vendeur=autre, nom='Secret')
-        v.user.set_password('x-Pass-12345')
-        v.user.save()
+    def _creer(self, email='ama@example.com'):
         c = Client()
-        c.force_login(v.user)
-        page = c.get('/lantanteAdminTech/Marche/categorievendeur/').content.decode()
-        self.assertIn('Pagnes wax', page)
-        self.assertNotIn('Secret', page)
-        r = c.post('/lantanteAdminTech/Shop/product/add/', {
-            'categorie_vendeur': mienne.pk, 'name': 'Pagne', 'mode_commande': 'les_deux',
-            'contact_whatsapp': '22890000000', 'livrable': 'on', 'description': 'Pagne', 'price': 3000, 'stock': 2,
-            'is_available': 'on', 'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})
+        c.force_login(self.admin)
+        r = c.post('/lantanteAdminTech/Marche/vendeur/add/', {
+            'boutique': 'Chez Ama', 'email': email, 'whatsapp': '+228 90 11 22 33', 'ville': 'Lomé', 'commission_pct': '10'})
+        self.assertEqual(r.status_code, 302, r.content[:600])
+        return Vendeur.objects.get(user__email=email)
+
+    def _activer(self, v, mdp='Motdepasse-123'):
+        v.refresh_from_db()
+        c = Client()
+        r = c.post(f'/espace/{v.code}/activer/{v.activation}/', {'password': mdp, 'password2': mdp})
+        self.assertEqual(r.status_code, 302)
+        return c
+
+    def test_contact_sans_formulaire(self):
+        from core.models import SiteSettings
+        st = SiteSettings.load(); st.whatsapp_1 = '22892967700'; st.save()
+        page = self.client.get('/vendre/').content.decode()
+        self.assertIn('wa.me/22892967700', page)
+        self.assertNotIn('<form', page.split('rp-banniere')[1].split('</main>')[0])
+
+    def test_creation_par_admin_activation_et_connexion(self):
+        v = self._creer()
+        self.assertEqual(v.statut, 'valide')
+        self.assertFalse(v.user.is_staff)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(f'/espace/{v.code}/activer/', mail.outbox[0].body)
+        # le lien seul ne donne pas accès
+        self.assertEqual(Client().get(f'/espace/{v.code}/tableau/')['Location'], f'/espace/{v.code}/')
+        c = self._activer(v)
+        self.assertEqual(c.get(f'/espace/{v.code}/tableau/').status_code, 200)
+        v.refresh_from_db()
+        self.assertEqual(v.activation, '')  # lien d'activation à usage unique
+        # connexion normale
+        c2 = Client()
+        r = c2.post(f'/espace/{v.code}/', {'email': 'ama@example.com', 'password': 'Motdepasse-123'})
+        self.assertEqual(r['Location'], f'/espace/{v.code}/tableau/')
+        page = c2.get(f'/espace/{v.code}/tableau/').content.decode()
+        self.assertNotIn('lt-footer', page)  # aucun élément du site
+
+    def test_limite_de_tentatives(self):
+        v = self._creer()
+        self._activer(v)
+        c = Client()
+        for _ in range(5):
+            c.post(f'/espace/{v.code}/', {'email': 'ama@example.com', 'password': 'faux'})
+        r = c.post(f'/espace/{v.code}/', {'email': 'ama@example.com', 'password': 'Motdepasse-123'})
+        self.assertContains(r, 'Trop de tentatives')
+
+    def test_vendeur_ne_voit_que_ses_donnees_et_produits(self):
+        v = self._creer()
+        autre = self._creer('b@example.com')
+        c = self._activer(v)
+        self.assertEqual(c.get(f'/espace/{autre.code}/tableau/')['Location'], f'/espace/{autre.code}/')
+        c.post(f'/espace/{v.code}/categories/', {'nom': 'Pagnes wax'})
+        cat = CategorieVendeur.objects.get(vendeur=v)
+        CategorieVendeur.objects.create(vendeur=autre, nom='Secret')
+        self.assertNotContains(c.get(f'/espace/{v.code}/categories/'), 'Secret')
+        r = c.post(f'/espace/{v.code}/produits/ajouter/', {
+            'name': 'Pagne', 'categorie_vendeur': cat.pk, 'price': 3000, 'description': 'Beau pagne', 'stock': 2,
+            'is_available': 'on', 'mode_commande': 'les_deux', 'contact_whatsapp': '', 'livrable': 'on'})
         self.assertEqual(r.status_code, 302, r.content[:800])
         p = Product.objects.get(name='Pagne')
-        self.assertEqual((p.vendeur, p.categorie_vendeur, p.category.slug), (v, mienne, 'boutiques-partenaires'))
+        self.assertEqual((p.vendeur, p.categorie_vendeur, p.category.slug), (v, cat, 'boutiques-partenaires'))
+        # WhatsApp vide : celui des paramètres du vendeur pour la commande
+        d = Client().get(f'/api/mobile/v1/boutique/produits/{p.pk}/').json()
+        self.assertEqual(d['whatsapp_commande'], '22890112233')
+        p.refresh_from_db()
+        self.assertEqual(p.vues, 1)
+        Client().post(f'/api/mobile/v1/boutique/produits/{p.pk}/whatsapp/')
+        self.assertContains(c.get(f'/espace/{v.code}/tableau/'), 'Clics WhatsApp')
+        p2 = Product.objects.create(name='Autre', price=1, stock=1, vendeur=autre)
+        self.assertEqual(c.get(f'/espace/{v.code}/produits/{p2.pk}/').status_code, 404)
+        c.post(f'/espace/{v.code}/produits/{p.pk}/supprimer/')
+        self.assertFalse(Product.objects.filter(pk=p.pk).exists())
 
-    def test_piece_reservee_a_l_equipe(self):
-        self._deposer()
-        d = DemandeVendeur.objects.get()
-        self.assertIn(self.client.get(f'/vendre/piece/{d.pk}/').status_code, (302, 404))
-        admin = get_user_model().objects.create_superuser(email='ad@example.com', password='x-Pass-12345')
-        self.client.force_login(admin)
-        r = self.client.get(f'/vendre/piece/{d.pk}/')
-        self.assertEqual(r.status_code, 200)
-        r.close()
-
-    def test_correction_puis_renvoi(self):
-        self._deposer()
-        d = DemandeVendeur.objects.get()
-        demandes.demander_correction(d, "Pièce illisible")
-        url = f'/vendre/dossier/{d.jeton}/modifier/'
-        self.assertContains(Client().get(url), 'Pièce illisible')
-        self._deposer(url=url, piece=SimpleUploadedFile('piece2.pdf', b'%PDF-1.4 ok', content_type='application/pdf'))
-        d.refresh_from_db()
-        self.assertEqual(d.statut, 'en_attente')
-        self.assertEqual(DemandeVendeur.objects.count(), 1)
+    def test_vendeur_suspendu_et_lien_regenere(self):
+        v = self._creer()
+        c = self._activer(v)
+        Vendeur.objects.filter(pk=v.pk).update(statut='suspendu')
+        self.assertContains(c.get(f'/espace/{v.code}/tableau/'), 'Espace désactivé')
+        ancien = v.code
+        a = Client()
+        a.force_login(self.admin)
+        a.post('/lantanteAdminTech/Marche/vendeur/', {'action': 'regenerer_lien', '_selected_action': [v.pk]})
+        v.refresh_from_db()
+        self.assertNotEqual(v.code, ancien)
+        self.assertEqual(Client().get(f'/espace/{ancien}/').status_code, 404)
+        self.assertFalse(Payment.objects.exists())

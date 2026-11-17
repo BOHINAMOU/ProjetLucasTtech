@@ -51,7 +51,8 @@ class Category(models.Model):
     description = models.TextField(blank=True, verbose_name="Description")
     icon        = models.CharField(max_length=50, blank=True, verbose_name="Icône", help_text="Classe Font Awesome ex: fa-mobile")
     slug        = models.SlugField(unique=True, verbose_name="Slug (URL)")
-    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+    order       = models.PositiveIntegerField(default=0, verbose_name="Ordre d'affichage",
+                                              help_text="Plus petit = plus haut dans la boutique et l'appli.")
 
     class Meta:
         ordering = ['order', 'name']
@@ -98,6 +99,8 @@ class Product(models.Model):
                    "est revendu pour le compte d'un tiers (ex : un autre commerçant, un revendeur) "
                    "et que les commandes doivent lui arriver directement. Format : 22890000000."
     )
+    vues = models.PositiveIntegerField("Vues", default=0, editable=False)
+    clics_whatsapp = models.PositiveIntegerField("Clics WhatsApp", default=0, editable=False)
     MODES_COMMANDE = [('les_deux', "Payer ou commander sur WhatsApp"), ('payer', "Payer dans l'appli seulement"),
                       ('whatsapp', "Commander sur WhatsApp seulement")]
     mode_commande = models.CharField(

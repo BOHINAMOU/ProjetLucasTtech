@@ -137,7 +137,9 @@ def product_item(request, p):
 
 def _products():
     from Shop.models import Product
-    return Product.objects.filter(is_available=True).select_related('category').order_by('-is_featured', '-created_at')
+    # ordre des catégories (réglable dans l'admin) d'abord, puis mis en avant, puis les plus récents
+    return Product.objects.filter(is_available=True).select_related('category').order_by(
+        'category__order', '-is_featured', '-created_at')
 
 
 @api_view(['GET'])
@@ -153,6 +155,10 @@ def produits(request):
 @public_cache()
 def produit(request, pk):
     p = _products().prefetch_related('images').filter(pk=pk).first()
+    if p:
+        from django.db.models import F
+        from Shop.models import Product
+        Product.objects.filter(pk=p.pk).update(vues=F('vues') + 1)
     if not p:
         return error("Produit introuvable.", 404, code='introuvable')
     data = product_item(request, p)
@@ -171,6 +177,9 @@ def produit(request, pk):
         'url_paiement': paiement(request, reverse('payments:checkout', args=['produit', p.pk]))
         if p.stock > 0 and p.mode_commande != 'whatsapp' else None,
         'mode_commande': p.mode_commande,
+        # « Commander sur WhatsApp » : le vendeur partenaire, sinon le WhatsApp principal de Lantante (jamais le
+        # numéro de la personne qui a ajouté le produit, qui reste dans « whatsapp » pour le petit bouton de contact)
+        'whatsapp_commande': _wa_valide(p.vendeur.whatsapp if p.vendeur_id else '') or _wa_valide(_whatsapp_lantante()),
         'lien': request.build_absolute_uri(reverse('shop:product_detail', args=[p.pk])),
     })
     return Response(data)
@@ -719,6 +728,14 @@ def recherche(request):
 
 
 
+def _wa_valide(numero):
+    """Numéro au format wa.me (228XXXXXXXX), ou '' s'il n'est pas valide."""
+    d = ''.join(c for c in (numero or '') if c.isdigit())
+    if len(d) == 8:
+        d = '228' + d
+    return d if len(d) >= 11 else ''
+
+
 def _whatsapp_lantante():
     try:
         from core.models import SiteSettings
@@ -760,3 +777,14 @@ def _depart(p):
     from Marche.livraison import depart
     lat, lng, ville = depart(p)
     return {'lat': lat, 'lng': lng, 'ville': ville}
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def produit_clic_whatsapp(request, pk):
+    """L'appli signale un appui sur « WhatsApp » (statistiques du vendeur)."""
+    from django.db.models import F
+    from Shop.models import Product
+    Product.objects.filter(pk=pk).update(clics_whatsapp=F('clics_whatsapp') + 1)
+    return Response({'ok': True})

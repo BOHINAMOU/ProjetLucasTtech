@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% block title %}Vendre sur Lantante — Lantante Technologie{% endblock %}
+{% block meta_description %}Vendez vos produits dans l'application Lantante.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}{% endblock %}
+{% block content %}
+<div class="rp">
+  <div class="rp-banniere">
+    <div>
+      <h1>Vendre sur Lantante</h1>
+      <p>Écrivez-nous : nous créons votre espace vendeur.</p>
+    </div>
+  </div>
+  {% if lien %}
+  <a class="rp-btn" href="{{ lien }}" target="_blank" rel="noopener" style="background:#25d366;color:#04301a !important">
+    <i class="fab fa-whatsapp" style="margin-right:8px"></i> Nous contacter</a>
+  {% endif %}
+</div>
+{% endblock %}

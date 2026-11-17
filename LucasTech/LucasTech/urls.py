@@ -14,6 +14,7 @@ from .sitemaps import sitemaps
 urlpatterns = [
     path('repetiteurs/', include('Repetiteurs.urls')),
     path('vendre/', include('Marche.urls_vendre')),
+    path('espace/', include('Marche.urls_espace')),
     path(
         'ads.txt',
         lambda request: HttpResponse("google.com, pub-2908722543426563, DIRECT, f08c47fec0942fa0", content_type="text/plain"),

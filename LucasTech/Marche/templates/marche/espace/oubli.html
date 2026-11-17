@@ -1,0 +1,16 @@
+{% extends 'marche/espace/_auth.html' %}
+{% block titre %}Mot de passe oublié{% endblock %}
+{% block auth %}
+<h1>Mot de passe oublié</h1>
+{% if envoye %}
+  <div class="alerte ok">Si cette adresse correspond à l'espace, un lien vient d'y être envoyé.</div>
+{% else %}
+  <p class="sous">Nous envoyons un lien à votre e-mail.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="champ"><label for="email">E-mail</label><input type="email" id="email" name="email" required></div>
+    <button class="btn" type="submit">Envoyer le lien</button>
+  </form>
+{% endif %}
+<a class="lien" href="{% url 'espace:connexion' v.code %}">Retour à la connexion</a>
+{% endblock %}

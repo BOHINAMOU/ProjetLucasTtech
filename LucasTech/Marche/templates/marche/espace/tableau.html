@@ -1,0 +1,38 @@
+{% extends 'marche/espace/base.html' %}
+{% load montants %}
+{% block titre %}Tableau de bord{% endblock %}
+{% block tete %}<style>
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat small { color: var(--mut); font-weight: 600; font-size: .82rem; }
+.stat b { display: block; font-size: 1.6rem; margin-top: 6px; letter-spacing: -.02em; }
+.graph { display: flex; align-items: flex-end; gap: 6px; height: 140px; margin-top: 12px; }
+.graph div { flex: 1; background: var(--gl); border-radius: 6px 6px 2px 2px; position: relative; }
+.graph div.plein { background: var(--g); }
+.jours { display: flex; gap: 6px; margin-top: 6px; color: var(--mut); font-size: .72rem; }
+.jours span { flex: 1; text-align: center; }
+</style>{% endblock %}
+{% block contenu %}
+<div class="tete"><h1>Tableau de bord</h1><a class="btn" href="{% url 'espace:produit_ajouter' v.code %}">Ajouter un produit</a></div>
+<div class="stats">
+  <div class="carte stat"><small>Produits</small><b>{{ nb_produits }}</b></div>
+  <div class="carte stat"><small>Vues</small><b>{{ vues }}</b></div>
+  <div class="carte stat"><small>Clics WhatsApp</small><b>{{ clics }}</b></div>
+  <div class="carte stat"><small>Commandes payées</small><b>{{ commandes }}</b></div>
+  <div class="carte stat"><small>Ventes</small><b>{{ ventes|cfa }}</b></div>
+</div>
+<div class="carte">
+  <b>Ventes des 14 derniers jours</b>
+  <div class="graph">{% for b in barres %}<div class="{% if b.montant %}plein{% endif %}" style="height:{{ b.h }}%" title="{{ b.jour|date:'d/m' }} : {{ b.montant|cfa }}"></div>{% endfor %}</div>
+  <div class="jours">{% for b in barres %}<span class="{% cycle '' 'masquer-tel' %}">{{ b.jour|date:'d' }}</span>{% endfor %}</div>
+</div>
+{% if derniers %}
+<div class="carte" style="margin-top:16px">
+  <b>Derniers produits</b>
+  <table style="margin-top:8px">{% for p in derniers %}
+    <tr><td style="width:56px">{% if p.image %}<img class="thumb" src="{{ p.image.url }}" alt="">{% else %}<span class="thumb"></span>{% endif %}</td>
+        <td><a href="{% url 'espace:produit' v.code p.pk %}"><b>{{ p.name }}</b></a></td>
+        <td>{{ p.price|cfa }}</td><td class="masquer-tel">{{ p.vues }} vues</td></tr>{% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

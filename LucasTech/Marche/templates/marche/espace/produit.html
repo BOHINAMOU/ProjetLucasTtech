@@ -1,0 +1,25 @@
+{% extends 'marche/espace/base.html' %}
+{% block titre %}{% if obj %}{{ obj.name }}{% else %}Nouveau produit{% endif %}{% endblock %}
+{% block contenu %}
+<div class="tete"><h1>{% if obj %}{{ obj.name }}{% else %}Nouveau produit{% endif %}</h1>
+  <a class="btn ghost" href="{% url 'espace:produits' v.code %}">Retour</a></div>
+<form method="post" enctype="multipart/form-data" class="carte">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alerte">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  <div class="grille">
+    {% for f in form %}{% if f.name != 'description' and f.name != 'is_available' and f.name != 'livrable' %}
+    <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} *{% endif %}</label>{{ f }}
+      {% if f.help_text %}<small>{{ f.help_text }}</small>{% endif %}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
+    {% endif %}{% endfor %}
+  </div>
+  <div class="champ"><label for="{{ form.description.id_for_label }}">Description</label>{{ form.description }}</div>
+  <div class="champ case">{{ form.is_available }}<label for="{{ form.is_available.id_for_label }}">En vente</label></div>
+  <div class="champ case">{{ form.livrable }}<label for="{{ form.livrable.id_for_label }}">Livrable</label></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px"><button class="btn" type="submit">Enregistrer</button></div>
+</form>
+{% if obj %}
+<form method="post" action="{% url 'espace:produit_supprimer' v.code obj.pk %}" style="margin-top:14px" onsubmit="return confirm('Supprimer ce produit ?')">
+  {% csrf_token %}<button class="btn danger" type="submit">Supprimer le produit</button>
+</form>
+{% endif %}
+{% endblock %}

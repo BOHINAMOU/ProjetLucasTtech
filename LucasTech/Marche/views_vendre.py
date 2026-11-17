@@ -56,8 +56,19 @@ def _ip(request):
     return (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or '').split(',')[0].strip()
 
 
+def contact(request):
+    """Page simple : le vendeur nous écrit sur WhatsApp ; c'est l'équipe qui crée son espace."""
+    from api_mobile.catalog import _wa_valide, _whatsapp_lantante
+    from urllib.parse import quote
+    wa = _wa_valide(_whatsapp_lantante())
+    lien = f"https://wa.me/{wa}?text={quote('Bonjour, je souhaite vendre mes produits sur Lantante.')}" if wa else ''
+    return render(request, 'marche/vendre_contact.html', {'lien': lien})
+
+
 def vendre(request, jeton=None):
-    d = get_object_or_404(DemandeVendeur, jeton=jeton) if jeton else None
+    if not jeton:
+        return contact(request)
+    d = get_object_or_404(DemandeVendeur, jeton=jeton)
     if d and not d.modifiable:
         return redirect(d)
     form = DemandeForm(request.POST or None, request.FILES or None, instance=d)

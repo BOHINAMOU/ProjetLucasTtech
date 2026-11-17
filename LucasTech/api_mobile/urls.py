@@ -45,6 +45,7 @@ urlpatterns = [
     path('boutique/produits/', catalog.produits, name='produits'),
     path('boutique/categories/', catalog.boutique_categories, name='boutique_categories'),
     path('boutique/produits/<int:pk>/', catalog.produit, name='produit'),
+    path('boutique/produits/<int:pk>/whatsapp/', catalog.produit_clic_whatsapp, name='produit_clic_whatsapp'),
     path('services/rubriques/', catalog.rubriques_services, name='rubriques_services'),
     path('services/espace/', catalog.espace_services, name='espace_services'),
     path('services/', catalog.services, name='services'),

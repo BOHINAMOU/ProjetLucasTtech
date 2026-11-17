@@ -94,34 +94,10 @@ class MarcheTests(APITestCase):
         self.v.save()
         self.assertEqual(self._mm(ville='Lomé').status_code, 400)
 
-    def test_espace_vendeur_limite_a_ses_produits(self, *_):
-        autre = Product.objects.create(name='Lantante', description='x', price=100, stock=1)
-        self.vu.refresh_from_db()
-        self.assertTrue(self.vu.is_staff)
-        self.client.force_login(self.vu)
-        r = self.client.get('/lantanteAdminTech/Shop/product/')
-        self.assertContains(r, 'Sac')
-        self.assertNotContains(r, '>Lantante<')
-        self.assertEqual(self.client.get(f'/lantanteAdminTech/Shop/product/{autre.pk}/change/').status_code, 302)
-        from Shop.models import Category
-        cat = Category.objects.create(name='Mode')
-        r = self.client.post('/lantanteAdminTech/Shop/product/add/', {
-            'category': cat.pk, 'name': 'Pagne', 'mode_commande': 'les_deux', 'contact_whatsapp': '', 'livrable': 'on', 'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
-            'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})
-        self.assertEqual(r.status_code, 200)  # WhatsApp obligatoire
-        self.assertContains(r, 'obligatoire')
-        self.assertContains(self.client.get('/lantanteAdminTech/Shop/product/add/'), '22890112233')  # pré-rempli
-        self.assertContains(self.client.get('/lantanteAdminTech/Shop/product/add/'), 'carte_produit.js')  # carte
-        r = self.client.post('/lantanteAdminTech/Shop/product/add/', {
-            'category': cat.pk, 'name': 'Pagne', 'mode_commande': 'les_deux', 'contact_whatsapp': '+228 90 11 22 33', 'livrable': 'on',
-            'retrait_latitude': '6.130000', 'retrait_longitude': '1.220000',
-            'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
-            'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})
-        self.assertEqual(r.status_code, 302, r.context and r.context['adminform'].form.errors)
-        self.assertEqual(Product.objects.get(name='Pagne').contact_whatsapp, '22890112233')
-        self.assertEqual(Product.objects.get(name='Pagne').vendeur, self.v)
+    def test_vendeur_sans_acces_a_l_admin_du_site(self, *_):
+        # les vendeurs ont leur espace séparé (/espace/<code>/) ; plus d'accès à l'admin du site
+        self.assertFalse(self.vu.is_staff)
 
-    # ── Codes promo ──
     def test_code_pourcentage_sur_articles_pas_sur_livraison(self, *_):
         CodePromo.objects.create(code='rentree10', type='pct', valeur=10)
         r = self.client.post(API + 'paiements/devis/', {'type': 'produit', 'id': self.p.pk, 'quantite': 2,
