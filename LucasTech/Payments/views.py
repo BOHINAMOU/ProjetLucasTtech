@@ -125,10 +125,13 @@ def _target(request, kind, pk):
         return obj, int(obj.prix), "Abonnement Accès Épreuves (1 an)", {'kind': 'acces'}, reverse('concours:index')
     if kind == 'candidature':
         from Repetiteurs.models import Candidature, ReglageCandidature
-        if not request.user.is_authenticated:
+        obj = get_object_or_404(Candidature, pk=pk, statut='a_payer')
+        # sans compte : le dossier doit avoir été créé dans cette session, ou appartenir à ce compte
+        if not (pk in request.session.get('candidatures', []) or
+                (request.user.is_authenticated and obj.user_id == request.user.pk)):
             raise Http404
-        obj = get_object_or_404(Candidature, pk=pk, user=request.user, statut='a_payer')
-        return obj, int(ReglageCandidature.load().prix), f"Candidature répétiteur : {obj.nom_complet}",             {'kind': 'candidature', 'items': [{'candidature': obj.pk}]}, reverse('repetiteurs:devenir')
+        return (obj, int(ReglageCandidature.load().prix), f"Candidature répétiteur {obj.numero} : {obj.nom_complet}",
+                {'kind': 'candidature', 'items': [{'candidature': obj.pk}]}, obj.get_absolute_url())
     if kind == 'boutique':
         from Shop.models import ShopOrder
         if not request.user.is_authenticated:
@@ -142,7 +145,7 @@ def _target(request, kind, pk):
 def checkout(request, kind, pk):
     if kind == 'concours':
         return redirect(reverse('payments:checkout', args=['acces', 0]))  # plus de vente à l'unité
-    if kind in ('acces', 'candidature') and not request.user.is_authenticated:
+    if kind == 'acces' and not request.user.is_authenticated:
         from django.contrib.auth.views import redirect_to_login
         return redirect_to_login(request.get_full_path())  # l'accès est attaché au compte
     obj, amount, description, link_fields, back_url = _target(request, kind, pk)

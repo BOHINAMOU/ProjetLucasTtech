@@ -10,16 +10,17 @@
   </header>
   <section class="rp-card">
     <h2>{{ c.nom_complet }}</h2>
-    <p><span class="rp-statut {{ c.statut }}">{{ c.get_statut_display }}</span></p>
+    <p>Dossier n° <b>{{ c.numero }}</b> · <span class="rp-statut {{ c.statut }}">{{ c.get_statut_display }}</span></p>
+    {% if lien %}<p class="rp-note">Gardez ce lien privé pour suivre votre dossier :<br><a href="{{ lien }}" style="word-break:break-all">{{ lien }}</a></p>{% endif %}
     {% if c.statut == 'a_payer' %}
       <p class="rp-note">Votre dossier est enregistré. Réglez les frais de candidature ({{ prix }} CFA) pour qu'il soit vérifié.</p>
       <a class="rp-btn" href="{% url 'payments:checkout' 'candidature' c.pk %}">Payer {{ prix }} CFA</a>
-      <p style="margin-top:10px"><a class="rp-btn rp-btn--ghost" href="{% url 'repetiteurs:devenir' %}">Modifier mon dossier</a></p>
+      <p style="margin-top:10px"><a class="rp-btn rp-btn--ghost" href="{% url 'repetiteurs:modifier' c.jeton %}">Modifier mon dossier</a></p>
     {% elif c.statut == 'a_verifier' %}
       <p class="rp-note">Paiement reçu. Nous vérifions votre dossier et revenons vers vous rapidement.</p>
     {% elif c.statut == 'a_corriger' %}
       <div class="rp-alert"><b>À corriger :</b> {{ c.motif|linebreaksbr }}</div>
-      <a class="rp-btn" href="{% url 'repetiteurs:devenir' %}">Corriger mon dossier</a>
+      <a class="rp-btn" href="{% url 'repetiteurs:modifier' c.jeton %}">Corriger mon dossier</a>
       <p class="rp-note" style="margin-top:8px">Vous ne payez pas une deuxième fois.</p>
     {% elif c.statut == 'validee' %}
       <div class="rp-alert rp-ok">Votre profil est visible dans l'application Lantante, rubrique « Répétiteur - École ».</div>

@@ -45,6 +45,11 @@ def _stockage_prive():
     return private_storage()
 
 
+def _jeton():
+    import secrets
+    return secrets.token_urlsafe(32)
+
+
 class ReglageCandidature(models.Model):
     prix = models.PositiveIntegerField("Frais de candidature (CFA)", default=2000)
 
@@ -69,7 +74,9 @@ class Candidature(models.Model):
     ]
     PIECES = [('cni', "Carte nationale d'identité"), ('electeur', "Carte d'électeur"), ('passeport', "Passeport")]
 
-    user = models.ForeignKey('Users.User', on_delete=models.CASCADE, related_name='candidatures_repetiteur')
+    user = models.ForeignKey('Users.User', on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name='candidatures_repetiteur', verbose_name="Compte (facultatif)")
+    jeton = models.CharField("Jeton du lien de suivi", max_length=64, unique=True, default=_jeton, editable=False)
     statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='a_payer', db_index=True)
     motif = models.TextField("Motif (à corriger / rejet)", blank=True)
     # identité
@@ -115,6 +122,14 @@ class Candidature(models.Model):
     @property
     def nom_complet(self):
         return f"{self.prenom} {self.nom}".strip()
+
+    @property
+    def numero(self):
+        return f"R{self.pk:05d}" if self.pk else ''
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('repetiteurs:suivi', args=[self.jeton])
 
     @property
     def modifiable(self):

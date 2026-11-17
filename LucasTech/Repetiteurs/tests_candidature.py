@@ -47,16 +47,17 @@ class CandidatureTests(TestCase):
                     f.delete(save=False)
 
     def setUp(self):
-        self.u = get_user_model().objects.create_user(email='prof@example.com', password='x-Pass-12345')
-        self.client.force_login(self.u)
+        self.u = None  # sans compte : n'importe qui peut déposer un dossier
+        from django.core.cache import cache
+        cache.clear()  # limite anti-spam remise à zéro
 
-    def _deposer(self, **extra):
+    def _deposer(self, url='/repetiteurs/devenir/', **extra):
         d = {'prenom': 'Kossi', 'nom': 'Mensah', 'telephone': '90000000', 'whatsapp': '22890000000',
              'email': 'prof@example.com', 'matieres': 'Maths, Physique', 'niveaux': 'Tle', 'ville': 'Lomé',
              'quartier': 'Bè', 'piece_type': 'cni', 'piece_numero': 'A123',
              'photo': _image(), 'piece_recto': _pdf('recto.pdf'), 'piece_verso': _pdf('verso.pdf')}
         d.update(extra)
-        return self.client.post('/repetiteurs/devenir/', d)
+        return self.client.post(url, d)
 
     def _payer(self, c):
         p = Payment.objects.create(kind='candidature', amount=2000, description='Candidature', user=self.u,
@@ -71,6 +72,13 @@ class CandidatureTests(TestCase):
         c = Candidature.objects.get()
         self.assertEqual(c.statut, 'a_payer')
         self.assertIn(f'/candidature/{c.pk}', r['Location'])
+        self.assertIsNone(c.user)
+        self.assertEqual(c.numero, f'R{c.pk:05d}')
+        # la page de paiement s'ouvre sans compte, dans le même navigateur
+        self.assertEqual(self.client.get(r['Location']).status_code, 200)
+        # un autre navigateur ne peut pas payer ce dossier sans son lien
+        from django.test import Client
+        self.assertEqual(Client().get(r['Location']).status_code, 404)
         p = self._payer(c)
         mark_paid(p)  # confirmation reçue deux fois : un seul effet
         c.refresh_from_db()
@@ -81,7 +89,7 @@ class CandidatureTests(TestCase):
         self.assertFalse(rep.est_exemple)
         noms = [x['nom'] for x in self.client.get('/api/mobile/v1/repetiteurs/').json()['resultats']]
         self.assertIn('Kossi Mensah', noms)
-        self.assertEqual(self.client.get('/repetiteurs/ma-candidature/').status_code, 200)
+        self.assertEqual(self.client.get(c.get_absolute_url()).status_code, 200)
 
     def test_correction_sans_repayer(self):
         self._deposer()
@@ -89,12 +97,35 @@ class CandidatureTests(TestCase):
         self._payer(c)
         c.refresh_from_db()
         candidatures.demander_correction(c, "Photo floue", 'admin')
-        self.assertContains(self.client.get('/repetiteurs/devenir/'), 'Photo floue')
-        r = self._deposer(photo=_image('nette.png'))
-        self.assertEqual(r['Location'], '/repetiteurs/ma-candidature/')
+        from django.test import Client
+        autre = Client()  # le candidat revient plus tard, depuis le lien reçu
+        modifier = f'/repetiteurs/dossier/{c.jeton}/modifier/'
+        self.assertContains(autre.get(modifier), 'Photo floue')
+        self.client = autre
+        r = self._deposer(url=modifier, photo=_image('nette.png'))
+        self.assertEqual(r['Location'], c.get_absolute_url())
         c.refresh_from_db()
         self.assertEqual(c.statut, 'a_verifier')
         self.assertEqual(Payment.objects.filter(kind='candidature').count(), 1)
+
+    def test_suivi_seulement_avec_le_bon_jeton(self):
+        self._deposer()
+        c = Candidature.objects.get()
+        self.assertEqual(len(c.jeton), 43)
+        self.assertContains(self.client.get(c.get_absolute_url()), c.numero)
+        self.assertEqual(self.client.get('/repetiteurs/dossier/faux-jeton/').status_code, 404)
+        self.assertEqual(self.client.get(f'/repetiteurs/dossier/{c.jeton[:-1]}x/').status_code, 404)
+
+    def test_piege_a_robots_et_retrouver(self):
+        r = self._deposer(site_internet='http://spam')
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(Candidature.objects.exists())
+        self._deposer()
+        c = Candidature.objects.get()
+        r = self.client.post('/repetiteurs/retrouver/', {'numero': c.numero, 'contact': '+228 90 00 00 00'})
+        self.assertContains(r, c.get_absolute_url())
+        r = self.client.post('/repetiteurs/retrouver/', {'numero': c.numero, 'contact': '91111111'})
+        self.assertNotContains(r, c.jeton)
 
     def test_verso_obligatoire_pour_la_cni(self):
         r = self._deposer(piece_verso='')
@@ -104,6 +135,9 @@ class CandidatureTests(TestCase):
     def test_piece_reservee_a_l_equipe(self):
         self._deposer()
         c = Candidature.objects.get()
+        self.assertIn(self.client.get(f'/repetiteurs/piece/{c.pk}/recto/').status_code, (302, 404))
+        u = get_user_model().objects.create_user(email='simple@example.com', password='x-Pass-12345')
+        self.client.force_login(u)
         self.assertEqual(self.client.get(f'/repetiteurs/piece/{c.pk}/recto/').status_code, 404)
         admin = get_user_model().objects.create_superuser(email='ad@example.com', password='x-Pass-12345')
         self.client.force_login(admin)

@@ -22,12 +22,13 @@ def _trace(c, action, auteur='', motif=''):
 
 def _ecrire(c, sujet, texte):
     """E-mail au candidat (adresse du dossier, sinon celle du compte). Une erreur d'envoi ne bloque rien."""
-    dest = c.email or getattr(c.user, 'email', '')
+    dest = c.email or (c.user.email if c.user_id else '')
     if not dest:
         return
-    lien = _site() + '/repetiteurs/ma-candidature/'
+    lien = _site() + c.get_absolute_url()  # lien privé de suivi (jamais la pièce d'identité)
     try:
-        send_mail(sujet, f"Bonjour {c.prenom},\n\n{texte}\n\nVotre dossier : {lien}\n\nL'équipe Lantante",
+        send_mail(sujet, f"Bonjour {c.prenom},\n\n{texte}\n\nDossier n° {c.numero}\nSuivi de votre dossier : {lien}"
+                         f"\n\nL'équipe Lantante",
                   settings.DEFAULT_FROM_EMAIL, [dest], fail_silently=True)
     except Exception:
         pass
@@ -53,7 +54,7 @@ def renvoyer(c):
     if c.statut == 'a_corriger':
         c.statut = 'a_verifier'
         c.save(update_fields=['statut', 'updated_at'])
-        _trace(c, "Dossier corrigé et renvoyé", c.user)
+        _trace(c, "Dossier corrigé et renvoyé", c.nom_complet)
 
 
 def valider(c, auteur=''):

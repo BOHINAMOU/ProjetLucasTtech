@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+{% block title %}Retrouver mon dossier — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}{% endblock %}
+
+{% block content %}
+<div class="rp">
+  <header class="rp-hero">
+    <p class="rp-kicker">Répétiteur - École</p>
+    <h1>Retrouver mon dossier</h1>
+    <p class="rp-sub">Indiquez votre numéro de dossier (ex. R00012) et le téléphone ou l'e-mail du dossier.</p>
+  </header>
+  <section class="rp-card">
+    {% if message %}<div class="rp-alert">{{ message }}</div>{% endif %}
+    {% if lien %}
+      <div class="rp-alert rp-ok">Dossier trouvé.</div>
+      <a class="rp-btn" href="{{ lien }}">Ouvrir mon dossier</a>
+    {% else %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include 'repetiteurs/_champ.html' with f=form.numero %}
+      {% include 'repetiteurs/_champ.html' with f=form.contact %}
+      <button type="submit" class="rp-btn">Retrouver</button>
+    </form>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

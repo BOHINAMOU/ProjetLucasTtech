@@ -12,7 +12,8 @@
   <header class="rp-hero">
     <p class="rp-kicker">Répétiteur - École</p>
     <h1>Devenir répétiteur</h1>
-    <p class="rp-sub">Remplissez votre dossier, réglez les frais de candidature ({{ prix }} CFA). Après vérification, votre profil apparaît dans l'application.</p>
+    <p class="rp-sub">Sans créer de compte : remplissez votre dossier, réglez les frais de candidature ({{ prix }} CFA). Après vérification, votre profil apparaît dans l'application.</p>
+    <p class="rp-note" style="margin-top:8px">Déjà un dossier ? <a href="{% url 'repetiteurs:retrouver' %}">Retrouver mon dossier</a></p>
     <ol class="rp-steps"><li>Identité</li><li>Profil</li><li>Pièce d'identité</li><li>Récapitulatif</li></ol>
   </header>
 
@@ -22,6 +23,7 @@
 
   <form method="post" enctype="multipart/form-data" class="rp-form" novalidate>
     {% csrf_token %}
+    <div style="position:absolute;left:-9999px" aria-hidden="true">{{ form.site_internet }}</div>
     {% if form.non_field_errors %}<div class="rp-alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 
     <section class="rp-card">

@@ -32,9 +32,19 @@ class CandidatureForm(forms.ModelForm):
             'tarif': forms.TextInput(attrs={'placeholder': "Facultatif. Ex. 15 000 CFA / mois"}),
             'whatsapp': forms.TextInput(attrs={'placeholder': "Ex. 22890000000"}),
             'photo': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
-            'piece_recto': forms.ClearableFileInput(attrs={'accept': 'image/*,application/pdf'}),
-            'piece_verso': forms.ClearableFileInput(attrs={'accept': 'image/*,application/pdf'}),
+            # jamais de lien vers la pièce déjà envoyée (elle est privée)
+            'piece_recto': forms.FileInput(attrs={'accept': 'image/*,application/pdf'}),
+            'piece_verso': forms.FileInput(attrs={'accept': 'image/*,application/pdf'}),
         }
+
+    # piège à robots : champ caché qui doit rester vide
+    site_internet = forms.CharField(required=False, widget=forms.TextInput(
+        attrs={'tabindex': '-1', 'autocomplete': 'off'}))
+
+    def clean_site_internet(self):
+        if self.cleaned_data.get('site_internet'):
+            raise forms.ValidationError("Envoi refusé.")
+        return ''
 
     def clean_photo(self):
         return _verifier(self.cleaned_data.get('photo'), ('.jpg', '.jpeg', '.png', '.webp'), "Photo")
@@ -50,3 +60,8 @@ class CandidatureForm(forms.ModelForm):
         if d.get('piece_type') in ('cni', 'electeur') and not d.get('piece_verso'):
             self.add_error('piece_verso', "Le verso est obligatoire pour cette pièce.")
         return d
+
+
+class RetrouverForm(forms.Form):
+    numero = forms.CharField(label="Numéro de dossier", max_length=12, widget=forms.TextInput(attrs={'placeholder': 'R00012'}))
+    contact = forms.CharField(label="Téléphone ou e-mail du dossier", max_length=120)
