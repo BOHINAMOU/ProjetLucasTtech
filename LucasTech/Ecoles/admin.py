@@ -69,7 +69,7 @@ class EcoleAdmin(admin.ModelAdmin):
     inlines = [PhotoInline, FiliereInline, NouveauteInline, MembreInline]
     form = EcoleForm
     fieldsets = [
-        (None, {'fields': ['nom', 'type', 'cycles', 'ville', 'logo', 'couverture', 'description']}),
+        (None, {'fields': ['nom', 'alias', 'type', 'cycles', 'ville', 'logo', 'couverture', 'description']}),
         ("Contact", {'fields': [('telephone', 'whatsapp'), ('email', 'site_web'), 'adresse']}),
         ("Inscription", {'fields': ['lien_inscription'],
                          'description': "Le bouton « S'inscrire » ouvre ce lien (sinon le site web)."}),

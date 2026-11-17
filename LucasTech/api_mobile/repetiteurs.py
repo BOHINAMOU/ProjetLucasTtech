@@ -1,5 +1,4 @@
 """Répétiteur - École : liste (recherche, filtres matière / ville) et fiche avec contacts."""
-from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -26,7 +25,8 @@ def liste(request):
     tous = list(qs)
     q = (request.GET.get('q') or '').strip()
     if q:
-        qs = qs.filter(Q(nom__icontains=q) | Q(matieres__icontains=q) | Q(ville__icontains=q) | Q(quartier__icontains=q))
+        from .recherche import filtrer
+        qs = filtrer(qs, q, 'nom', 'matieres', 'ville', 'quartier', 'niveaux')
     if request.GET.get('matiere'):
         qs = qs.filter(matieres__icontains=request.GET['matiere'])
     if request.GET.get('ville'):

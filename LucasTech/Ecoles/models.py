@@ -17,7 +17,7 @@ class Ecole(models.Model):
     type = models.CharField("Type", max_length=12, choices=TYPES)
     ville = models.CharField("Ville", max_length=80, blank=True)
     logo = models.ImageField("Logo", upload_to='ecoles/logos/', blank=True)
-    couverture = models.ImageField("Photo principale", upload_to='ecoles/couvertures/', blank=True)
+    couverture = models.ImageField("Image de couverture", upload_to='ecoles/couvertures/', blank=True)
     description = models.TextField("Présentation", blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     whatsapp = models.CharField("WhatsApp", max_length=30, blank=True)
@@ -26,6 +26,8 @@ class Ecole(models.Model):
     cycles = models.JSONField("Cycles", default=list, blank=True,
                               help_text="Primaire, Collège, Lycée, Université / Supérieur, Autre (plusieurs possibles).")
     adresse = models.CharField("Adresse", max_length=200, blank=True)
+    alias = models.CharField("Mots-clés / sigles", max_length=200, blank=True,
+                             help_text="Séparés par des virgules. Ex. UL, Univ Lomé. Utilisés par la recherche.")
     lien_inscription = models.URLField("Lien d'inscription", blank=True,
                                        help_text="Page d'inscription sur le site de l'école. Vide = son site web.")
     publie = models.BooleanField("Publiée", default=True)

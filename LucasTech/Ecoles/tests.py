@@ -1,3 +1,5 @@
+import os
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from rest_framework.test import APITestCase
@@ -66,3 +68,20 @@ class EcolesTests(APITestCase):
         self.assertFalse(MembreInline(Ecole, site).has_add_permission(rq, self.e))
         rq.user = self.resp
         self.assertTrue(MembreInline(Ecole, site).has_add_permission(rq, self.e))
+
+
+class ImagesFilieresTests(TestCase):
+    def test_domaines_et_commande(self):
+        from django.core.management import call_command
+        from Ecoles.management.commands.images_filieres import domaine
+        self.assertEqual(domaine("Licence Intelligence artificielle"), 'ia')
+        self.assertEqual(domaine("Master Cybersécurité"), 'reseaux')
+        self.assertEqual(domaine("Licence en Droit"), 'droit')
+        self.assertEqual(domaine("Sciences de la Santé"), 'sante')
+        self.assertEqual(domaine("Série D"), 'defaut')
+        e = Ecole.objects.create(nom='Essai', type='universite')
+        f = Filiere.objects.create(ecole=e, nom='Licence Génie logiciel')
+        call_command('images_filieres', stdout=open(os.devnull, 'w'))
+        f.refresh_from_db()
+        self.assertTrue(f.image.name.endswith('.webp'))
+        f.image.delete(save=False)

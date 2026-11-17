@@ -10,7 +10,7 @@ from Repetiteurs.models import Repetiteur
 
 S = 'superieur'
 ECOLES = [
-    dict(slug='universite-de-lome', nom="Université de Lomé", type='universite', ville='Lomé', cycles=[S],
+    dict(slug='universite-de-lome', alias='UL, Univ Lomé', nom="Université de Lomé", type='universite', ville='Lomé', cycles=[S],
          description="Université publique du Togo. Huit domaines de formation : lettres, agronomie, éducation, santé, "
                      "sciences humaines, économie et gestion, sciences et technologies, droit.",
          adresse="Boulevard Gnassingbé Eyadéma, 01 BP 1515 Lomé", site_web='https://univ-lome.tg',
@@ -21,7 +21,7 @@ ECOLES = [
              ("Sciences de l'Éducation et de la Formation", "SEF"), ("Sciences de la Santé", "SS"),
              ("Sciences de l'Homme et de la Société", "SHS"), ("Sciences économiques et de gestion", "SEG"),
              ("Sciences et Technologie", "ST"), ("Sciences juridiques, politiques et de l'administration", "SJPA")]]),
-    dict(slug='ucao-uut', nom="UCAO-UUT (Université catholique)", type='universite', ville='Lomé', cycles=[S],
+    dict(slug='ucao-uut', alias='UCAO, UUT, Université catholique', nom="UCAO-UUT (Université catholique)", type='universite', ville='Lomé', cycles=[S],
          description="Université catholique de l'Afrique de l'Ouest, unité du Togo, campus de Sanguéra. "
                      "Licences, masters et cycle ingénieur ; 14 diplômes accrédités par le CAMES.",
          telephone='+228 96 80 31 67', email='contact@ucao-uut.tg', adresse="UCAO Sanguéra, Agoè-Nyivé 5, Lomé",
@@ -37,7 +37,7 @@ ECOLES = [
              ("Master en Sciences économiques et de gestion", 'Master', '2 ans', "Audit, finance, développement durable"),
              ("Licence en Médias et Communications", 'Licence', '3 ans', "Communication digitale, journalisme multimédia"),
              ("Master en Médias et Communication", 'Master', '2 ans', "Communication publique, IA et numérique")]),
-    dict(slug='ipnet-institute-of-technology', nom="IPNET Institute of Technology", type='universite', ville='Lomé',
+    dict(slug='ipnet-institute-of-technology', alias='IPNET, IIT', nom="IPNET Institute of Technology", type='universite', ville='Lomé',
          cycles=[S],
          description="Institut de technologie à Lomé : informatique, cybersécurité, intelligence artificielle, "
                      "électrotechnique et énergie. Projets étudiants présentés chaque année aux recruteurs.",
@@ -51,7 +51,7 @@ ECOLES = [
              "Licence Génie électrotechnique et énergie"]] + [(n, 'Master', '2 ans', '') for n in [
              "Master Génie logiciel", "Master Cybersécurité", "Master Intelligence artificielle",
              "Master Réseaux, systèmes et sécurité", "Master Gestion stratégique de projets"]]),
-    dict(slug='esgis-togo', nom="ESGIS Togo", type='universite', ville='Lomé', cycles=[S],
+    dict(slug='esgis-togo', alias='ESGIS', nom="ESGIS Togo", type='universite', ville='Lomé', cycles=[S],
          description="École supérieure privée agréée, accréditée par le CAMES : droit, gestion, économie, "
                      "informatique et technologies industrielles.",
          telephone='+228 22 50 60 60', whatsapp='22899282828', email='esgis.togo@esgis.org',
@@ -67,7 +67,7 @@ ECOLES = [
              ("Licence en Informatique", 'Licence', '3 ans', "Génie logiciel, réseaux, sécurité, IA et big data"),
              ("Master en Informatique", 'Master', '2 ans', "Architecture logicielle, IA et big data, sécurité"),
              ("Licence en Technologies industrielles", 'Licence', '3 ans', "Électromécanique, génie électrique, mécatronique")]),
-    dict(slug='lycee-francais-de-lome', nom="Lycée français de Lomé", type='lycee', ville='Lomé',
+    dict(slug='lycee-francais-de-lome', alias='LFL, Lycée français', nom="Lycée français de Lomé", type='lycee', ville='Lomé',
          cycles=['primaire', 'college', 'lycee'],
          description="Établissement du réseau AEFE, de la maternelle à la terminale.",
          telephone='+228 22 23 57 50', whatsapp='22879327243', email='secretariat@lfl-togo.org',
@@ -113,6 +113,7 @@ class Command(BaseCommand):
                 Filiere.objects.update_or_create(ecole=e, nom=nom, defaults=dict(
                     cycle=S, niveau=niveau, duree=duree, resume=resume, ordre=j))
             self.stdout.write(f"{'+' if cree else '='} {e.nom} ({len(filieres)} filières)")
+        Ecole.objects.filter(nom__icontains="Institut Africain d'Informatique", alias='').update(alias='IAI, IAI-Togo')
         for j, (nom, mat, niv, ville, quartier) in enumerate(REPETITEURS):
             Repetiteur.objects.update_or_create(nom=nom, defaults=dict(
                 matieres=mat, niveaux=niv, ville=ville, quartier=quartier, description=TXT,

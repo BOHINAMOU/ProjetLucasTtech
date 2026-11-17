@@ -1,5 +1,4 @@
 """Écoles dans l'appli : liste, fiche (photos qui défilent), filières ; « S'inscrire » ouvre le site de l'école."""
-from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -21,6 +20,7 @@ def ecole_item(request, e):
     return {'nouveau': _recent(e), 'cycles': [{'code': c, 'nom': libelles.get(c, c)} for c in (e.cycles or [])],
             'id': e.pk, 'slug': e.slug, 'nom': e.nom, 'titre': e.nom, 'type': e.type, 'type_libelle': e.get_type_display(),
             'ville': e.ville, 'logo': media(request, e.logo),
+            'couverture': vignette(request, e.couverture) if e.couverture else None,
             'image': media(request, e.couverture or e.logo), 'image_vignette': vignette(request, e.couverture or e.logo),
             'resume': short(e.description), 'lien_inscription': lien_inscription(e)}
 
@@ -44,7 +44,8 @@ def ecoles(request):
         qs = qs.filter(type=t)
     q = (request.GET.get('q') or '').strip()
     if q:
-        qs = qs.filter(Q(nom__icontains=q) | Q(ville__icontains=q) | Q(filieres__nom__icontains=q)).distinct()
+        from .recherche import filtrer
+        qs = filtrer(qs, q, 'nom', 'ville', 'filieres__nom', alias='alias')
     return paginated(request, qs, lambda e: ecole_item(request, e))
 
 
@@ -59,6 +60,7 @@ def ecole(request, slug):
     d.update({
         'description': text(e.description), 'telephone': e.telephone, 'whatsapp': e.whatsapp, 'email': e.email,
         'site_web': e.site_web, 'adresse': e.adresse,
+        'couverture_grande': grande(request, e.couverture) if e.couverture else None,
         'photos': [{'image': grande(request, p.image), 'legende': p.legende} for p in e.photos.all()],
         'nouveautes': [{'id': n.pk, 'titre': n.titre, 'texte': n.texte, 'date': n.date.isoformat(),
                         'image': grande(request, n.image) if n.image else None}

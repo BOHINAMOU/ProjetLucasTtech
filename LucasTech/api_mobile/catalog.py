@@ -93,13 +93,9 @@ def paginated(request, qs, serialize):
 
 
 def search(qs, request, *fields):
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        cond = Q()
-        for f in fields:
-            cond |= Q(**{f'{f}__icontains': q})
-        qs = qs.filter(cond)
-    return qs
+    """Recherche sans accents, sigles et petites fautes, triée par pertinence (voir recherche.py)."""
+    from .recherche import filtrer
+    return filtrer(qs, request.GET.get('q'), *fields)
 
 
 def by_category(qs, request, field='category'):
@@ -710,8 +706,9 @@ def recherche(request):
            [event_item(request, e) for e in search(_events(), request, 'title', 'location', 'description')[:n]])
     groupe('service', 'Services', [service_item(request, x) for x in search(_services(), request, 'title', 'description')[:n]])
     from .ecoles import _ecoles, ecole_item
-    groupe('ecole', 'Écoles', [ecole_item(request, e) for e in _ecoles().filter(
-        Q(nom__icontains=q) | Q(ville__icontains=q) | Q(filieres__nom__icontains=q)).distinct()[:n]])
+    from .recherche import filtrer
+    groupe('ecole', 'Écoles', [ecole_item(request, e) for e in filtrer(
+        _ecoles(), q, 'nom', 'ville', 'filieres__nom', alias='alias')[:n]])
     return Response({'q': q, 'groupes': groupes})
 
 
