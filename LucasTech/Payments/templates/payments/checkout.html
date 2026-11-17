@@ -73,7 +73,7 @@
 (function(){
   var b=document.querySelector('.liv'); if(!b||!window.L) return;
   var dep=[+b.dataset.lat,+b.dataset.lng], carte=L.map('liv-carte').setView(dep,13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(carte);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(carte);
   L.circleMarker(dep,{radius:8,color:'#0f7a45',fillOpacity:.9}).addTo(carte).bindTooltip('Départ');
   var moi=null, lat=document.getElementById('liv-lat'), lng=document.getElementById('liv-lng');
   var ville=document.getElementById('id_city');

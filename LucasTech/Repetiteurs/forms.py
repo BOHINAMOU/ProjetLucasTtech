@@ -20,21 +20,20 @@ class CandidatureForm(forms.ModelForm):
     class Meta:
         model = Candidature
         fields = ['prenom', 'nom', 'telephone', 'whatsapp', 'email',
-                  'photo', 'matieres', 'niveaux', 'ville', 'quartier', 'latitude', 'longitude',
+                  'photo', 'matieres', 'niveaux', 'ville', 'quartier',
                   'experience', 'description', 'tarif',
-                  'piece_type', 'piece_numero', 'piece_recto', 'piece_verso']
+                  'piece_type', 'piece_numero', 'piece_recto']
+        labels = {'piece_recto': "Pièce d'identité (recto et verso)", 'description': "Présentation"}
         widgets = {
-            'latitude': forms.HiddenInput(), 'longitude': forms.HiddenInput(),
-            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': "Votre méthode, vos réussites…"}),
+            'description': forms.Textarea(attrs={'rows': 4}),
             'matieres': forms.TextInput(attrs={'placeholder': "Ex. Mathématiques, Physique-Chimie"}),
-            'niveaux': forms.TextInput(attrs={'placeholder': "Ex. 3e, 1re, Tle"}),
+            'niveaux': forms.HiddenInput(),
             'experience': forms.TextInput(attrs={'placeholder': "Ex. 6 ans, professeur certifié"}),
-            'tarif': forms.TextInput(attrs={'placeholder': "Facultatif. Ex. 15 000 CFA / mois"}),
+            'tarif': forms.TextInput(attrs={'placeholder': "Ex. 15 000 CFA / mois"}),
             'whatsapp': forms.TextInput(attrs={'placeholder': "Ex. +228 90 12 34 56", 'inputmode': 'tel'}),
             'photo': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
             # jamais de lien vers la pièce déjà envoyée (elle est privée)
             'piece_recto': forms.FileInput(attrs={'accept': 'image/*,application/pdf'}),
-            'piece_verso': forms.FileInput(attrs={'accept': 'image/*,application/pdf'}),
         }
 
     # piège à robots : champ caché qui doit rester vide
@@ -56,14 +55,14 @@ class CandidatureForm(forms.ModelForm):
     def clean_piece_recto(self):
         return _verifier(self.cleaned_data.get('piece_recto'), EXT_PIECE, "Pièce (recto)")
 
-    def clean_piece_verso(self):
-        return _verifier(self.cleaned_data.get('piece_verso'), EXT_PIECE, "Pièce (verso)")
-
-    def clean(self):
-        d = super().clean()
-        if d.get('piece_type') in ('cni', 'electeur') and not d.get('piece_verso'):
-            self.add_error('piece_verso', "Le verso est obligatoire pour cette pièce.")
-        return d
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.fields['email'].required = True
+        self.fields['niveaux'].required = True
+        # contrôle dans le navigateur avant l'envoi : rien n'est perdu (photo, pièce) à cause d'un oubli
+        for nom, f in self.fields.items():
+            if f.required and nom != 'niveaux' and not (self.instance.pk and nom in ('photo', 'piece_recto')):
+                f.widget.attrs['required'] = 'required'
 
 
 class RetrouverForm(forms.Form):

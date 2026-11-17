@@ -55,7 +55,7 @@ class CandidatureTests(TestCase):
         d = {'prenom': 'Kossi', 'nom': 'Mensah', 'telephone': '90000000', 'whatsapp': '22890000000',
              'email': 'prof@example.com', 'matieres': 'Maths, Physique', 'niveaux': 'Tle', 'ville': 'Lomé',
              'quartier': 'Bè', 'piece_type': 'cni', 'piece_numero': 'A123',
-             'photo': _image(), 'piece_recto': _pdf('recto.pdf'), 'piece_verso': _pdf('verso.pdf')}
+             'photo': _image(), 'piece_recto': _pdf('recto.pdf')}
         d.update(extra)
         return self.client.post(url, d)
 
@@ -134,10 +134,14 @@ class CandidatureTests(TestCase):
         self._deposer(whatsapp='+228 91 22 33 44')
         self.assertEqual(Candidature.objects.get().whatsapp, '22891223344')
 
-    def test_verso_obligatoire_pour_la_cni(self):
-        r = self._deposer(piece_verso='')
-        self.assertEqual(r.status_code, 200)
+    def test_email_et_niveaux_obligatoires_page_sans_carte(self):
+        self.assertEqual(self._deposer(email='').status_code, 200)
+        self.assertEqual(self._deposer(niveaux='').status_code, 200)
         self.assertFalse(Candidature.objects.exists())
+        page = self.client.get('/repetiteurs/devenir/').content.decode()
+        self.assertNotIn('leaflet', page)
+        self.assertNotIn('id_piece_verso', page)
+        self.assertIn('required', page)
 
     def test_piece_reservee_a_l_equipe(self):
         self._deposer()

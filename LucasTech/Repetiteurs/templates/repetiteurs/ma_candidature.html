@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="rp">
-  <header class="rp-hero">
+  <div class="rp-hero">
     <p class="rp-kicker">Répétiteur - École</p>
     <h1>Ma candidature</h1>
-  </header>
+  </div>
   <section class="rp-card">
     <h2>{{ c.nom_complet }}</h2>
     <p>Dossier n° <b>{{ c.numero }}</b> · <span class="rp-statut {{ c.statut }}">{{ c.get_statut_display }}</span></p>

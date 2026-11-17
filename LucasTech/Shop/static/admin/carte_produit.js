@@ -23,8 +23,8 @@
     ligne.parentNode.insertBefore(bloc, ligne);
     var depart = [parseFloat(lat.value) || 6.1753, parseFloat(lng.value) || 1.2128];
     var carte = L.map('carte-produit').setView(depart, lat.value ? 15 : 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(carte);
     var repere = L.marker(depart, {draggable: true}).addTo(carte);
     var adresse = document.getElementById('carte-adresse');
