@@ -42,5 +42,6 @@ class RechercheTests(TestCase):
 
     def test_recherche_globale(self):
         r = self.c.get('/api/mobile/v1/recherche/', {'q': 'UL'})
+        self.assertEqual(r.json()['groupes'][0]['type'], 'ecole')
         ecoles = [g for g in r.json()['groupes'] if g['type'] == 'ecole']
         self.assertEqual(ecoles[0]['resultats'][0]['nom'], "Université de Lomé")

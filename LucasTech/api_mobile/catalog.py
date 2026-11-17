@@ -709,6 +709,9 @@ def recherche(request):
     from .recherche import filtrer
     groupe('ecole', 'Écoles', [ecole_item(request, e) for e in filtrer(
         _ecoles(), q, 'nom', 'ville', 'filieres__nom', alias='alias')[:n]])
+    # le groupe dont le premier résultat correspond le mieux passe devant (« UL » : Écoles avant Boutique)
+    from .recherche import score
+    groupes.sort(key=lambda g: -max(score(q, f"{r.get('nom') or r.get('titre') or ''}") for r in g['resultats']))
     return Response({'q': q, 'groupes': groupes})
 
 
