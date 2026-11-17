@@ -127,6 +127,13 @@ class CandidatureTests(TestCase):
         r = self.client.post('/repetiteurs/retrouver/', {'numero': c.numero, 'contact': '91111111'})
         self.assertNotContains(r, c.jeton)
 
+    def test_whatsapp_obligatoire(self):
+        self.assertEqual(self._deposer(whatsapp='').status_code, 200)
+        self.assertEqual(self._deposer(whatsapp='123').status_code, 200)
+        self.assertFalse(Candidature.objects.exists())
+        self._deposer(whatsapp='+228 91 22 33 44')
+        self.assertEqual(Candidature.objects.get().whatsapp, '22891223344')
+
     def test_verso_obligatoire_pour_la_cni(self):
         r = self._deposer(piece_verso='')
         self.assertEqual(r.status_code, 200)

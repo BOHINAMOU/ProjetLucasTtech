@@ -30,7 +30,7 @@ class CandidatureForm(forms.ModelForm):
             'niveaux': forms.TextInput(attrs={'placeholder': "Ex. 3e, 1re, Tle"}),
             'experience': forms.TextInput(attrs={'placeholder': "Ex. 6 ans, professeur certifié"}),
             'tarif': forms.TextInput(attrs={'placeholder': "Facultatif. Ex. 15 000 CFA / mois"}),
-            'whatsapp': forms.TextInput(attrs={'placeholder': "Ex. 22890000000"}),
+            'whatsapp': forms.TextInput(attrs={'placeholder': "Ex. +228 90 12 34 56", 'inputmode': 'tel'}),
             'photo': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
             # jamais de lien vers la pièce déjà envoyée (elle est privée)
             'piece_recto': forms.FileInput(attrs={'accept': 'image/*,application/pdf'}),
@@ -45,6 +45,10 @@ class CandidatureForm(forms.ModelForm):
         if self.cleaned_data.get('site_internet'):
             raise forms.ValidationError("Envoi refusé.")
         return ''
+
+    def clean_whatsapp(self):
+        from .models import whatsapp_togo
+        return whatsapp_togo(self.cleaned_data.get('whatsapp'))
 
     def clean_photo(self):
         return _verifier(self.cleaned_data.get('photo'), ('.jpg', '.jpeg', '.png', '.webp'), "Photo")

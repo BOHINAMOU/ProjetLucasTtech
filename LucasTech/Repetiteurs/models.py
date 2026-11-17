@@ -1,5 +1,16 @@
 """Répétiteur - École : professeurs et répétiteurs, contactés directement (WhatsApp, e-mail, appel)."""
+from django.core.exceptions import ValidationError
 from django.db import models
+
+
+def whatsapp_togo(valeur):
+    """Numéro WhatsApp : 8 chiffres togolais, avec ou sans +228 / espaces. Renvoie 228XXXXXXXX."""
+    chiffres = ''.join(c for c in (valeur or '') if c.isdigit())
+    if len(chiffres) == 8:
+        chiffres = '228' + chiffres
+    if len(chiffres) != 11 or not chiffres.startswith('228'):
+        raise ValidationError("Numéro WhatsApp invalide : +228 suivi de 8 chiffres (ex. +228 90 12 34 56).")
+    return chiffres
 
 
 class Repetiteur(models.Model):
@@ -15,7 +26,8 @@ class Repetiteur(models.Model):
     description = models.TextField("Présentation", blank=True)
     experience = models.CharField("Expérience", max_length=200, blank=True, help_text="Ex. 8 ans, professeur certifié")
     tarif = models.CharField("Tarif", max_length=80, blank=True, help_text="Facultatif. Ex. 15 000 CFA / mois")
-    whatsapp = models.CharField("WhatsApp", max_length=30, blank=True, help_text="Format : 22890000000")
+    whatsapp = models.CharField("WhatsApp", max_length=30, blank=True,
+                                help_text="Obligatoire (sauf exemple) : +228 suivi de 8 chiffres.")
     email = models.EmailField("E-mail", blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     actif = models.BooleanField("Visible", default=True)
@@ -31,6 +43,14 @@ class Repetiteur(models.Model):
 
     def __str__(self):
         return self.nom
+
+    def clean(self):
+        # un vrai répétiteur doit toujours être joignable sur WhatsApp
+        if not self.est_exemple:
+            try:
+                self.whatsapp = whatsapp_togo(self.whatsapp)
+            except ValidationError as e:
+                raise ValidationError({'whatsapp': e.messages})
 
     @property
     def liste_matieres(self):
@@ -83,7 +103,7 @@ class Candidature(models.Model):
     prenom = models.CharField("Prénom", max_length=80)
     nom = models.CharField("Nom", max_length=80)
     telephone = models.CharField("Téléphone", max_length=30)
-    whatsapp = models.CharField("WhatsApp", max_length=30, blank=True)
+    whatsapp = models.CharField("WhatsApp", max_length=30, help_text="+228 suivi de 8 chiffres.")
     email = models.EmailField("E-mail", blank=True)
     # profil
     photo = models.ImageField("Photo", upload_to='repetiteurs/candidatures/')

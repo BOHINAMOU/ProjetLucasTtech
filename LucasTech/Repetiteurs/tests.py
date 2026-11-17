@@ -50,7 +50,7 @@ class RepetiteursTests(APITestCase):
         r = self.client.get('/lantanteAdminTech/Repetiteurs/repetiteur/add/')
         self.assertContains(r, 'carte_produit.js')
         r = self.client.post('/lantanteAdminTech/Repetiteurs/repetiteur/add/', {
-            'nom': 'Essai', 'matieres': 'Français', 'ville': 'Lomé', 'actif': 'on', 'ordre': 0,
+            'nom': 'Essai', 'matieres': 'Français', 'ville': 'Lomé', 'actif': 'on', 'ordre': 0, 'whatsapp': '90 12 34 56',
             'latitude': '6.130000', 'longitude': '1.220000'})
         self.assertEqual(r.status_code, 302, r.content[:500])
         self.assertTrue(Repetiteur.objects.filter(nom='Essai', latitude__isnull=False).exists())
@@ -74,3 +74,17 @@ class RepetiteursTests(APITestCase):
         self.assertEqual(r.status_code, 302)
         self.assertFalse(Repetiteur.objects.filter(est_exemple=True).exists())
         self.assertTrue(Repetiteur.objects.filter(nom='Vrai').exists())
+
+
+    def test_whatsapp_obligatoire_et_format(self):
+        from django.core.exceptions import ValidationError
+        from .models import whatsapp_togo
+        self.assertEqual(whatsapp_togo('+228 90 12 34 56'), '22890123456')
+        self.assertEqual(whatsapp_togo('90123456'), '22890123456')
+        for faux in ('', '1234', '+33 6 12 34 56 78'):
+            with self.assertRaises(ValidationError):
+                whatsapp_togo(faux)
+        r = Repetiteur(nom='Sans numéro', matieres='Maths', ville='Lomé')
+        with self.assertRaises(ValidationError):
+            r.full_clean()
+        Repetiteur(nom='Exemple', matieres='Maths', ville='Lomé', est_exemple=True).full_clean()

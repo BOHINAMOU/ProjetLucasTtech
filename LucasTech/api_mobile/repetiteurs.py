@@ -9,7 +9,8 @@ from .utils import error
 
 def item(request, r):
     return {'id': r.pk, 'nom': r.nom, 'photo': vignette(request, r.photo) if r.photo else None,
-            'matieres': r.liste_matieres, 'ville': r.ville, 'quartier': r.quartier, 'exemple': r.est_exemple}
+            'matieres': r.liste_matieres, 'ville': r.ville, 'quartier': r.quartier, 'exemple': r.est_exemple,
+            'whatsapp': ''.join(c for c in r.whatsapp if c.isdigit())}
 
 
 def _actifs():
