@@ -19,6 +19,8 @@ class Repetiteur(models.Model):
     email = models.EmailField("E-mail", blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     actif = models.BooleanField("Visible", default=True)
+    est_exemple = models.BooleanField("Exemple", default=False,
+                                      help_text="Profil de démonstration (supprimable en un clic : action « Supprimer tous les exemples »).")
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
     created_at = models.DateTimeField("Ajouté le", auto_now_add=True)
 

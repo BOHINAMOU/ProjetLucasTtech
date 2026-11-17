@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from rest_framework.test import APITestCase
@@ -53,3 +54,23 @@ class RepetiteursTests(APITestCase):
             'latitude': '6.130000', 'longitude': '1.220000'})
         self.assertEqual(r.status_code, 302, r.content[:500])
         self.assertTrue(Repetiteur.objects.filter(nom='Essai', latitude__isnull=False).exists())
+
+    def test_charger_exemples_sans_doublon_puis_supprimer(self):
+        from unittest import mock
+        from django.core.management import call_command
+        from Ecoles.models import Ecole
+        with mock.patch('urllib.request.urlopen', side_effect=OSError('hors ligne')):
+            call_command('charger_exemples', stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+            call_command('charger_exemples', stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+        self.assertEqual(Ecole.objects.filter(slug='ucao-uut').count(), 1)
+        self.assertEqual(Ecole.objects.get(slug='ucao-uut').filieres.count(), 9)
+        self.assertEqual(Repetiteur.objects.filter(est_exemple=True).count(), 5)
+        r = self.client.get('/api/mobile/v1/repetiteurs/')
+        self.assertTrue(all(x['exemple'] for x in r.json()['resultats'] if x['nom'].startswith('Exemple')))
+        Repetiteur.objects.create(nom='Vrai', matieres='Maths', ville='Lomé')
+        admin = get_user_model().objects.create_superuser(email='ad2@example.com', password='x-Pass-12345')
+        self.client.force_login(admin)
+        r = self.client.post('/lantanteAdminTech/Repetiteurs/repetiteur/', {'action': 'supprimer_exemples', 'index': 0})
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Repetiteur.objects.filter(est_exemple=True).exists())
+        self.assertTrue(Repetiteur.objects.filter(nom='Vrai').exists())
