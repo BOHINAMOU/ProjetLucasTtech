@@ -98,6 +98,11 @@ class Product(models.Model):
                    "est revendu pour le compte d'un tiers (ex : un autre commerçant, un revendeur) "
                    "et que les commandes doivent lui arriver directement. Format : 22890000000."
     )
+    MODES_COMMANDE = [('les_deux', "Payer ou commander sur WhatsApp"), ('payer', "Payer dans l'appli seulement"),
+                      ('whatsapp', "Commander sur WhatsApp seulement")]
+    mode_commande = models.CharField(
+        "Mode de commande", max_length=10, choices=MODES_COMMANDE, default='les_deux',
+        help_text="« WhatsApp » ouvre une discussion avec le vendeur (ou Lantante) avec la commande déjà écrite.")
     vendeur = models.ForeignKey('Marche.Vendeur', on_delete=models.PROTECT, null=True, blank=True,
                                 related_name='produits', verbose_name="Vendeur",
                                 help_text="Vide = produit vendu par Lantante.")

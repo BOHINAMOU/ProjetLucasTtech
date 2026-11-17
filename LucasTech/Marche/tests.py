@@ -106,14 +106,14 @@ class MarcheTests(APITestCase):
         from Shop.models import Category
         cat = Category.objects.create(name='Mode')
         r = self.client.post('/lantanteAdminTech/Shop/product/add/', {
-            'category': cat.pk, 'name': 'Pagne', 'contact_whatsapp': '', 'livrable': 'on', 'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
+            'category': cat.pk, 'name': 'Pagne', 'mode_commande': 'les_deux', 'contact_whatsapp': '', 'livrable': 'on', 'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
             'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)  # WhatsApp obligatoire
         self.assertContains(r, 'obligatoire')
         self.assertContains(self.client.get('/lantanteAdminTech/Shop/product/add/'), '22890112233')  # pré-rempli
         self.assertContains(self.client.get('/lantanteAdminTech/Shop/product/add/'), 'carte_produit.js')  # carte
         r = self.client.post('/lantanteAdminTech/Shop/product/add/', {
-            'category': cat.pk, 'name': 'Pagne', 'contact_whatsapp': '+228 90 11 22 33', 'livrable': 'on',
+            'category': cat.pk, 'name': 'Pagne', 'mode_commande': 'les_deux', 'contact_whatsapp': '+228 90 11 22 33', 'livrable': 'on',
             'retrait_latitude': '6.130000', 'retrait_longitude': '1.220000',
             'description': 'Pagne', 'price': 3000, 'stock': 2, 'is_available': 'on',
             'images-TOTAL_FORMS': 0, 'images-INITIAL_FORMS': 0})

@@ -45,3 +45,16 @@ class RechercheTests(TestCase):
         self.assertEqual(r.json()['groupes'][0]['type'], 'ecole')
         ecoles = [g for g in r.json()['groupes'] if g['type'] == 'ecole']
         self.assertEqual(ecoles[0]['resultats'][0]['nom'], "Université de Lomé")
+
+
+class ModeCommandeTests(TestCase):
+    def test_mode_commande_dans_l_api(self):
+        from Shop.models import Category, Product
+        cat = Category.objects.create(name='Divers', slug='divers')
+        p = Product.objects.create(name='Sac', price=5000, stock=3, category=cat, mode_commande='whatsapp',
+                                   contact_whatsapp='22890000000')
+        d = APIClient().get(f'/api/mobile/v1/boutique/produits/{p.pk}/').json()
+        self.assertEqual(d['mode_commande'], 'whatsapp')
+        self.assertIsNone(d['url_paiement'])
+        self.assertTrue(d['lien'].startswith('http'))
+        self.assertEqual(d['whatsapp'], '22890000000')

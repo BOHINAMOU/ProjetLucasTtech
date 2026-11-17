@@ -76,7 +76,7 @@ class ProductAdmin(admin.ModelAdmin):
         ('Prix', {'fields': ('price', 'old_price', 'bulk_price', 'bulk_min_qty')}),
         ('Photos et vidéo', {'fields': ('image', 'video')}),
         ('Stock et affichage', {'fields': ('stock', 'is_available', 'is_featured')}),
-        ('Contact et livraison', {'fields': ('contact_whatsapp', 'livrable', 'retrait_latitude', 'retrait_longitude',
+        ('Contact et livraison', {'fields': ('mode_commande', 'contact_whatsapp', 'livrable', 'retrait_latitude', 'retrait_longitude',
                                              'livraison_autre_ville', 'vendeur')}),
     )
 
@@ -109,7 +109,7 @@ class ProductAdmin(admin.ModelAdmin):
             ('Prix', {'fields': ('price', 'old_price')}),
             ('Photos', {'fields': ('image',)}),
             ('Stock', {'fields': ('stock', 'is_available')}),
-            ('Contact et livraison', {'fields': ('contact_whatsapp', 'livrable', 'retrait_latitude', 'retrait_longitude',
+            ('Contact et livraison', {'fields': ('mode_commande', 'contact_whatsapp', 'livrable', 'retrait_latitude', 'retrait_longitude',
                                                  'livraison_autre_ville')}),
         )
 

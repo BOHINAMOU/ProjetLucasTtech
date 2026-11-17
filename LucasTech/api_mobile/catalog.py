@@ -168,7 +168,10 @@ def produit(request, pk):
         'vendeur_ville': p.vendeur.ville if p.vendeur_id else '',
         'livraison_vendeur': bool(p.livrable), 'livrable': bool(p.livrable),
         'depart': _depart(p),
-        'url_paiement': paiement(request, reverse('payments:checkout', args=['produit', p.pk])) if p.stock > 0 else None,
+        'url_paiement': paiement(request, reverse('payments:checkout', args=['produit', p.pk]))
+        if p.stock > 0 and p.mode_commande != 'whatsapp' else None,
+        'mode_commande': p.mode_commande,
+        'lien': request.build_absolute_uri(reverse('shop:product_detail', args=[p.pk])),
     })
     return Response(data)
 
