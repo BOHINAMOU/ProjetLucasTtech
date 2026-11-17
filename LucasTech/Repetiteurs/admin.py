@@ -10,21 +10,51 @@ class RepetiteurAdmin(admin.ModelAdmin):
         css = {'all': ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',)}
         js = ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'admin/carte_produit.js')
 
-    list_display = ['apercu', 'nom', 'matieres', 'ville', 'quartier', 'est_exemple', 'actif', 'ordre']
+    list_display = ['apercu', 'nom', 'matieres', 'ville', 'affichage', 'est_exemple', 'actif', 'ordre']
     list_display_links = ['apercu', 'nom']
     list_editable = ['actif', 'ordre']
-    list_filter = ['actif', 'est_exemple', 'ville']
-    actions = ['supprimer_exemples']
+    list_filter = ['actif', 'est_exemple', 'ville', 'fin_affichage']
+    actions = ['reactiver_1', 'reactiver_3', 'reactiver_6', 'reactiver_12', 'supprimer_exemples']
     search_fields = ['nom', 'matieres', 'ville', 'quartier', 'niveaux']
     fieldsets = (
         (None, {'fields': ('photo', 'photo_apercu', 'nom', 'matieres', 'niveaux', 'experience', 'tarif', 'description')}),
         ('Lieu', {'fields': ('ville', 'quartier', 'latitude', 'longitude'),
                   'description': "Facultatif : choisissez le lieu sur la carte (recherche, clic ou « Ma position »)."}),
         ('Contact', {'fields': ('whatsapp', 'email', 'telephone')}),
-        ('Publication', {'fields': ('actif', 'est_exemple', 'ordre')}),
+        ('Publication', {'fields': ('actif', 'fin_affichage', 'est_exemple', 'ordre')}),
     )
 
     readonly_fields = ['photo_apercu']
+
+    @admin.display(description="Affichage")
+    def affichage(self, r):
+        if not r.fin_affichage:
+            return "Sans limite"
+        return format_html('<span style="color:{}">{} {:%d/%m/%Y}</span>', '#c62828' if r.expire else '#0b6137',
+                           "Expiré le" if r.expire else "Jusqu'au", r.fin_affichage)
+
+    def _reactiver(self, request, queryset, mois):
+        from django.utils import timezone
+        from .models import ajouter_mois
+        fin = ajouter_mois(timezone.localdate(), mois)
+        n = queryset.update(actif=True, fin_affichage=fin, rappel_fin_envoye=None)
+        self.message_user(request, f"{n} profil(s) visible(s) jusqu'au {fin:%d/%m/%Y}.", messages.SUCCESS)
+
+    @admin.action(description="Réactiver pour 1 mois")
+    def reactiver_1(self, request, queryset):
+        self._reactiver(request, queryset, 1)
+
+    @admin.action(description="Réactiver pour 3 mois")
+    def reactiver_3(self, request, queryset):
+        self._reactiver(request, queryset, 3)
+
+    @admin.action(description="Réactiver pour 6 mois")
+    def reactiver_6(self, request, queryset):
+        self._reactiver(request, queryset, 6)
+
+    @admin.action(description="Réactiver pour 12 mois")
+    def reactiver_12(self, request, queryset):
+        self._reactiver(request, queryset, 12)
 
     def changelist_view(self, request, extra_context=None):
         # « Supprimer tous les exemples » marche sans rien cocher.
@@ -82,6 +112,10 @@ class _DecisionForm(_forms.ModelForm):
     DECISIONS = [('', '— Pas de décision —'), ('valider', 'Valider et publier'),
                  ('corriger', 'Demander une correction'), ('rejeter', 'Rejeter')]
     decision = _forms.ChoiceField(label="Décision", choices=DECISIONS, required=False)
+    duree = _forms.TypedChoiceField(label="Durée d'affichage (si validée)", coerce=int, initial=3, required=False,
+                                    choices=[(1, '1 mois'), (3, '3 mois'), (6, '6 mois'), (12, '12 mois')])
+    fin_le = _forms.DateField(label="Ou jusqu'au", required=False, widget=_forms.DateInput(attrs={'type': 'date'}),
+                              help_text="Facultatif : remplace la durée.")
 
     class Meta:
         model = Candidature
@@ -106,7 +140,7 @@ class CandidatureAdmin(admin.ModelAdmin):
     readonly_fields = ['user', 'statut', 'paiement', 'repetiteur', 'apercu_photo', 'piece', 'decide_le',
                        'pieces_supprimees', 'created_at', 'updated_at']
     fieldsets = (
-        ("Décision", {'fields': ('statut', 'decision', 'motif', 'paiement', 'repetiteur')}),
+        ("Décision", {'fields': ('statut', 'decision', 'duree', 'fin_le', 'motif', 'paiement', 'repetiteur')}),
         ("Identité", {'fields': ('user', 'prenom', 'nom', 'telephone', 'whatsapp', 'email')}),
         ("Profil", {'fields': ('apercu_photo', 'photo', 'matieres', 'niveaux', 'experience', 'tarif', 'description',
                                'ville', 'quartier', 'latitude', 'longitude')}),
@@ -135,7 +169,8 @@ class CandidatureAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         d = form.cleaned_data.get('decision')
         if d == 'valider':
-            _cand.valider(obj, request.user)
+            _cand.valider(obj, request.user, mois=form.cleaned_data.get('duree') or 3,
+                          fin=form.cleaned_data.get('fin_le'))
         elif d == 'corriger':
             _cand.demander_correction(obj, obj.motif, request.user)
         elif d == 'rejeter':

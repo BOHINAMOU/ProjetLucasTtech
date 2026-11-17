@@ -3,6 +3,15 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+def ajouter_mois(d, n):
+    """Même jour, n mois plus tard (le dernier jour du mois si ce jour n'existe pas)."""
+    import calendar
+    import datetime
+    m = d.month - 1 + n
+    annee, mois = d.year + m // 12, m % 12 + 1
+    return datetime.date(annee, mois, min(d.day, calendar.monthrange(annee, mois)[1]))
+
+
 def whatsapp_togo(valeur):
     """Numéro WhatsApp : 8 chiffres togolais, avec ou sans +228 / espaces. Renvoie 228XXXXXXXX."""
     chiffres = ''.join(c for c in (valeur or '') if c.isdigit())
@@ -31,6 +40,9 @@ class Repetiteur(models.Model):
     email = models.EmailField("E-mail", blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     actif = models.BooleanField("Visible", default=True)
+    fin_affichage = models.DateField("Visible jusqu'au", null=True, blank=True,
+                                     help_text="Après cette date, le profil disparaît de l'appli. Vide = sans limite.")
+    rappel_fin_envoye = models.DateField("Rappel de fin envoyé pour", null=True, blank=True, editable=False)
     est_exemple = models.BooleanField("Exemple", default=False,
                                       help_text="Profil de démonstration (supprimable en un clic : action « Supprimer tous les exemples »).")
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
@@ -43,6 +55,11 @@ class Repetiteur(models.Model):
 
     def __str__(self):
         return self.nom
+
+    @property
+    def expire(self):
+        from django.utils import timezone
+        return bool(self.fin_affichage and self.fin_affichage < timezone.localdate())
 
     def clean(self):
         # un vrai répétiteur doit toujours être joignable sur WhatsApp

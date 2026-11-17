@@ -57,14 +57,17 @@ def renvoyer(c):
         _trace(c, "Dossier corrigé et renvoyé", c.nom_complet)
 
 
-def valider(c, auteur=''):
-    """Crée (ou met à jour) la fiche Répétiteur visible dans l'appli."""
+def valider(c, auteur='', mois=3, fin=None):
+    """Crée (ou met à jour) la fiche Répétiteur visible dans l'appli, pour une durée donnée."""
+    from .models import ajouter_mois
+    fin = fin or ajouter_mois(timezone.localdate(), int(mois))
     with transaction.atomic():
         r = c.repetiteur or Repetiteur(nom=c.nom_complet)
         for champ in ('matieres', 'niveaux', 'ville', 'quartier', 'latitude', 'longitude', 'description',
                       'experience', 'tarif', 'whatsapp', 'email', 'telephone'):
             setattr(r, champ, getattr(c, champ))
         r.nom, r.actif, r.est_exemple = c.nom_complet, True, False
+        r.fin_affichage, r.rappel_fin_envoye = fin, None
         if c.photo:
             c.photo.open('rb')
             r.photo.save(c.photo.name.rsplit('/', 1)[-1], ContentFile(c.photo.read()), save=False)
@@ -72,9 +75,9 @@ def valider(c, auteur=''):
         r.save()
         c.repetiteur, c.statut, c.motif, c.decide_le = r, 'validee', '', timezone.now()
         c.save(update_fields=['repetiteur', 'statut', 'motif', 'decide_le', 'updated_at'])
-        _trace(c, "Validée : fiche publiée", auteur)
+        _trace(c, f"Validée : fiche publiée jusqu'au {fin:%d/%m/%Y}", auteur)
     _ecrire(c, "Candidature validée", "Votre candidature est validée : votre profil est maintenant visible "
-                                      "dans l'application Lantante, rubrique « Répétiteur - École ».")
+                                      f"dans l'application Lantante jusqu'au {fin:%d/%m/%Y}.")
     return r
 
 
@@ -106,5 +109,25 @@ def purger_pieces(maintenant=None):
         c.pieces_supprimees = True
         c.save(update_fields=['piece_recto', 'piece_verso', 'pieces_supprimees'])
         _trace(c, "Pièce d'identité supprimée (90 jours)", 'Système')
+        n += 1
+    return n
+
+
+def rappeler_fins(aujourdhui=None):
+    """E-mail aux répétiteurs dont l'affichage se termine dans 7 jours (une seule fois). Renvoie le nombre d'envois."""
+    from .models import Repetiteur
+    jour = (aujourdhui or timezone.localdate()) + timedelta(days=7)
+    n = 0
+    for r in Repetiteur.objects.filter(actif=True, est_exemple=False, fin_affichage=jour).exclude(rappel_fin_envoye=jour):
+        if r.email:
+            try:
+                send_mail("Votre profil Lantante se termine bientôt",
+                          f"Bonjour {r.nom},\n\nVotre profil de répétiteur reste visible dans l'application Lantante "
+                          f"jusqu'au {jour:%d/%m/%Y}. Pour le prolonger, contactez-nous.\n\nL'équipe Lantante",
+                          settings.DEFAULT_FROM_EMAIL, [r.email], fail_silently=True)
+            except Exception:
+                pass
+        r.rappel_fin_envoye = jour
+        r.save(update_fields=['rappel_fin_envoye'])
         n += 1
     return n

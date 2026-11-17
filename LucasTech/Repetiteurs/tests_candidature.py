@@ -84,7 +84,10 @@ class CandidatureTests(TestCase):
         c.refresh_from_db()
         self.assertEqual(c.statut, 'a_verifier')
         self.assertEqual(HistoriqueCandidature.objects.filter(candidature=c, action="Paiement confirmé").count(), 1)
-        rep = candidatures.valider(c, 'admin')
+        rep = candidatures.valider(c, 'admin', mois=6)
+        from .models import ajouter_mois
+        from django.utils import timezone
+        self.assertEqual(rep.fin_affichage, ajouter_mois(timezone.localdate(), 6))
         self.assertTrue(rep.actif)
         self.assertFalse(rep.est_exemple)
         noms = [x['nom'] for x in self.client.get('/api/mobile/v1/repetiteurs/').json()['resultats']]

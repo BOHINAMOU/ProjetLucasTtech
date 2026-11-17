@@ -1,4 +1,5 @@
 """Répétiteur - École : liste (recherche, filtres matière / ville) et fiche avec contacts."""
+from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -15,7 +16,10 @@ def item(request, r):
 
 def _actifs():
     from Repetiteurs.models import Repetiteur
-    return Repetiteur.objects.filter(actif=True)
+    from django.utils import timezone
+    # fin d'affichage passée : le profil disparaît tout seul (sans tâche planifiée)
+    return Repetiteur.objects.filter(actif=True).filter(
+        Q(fin_affichage__isnull=True) | Q(fin_affichage__gte=timezone.localdate()))
 
 
 @api_view(['GET'])

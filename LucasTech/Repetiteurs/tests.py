@@ -88,3 +88,26 @@ class RepetiteursTests(APITestCase):
         with self.assertRaises(ValidationError):
             r.full_clean()
         Repetiteur(nom='Exemple', matieres='Maths', ville='Lomé', est_exemple=True).full_clean()
+
+    def test_duree_affichage_expiration_et_reactivation(self):
+        import datetime
+        from django.utils import timezone
+        from .candidatures import rappeler_fins
+        from .models import ajouter_mois
+        self.assertEqual(ajouter_mois(datetime.date(2026, 1, 31), 1), datetime.date(2026, 2, 28))
+        self.assertEqual(ajouter_mois(datetime.date(2026, 11, 17), 3), datetime.date(2027, 2, 17))
+        auj = timezone.localdate()
+        r = Repetiteur.objects.create(nom='Expire Bientôt', matieres='Maths', ville='Lomé', whatsapp='22890000009',
+                                      email='e@example.com', fin_affichage=auj - datetime.timedelta(days=1))
+        noms = lambda: [x['nom'] for x in self.client.get('/api/mobile/v1/repetiteurs/').json()['resultats']]
+        self.assertNotIn('Expire Bientôt', noms())
+        self.assertEqual(self.client.get(f'/api/mobile/v1/repetiteurs/{r.pk}/').status_code, 404)
+        admin = get_user_model().objects.create_superuser(email='ad9@example.com', password='x-Pass-12345')
+        self.client.force_login(admin)
+        self.client.post('/lantanteAdminTech/Repetiteurs/repetiteur/', {'action': 'reactiver_3', '_selected_action': [r.pk]})
+        r.refresh_from_db()
+        self.assertEqual(r.fin_affichage, ajouter_mois(auj, 3))
+        self.assertIn('Expire Bientôt', noms())
+        Repetiteur.objects.filter(pk=r.pk).update(fin_affichage=auj + datetime.timedelta(days=7))
+        self.assertEqual(rappeler_fins(), 1)
+        self.assertEqual(rappeler_fins(), 0)  # une seule fois
