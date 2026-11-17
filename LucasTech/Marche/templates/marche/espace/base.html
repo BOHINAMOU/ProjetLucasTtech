@@ -23,7 +23,7 @@ a { color: inherit; text-decoration: none; }
 .nav a:hover { background: var(--bg); }
 .nav a.on { background: var(--gl); color: var(--gd); }
 .nav .bas { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
-main { flex: 1; min-width: 0; padding: 28px clamp(16px, 4vw, 40px) 60px; max-width: 1100px; }
+main { flex: 1; min-width: 0; overflow-x: hidden; padding: 28px clamp(16px, 4vw, 40px) 60px; max-width: 1100px; }
 h1 { font-size: 1.55rem; margin: 0 0 18px; letter-spacing: -.02em; }
 .tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
 .tete h1 { margin: 0; }
@@ -59,8 +59,10 @@ th { color: var(--mut); font-weight: 600; font-size: .82rem; text-transform: upp
   .nav { display: flex; gap: 4px; overflow-x: auto; }
   .nav a { white-space: nowrap; margin: 0; padding: 9px 11px; }
   .nav .bas { margin: 0; padding: 0; border: 0; display: contents; }
-  main { padding-top: 18px; }
+  main { padding-top: 18px; width: 100%; max-width: 100vw; }
   .masquer-tel { display: none; }
+  .carte { overflow-x: auto; }
+  .stats { grid-template-columns: 1fr 1fr !important; }
 }
 </style>
 {% block tete %}{% endblock %}
