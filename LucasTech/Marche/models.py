@@ -86,3 +86,74 @@ class Reversement(models.Model):
 
     def __str__(self):
         return f"{self.vendeur} — {self.montant} CFA"
+
+
+class CategorieVendeur(models.Model):
+    """Rayon privé d'un vendeur pour ranger SES produits (jamais montré dans l'appli ni à l'équipe)."""
+    vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, related_name='categories')
+    nom = models.CharField("Nom", max_length=80)
+
+    class Meta:
+        verbose_name = "Ma catégorie"
+        verbose_name_plural = "Mes catégories"
+        ordering = ['nom']
+        unique_together = [('vendeur', 'nom')]
+
+    def __str__(self):
+        return self.nom
+
+
+def _jeton():
+    import secrets
+    return secrets.token_urlsafe(32)
+
+
+def _prive():
+    from Payments.models import private_storage
+    return private_storage()
+
+
+class DemandeVendeur(models.Model):
+    """« Vendre sur Lantante » : demande sans compte, suivie par un lien privé ; l'équipe accepte, corrige ou refuse."""
+    STATUTS = [('en_attente', "En vérification"), ('a_corriger', "À corriger"), ('refusee', "Refusée"),
+               ('acceptee', "Acceptée")]
+    PIECES = [('cni', "Carte nationale d'identité"), ('electeur', "Carte d'électeur"), ('passeport', "Passeport")]
+
+    jeton = models.CharField(max_length=64, unique=True, default=_jeton, editable=False)
+    statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente', db_index=True)
+    motif = models.TextField("Motif (à corriger / refus)", blank=True)
+    boutique = models.CharField("Nom de la boutique", max_length=120)
+    prenom = models.CharField("Prénom du responsable", max_length=80)
+    nom = models.CharField("Nom du responsable", max_length=80)
+    telephone = models.CharField("Téléphone", max_length=30)
+    whatsapp = models.CharField("WhatsApp", max_length=30)
+    email = models.EmailField("E-mail")
+    ville = models.CharField("Ville", max_length=80)
+    activite = models.CharField("Ce que vous vendez", max_length=200)
+    piece_type = models.CharField("Type de pièce", max_length=10, choices=PIECES)
+    piece_numero = models.CharField("Numéro de la pièce", max_length=40)
+    piece = models.FileField("Pièce d'identité (recto et verso)", upload_to='vendeurs/pieces/', storage=_prive)
+    vendeur = models.OneToOneField(Vendeur, on_delete=models.SET_NULL, null=True, blank=True, related_name='demande')
+    decide_le = models.DateTimeField("Décision le", null=True, blank=True)
+    created_at = models.DateTimeField("Déposée le", auto_now_add=True)
+    updated_at = models.DateTimeField("Modifiée le", auto_now=True)
+
+    class Meta:
+        verbose_name = "Demande vendeur"
+        verbose_name_plural = "Demandes vendeurs"
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.boutique} ({self.get_statut_display()})"
+
+    @property
+    def numero(self):
+        return f"V{self.pk:05d}" if self.pk else ''
+
+    @property
+    def modifiable(self):
+        return self.statut in ('en_attente', 'a_corriger')
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('vendre:suivi', args=[self.jeton])

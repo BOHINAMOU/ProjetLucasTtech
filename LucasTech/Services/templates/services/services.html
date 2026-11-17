@@ -16,6 +16,7 @@
         {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}?text={{ 'Bonjour, je voudrais un devis.'|urlencode }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Devis gratuit</a>{% endif %}
         <a href="#liste" class="ct-pill ct-pill--glass">Voir les services</a>
         <a href="{% url 'repetiteurs:devenir' %}" class="ct-pill ct-pill--glass"><i class="fas fa-chalkboard-teacher"></i> Devenir répétiteur</a>
+        <a href="{% url 'vendre:demande' %}" class="ct-pill ct-pill--glass"><i class="fas fa-store"></i> Vendre sur Lantante</a>
       </div>
     </div>
   </section>

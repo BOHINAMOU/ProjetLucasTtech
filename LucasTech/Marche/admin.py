@@ -128,3 +128,92 @@ class ReversementAdmin(admin.ModelAdmin):
         if obj.par_id is None:
             obj.par = request.user
         super().save_model(request, obj, form, change)
+
+
+# ── Demandes « Vendre sur Lantante » et catégories privées des vendeurs ──
+from django import forms as _forms
+from django.urls import reverse as _reverse
+from django.utils.html import format_html as _fh
+
+from . import demandes as _dem
+from .models import CategorieVendeur, DemandeVendeur
+
+
+class _DecisionVendeur(_forms.ModelForm):
+    decision = _forms.ChoiceField(label="Décision", required=False, choices=[
+        ('', '— Pas de décision —'), ('accepter', 'Accepter et créer son espace'),
+        ('corriger', 'Demander une correction'), ('refuser', 'Refuser')])
+
+    class Meta:
+        model = DemandeVendeur
+        fields = '__all__'
+
+    def clean(self):
+        d = super().clean()
+        if d.get('decision') in ('corriger', 'refuser') and not (d.get('motif') or '').strip():
+            self.add_error('motif', "Le motif est obligatoire pour une correction ou un refus.")
+        return d
+
+
+@admin.register(DemandeVendeur)
+class DemandeVendeurAdmin(admin.ModelAdmin):
+    form = _DecisionVendeur
+    list_display = ['boutique', 'ville', 'activite', 'statut', 'created_at']
+    list_filter = ['statut', 'ville']
+    search_fields = ['boutique', 'nom', 'prenom', 'telephone', 'email']
+    readonly_fields = ['statut', 'vendeur', 'piece_lien', 'decide_le', 'created_at', 'updated_at']
+    fieldsets = (
+        ("Décision", {'fields': ('statut', 'decision', 'motif', 'vendeur')}),
+        ("Boutique", {'fields': ('boutique', 'activite', 'ville')}),
+        ("Responsable", {'fields': ('prenom', 'nom', 'telephone', 'whatsapp', 'email')}),
+        ("Pièce d'identité (privée)", {'fields': ('piece_type', 'piece_numero', 'piece_lien')}),
+        ("Suivi", {'fields': ('decide_le', 'created_at', 'updated_at')}),
+    )
+
+    @admin.display(description="Pièce")
+    def piece_lien(self, d):
+        if not d.piece:
+            return '—'
+        return _fh('<a class="button" target="_blank" rel="noopener" href="{}">Voir la pièce</a>',
+                   _reverse('vendre:piece', args=[d.pk]))
+
+    def has_add_permission(self, request):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        dec = form.cleaned_data.get('decision')
+        if dec == 'accepter':
+            _dem.accepter(obj)
+        elif dec == 'corriger':
+            _dem.demander_correction(obj, obj.motif)
+        elif dec == 'refuser':
+            _dem.refuser(obj, obj.motif)
+
+
+@admin.register(CategorieVendeur)
+class CategorieVendeurAdmin(admin.ModelAdmin):
+    """Un vendeur range ses produits dans ses propres catégories ; l'équipe ne s'en sert pas."""
+    list_display = ['nom', 'nb_produits']
+    search_fields = ['nom']
+
+    def get_queryset(self, request):
+        from .acces import vendeur_de
+        qs = super().get_queryset(request)
+        v = vendeur_de(request.user)
+        return qs.filter(vendeur=v) if v else qs
+
+    def get_fields(self, request, obj=None):
+        from .acces import vendeur_de
+        return ['nom'] if vendeur_de(request.user) else ['vendeur', 'nom']
+
+    @admin.display(description="Produits")
+    def nb_produits(self, c):
+        return c.produits.count()
+
+    def save_model(self, request, obj, form, change):
+        from .acces import vendeur_de
+        v = vendeur_de(request.user)
+        if v:
+            obj.vendeur = v
+        super().save_model(request, obj, form, change)

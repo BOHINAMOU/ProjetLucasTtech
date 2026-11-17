@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+{% block title %}Vendre sur Lantante — Lantante Technologie{% endblock %}
+{% block meta_description %}Vendez vos produits dans l'application Lantante : déposez votre demande en ligne.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}{% endblock %}
+
+{% block content %}
+<div class="rp">
+  <div class="rp-banniere">
+    <div>
+      <h1>Vendre sur Lantante</h1>
+      <p>Demande en ligne, sans compte. Gratuite.</p>
+    </div>
+  </div>
+
+  {% if d and d.statut == 'a_corriger' %}
+  <div class="rp-alert"><b>À corriger :</b> {{ d.motif|linebreaksbr }}</div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="rp-form">
+    {% csrf_token %}
+    <div class="rp-piege" aria-hidden="true">{{ form.site_internet }}</div>
+    {% if form.non_field_errors %}<div class="rp-alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    <section class="rp-card">
+      <h2>Boutique</h2>
+      <div class="rp-grid">
+        {% include 'repetiteurs/_champ.html' with f=form.boutique %}
+        {% include 'repetiteurs/_champ.html' with f=form.ville %}
+      </div>
+      {% include 'repetiteurs/_champ.html' with f=form.activite %}
+    </section>
+
+    <section class="rp-card">
+      <h2>Responsable</h2>
+      <div class="rp-grid">
+        {% include 'repetiteurs/_champ.html' with f=form.prenom %}
+        {% include 'repetiteurs/_champ.html' with f=form.nom %}
+        {% include 'repetiteurs/_champ.html' with f=form.telephone %}
+        {% include 'repetiteurs/_champ.html' with f=form.whatsapp %}
+        {% include 'repetiteurs/_champ.html' with f=form.email %}
+      </div>
+    </section>
+
+    <section class="rp-card">
+      <h2>Pièce d'identité</h2>
+      <div class="rp-grid">
+        {% include 'repetiteurs/_champ.html' with f=form.piece_type %}
+        {% include 'repetiteurs/_champ.html' with f=form.piece_numero %}
+      </div>
+      {% include 'repetiteurs/_champ.html' with f=form.piece %}
+      <p class="rp-note">Image ou PDF, 5 Mo maximum. Jamais publiée.</p>
+    </section>
+
+    <button type="submit" class="rp-btn">{% if d %}Renvoyer la demande{% else %}Envoyer la demande{% endif %}</button>
+  </form>
+</div>
+{% endblock %}

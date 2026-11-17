@@ -1,6 +1,7 @@
 """Accès admin d'un vendeur validé : ses produits et ses ventes seulement."""
 PERMS = [('Shop', 'product', ('view', 'add', 'change')), ('Shop', 'productimage', ('view', 'add', 'change', 'delete')),
-         ('Payments', 'payment', ('view',)), ('Marche', 'vendeur', ('view',)), ('Marche', 'reversement', ('view',))]
+         ('Payments', 'payment', ('view',)), ('Marche', 'vendeur', ('view',)), ('Marche', 'reversement', ('view',)),
+         ('Marche', 'categorievendeur', ('view', 'add', 'change', 'delete')), ('Shop', 'product', ('delete',))]
 GROUPE = "Vendeur"
 
 

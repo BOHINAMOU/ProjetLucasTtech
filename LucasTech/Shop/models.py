@@ -103,6 +103,9 @@ class Product(models.Model):
     mode_commande = models.CharField(
         "Mode de commande", max_length=10, choices=MODES_COMMANDE, default='les_deux',
         help_text="« WhatsApp » ouvre une discussion avec le vendeur (ou Lantante) avec la commande déjà écrite.")
+    categorie_vendeur = models.ForeignKey('Marche.CategorieVendeur', on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='produits', verbose_name="Ma catégorie",
+                                          help_text="Rangement privé du vendeur (non affiché dans l'appli).")
     vendeur = models.ForeignKey('Marche.Vendeur', on_delete=models.PROTECT, null=True, blank=True,
                                 related_name='produits', verbose_name="Vendeur",
                                 help_text="Vide = produit vendu par Lantante.")

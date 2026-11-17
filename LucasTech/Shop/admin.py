@@ -105,7 +105,7 @@ class ProductAdmin(admin.ModelAdmin):
         if not vendeur_de(request.user):
             return self.fieldsets
         return (
-            (None, {'fields': ('category', 'name', 'short_description', 'description')}),
+            (None, {'fields': ('categorie_vendeur', 'name', 'short_description', 'description')}),
             ('Prix', {'fields': ('price', 'old_price')}),
             ('Photos', {'fields': ('image',)}),
             ('Stock', {'fields': ('stock', 'is_available')}),
@@ -122,7 +122,21 @@ class ProductAdmin(admin.ModelAdmin):
         v = vendeur_de(request.user)
         if v:
             obj.vendeur = v
+            if not obj.category_id:  # rangé pour l'appli dans « Boutiques partenaires » (catégories privées à part)
+                from .models import Category
+                obj.category, _ = Category.objects.get_or_create(
+                    slug='boutiques-partenaires', defaults={'name': 'Boutiques partenaires'})
+            if obj.categorie_vendeur_id and obj.categorie_vendeur.vendeur_id != v.pk:
+                obj.categorie_vendeur = None
         super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'categorie_vendeur':
+            from Marche.acces import vendeur_de
+            from Marche.models import CategorieVendeur
+            v = vendeur_de(request.user)
+            kwargs['queryset'] = CategorieVendeur.objects.filter(vendeur=v) if v else CategorieVendeur.objects.none()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):

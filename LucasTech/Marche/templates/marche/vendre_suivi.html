@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+{% block title %}Ma demande vendeur — Lantante Technologie{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}{% endblock %}
+
+{% block content %}
+<div class="rp">
+  <div class="rp-hero"><h1>Ma demande</h1></div>
+  <section class="rp-card">
+    <h2>{{ d.boutique }}</h2>
+    <p>Demande n° <b>{{ d.numero }}</b> · <span class="rp-statut {% if d.statut == 'acceptee' %}validee{% elif d.statut == 'refusee' %}rejetee{% else %}{{ d.statut }}{% endif %}">{{ d.get_statut_display }}</span></p>
+    <p class="rp-note">Lien privé de suivi :<br><a href="{{ lien }}" style="word-break:break-all">{{ lien }}</a></p>
+    {% if d.statut == 'en_attente' %}
+      <p class="rp-note" style="margin-top:12px">Nous vérifions votre demande.</p>
+      <p style="margin-top:12px"><a class="rp-btn rp-btn--ghost" href="{% url 'vendre:modifier' d.jeton %}">Modifier ma demande</a></p>
+    {% elif d.statut == 'a_corriger' %}
+      <div class="rp-alert" style="margin-top:12px"><b>À corriger :</b> {{ d.motif|linebreaksbr }}</div>
+      <a class="rp-btn" href="{% url 'vendre:modifier' d.jeton %}">Corriger ma demande</a>
+    {% elif d.statut == 'acceptee' %}
+      <div class="rp-alert rp-ok" style="margin-top:12px">Boutique acceptée. Les accès à votre espace vendeur vous ont été envoyés par e-mail.</div>
+      <a class="rp-btn" href="/lantanteAdminTech/">Mon espace vendeur</a>
+    {% elif d.statut == 'refusee' %}
+      <div class="rp-alert" style="margin-top:12px"><b>Refusée :</b> {{ d.motif|linebreaksbr }}</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
