@@ -17,6 +17,9 @@
 .ho-meta{color:#6e6e73;font-size:.9rem}
 .ho-prix{color:#0B7A4B;font-weight:800;margin-top:6px}
 .ho-vide{text-align:center;padding:48px 16px;color:#6e6e73}
+.lt-details{display:flex;justify-content:flex-end;margin-top:10px}
+.lt-details span{background:#E3F5EC;color:#0B7A4B;border-radius:999px;padding:5px 12px;font-weight:800;font-size:.85rem}
+.lt-details i{font-size:.75rem;margin-left:4px}
 </style>{% endblock %}
 {% block content %}
 <div class="rp" style="max-width:1100px">
@@ -32,6 +35,7 @@
         <h2>{{ h.nom }}</h2>
         <div class="ho-meta">{% if h.etoiles %}{% for i in "12345"|make_list|slice:h.etoiles %}★{% endfor %} · {% endif %}{% if h.quartier %}{{ h.quartier }}, {% endif %}{{ h.ville }}</div>
         {% if h.a_partir_de %}<div class="ho-prix">à partir de {{ h.a_partir_de }} CFA / nuit</div>{% endif %}
+        <div class="lt-details"><span>Détails <i class="fas fa-chevron-right"></i></span></div>
       </div>
     </a>
     {% endfor %}
