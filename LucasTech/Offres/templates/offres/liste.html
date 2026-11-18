@@ -1,0 +1,34 @@
+{% extends 'core/base.html' %}
+{% block title %}Emplois — Lantante Technologie{% endblock %}
+{% block meta_description %}Offres d'emploi, stages et missions au Togo.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.of-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.of-carte { background: #fff; border: 1px solid #e3e8e5; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+.of-carte img, .of-carte .of-ph { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: linear-gradient(135deg,#0b6137,#17a35f); display: block; }
+.of-corps { padding: 14px 16px 16px; }
+.of-corps h2 { font-size: 1.05rem; margin: 6px 0 4px; line-height: 1.3; }
+.of-meta { color: #6e6e73; font-size: .9rem; }
+.of-pastille { display: inline-block; background: #e6f4ec; color: #0b2e1d; border-radius: 20px; padding: 3px 10px; font-size: .8rem; font-weight: 700; }
+</style>{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:1100px">
+  <div class="rp-banniere"><div><h1>Emplois</h1><p>Offres, stages et missions.</p></div></div>
+  {% if offres %}
+  <div class="of-grille">
+    {% for o in offres %}
+    <a class="of-carte" href="{{ o.get_absolute_url }}">
+      {% if o.image %}<img src="{{ o.image.url }}" alt="" loading="lazy">{% else %}<span class="of-ph"></span>{% endif %}
+      <div class="of-corps">
+        <span class="of-pastille">{{ o.get_type_contrat_display }}</span>{% if o.est_exemple %} <span class="of-pastille" style="background:#fff4e5">Exemple</span>{% endif %}
+        <h2>{{ o.titre }}</h2>
+        <div class="of-meta">{{ o.entreprise }} · {{ o.ville }}{% if o.date_limite %} · jusqu'au {{ o.date_limite|date:"d/m/Y" }}{% endif %}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="rp-card" style="text-align:center;color:#6e6e73">Aucune offre pour le moment.</div>
+  {% endif %}
+</div>
+{% endblock %}
