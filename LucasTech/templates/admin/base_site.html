@@ -71,6 +71,14 @@
                                    background:#F6FBF8; cursor:pointer; font-size:.85rem; }
   .change-form input[type=file]:hover { border-color:var(--lt-vert); }
   .inline-group .tabular td img.lt-apercu, .inline-related img.lt-apercu { width:84px; height:60px; }
+  /* Cases à cocher multiples (équipements…) : grille de pastilles */
+  .change-form div[id^="id_"]:has(> div > label > input[type=checkbox]) { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:8px; }
+  .change-form div[id^="id_"] > div:has(> label > input[type=checkbox]) { margin:0; }
+  .change-form div[id^="id_"] > div > label:has(input[type=checkbox]) { display:flex; align-items:center; gap:8px; margin:0; padding:8px 12px;
+      border:1px solid var(--lt-bord); border-radius:10px; background:#fff; font-weight:500; cursor:pointer; }
+  .change-form div[id^="id_"] > div > label:has(input:checked) { border-color:var(--lt-vert); background:var(--lt-vert-clair); }
+  /* Doublon jazzmin « Voir sur le site » (déjà dans la barre d'actions) */
+  #jazzy-actions a[href*="/lantanteAdminTech/r/"] { display:none; }
   /* Listes */
   #changelist .card, #result_list { border-radius:12px; }
   #result_list td, #result_list th { vertical-align:middle; }
