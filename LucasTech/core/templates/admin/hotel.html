@@ -34,44 +34,102 @@
   .ch .a .mo { background:var(--lt-vert-clair); color:var(--lt-vert); }
   .ch .a .su { color:#B42318; border:1px solid #f2d0cc; }
   .vide { background:#fff; border:1px dashed #b9d8c6; border-radius:14px; padding:24px; text-align:center; color:var(--lt-gris); }
+  .hf-tete { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:hidden; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); margin-bottom:16px; }
+  .hf-tete .ph { width:100%; height:100%; min-height:260px; max-height:340px; object-fit:cover; background:var(--lt-vert-clair); display:block; }
+  .hf-tete .in { padding:22px 24px; display:flex; flex-direction:column; gap:8px; }
+  .hf-tete h1 { font-size:1.6rem; font-weight:800; letter-spacing:-.02em; margin:0; }
+  .hf-tete .m { color:var(--lt-gris); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .hf-tete .m .ms { font-size:18px; }
+  .hf-tete p { margin:4px 0 0; color:#3A443E; line-height:1.6; }
+  .pil { display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:.75rem; }
+  .pil.ok { background:var(--lt-vert-clair); color:var(--lt-vert); } .pil.ko { background:#F0F1EF; color:var(--lt-gris); }
+  .hf-acts { display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
+  .hf-b { display:inline-flex; align-items:center; gap:6px; height:40px; padding:0 14px; border-radius:10px; border:1px solid var(--lt-bord); background:#fff;
+          color:var(--lt-texte) !important; font-weight:600; font-size:.88rem; text-decoration:none !important; }
+  .hf-b:hover { background:#F6F7F5; }
+  .hf-b.p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff !important; }
+  .hf-b.p:hover { background:var(--lt-vert-fonce); }
+  .hf-kp { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+  .hf-kp > div { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:14px 16px; display:flex; align-items:center; gap:12px; }
+  .hf-kp .ms { width:38px; height:38px; border-radius:10px; background:var(--lt-vert-clair); color:var(--lt-vert); display:inline-flex; align-items:center; justify-content:center; }
+  .hf-kp small { display:block; color:var(--lt-gris); font-size:.78rem; font-weight:600; }
+  .hf-kp b { font-size:1.2rem; font-weight:800; }
+  .hf-deux { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:16px; align-items:start; }
+  .hf-c { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:visible; }
+  .hf-c > .h { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--lt-bord); }
+  .hf-c > .h b { font-size:1rem; }
+  .hf-ch { display:flex; align-items:center; gap:14px; padding:12px 18px; border-bottom:1px solid #F0F2EF; }
+  .hf-ch:last-child { border-bottom:0; }
+  .hf-ch img, .hf-ch .vg { width:64px; height:48px; border-radius:8px; object-fit:cover; background:var(--lt-vert-clair); flex:0 0 auto; }
+  .hf-ch .t { flex:1; min-width:0; }
+  .hf-ch .t b { display:block; font-size:.92rem; }
+  .hf-ch .t small { color:var(--lt-gris); font-size:.8rem; }
+  .hf-ch .px { font-weight:800; white-space:nowrap; }
+  .hf-ch .px small { color:var(--lt-gris); font-weight:500; }
+  .hf-menu { position:relative; }
+  .hf-menu summary { list-style:none; width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--lt-gris); }
+  .hf-menu summary::-webkit-details-marker { display:none; }
+  .hf-menu summary:hover { background:#F2F4F1; }
+  .hf-menu .pop { position:absolute; right:0; top:38px; background:#fff; border:1px solid var(--lt-bord); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.08); min-width:150px; z-index:5; overflow:hidden; }
+  .hf-menu .pop a { display:block; padding:10px 14px; color:var(--lt-texte) !important; text-decoration:none !important; font-size:.88rem; }
+  .hf-menu .pop a:hover { background:#F6F7F5; }
+  .hf-menu .pop a.su { color:var(--lt-rouge) !important; }
+  .hf-eq { display:flex; flex-wrap:wrap; gap:8px; padding:16px 18px; }
+  .hf-eq > span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:#F4F6F3; font-size:.84rem; font-weight:600; }
+  .hf-eq .ms { font-size:17px; color:var(--lt-vert); }
+  .hf-ct { padding:6px 18px 14px; }
+  .hf-ct > div { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #F0F2EF; font-size:.9rem; }
+  .hf-ct > div:last-child { border-bottom:0; }
+  .hf-ct .ms { color:var(--lt-gris); font-size:19px; }
+  .hf-vide { padding:28px 18px; text-align:center; color:var(--lt-gris); }
+  @media (max-width:991.98px) { .hf-tete, .hf-deux { grid-template-columns:minmax(0,1fr); } .hf-kp { grid-template-columns:repeat(2,minmax(0,1fr)); } .hf-tete .ph { max-height:240px; } }
 </style>
 {% endblock %}
 {% block content %}
-<div class="ho">
-  <div class="ho-tete">
-    {% if h.photo %}<img class="ho-photo" src="{{ h.photo.url }}" alt="">{% else %}<div class="ho-photo"></div>{% endif %}
-    <div class="ho-info">
+<div style="width:100%;max-width:1320px">
+  <div class="hf-tete">
+    {% if h.photo %}<img class="ph" src="{{ h.photo.url }}" alt="">{% else %}<div class="ph"></div>{% endif %}
+    <div class="in">
       <h1>{{ h.nom }}</h1>
-      <div class="m">{% if h.etoiles %}<span class="etoiles">{% for i in "12345"|make_list|slice:h.etoiles %}★{% endfor %}</span> · {% endif %}{% if h.quartier %}{{ h.quartier }}, {% endif %}{{ h.ville }}{% if not h.actif %} · <b style="color:#9A6700">Masqué</b>{% endif %}</div>
-      {% if h.description %}<div style="line-height:1.6">{{ h.description|truncatewords:60 }}</div>{% endif %}
-      {% if equipements %}<div class="eq">{% for e in equipements %}<span>{{ e }}</span>{% endfor %}</div>{% endif %}
-      <div class="ho-actions">
-        <a class="p" href="{{ liens.modifier }}"><i class="fas fa-pen"></i> Modifier l'hôtel</a>
-        <a href="{{ liens.ajouter }}"><i class="fas fa-plus"></i> Ajouter une chambre</a>
-        <a href="{{ liens.site }}" target="_blank" rel="noopener"><i class="fas fa-eye"></i> Voir</a>
+      <div class="m">{% if h.etoiles %}<span style="color:#C9A227;letter-spacing:1px">{% for i in "12345"|make_list|slice:h.etoiles %}★{% endfor %}</span>{% endif %}
+        <span class="ms">location_on</span>{% if h.quartier %}{{ h.quartier }}, {% endif %}{{ h.ville }}
+        {% if h.actif %}<span class="pil ok">En ligne</span>{% else %}<span class="pil ko">Masqué</span>{% endif %}</div>
+      {% if h.description %}<p>{{ h.description|truncatewords:45 }}</p>{% endif %}
+      <div class="hf-acts">
+        <a class="hf-b" href="{{ liens.site }}" target="_blank" rel="noopener"><span class="ms">open_in_new</span>Voir sur le site</a>
+        <a class="hf-b" href="{{ liens.modifier }}"><span class="ms">edit</span>Modifier l'hôtel</a>
+        <a class="hf-b p" href="{{ liens.ajouter }}"><span class="ms">add</span>Ajouter une chambre</a>
       </div>
     </div>
   </div>
 
-  <div class="kp">{% for label, v in kpis %}<div><small>{{ label }}</small><b>{{ v }}</b></div>{% endfor %}</div>
+  <div class="hf-kp">{% for label, v, ic in kpis %}<div><span class="ms">{{ ic }}</span><span><small>{{ label }}</small><b>{{ v }}</b></span></div>{% endfor %}</div>
 
-  <div class="ch-tete"><h2>Chambres</h2><a class="lt-btn lt-btn-p" href="{{ liens.ajouter }}"><i class="fas fa-plus"></i> Ajouter une chambre</a></div>
-  {% if chambres %}
-  <div class="ch-grille">
-    {% for x in chambres %}
-    <div class="ch">
-      {% if x.photo %}<img class="img" src="{{ x.photo }}" alt="">{% else %}<span class="img"></span>{% endif %}
-      <div class="c">
-        <span class="t">{{ x.c.nom }}{% if not x.c.actif %} <small style="color:#9A6700">(masquée)</small>{% endif %}</span>
-        <span class="px">{{ x.prix }}{% if x.c.prix_nuit %} / nuit{% endif %}</span>
-        {% if x.c.capacite %}<span class="m">{{ x.c.capacite }} personne{{ x.c.capacite|pluralize }}</span>{% endif %}
-        <div class="a"><a class="mo" href="{{ x.modifier }}">Modifier</a><a class="su" href="{{ x.supprimer }}">Supprimer</a></div>
+  <div class="hf-deux">
+    <div class="hf-c">
+      <div class="h"><b>Chambres · {{ chambres|length }}</b><a href="{{ liens.ajouter }}" style="font-weight:600;font-size:.86rem">+ Ajouter</a></div>
+      {% for x in chambres %}
+      <div class="hf-ch">
+        {% if x.photo %}<img src="{{ x.photo }}" alt="">{% else %}<span class="vg"></span>{% endif %}
+        <div class="t"><b>{{ x.c.nom }}{% if not x.c.actif %} <span class="pil ko">Masquée</span>{% endif %}</b><small>{% if x.c.capacite %}{{ x.c.capacite }} personne{{ x.c.capacite|pluralize }}{% endif %}</small></div>
+        <span class="px">{{ x.prix }}{% if x.c.prix_nuit %}<small> / nuit</small>{% endif %}</span>
+        <details class="hf-menu"><summary aria-label="Actions"><span class="ms">more_horiz</span></summary>
+          <div class="pop"><a href="{{ x.modifier }}">Modifier</a><a class="su" href="{{ x.supprimer }}">Supprimer</a></div></details>
       </div>
+      {% empty %}<div class="hf-vide">Aucune chambre pour le moment. <a href="{{ liens.ajouter }}">Ajouter la première chambre</a></div>{% endfor %}
     </div>
-    {% endfor %}
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="hf-c"><div class="h"><b>Équipements</b></div>
+        {% if equipements_ic %}<div class="hf-eq">{% for ic, e in equipements_ic %}<span><span class="ms">{{ ic }}</span>{{ e }}</span>{% endfor %}</div>
+        {% else %}<div class="hf-vide">Aucun équipement indiqué.</div>{% endif %}</div>
+      <div class="hf-c"><div class="h"><b>Contact du propriétaire</b><small style="color:var(--lt-gris)">privé</small></div>
+        <div class="hf-ct">
+          <div><span class="ms">call</span>{{ h.telephone|default:"—" }}</div>
+          <div><span class="ms">chat</span>{{ h.whatsapp|default:"— (notre WhatsApp par défaut)" }}</div>
+          {% if h.site_web %}<div><span class="ms">language</span><a href="{{ h.site_web }}" target="_blank" rel="noopener">{{ h.site_web|truncatechars:40 }}</a></div>{% endif %}
+          {% if h.adresse %}<div><span class="ms">home_pin</span>{{ h.adresse }}</div>{% endif %}
+        </div></div>
+    </div>
   </div>
-  {% else %}
-  <div class="vide">Aucune chambre pour le moment. <a href="{{ liens.ajouter }}">Ajouter la première chambre</a></div>
-  {% endif %}
 </div>
 {% endblock %}

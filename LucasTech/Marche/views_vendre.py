@@ -56,13 +56,94 @@ def _ip(request):
     return __import__('core.ip', fromlist=['ip_client']).ip_client(request)
 
 
-def contact(request):
-    """Page simple : le vendeur nous écrit sur WhatsApp ; c'est l'équipe qui crée son espace."""
+class ContactForm(forms.ModelForm):
+    site_internet = forms.CharField(required=False, widget=forms.TextInput(attrs={'tabindex': '-1', 'autocomplete': 'off'}))
+
+    class Meta:
+        from .models import ContactVendeur
+        model = ContactVendeur
+        fields = ['boutique', 'nom', 'telephone', 'email', 'ville', 'categorie', 'message']
+        labels = {'telephone': "Téléphone / WhatsApp", 'message': "Message (facultatif)"}
+        widgets = {
+            'boutique': forms.TextInput(attrs={'placeholder': 'Ex. Mode Ama', 'autocomplete': 'organization'}),
+            'nom': forms.TextInput(attrs={'autocomplete': 'name'}),
+            'telephone': forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel', 'placeholder': '90 12 34 56', 'autocomplete': 'tel-national'}),
+            'email': forms.EmailInput(attrs={'autocomplete': 'email', 'placeholder': 'vous@exemple.com'}),
+            'ville': forms.TextInput(attrs={'placeholder': 'Lomé'}),
+            'message': forms.Textarea(attrs={'rows': 3}),
+        }
+        error_messages = {
+            'boutique': {'required': "Indiquez le nom de votre boutique."}, 'nom': {'required': "Indiquez votre nom."},
+            'email': {'required': "Indiquez votre e-mail.", 'invalid': "E-mail invalide."},
+            'ville': {'required': "Indiquez votre ville."}, 'categorie': {'required': "Choisissez ce que vous vendez."},
+            'telephone': {'required': "Indiquez votre numéro."},
+        }
+
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.fields['categorie'].choices = [('', "Choisir…")] + list(self.fields['categorie'].choices)[1:]
+        for f in self.fields.values():
+            if f.required:
+                f.widget.attrs['required'] = 'required'
+
+    def clean_site_internet(self):
+        if self.cleaned_data.get('site_internet'):
+            raise forms.ValidationError("Envoi refusé.")
+        return ''
+
+    def clean_telephone(self):
+        try:
+            return whatsapp_togo(self.cleaned_data.get('telephone'))
+        except Exception:
+            raise forms.ValidationError("Numéro invalide : 8 chiffres (ex. 90 12 34 56).")
+
+
+def _wa_lantante():
     from api_mobile.catalog import _wa_valide, _whatsapp_lantante
     from urllib.parse import quote
     wa = _wa_valide(_whatsapp_lantante())
-    lien = f"https://wa.me/{wa}?text={quote('Bonjour, je souhaite vendre mes produits sur Lantante.')}" if wa else ''
-    return render(request, 'marche/vendre_contact.html', {'lien': lien})
+    return f"https://wa.me/{wa}?text={quote('Bonjour, je veux vendre sur Lantante')}" if wa else ''
+
+
+def _prevenir(c):
+    """E-mail aux super-admins + confirmation au vendeur (ne bloque jamais l'envoi du formulaire)."""
+    from django.conf import settings
+    from django.contrib.auth import get_user_model
+    from django.core.mail import send_mail
+    from django.urls import reverse
+    site = (getattr(settings, 'SITE_URL', '') or 'https://lantantetechnologie.com').rstrip('/')
+    admins = list(get_user_model().objects.filter(is_superuser=True, is_active=True).exclude(email='')
+                  .values_list('email', flat=True))
+    try:
+        if admins:
+            send_mail(f"Nouvelle demande vendeur : {c.boutique}",
+                      f"{c.nom} veut vendre sur Lantante.\n\nBoutique : {c.boutique}\nVend : {c.get_categorie_display()}\n"
+                      f"Ville : {c.ville}\nTéléphone : +{c.telephone}\nE-mail : {c.email}\n"
+                      + (f"Message : {c.message}\n" if c.message else '')
+                      + f"\nOuvrir : {site}{reverse('admin:Marche_contactvendeur_change', args=[c.pk])}",
+                      settings.DEFAULT_FROM_EMAIL, admins, fail_silently=True)
+        send_mail("Demande reçue — Lantante",
+                  f"Bonjour {c.nom},\n\nNous avons bien reçu votre demande pour vendre « {c.boutique} » sur Lantante.\n\n"
+                  "Nous vous contactons très vite sur WhatsApp ou par téléphone.\n\nL'équipe Lantante",
+                  settings.DEFAULT_FROM_EMAIL, [c.email], fail_silently=True)
+    except Exception:
+        pass
+
+
+def contact(request):
+    """Vendre sur Lantante : WhatsApp OU court formulaire (enregistré dans l'admin)."""
+    form = ContactForm(request.POST or None, initial={'telephone': ''})
+    envoye = request.GET.get('envoye') == '1'
+    if request.method == 'POST':
+        cle = f'vendre-contact:{_ip(request)}'
+        if cache.get(cle, 0) >= 5:
+            form.add_error(None, "Trop de demandes envoyées. Réessayez dans une heure.")
+        elif form.is_valid():
+            c = form.save()
+            cache.set(cle, cache.get(cle, 0) + 1, 3600)
+            _prevenir(c)
+            return redirect('/vendre/?envoye=1#formulaire')
+    return render(request, 'marche/vendre_contact.html', {'lien': _wa_lantante(), 'form': form, 'envoye': envoye})
 
 
 def vendre(request, jeton=None):

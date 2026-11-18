@@ -21,7 +21,7 @@ RUBRIQUES = {
         ('Marche.ReglageLivraison', "Livraisons"), ('Payments.CodePromo', "Codes promo"), ('Shop.Reservation', "Réservations"),
         ('Shop.Review', "Avis clients"), ('Shop.Announcement', "Annonces"), ('Shop.CollabBanner', "Bannières")]),
     'vendeurs': ("Vendeurs", 'fa-user-tag', [
-        ('Marche.Vendeur', "Vendeurs"), ('Marche.DemandeVendeur', "Demandes"), ('Marche.CategorieVendeur', "Catégories des vendeurs"),
+        ('Marche.Vendeur', "Vendeurs"), ('Marche.ContactVendeur', "Demandes de contact"), ('Marche.DemandeVendeur', "Demandes (dossiers)"), ('Marche.CategorieVendeur', "Catégories des vendeurs"),
         ('Marche.Reversement', "Reversements")]),
     'formations': ("Formations", 'fa-graduation-cap', [
         ('Formations.Formation', "Formations"), ('Formations.Registration', "Inscriptions"),
@@ -37,9 +37,10 @@ RUBRIQUES = {
     'hotels': ("Hôtels", 'fa-hotel', [('Hotels.Hotel', "Hôtels"), ('Hotels.Chambre', "Chambres")]),
     'logements': ("Location", 'fa-house', [('Logements.Logement', "Chambres et appartements")]),
     'publications': ("Actualités", 'fa-newspaper', [
-        ('Publications.Publication', "Articles"), ('Publications.PublicationComment', "Commentaires"),
-        ('Publications.PublicationLike', "J'aime"), ('Publications.QuickMessage', "Messages rapides"),
+        ('Publications.Publication', "Articles"), ('Publications.PublicationLike', "J'aime"),
         ('Publications.PublicationCategory', "Catégories")]),
+    'commentaires': ("Commentaires", 'fa-comments', [
+        ('Publications.PublicationComment', "Commentaires"), ('Publications.QuickMessage', "Messages rapides")]),
     'services': ("Services", 'fa-wrench', [
         ('Services.Service', "Services"), ('Services.InscriptionService', "Inscriptions"),
         ('Services.ServiceContact', "Demandes de contact"), ('Services.ServiceCategory', "Catégories")]),
@@ -84,11 +85,18 @@ def modeles(code):
 
 
 GROUPES = [
-    ("Ventes", ['paiements', 'boutique', 'vendeurs']),
-    ("Contenus", ['concours', 'formations', 'evenements', 'publications']),
-    ("Services", ['ecoles', 'repetiteurs', 'emplois', 'hotels', 'logements', 'services']),
-    ("Gestion", ['notifications', 'utilisateurs', 'reglages']),
+    ("Ventes", ['paiements', 'boutique', 'vendeurs', 'formations', 'concours']),
+    ("Contenus", ['publications', 'commentaires', 'evenements', 'emplois']),
+    ("Services", ['services', 'hotels', 'logements', 'ecoles', 'repetiteurs']),
+    ("Gestion", ['utilisateurs', 'notifications', 'reglages']),
 ]
+
+# Icônes Material Symbols de la barre latérale
+ICONES = {'paiements': 'payments', 'boutique': 'storefront', 'vendeurs': 'store', 'formations': 'school',
+          'concours': 'quiz', 'publications': 'newspaper', 'commentaires': 'forum', 'evenements': 'event',
+          'emplois': 'work', 'services': 'design_services', 'hotels': 'hotel', 'logements': 'house',
+          'ecoles': 'account_balance', 'repetiteurs': 'person_book', 'utilisateurs': 'group',
+          'notifications': 'notifications', 'reglages': 'tune'}
 
 
 def groupes(rubs):
@@ -112,7 +120,8 @@ def visibles(user):
         if code == 'paiements' and not user.is_superuser:
             continue
         if any((m := _modele(l)) and _peut_voir(user, m) for l, _ in modeles(code)):
-            res.append({'code': code, 'titre': titre, 'icone': icone, 'url': f'/lantanteAdminTech/section/{code}/'})
+            res.append({'code': code, 'titre': titre, 'icone': icone, 'ms': ICONES.get(code, 'folder'),
+                        'url': f'/lantanteAdminTech/section/{code}/'})
     return res
 
 

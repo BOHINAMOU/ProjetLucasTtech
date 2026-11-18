@@ -31,152 +31,155 @@
 </div>
 {% else %}
 <style>
-.db { max-width:1600px; }
-.db a { text-decoration:none; }
-.db-tete { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:4px 0 22px; }
-.db-tete small { color:var(--lt-gris); font-weight:600; font-size:.82rem; }
-.db-tete h1 { font-size:1.65rem; font-weight:800; letter-spacing:-.02em; margin:2px 0 0; color:var(--lt-texte); }
+.db { max-width:1480px; }
+.db a { text-decoration:none !important; }
+.db-tete { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:0 0 22px; }
+.db-tete h1 { font-size:1.7rem; font-weight:800; letter-spacing:-.02em; margin:0; color:var(--lt-texte); }
+.db-tete small { color:var(--lt-gris); font-size:.9rem; }
 .db-btns { display:flex; gap:8px; flex-wrap:wrap; }
-.db-btn { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:10px; font-weight:600; font-size:.88rem;
-          border:1px solid var(--lt-bord); background:#fff; color:var(--lt-texte) !important; }
-.db-btn:hover { border-color:#c9d6cf; background:#fafcfb; }
-.db-btn.p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff !important; }
-.db-btn.p:hover { filter:brightness(1.07); }
+.db-btn { display:inline-flex; align-items:center; gap:7px; height:42px; padding:0 16px; border-radius:var(--lt-rayon); font-weight:700; font-size:.9rem;
+          background:var(--lt-vert); color:#fff !important; }
+.db-btn:hover { background:var(--lt-vert-fonce); }
 .db-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:16px; }
-.db-kpi { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:18px 20px; color:var(--lt-texte) !important; display:block; }
-.db-kpi:hover { border-color:#c9d6cf; }
-.db-kpi .l { display:flex; align-items:center; gap:8px; color:var(--lt-gris); font-weight:600; font-size:.84rem; }
-.db-kpi .l i { width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:var(--lt-vert-clair); color:var(--lt-vert); font-size:.8rem; }
-.db-kpi .v { font-size:1.7rem; font-weight:800; letter-spacing:-.02em; margin:10px 0 2px; line-height:1.1; white-space:nowrap; }
-.db-kpi .s { color:var(--lt-gris); font-size:.8rem; }
-.db-kpi.alerte .l i { background:#FFF4D6; color:#9A6700; }
-.db-kpi.alerte .v { color:#9A6700; }
+.db-kpi { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:18px 20px; color:var(--lt-texte) !important; display:block; }
+.db-kpi:hover { border-color:#CFD8D2; }
+.db-kpi .l { display:flex; align-items:center; justify-content:space-between; color:var(--lt-gris); font-weight:600; font-size:.86rem; }
+.db-kpi .l .ms { width:34px; height:34px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; background:var(--lt-vert-clair); color:var(--lt-vert); font-size:19px; }
+.db-kpi .v { font-size:1.75rem; font-weight:800; letter-spacing:-.02em; margin:12px 0 4px; line-height:1.1; white-space:nowrap; }
+.db-kpi .s { color:var(--lt-gris); font-size:.82rem; display:flex; align-items:center; gap:6px; }
+.var { font-weight:700; font-size:.78rem; padding:2px 8px; border-radius:999px; }
+.var.up { background:var(--lt-vert-clair); color:var(--lt-vert); }
+.var.down { background:#FBE9E7; color:var(--lt-rouge); }
+.db-kpi.or .l .ms { background:var(--lt-or-clair); color:#8A6A0E; }
 .db-grille { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:16px; margin-bottom:16px; align-items:start; }
-.db-grille.egal { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
-.db-carte { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; overflow:hidden; }
-.db-carte > .h { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--lt-bord); }
-.db-carte > .h b { font-size:.98rem; font-weight:700; }
-.db-carte > .h a { font-size:.82rem; font-weight:600; color:var(--lt-vert); }
-.db-graph { padding:18px 20px 14px; }
-.db-graph .tot { font-size:1.45rem; font-weight:800; letter-spacing:-.02em; }
-.db-graph .tot small { font-size:.82rem; color:var(--lt-gris); font-weight:500; margin-left:6px; letter-spacing:0; }
-.db-barres { display:flex; align-items:flex-end; gap:4px; height:150px; margin-top:16px;
-             background:repeating-linear-gradient(to top, #EEF2F0 0, #EEF2F0 1px, transparent 1px, transparent 50px); }
-.db-barres span { flex:1; border-radius:4px 4px 0 0; background:#E3EBE7; min-height:3px; }
+.db-carte { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:hidden; }
+.db-carte > .h { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 20px; border-bottom:1px solid var(--lt-bord); flex-wrap:wrap; }
+.db-carte > .h b { font-size:1rem; font-weight:700; }
+.db-carte > .h a { font-size:.84rem; font-weight:600; color:var(--lt-vert); }
+.db-filtres { display:inline-flex; background:#F2F4F1; border-radius:10px; padding:3px; }
+.db-filtres button { border:0; background:none; height:30px; padding:0 12px; border-radius:8px; font-weight:600; font-size:.82rem; color:var(--lt-gris); cursor:pointer; }
+.db-filtres button.on { background:#fff; color:var(--lt-texte); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+.db-graph { padding:18px 20px 16px; }
+.db-graph .tot { font-size:1.5rem; font-weight:800; letter-spacing:-.02em; }
+.db-graph .tot small { font-size:.84rem; color:var(--lt-gris); font-weight:500; margin-left:6px; letter-spacing:0; }
+.db-barres { display:flex; align-items:flex-end; gap:5px; height:190px; margin-top:16px;
+             background:repeating-linear-gradient(to top, #EEF1EE 0, #EEF1EE 1px, transparent 1px, transparent 47.5px); }
+.db-barres span { flex:1; border-radius:5px 5px 0 0; background:#DDE7E0; min-height:3px; position:relative; }
 .db-barres span.v { background:var(--lt-vert); }
-.db-axe { display:flex; justify-content:space-between; color:var(--lt-gris); font-size:.75rem; margin-top:6px; }
-.db-liste a, .db-liste > div { display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid #F0F3F1; color:var(--lt-texte) !important; }
+.db-barres span:hover::after { content:attr(data-t); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--lt-texte); color:#fff;
+             font-size:.72rem; padding:3px 7px; border-radius:6px; white-space:nowrap; z-index:2; }
+.db-axe { display:flex; justify-content:space-between; color:var(--lt-gris); font-size:.75rem; margin-top:8px; }
+.db-liste a, .db-liste > div { display:flex; align-items:center; gap:12px; padding:13px 20px; border-bottom:1px solid #F0F2EF; color:var(--lt-texte) !important; }
 .db-liste a:last-child, .db-liste > div:last-child { border-bottom:0; }
-.db-liste a:hover { background:#FAFCFB; }
-.db-liste .ic { width:32px; height:32px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; background:var(--lt-vert-clair); color:var(--lt-vert); font-size:.82rem; font-weight:700; flex:0 0 auto; }
-.db-liste .tx { flex:1; min-width:0; font-size:.88rem; font-weight:500; }
-.db-liste .tx small { display:block; color:var(--lt-gris); font-weight:400; font-size:.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.db-liste .n { font-weight:700; font-size:.82rem; background:#FFF4D6; color:#9A6700; border-radius:999px; padding:2px 10px; }
-.db-liste .m { font-weight:700; font-size:.88rem; white-space:nowrap; }
-.db-liste .q { color:var(--lt-gris); white-space:nowrap; font-size:.78rem; }
-.db-vide { display:block !important; padding:28px 20px; text-align:center; color:var(--lt-gris); font-size:.9rem; }
-.db-vide i { display:block; font-size:1.4rem; color:var(--lt-vert); margin-bottom:8px; }
-.db-table { width:100%; border-collapse:collapse; font-size:.87rem; }
-.db-table th { text-align:left; color:var(--lt-gris); font-weight:600; font-size:.76rem; padding:10px 20px; background:#FAFCFB; border-bottom:1px solid var(--lt-bord); }
-.db-table td { padding:11px 20px; border-bottom:1px solid #F0F3F1; }
+.db-liste a:hover { background:#FAFBF9; }
+.ic { width:36px; height:36px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; font-size:.9rem; }
+.ic.vert { background:var(--lt-vert-clair); color:var(--lt-vert); } .ic.or { background:var(--lt-or-clair); color:#8A6A0E; }
+.ic.rouge { background:#FBE9E7; color:var(--lt-rouge); } .ic.bleu { background:#E8F0FB; color:#2457A6; }
+.db-liste .tx { flex:1; min-width:0; font-size:.9rem; font-weight:600; }
+.db-liste .n { font-weight:800; font-size:1rem; }
+.db-vide { display:block !important; padding:30px 20px; text-align:center; color:var(--lt-gris); font-size:.9rem; }
+.db-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+.db-table th { text-align:left; color:var(--lt-gris); font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; padding:11px 20px; background:#FAFBF9; border-bottom:1px solid var(--lt-bord); }
+.db-table td { padding:12px 20px; border-bottom:1px solid #F0F2EF; }
 .db-table tr:last-child td { border-bottom:0; }
-.db-pas { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:.76rem; }
-.db-stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
-.db-stats a { padding:16px 20px; border-right:1px solid #F0F3F1; border-bottom:1px solid #F0F3F1; color:var(--lt-texte) !important; }
-.db-stats a:hover { background:#FAFCFB; }
-.db-stats b { display:block; font-size:1.3rem; font-weight:800; }
-.db-stats span { color:var(--lt-gris); font-size:.82rem; }
-.db-stats small { display:block; color:var(--lt-vert); font-size:.76rem; font-weight:600; margin-top:2px; }
-@media (max-width:1199.98px) { .db-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .db-grille, .db-grille.egal { grid-template-columns:minmax(0,1fr); } }
+.db-table tr:hover td { background:#FAFBF9; }
+.pil { display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:.75rem; white-space:nowrap; }
+.pil.ok { background:var(--lt-vert-clair); color:var(--lt-vert); } .pil.att { background:var(--lt-or-clair); color:#8A6A0E; }
+.pil.ko { background:#FBE9E7; color:var(--lt-rouge); } .pil.rb { background:#EEE7FD; color:#6D28D9; }
+@media (max-width:1199.98px) { .db-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .db-grille { grid-template-columns:minmax(0,1fr); } }
 @media (max-width:575.98px) { .db-kpis { gap:10px; } .db-kpi { padding:14px; } .db-kpi .v { font-size:1.25rem; } .db-tete h1 { font-size:1.35rem; }
-  .db-btn { padding:8px 12px; font-size:.84rem; }
-  .db-table th:nth-child(3), .db-table td:nth-child(3) { display:none; } .db-table th, .db-table td { padding-left:14px; padding-right:14px; } }
+  .db-btn { height:38px; padding:0 12px; font-size:.84rem; } .db-table .mq { display:none; } .db-table th, .db-table td { padding-left:12px; padding-right:12px; } }
 </style>
 
 <div class="db">
   <div class="db-tete">
-    <div><small>{{ dash.today }}</small><h1>Bonjour {{ dash.greeting|title }}</h1></div>
+    <div><h1>Bonjour {{ dash.greeting|title }}</h1><small>{{ dash.today }}</small></div>
     <div class="db-btns">
-      {% for a in dash.principales %}<a class="db-btn{% if forloop.first %} p{% endif %}" href="{{ a.url }}"><i class="fas {% if forloop.first %}fa-plus{% else %}{{ a.icon }}{% endif %}"></i>{{ a.label }}</a>{% endfor %}
-      <a class="db-btn" href="/" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i>Voir le site</a>
+      {% for a in dash.principales %}{% if a.label == 'Publier une actualité' or a.label == 'Ajouter un produit' %}<a class="db-btn" href="{{ a.url }}"><span class="ms">add</span>{{ a.label }}</a>{% endif %}{% endfor %}
     </div>
   </div>
 
   <div class="db-kpis">
     {% if dash.argent %}
-    <a class="db-kpi" href="{{ dash.argent.url }}?status__exact=approved"><span class="l"><i class="fas fa-coins"></i>Encaissé · 30 jours</span><div class="v">{{ dash.argent.total30 }}</div><span class="s">{{ dash.argent.n30 }} paiement{{ dash.argent.n30|pluralize }}</span></a>
-    <a class="db-kpi" href="{{ dash.argent.url }}?status__exact=approved"><span class="l"><i class="fas fa-circle-check"></i>Paiements réussis</span><div class="v">{{ dash.argent.n_ok }}</div><span class="s">{{ dash.argent.total }} au total</span></a>
-    <a class="db-kpi{% if dash.argent.en_attente %} alerte{% endif %}" href="{{ dash.argent.url }}?status__exact=pending"><span class="l"><i class="fas fa-hourglass-half"></i>En attente</span><div class="v">{{ dash.argent.en_attente }}</div><span class="s">paiements à suivre</span></a>
-    {% else %}
-    {% for s in dash.stats|slice:":3" %}<a class="db-kpi" href="{{ s.url }}"><span class="l"><i class="fas {{ s.icon }}"></i>{{ s.label }}</span><div class="v">{{ s.n }}</div><span class="s">{{ s.sub }}</span></a>{% endfor %}
+    <a class="db-kpi" href="{{ dash.argent.url }}?status__exact=approved"><span class="l">Encaissé · 30 jours<span class="ms">payments</span></span><div class="v">{{ dash.argent.total30 }}</div>
+      <span class="s">{% if dash.argent.variation != None %}<span class="var {% if dash.argent.variation >= 0 %}up{% else %}down{% endif %}">{% if dash.argent.variation >= 0 %}+{% endif %}{{ dash.argent.variation }} %</span> vs 30 jours avant{% else %}{{ dash.argent.n30 }} paiement{{ dash.argent.n30|pluralize }}{% endif %}</span></a>
+    <a class="db-kpi" href="{{ dash.argent.url }}?status__exact=approved"><span class="l">Paiements réussis<span class="ms">check_circle</span></span><div class="v">{{ dash.argent.n_ok }}</div><span class="s">{{ dash.argent.total }} au total</span></a>
+    <a class="db-kpi or" href="{{ dash.argent.url }}?status__exact=pending"><span class="l">En attente<span class="ms">hourglass_top</span></span><div class="v">{{ dash.argent.en_attente }}</div><span class="s">paiements à suivre</span></a>
     {% endif %}
-    <a class="db-kpi{% if dash.todo_total %} alerte{% endif %}" href="#a-traiter"><span class="l"><i class="fas fa-bell"></i>À traiter</span><div class="v">{{ dash.todo_total }}</div><span class="s">{% if dash.todo_total %}élément{{ dash.todo_total|pluralize }} en attente{% else %}tout est à jour{% endif %}</span></a>
+    <a class="db-kpi" href="{% url 'admin:Users_user_changelist' %}"><span class="l">Nouveaux comptes<span class="ms">person_add</span></span><div class="v">{{ dash.nouveaux.n }}</div>
+      <span class="s">{% if dash.nouveaux.variation != None %}<span class="var {% if dash.nouveaux.variation >= 0 %}up{% else %}down{% endif %}">{% if dash.nouveaux.variation >= 0 %}+{% endif %}{{ dash.nouveaux.variation }} %</span>{% endif %} sur 30 jours</span></a>
   </div>
 
   <div class="db-grille">
     {% if dash.argent %}
     <div class="db-carte">
-      <div class="h"><b>Encaissements · 30 jours</b><a href="{{ dash.argent.url }}">Tous les paiements</a></div>
+      <div class="h"><b>Encaissements</b>
+        <span class="db-filtres" id="filtres"><button type="button" data-s="7">7 j</button><button type="button" data-s="30" class="on">30 j</button><button type="button" data-s="12">12 mois</button></span></div>
       <div class="db-graph">
-        <div class="tot">{{ dash.argent.total30 }}<small>sur 30 jours</small></div>
-        <div class="db-barres">{% for j in dash.argent.jours %}<span class="{% if j.v %}v{% endif %}" style="height:{{ j.h }}%" title="{{ j.label }} : {{ j.txt }}"></span>{% endfor %}</div>
-        <div class="db-axe"><span>{{ dash.argent.jours.0.label }}</span><span>Aujourd'hui</span></div>
+        <div class="tot" id="g-tot">{{ dash.argent.total30 }}<small>sur 30 jours</small></div>
+        <div class="db-barres" id="g-barres"></div>
+        <div class="db-axe"><span id="g-debut"></span><span id="g-fin"></span></div>
       </div>
     </div>
+    {{ dash.argent.series|json_script:"series" }}
     {% endif %}
-    <div class="db-carte" id="a-traiter">
-      <div class="h"><b>À traiter</b>{% if dash.todo_total %}<span class="db-pas" style="background:#FFF4D6;color:#9A6700">{{ dash.todo_total }}</span>{% endif %}</div>
+    <div class="db-carte">
+      <div class="h"><b>À traiter</b><a href="{% url 'admin_a_traiter' %}">Tout voir</a></div>
       <div class="db-liste">
-        {% for t in dash.todo_actifs %}<a href="{{ t.url }}"><span class="ic"><i class="fas {{ t.icon }}"></i></span><span class="tx">{{ t.label }}</span><span class="n">{{ t.n }}</span></a>
-        {% empty %}<div class="db-vide"><i class="fas fa-circle-check"></i>Tout est à jour.</div>{% endfor %}
+        {% for t in dash.todo_actifs|slice:":6" %}<a href="{{ t.url }}"><span class="ic {{ t.couleur }}"><i class="fas {{ t.icon }}"></i></span><span class="tx">{{ t.label }}</span><span class="n">{{ t.n }}</span></a>
+        {% empty %}<div class="db-vide"><span class="ms" style="font-size:30px;width:auto;color:var(--lt-vert);display:block;margin-bottom:6px">task_alt</span>Tout est à jour.</div>{% endfor %}
       </div>
     </div>
   </div>
 
   {% if dash.argent %}
-  <div class="db-grille">
-    <div class="db-carte">
-      <div class="h"><b>Derniers paiements</b><a href="{{ dash.argent.url }}">Voir tout</a></div>
-      <div style="overflow-x:auto"><table class="db-table">
-        <thead><tr><th>Date</th><th>Client</th><th>Objet</th><th>Montant</th><th>Statut</th></tr></thead>
-        <tbody>{% for p in dash.argent.derniers|slice:":8" %}
-          <tr><td style="white-space:nowrap"><a href="{{ p.url }}">{{ p.quand|date:"d/m H:i" }}</a></td><td>{{ p.qui|default:"—"|truncatechars:22 }}</td><td style="color:var(--lt-gris)">{{ p.objet|truncatechars:36 }}</td>
-            <td style="white-space:nowrap;font-weight:700">{{ p.montant }}</td>
-            <td><span class="db-pas" style="{% if p.status == 'approved' %}background:#E3F5EC;color:#0B7A4B{% elif p.status == 'pending' %}background:#FFF4D6;color:#9A6700{% elif p.status == 'refunded' %}background:#EEE7FD;color:#6D28D9{% else %}background:#FDECEA;color:#B42318{% endif %}">{{ p.statut }}</span></td></tr>
-        {% empty %}<tr><td colspan="5" class="db-vide">Aucun paiement.</td></tr>{% endfor %}</tbody>
-      </table></div>
-    </div>
-    <div class="db-carte">
-      <div class="h"><b>Par activité</b><small style="color:var(--lt-gris)">paiements réussis</small></div>
-      <div class="db-liste">
-        {% for label, montant, n, url in dash.argent.par_type %}{% if n %}<a href="{{ url }}"><span class="tx">{{ label }}<small>{{ n }} paiement{{ n|pluralize }}</small></span><span class="m">{{ montant }}</span></a>{% endif %}{% endfor %}
-        {% if not dash.argent.n_ok %}<div class="db-vide">Aucun paiement réussi.</div>{% endif %}
-      </div>
-    </div>
+  <div class="db-carte" style="margin-bottom:16px">
+    <div class="h"><b>Derniers paiements</b><a href="{{ dash.argent.url }}">Tous les paiements</a></div>
+    <div style="overflow-x:auto"><table class="db-table">
+      <thead><tr><th>Client</th><th class="mq">Objet</th><th class="mq">Moyen</th><th>Montant</th><th>Statut</th><th class="mq">Date</th></tr></thead>
+      <tbody>{% for p in dash.argent.derniers|slice:":8" %}
+        <tr><td><a href="{{ p.url }}" style="color:var(--lt-texte);font-weight:600">{{ p.qui|default:"—"|truncatechars:26 }}</a></td>
+          <td class="mq" style="color:var(--lt-gris)">{{ p.objet|truncatechars:40 }}</td><td class="mq">{{ p.moyen }}</td>
+          <td style="white-space:nowrap;font-weight:800">{{ p.montant }}</td>
+          <td><span class="pil {% if p.status == 'approved' %}ok{% elif p.status == 'pending' %}att{% elif p.status == 'refunded' %}rb{% else %}ko{% endif %}">{{ p.statut }}</span></td>
+          <td class="mq" style="white-space:nowrap;color:var(--lt-gris)">{{ p.quand|date:"d/m/Y H:i" }}</td></tr>
+      {% empty %}<tr><td colspan="6" class="db-vide">Aucun paiement.</td></tr>{% endfor %}</tbody>
+    </table></div>
   </div>
   {% endif %}
 
-  <div class="db-grille egal">
+  <div class="db-grille" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
     <div class="db-carte">
-      <div class="h"><b>Commentaires récents</b><a href="{{ dash.comments.site_url }}">Tout voir</a></div>
+      <div class="h"><b>Commentaires récents</b><a href="{% url 'admin_section' 'commentaires' %}">Ouvrir la boîte</a></div>
       <div class="db-liste">
-        {% for c in dash.latest_comments|slice:":5" %}<a href="{{ c.url }}"><span class="ic"{% if not c.read %} style="background:#FDECEA;color:#B42318"{% endif %}>{{ c.who|slice:":1"|upper }}</span><span class="tx">{{ c.who }}<small>{{ c.text|truncatechars:90 }}</small></span><span class="q">{{ c.when|date:"d/m" }}</span></a>
+        {% for c in dash.latest_comments|slice:":4" %}<a href="{% url 'admin_section' 'commentaires' %}"><span class="ic {% if c.read %}vert{% else %}rouge{% endif %}" style="border-radius:50%;font-weight:800">{{ c.who|slice:":1"|upper }}</span><span class="tx">{{ c.who }}<small style="display:block;color:var(--lt-gris);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.text|truncatechars:80 }}</small></span><small style="color:var(--lt-gris)">{{ c.when|date:"d/m" }}</small></a>
         {% empty %}<div class="db-vide">Aucun commentaire.</div>{% endfor %}
       </div>
     </div>
     <div class="db-carte">
-      <div class="h"><b>Messages rapides</b><a href="{% url 'admin:Publications_quickmessage_changelist' %}">Tout voir</a></div>
-      <div class="db-liste">
-        {% for m in dash.messages_latest %}<a href="{{ m.url }}"><span class="ic"{% if not m.read %} style="background:#FDECEA;color:#B42318"{% endif %}>{{ m.who|slice:":1"|upper }}</span><span class="tx">{{ m.who }}<small>{{ m.text|truncatechars:90 }}</small></span><span class="q">{{ m.when|date:"d/m" }}</span></a>
-        {% empty %}<div class="db-vide">Aucun message.</div>{% endfor %}
-      </div>
+      <div class="h"><b>Chiffres clés</b></div>
+      <div class="db-liste">{% for s in dash.stats|slice:":5" %}<a href="{{ s.url }}"><span class="ic vert"><i class="fas {{ s.icon }}"></i></span><span class="tx">{{ s.label }}</span><span class="n">{{ s.n }}</span></a>{% endfor %}</div>
     </div>
   </div>
-
-  <div class="db-carte">
-    <div class="h"><b>Chiffres clés</b></div>
-    <div class="db-stats">{% for s in dash.stats %}<a href="{{ s.url }}"><b>{{ s.n }}</b><span>{{ s.label }}</span>{% if s.sub %}<small>{{ s.sub }}</small>{% endif %}</a>{% endfor %}</div>
-  </div>
 </div>
+{% if dash.argent %}
+<script>
+(function () {
+  var S = JSON.parse(document.getElementById('series').textContent), bar = document.getElementById('g-barres'),
+      tot = document.getElementById('g-tot'), lib = {'7': 'sur 7 jours', '30': 'sur 30 jours', '12': 'sur 12 mois'};
+  function cfa(n) { return Math.round(n).toLocaleString('fr-FR').replace(/ |\s/g, ' ') + ' CFA'; }
+  function voir(k) {
+    var s = S[k] || [], t = 0;
+    bar.innerHTML = s.map(function (p) { t += p.v; return '<span class="' + (p.v ? 'v' : '') + '" style="height:' + p.h + '%" data-t="' + p.l + ' : ' + p.txt + '"></span>'; }).join('');
+    tot.innerHTML = cfa(t) + '<small>' + lib[k] + '</small>';
+    document.getElementById('g-debut').textContent = s.length ? s[0].l : '';
+    document.getElementById('g-fin').textContent = k === '12' ? 'Ce mois' : "Aujourd'hui";
+    document.querySelectorAll('#filtres button').forEach(function (b) { b.classList.toggle('on', b.dataset.s === k); });
+  }
+  document.getElementById('filtres').addEventListener('click', function (e) { if (e.target.dataset.s) voir(e.target.dataset.s); });
+  voir('30');
+})();
+</script>
+{% endif %}
 {% endif %}
 {% endblock %}

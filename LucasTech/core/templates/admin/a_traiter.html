@@ -1,0 +1,52 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}À traiter{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item">À traiter</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  .at { max-width:1200px; }
+  .at-sous { color:var(--lt-gris); margin:0 0 14px; }
+  .at-puces { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .at-puces a { height:34px; padding:0 14px; display:inline-flex; align-items:center; border-radius:999px; border:1px solid var(--lt-bord); background:#fff;
+                color:var(--lt-texte) !important; font-weight:600; font-size:.84rem; text-decoration:none !important; }
+  .at-puces a.on { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff !important; }
+  .at-t { background:#fff; border:1px solid var(--lt-bord); border-radius:12px; overflow:hidden; }
+  .at-t table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  .at-t th { text-align:left; background:#FAFBF9; color:var(--lt-gris); font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:12px 16px; border-bottom:1px solid var(--lt-bord); }
+  .at-t td { padding:12px 16px; border-bottom:1px solid #F0F2EF; vertical-align:middle; }
+  .at-t tr:last-child td { border-bottom:0; }
+  .at-t tr:hover td { background:#FAFBF9; }
+  .pil { display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:.76rem; white-space:nowrap; }
+  .pil.vert { background:var(--lt-vert-clair); color:var(--lt-vert); }
+  .pil.or { background:var(--lt-or-clair); color:#8A6A0E; }
+  .pil.rouge { background:#FBE9E7; color:var(--lt-rouge); }
+  .pil.bleu { background:#E8F0FB; color:#2457A6; }
+  .at-t .dt { color:var(--lt-gris); white-space:nowrap; font-size:.84rem; }
+  .at-b { display:inline-flex; align-items:center; height:34px; padding:0 14px; border-radius:10px; background:var(--lt-vert); color:#fff !important; font-weight:700; font-size:.84rem; text-decoration:none !important; white-space:nowrap; }
+  .at-b:hover { background:var(--lt-vert-fonce); }
+  .at-vide { padding:44px 16px; text-align:center; color:var(--lt-gris); }
+  .at-vide .ms { display:block; margin:0 auto 8px; font-size:34px; width:auto; color:var(--lt-vert); }
+  @media (max-width:760px) { .at-t .dt, .at-t th:nth-child(3) { display:none; } .at-t td, .at-t th { padding:10px 12px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="at">
+  <p class="at-sous">Tout ce qui attend une action, du plus récent au plus ancien.</p>
+  {% if types|length > 1 %}
+  <div class="at-puces"><a href="?" class="{% if not filtre %}on{% endif %}">Tout</a>{% for t in types %}<a href="?type={{ t|urlencode }}" class="{% if filtre == t %}on{% endif %}">{{ t }}</a>{% endfor %}</div>
+  {% endif %}
+  <div class="at-t">
+    {% if lignes %}
+    <table>
+      <thead><tr><th>Type</th><th>Élément</th><th>Depuis</th><th></th></tr></thead>
+      <tbody>{% for l in lignes %}
+        <tr><td><span class="pil {{ l.couleur }}">{{ l.type }}</span></td><td>{{ l.titre }}</td>
+          <td class="dt">{% if l.date %}{{ l.date|timesince|truncatewords:2 }}{% endif %}</td>
+          <td style="text-align:right"><a class="at-b" href="{{ l.url }}">{{ l.action }}</a></td></tr>
+      {% endfor %}</tbody>
+    </table>
+    {% else %}
+    <div class="at-vide"><span class="ms">task_alt</span>Rien à traiter. Tout est à jour.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

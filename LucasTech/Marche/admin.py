@@ -164,6 +164,9 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
             obj.fin_acces = fin_pour(form.cleaned_data.get('duree') or 'illimite', form.cleaned_data.get('date_fin'))
             super().save_model(request, obj, form, change)
             envoyer_acces(obj)
+            num = request.GET.get('contact') or ''
+            if num.isdigit():
+                ContactVendeur.objects.filter(pk=int(num)).update(statut='compte_cree', vendeur=obj)
             self.message_user(request, "Espace créé : le lien a été envoyé au vendeur par e-mail.", messages.SUCCESS)
             return
         super().save_model(request, obj, form, change)
@@ -400,3 +403,68 @@ class CategorieVendeurAdmin(admin.ModelAdmin):
         if v:
             obj.vendeur = v
         super().save_model(request, obj, form, change)
+
+
+# ── Demandes de contact (page « Vendre sur Lantante ») ──
+from .models import ContactVendeur  # noqa: E402
+
+
+@admin.register(ContactVendeur)
+class ContactVendeurAdmin(admin.ModelAdmin):
+    list_display = ['boutique', 'nom', 'statut_pilule', 'categorie', 'ville', 'tel', 'created_at', 'actions_rapides']
+    list_filter = ['statut', 'categorie', 'ville']
+    search_fields = ['boutique', 'nom', 'telephone', 'email', 'ville']
+    readonly_fields = ['created_at', 'boutons']
+    actions = ['marquer_contactee', 'marquer_refusee']
+    fieldsets = (
+        (None, {'fields': ('boutons', 'statut', 'boutique', 'nom', 'telephone', 'email', 'ville', 'categorie', 'message')}),
+        ("Suivi", {'fields': ('vendeur', 'note', 'created_at')}),
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="Statut", ordering='statut')
+    def statut_pilule(self, c):
+        from django.utils.html import format_html
+        coul = {'nouvelle': ('#FBF4DF', '#8A6A0E'), 'contactee': ('#E8F0FB', '#2457A6'),
+                'compte_cree': ('#E8F3EC', '#0F6B3E'), 'refusee': ('#FBE9E7', '#C0392B')}[c.statut]
+        return format_html('<span style="background:{};color:{};padding:3px 10px;border-radius:999px;font-weight:700;'
+                           'font-size:12px;white-space:nowrap">{}</span>', coul[0], coul[1], c.get_statut_display())
+
+    @admin.display(description="Téléphone")
+    def tel(self, c):
+        return f"+{c.telephone}" if c.telephone.isdigit() else c.telephone
+
+    def _creer_url(self, c):
+        from urllib.parse import urlencode
+        from django.urls import reverse
+        return reverse('admin:Marche_vendeur_add') + '?' + urlencode(
+            {'boutique': c.boutique, 'email': c.email, 'whatsapp': c.telephone, 'ville': c.ville, 'contact': c.pk})
+
+    @admin.display(description="")
+    def actions_rapides(self, c):
+        from django.utils.html import format_html
+        return format_html('<a href="{}" target="_blank" rel="noopener" style="font-weight:700;color:#1FA855;margin-right:10px">WhatsApp</a>'
+                           '<a href="{}" style="font-weight:700">Créer le vendeur</a>', c.lien_whatsapp(), self._creer_url(c))
+
+    @admin.display(description="Actions")
+    def boutons(self, c):
+        from django.utils.html import format_html
+        if not c.pk:
+            return '—'
+        return format_html(
+            '<a href="{}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;'
+            'border-radius:10px;background:#1FA855;color:#fff;font-weight:700;margin-right:8px;text-decoration:none">Répondre sur WhatsApp</a>'
+            '<a href="{}" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:10px;background:#0F6B3E;'
+            'color:#fff;font-weight:700;text-decoration:none">Créer le vendeur</a>', c.lien_whatsapp(), self._creer_url(c))
+
+    @admin.action(description="Marquer « Contactée »")
+    def marquer_contactee(self, request, queryset):
+        n = queryset.filter(statut='nouvelle').update(statut='contactee')
+        self.message_user(request, f"{n} demande(s) marquée(s) contactée(s).", messages.SUCCESS)
+
+    @admin.action(description="Marquer « Refusée »")
+    def marquer_refusee(self, request, queryset):
+        n = queryset.update(statut='refusee')
+        self.message_user(request, f"{n} demande(s) refusée(s).", messages.SUCCESS)

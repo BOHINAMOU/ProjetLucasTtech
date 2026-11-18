@@ -8,6 +8,12 @@ from django.shortcuts import render
 from django.urls import reverse
 
 
+ICONES_EQ = {'wifi': 'wifi', 'clim': 'ac_unit', 'parking': 'local_parking', 'piscine': 'pool', 'restaurant': 'restaurant',
+             'petit_dejeuner': 'free_breakfast', 'tv': 'tv', 'eau_chaude': 'water_drop', 'groupe': 'bolt',
+             'securite': 'shield', 'salle_sport': 'fitness_center', 'navette': 'airport_shuttle',
+             'salle_reunion': 'groups', 'bar': 'local_bar', 'plage': 'beach_access'}
+
+
 def _f(n):
     return f"{int(n):,} CFA".replace(',', ' ') if n else '—'
 
@@ -31,8 +37,9 @@ def fiche(request, pk):
         })
     ctx = dict(_admin.site.each_context(request), title=h.nom, h=h, chambres=chambres,
                equipements=[CODES[e] for e in (h.equipements or []) if e in CODES],
-               kpis=[("Vues", h.vues), ("Clics Réserver", h.clics_reserver), ("Clics Appeler", h.clics_appel),
-                     ("Chambres", len(chambres)), ("À partir de", _f(h.a_partir_de))],
+               equipements_ic=[(ICONES_EQ.get(e, 'check'), CODES[e]) for e in (h.equipements or []) if e in CODES],
+               kpis=[("Vues", h.vues, 'visibility'), ("Demandes de réservation", h.clics_reserver, 'event_available'),
+                     ("Appels", h.clics_appel, 'call'), ("À partir de", _f(h.a_partir_de), 'sell')],
                liens={
                    'modifier': reverse('admin:Hotels_hotel_change', args=[h.pk]) + f'?retour={quote(ici)}',
                    'ajouter': reverse('admin:Hotels_chambre_add') + f'?hotel={h.pk}&retour={quote(ici)}',

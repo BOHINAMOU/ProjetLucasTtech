@@ -76,6 +76,7 @@ def build(request):
         ('Demandes de partenariat', _count('core.PartnerApplication', status='pending'), 'fa-ribbon', _url('core.PartnerApplication', '?status__exact=pending'), 'blue'),
         ('Dossiers de répétiteurs à vérifier', _count('Repetiteurs.Candidature', statut='a_verifier'), 'fa-chalkboard-teacher', _url('Repetiteurs.Candidature', '?statut__exact=a_verifier'), 'orange'),
         ('Demandes de vendeurs', _count('Marche.DemandeVendeur', statut='en_attente'), 'fa-user-tag', _url('Marche.DemandeVendeur', '?statut__exact=en_attente'), 'blue'),
+        ('Nouveaux vendeurs à contacter', _count('Marche.ContactVendeur', statut='nouvelle'), 'fa-store', _url('Marche.ContactVendeur', '?statut__exact=nouvelle'), 'blue'),
         ('Vendeurs : accès bientôt terminé', _vendeurs_bientot(), 'fa-hourglass-half', _url('Marche.Vendeur', '?acces=bientot'), 'orange'),
         ('Vendeurs : accès expiré', _vendeurs_expires(), 'fa-user-clock', _url('Marche.Vendeur', '?acces=expire'), 'red'),
     ]
@@ -170,6 +171,7 @@ def build(request):
                                  ('service', 'Services'))
             ],
             'derniers': [{'ref': p.reference, 'qui': f"{p.first_name} {p.last_name}".strip(), 'objet': p.description,
+                          'moyen': (p.operator or 'Mobile Money').capitalize(),
                           'montant': f(p.amount), 'statut': p.get_status_display(), 'status': p.status,
                           'quand': p.created_at, 'url': _change_url(p)}
                          for p in P.objects.order_by('-created_at')[:10]],
@@ -185,6 +187,25 @@ def build(request):
             j['txt'] = f(j['v'])
         argent['jours'] = jours
         argent['total30'] = f(sum(j['v'] for j in jours))
+        avant = somme(ok.filter(paid_at__gte=now - timedelta(days=60), paid_at__lt=d30))
+        cur = sum(j['v'] for j in jours)
+        argent['variation'] = (round((cur - avant) * 100 / avant) if avant else None)
+
+        def serie(points):
+            hi = max([v for _, v in points] + [1])
+            return [{'l': l, 'v': v, 'txt': f(v), 'h': max(3, round(100 * v / hi)) if v else 3} for l, v in points]
+        argent['series'] = {
+            '7': serie([(j['label'], j['v']) for j in jours[-7:]]),
+            '30': serie([(j['label'], j['v']) for j in jours]),
+        }
+        mois = []
+        base = timezone.localdate().replace(day=1)
+        for i in range(11, -1, -1):
+            y, m = base.year, base.month - i
+            while m <= 0:
+                y, m = y - 1, m + 12
+            mois.append((f"{m:02d}/{str(y)[2:]}", somme(ok.filter(paid_at__year=y, paid_at__month=m))))
+        argent['series']['12'] = serie(mois)
         argent['n30'] = ok.filter(paid_at__gte=d30).count()
         argent['en_attente'] = P.objects.filter(status='pending').count()
         argent['n_ok'] = ok.count()
@@ -219,9 +240,16 @@ def build(request):
                'services': 'fa-wrench', 'notifications': 'fa-bell', 'utilisateurs': 'fa-users'}
     rubriques = [{'titre': t, 'icon': icones.get(c, 'fa-folder'), 'url': f'/lantanteAdminTech/section/{c}/'}
                  for c, (t, _) in SECTIONS.items()]
+    d30u = now - timedelta(days=30)
+    comptes30 = User.objects.filter(date_joined__gte=d30u).count()
+    comptes_avant = User.objects.filter(date_joined__gte=now - timedelta(days=60), date_joined__lt=d30u).count()
+    nouveaux = {'n': comptes30, 'variation': round((comptes30 - comptes_avant) * 100 / comptes_avant) if comptes_avant else None}
+    couleurs = {'red': 'rouge', 'orange': 'or', 'blue': 'bleu'}
+    for t in todo:
+        t['couleur'] = couleurs.get(t['tone'], 'vert')
     principales = [a for a in actions if a['label'] in ('Publier une actualité', 'Ajouter un produit', 'Créer un événement')]
     return {
-        'rubriques': rubriques, 'principales': principales,
+        'rubriques': rubriques, 'principales': principales, 'nouveaux': nouveaux,
         'todo_actifs': sorted([t for t in todo if t['n']], key=lambda t: -t['n']),
         'todo': todo, 'todo_total': total_todo, 'comments': comments, 'latest_comments': latest[:6], 'messages_latest': messages_latest,
         'argent': argent, 'stats': stats, 'days': days, 'app_days': app_days, 'actions': actions, 'today': today, 'hero_kpis': hero_kpis,

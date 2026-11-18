@@ -265,6 +265,9 @@ def admin_section(request, code):
     from .dashboard import SECTIONS, build_section
     if code not in SECTIONS or not request.user.is_staff:
         raise Http404
+    if code == 'commentaires':
+        from .admin_commentaires import boite
+        return boite(request)
     section = build_section(request, code)
     if not section['lignes']:
         raise Http404

@@ -1,0 +1,107 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}Commentaires{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item">Commentaires</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  .bx-onglets { display:flex; gap:4px; border-bottom:1px solid var(--lt-bord); margin-bottom:16px; flex-wrap:wrap; }
+  .bx-onglets a { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; font-weight:600; font-size:.9rem; color:var(--lt-gris) !important;
+                  text-decoration:none !important; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .bx-onglets a.on { color:var(--lt-vert) !important; border-bottom-color:var(--lt-vert); }
+  .bx-onglets a span { background:#F0F2EF; color:var(--lt-gris); border-radius:999px; padding:1px 8px; font-size:.75rem; font-weight:700; }
+  .bx-onglets a.on span { background:var(--lt-vert-clair); color:var(--lt-vert); }
+  .bx-onglets .aut { margin-left:auto; }
+  .bx { display:grid; grid-template-columns:380px minmax(0,1fr); gap:16px; align-items:start; }
+  .bx-liste { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:hidden; max-height:calc(100vh - 230px); overflow-y:auto; }
+  .bx-el { display:block; padding:14px 16px; border-bottom:1px solid #F0F2EF; color:var(--lt-texte) !important; text-decoration:none !important; position:relative; }
+  .bx-el:hover { background:#FAFBF9; }
+  .bx-el.on { background:var(--lt-vert-clair); }
+  .bx-el .l1 { display:flex; align-items:center; gap:8px; }
+  .bx-el .pt { width:8px; height:8px; border-radius:50%; background:var(--lt-vert); flex:0 0 auto; }
+  .bx-el .pt.lu { background:transparent; }
+  .bx-el b { flex:1; min-width:0; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bx-el small { color:var(--lt-gris); font-size:.76rem; white-space:nowrap; }
+  .bx-el .act { color:var(--lt-vert); font-size:.78rem; font-weight:600; margin:3px 0 4px 16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bx-el .tx { color:#4A544E; font-size:.86rem; margin-left:16px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bx-d { display:flex; flex-direction:column; gap:14px; }
+  .bx-pub { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:12px; display:flex; align-items:center; gap:12px; }
+  .bx-pub img, .bx-pub .ph { width:64px; height:48px; border-radius:8px; object-fit:cover; background:var(--lt-vert-clair); flex:0 0 auto; }
+  .bx-pub .t { flex:1; min-width:0; }
+  .bx-pub .t small { color:var(--lt-gris); font-size:.76rem; display:block; }
+  .bx-pub .t b { font-size:.92rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bx-b { display:inline-flex; align-items:center; gap:6px; height:38px; padding:0 14px; border-radius:10px; border:1px solid var(--lt-bord); background:#fff;
+          color:var(--lt-texte) !important; font-weight:600; font-size:.86rem; text-decoration:none !important; cursor:pointer; white-space:nowrap; }
+  .bx-b:hover { background:#F6F7F5; }
+  .bx-b.p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff !important; }
+  .bx-b.p:hover { background:var(--lt-vert-fonce); }
+  .bx-fil { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .bx-msg { display:flex; gap:12px; }
+  .bx-msg .av { width:40px; height:40px; border-radius:50%; background:var(--lt-vert-clair); color:var(--lt-vert); display:flex; align-items:center; justify-content:center; font-weight:800; flex:0 0 auto; }
+  .bx-msg .bl { background:#F4F6F3; border-radius:4px 14px 14px 14px; padding:12px 14px; max-width:680px; }
+  .bx-msg .bl .q { font-size:.8rem; color:var(--lt-gris); margin-bottom:6px; }
+  .bx-msg .bl .q b { color:var(--lt-texte); font-size:.88rem; margin-right:6px; }
+  .bx-msg .bl p { margin:0; white-space:pre-line; line-height:1.55; }
+  .bx-msg.rep { flex-direction:row-reverse; }
+  .bx-msg.rep .av { background:var(--lt-vert); color:#fff; }
+  .bx-msg.rep .bl { background:var(--lt-vert-clair); border-radius:14px 4px 14px 14px; }
+  .bx-rep { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:14px; }
+  .bx-rep textarea { width:100%; min-height:110px; border:1px solid var(--lt-bord); border-radius:10px; padding:12px; font:inherit; resize:vertical; outline:none; }
+  .bx-rep textarea:focus { border-color:var(--lt-vert); box-shadow:0 0 0 3px rgba(15,107,62,.12); }
+  .bx-rep .ac { display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .bx-rep label { display:flex; align-items:center; gap:8px; font-size:.88rem; margin:0; flex:1; }
+  .bx-rep label input { width:18px; height:18px; accent-color:var(--lt-vert); }
+  .bx-vide { background:#fff; border:1px dashed #C9D3CC; border-radius:var(--lt-rayon); padding:40px 16px; text-align:center; color:var(--lt-gris); }
+  .pil-m { display:inline-block; padding:2px 9px; border-radius:999px; background:#FBE9E7; color:var(--lt-rouge); font-weight:700; font-size:.72rem; }
+  @media (max-width:991.98px) { .bx { grid-template-columns:minmax(0,1fr); } .bx-liste { max-height:360px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div style="width:100%">
+  <div class="bx-onglets">
+    {% for code, nom, n in onglets %}<a href="?o={{ code }}" class="{% if code == onglet %}on{% endif %}">{{ nom }} <span>{{ n }}</span></a>{% endfor %}
+    <a class="aut" href="{{ messages_rapides }}">Messages rapides →</a>
+  </div>
+  {% if liste or sel %}
+  <div class="bx">
+    <div class="bx-liste">
+      {% for c in liste %}
+      <a class="bx-el {% if sel and c.pk == sel.pk %}on{% endif %}" href="?o={{ onglet }}&c={{ c.pk }}">
+        <div class="l1"><span class="pt {% if c.is_read %}lu{% endif %}"></span><b>{{ c.name }}</b><small>{{ c.created_at|timesince|truncatewords:2 }}</small></div>
+        <div class="act">{{ c.publication.title }}</div>
+        <div class="tx">{{ c.text }}</div>
+      </a>
+      {% empty %}<div class="bx-vide" style="border:0">Rien ici.</div>{% endfor %}
+    </div>
+    {% if sel %}
+    <div class="bx-d">
+      <div class="bx-pub">
+        {% if sel.publication.cover_image %}<img src="{{ sel.publication.cover_image.url }}" alt="">{% else %}<span class="ph"></span>{% endif %}
+        <div class="t"><small>Actualité</small><b>{{ sel.publication.title }}</b></div>
+        {% if lien_pub %}<a class="bx-b" href="{{ lien_pub }}" target="_blank" rel="noopener"><span class="ms">open_in_new</span>Ouvrir</a>{% endif %}
+      </div>
+      <div class="bx-fil">
+        <div class="bx-msg"><span class="av">{{ sel.name|slice:":1"|upper }}</span>
+          <div class="bl"><div class="q"><b>{{ sel.name }}</b>{% if email_masque %}{{ email_masque }} · {% endif %}{{ sel.created_at|date:"d/m/Y H:i" }}{% if sel.is_hidden %} · <span class="pil-m">Masqué</span>{% endif %}</div><p>{{ sel.text }}</p></div></div>
+        {% if sel.reponse %}
+        <div class="bx-msg rep"><span class="av">LT</span>
+          <div class="bl"><div class="q"><b>Lantante</b>{% if sel.repondu_le %}{{ sel.repondu_le|date:"d/m/Y H:i" }}{% endif %}</div><p>{{ sel.reponse }}</p></div></div>
+        {% endif %}
+      </div>
+      {% if peut_modifier %}
+      <form method="post" class="bx-rep">{% csrf_token %}
+        <input type="hidden" name="c" value="{{ sel.pk }}">
+        <textarea name="reponse" placeholder="Écrire une réponse…">{% if sel.reponse %}{{ sel.reponse }}{% endif %}</textarea>
+        <div class="ac">
+          <label><input type="checkbox" name="email" value="1" {% if email_masque %}checked{% else %}disabled{% endif %}> Envoyer aussi par e-mail{% if not email_masque %} (pas d'e-mail){% endif %}</label>
+          <button class="bx-b" name="action" value="masquer" type="submit"><span class="ms">{% if sel.is_hidden %}visibility{% else %}visibility_off{% endif %}</span>{% if sel.is_hidden %}Afficher{% else %}Masquer{% endif %}</button>
+          <button class="bx-b p" name="action" value="repondre" type="submit"><span class="ms">send</span>Répondre</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="bx-vide">{% if onglet == 'attente' %}Aucun commentaire sans réponse. Tout est traité.{% else %}Aucun commentaire.{% endif %}</div>
+  {% endif %}
+</div>
+{% endblock %}

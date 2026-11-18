@@ -204,3 +204,37 @@ class DemandeVendeur(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('vendre:suivi', args=[self.jeton])
+
+
+class ContactVendeur(models.Model):
+    """« Vendre sur Lantante » : court formulaire de prise de contact (sans pièce d'identité).
+    L'équipe rappelle le vendeur puis crée son espace."""
+    STATUTS = [('nouvelle', "Nouvelle"), ('contactee', "Contactée"), ('compte_cree', "Compte créé"), ('refusee', "Refusée")]
+    CATEGORIES = [('vetements', "Vêtements"), ('chaussures', "Chaussures"), ('accessoires', "Accessoires"),
+                  ('electronique', "Électronique"), ('livres', "Livres"), ('alimentation', "Alimentation"),
+                  ('beaute', "Beauté"), ('autre', "Autre")]
+    statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='nouvelle', db_index=True)
+    boutique = models.CharField("Nom de la boutique", max_length=120)
+    nom = models.CharField("Votre nom", max_length=120)
+    telephone = models.CharField("Téléphone / WhatsApp", max_length=20)
+    email = models.EmailField("E-mail")
+    ville = models.CharField("Ville", max_length=80)
+    categorie = models.CharField("Ce que vous vendez", max_length=20, choices=CATEGORIES)
+    message = models.TextField("Message", blank=True)
+    vendeur = models.ForeignKey(Vendeur, on_delete=models.SET_NULL, null=True, blank=True, related_name='contacts',
+                                verbose_name="Vendeur créé")
+    note = models.TextField("Note de l'équipe", blank=True)
+    created_at = models.DateTimeField("Reçue le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Demande de contact vendeur"
+        verbose_name_plural = "Demandes de contact vendeurs"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.boutique} — {self.nom}"
+
+    def lien_whatsapp(self):
+        from urllib.parse import quote
+        n = ''.join(c for c in self.telephone if c.isdigit())
+        return f"https://wa.me/{n}?text={quote(f'Bonjour {self.nom}, ici Lantante. Merci pour votre demande pour « {self.boutique} ».')}"
