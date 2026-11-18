@@ -22,6 +22,8 @@ class Hotel(models.Model):
     longitude = models.DecimalField("Longitude", max_digits=9, decimal_places=6, null=True, blank=True)
     etoiles = models.PositiveSmallIntegerField("Étoiles", null=True, blank=True, help_text="Facultatif (1 à 5).")
     photo = models.ImageField("Photo principale", upload_to='hotels/', blank=True)
+    legende_photo = models.CharField("Légende de la photo", max_length=60, blank=True,
+                                     help_text="Ex. « Photo d'illustration » si ce n'est pas une photo de l'hôtel.")
     description = models.TextField("Présentation", blank=True)
     prix_min = models.PositiveIntegerField("À partir de (CFA / nuit)", null=True, blank=True,
                                            help_text="Facultatif. Vide = calculé depuis les chambres, sinon non affiché.")

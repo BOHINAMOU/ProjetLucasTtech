@@ -30,7 +30,7 @@
   <div class="ho-grille">
     {% for h in hotels %}
     <a class="ho-carte" href="{{ h.get_absolute_url }}">
-      {% if h.photo %}<img src="{{ h.photo.url }}" alt="" loading="lazy">{% else %}<span class="ph"></span>{% endif %}
+      <span style="position:relative;display:block">{% if h.photo %}<img src="{{ h.photo.url }}" alt="" loading="lazy">{% else %}<span class="ph"></span>{% endif %}{% if h.legende_photo %}<small style="position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:2px 8px;font-size:.75rem">{{ h.legende_photo }}</small>{% endif %}</span>
       <div class="ho-corps">
         <h2>{{ h.nom }}</h2>
         <div class="ho-meta">{% if h.etoiles %}{% for i in "12345"|make_list|slice:h.etoiles %}★{% endfor %} · {% endif %}{% if h.quartier %}{{ h.quartier }}, {% endif %}{{ h.ville }}</div>

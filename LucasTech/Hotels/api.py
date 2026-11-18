@@ -36,7 +36,7 @@ def actifs():
 def item(request, h):
     return {'id': h.pk, 'slug': h.slug, 'nom': h.nom, 'ville': h.ville, 'quartier': h.quartier,
             'etoiles': h.etoiles, 'a_partir_de': h.a_partir_de,
-            'photo': vignette(request, h.photo) if h.photo else None}
+            'photo': vignette(request, h.photo) if h.photo else None, 'legende_photo': h.legende_photo}
 
 
 @api_view(['GET'])
@@ -79,7 +79,7 @@ def detail(request, slug):
     # bandeau : photo principale, photos de l'hôtel, puis photos des chambres (nom en légende)
     bande = []
     if h.photo:
-        bande.append({'image': grande(request, h.photo), 'legende': ''})
+        bande.append({'image': grande(request, h.photo), 'legende': h.legende_photo})
     bande += [{'image': grande(request, p.image), 'legende': p.legende} for p in h.photos.all()]
     for c in chambres:
         for p in c.photos.all()[:2]:

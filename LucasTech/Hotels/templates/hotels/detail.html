@@ -20,7 +20,7 @@
 {% block content %}
 <div class="rp">
   <div class="ho-bande">
-    {% if h.photo %}<figure><img src="{{ h.photo.url }}" alt=""></figure>{% endif %}
+    {% if h.photo %}<figure><img src="{{ h.photo.url }}" alt="">{% if h.legende_photo %}<figcaption>{{ h.legende_photo }}</figcaption>{% endif %}</figure>{% endif %}
     {% for p in h.photos.all %}<figure><img src="{{ p.image.url }}" alt="">{% if p.legende %}<figcaption>{{ p.legende }}</figcaption>{% endif %}</figure>{% endfor %}
     {% for c in chambres %}{% for p in c.photos.all|slice:":2" %}<figure><img src="{{ p.image.url }}" alt=""><figcaption>{{ c.nom }}</figcaption></figure>{% endfor %}{% endfor %}
   </div>

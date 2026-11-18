@@ -48,7 +48,7 @@ class HotelAdmin(admin.ModelAdmin):
     readonly_fields = ['vues', 'clics_reserver', 'clics_appel']
     inlines = [PhotoHotelInline, ChambreInline]
     fieldsets = (
-        (None, {'fields': ('nom', 'photo', 'description', 'etoiles', 'prix_min', 'equipements')}),
+        (None, {'fields': ('nom', 'photo', 'legende_photo', 'description', 'etoiles', 'prix_min', 'equipements')}),
         ("Lieu", {'fields': ('ville', 'quartier', 'adresse', ('latitude', 'longitude'))}),
         ("Contacts du propriétaire", {'fields': ('telephone', 'whatsapp', 'site_web'),
                                       'description': "Sans WhatsApp, « Réserver » utilise notre numéro principal."}),
