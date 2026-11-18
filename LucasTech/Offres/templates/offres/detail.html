@@ -12,9 +12,8 @@
     <div style="margin-top:16px;line-height:1.65">{{ o.description|linebreaks }}</div>
   </div>
   <div style="display:grid;gap:10px">
-    {% if o.candidature_appli %}<a class="rp-btn" href="{% url 'core:application' %}">Postuler dans l'appli</a>{% endif %}
-    {% if o.lien %}<a class="rp-btn rp-btn--ghost" href="{{ o.lien }}" target="_blank" rel="noopener">Voir l'offre</a>{% endif %}
-    {% if wa %}<a class="rp-btn rp-btn--ghost" href="https://wa.me/{{ wa }}?text={{ o.titre|urlencode }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
+    {% if o.lien %}<a class="rp-btn" href="{{ o.lien }}" target="_blank" rel="noopener">Postuler</a>{% endif %}
+    {% if wa %}<a class="rp-btn rp-btn--ghost" href="https://wa.me/{{ wa }}?text={{ 'Bonjour, je suis intéressé(e) par votre offre : '|add:o.titre|add:'.'|urlencode }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
     {% if o.telephone %}<a class="rp-btn rp-btn--ghost" href="tel:{{ o.telephone }}">Appeler</a>{% endif %}
     {% if o.email_contact %}<a class="rp-btn rp-btn--ghost" href="mailto:{{ o.email_contact }}">E-mail</a>{% endif %}
   </div>

@@ -7,5 +7,4 @@ app_name = 'offres'
 urlpatterns = [
     path('', views.liste, name='liste'),
     path('<int:pk>/', views.detail, name='detail'),
-    path('cv/<int:pk>/', views.cv, name='cv'),
 ]

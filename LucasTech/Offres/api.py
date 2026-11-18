@@ -1,5 +1,4 @@
-"""API de l'appli : offres d'emploi (non lues d'abord), lecture, candidature, mes candidatures. Jamais de CV ici."""
-from django.core.cache import cache
+"""API de l'appli : offres d'emploi (non lues d'abord, expirées masquées), lecture, clics sur les contacts."""
 from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
@@ -9,10 +8,7 @@ from rest_framework.response import Response
 from api_mobile.catalog import grande, text, vignette
 from api_mobile.utils import error
 
-from .models import CandidatureEmploi, OffreEmploi, OffreLue
-
-MAX_CV = 5 * 1024 * 1024
-EXT_CV = ('.pdf', '.jpg', '.jpeg', '.png', '.webp', '.doc', '.docx')
+from .models import OffreEmploi, OffreLue
 
 
 def actives():
@@ -20,8 +16,12 @@ def actives():
         Q(date_limite__isnull=True) | Q(date_limite__gte=timezone.localdate()))
 
 
-def _chiffres(t):
-    return ''.join(c for c in (t or '') if c.isdigit())
+def _wa(t):
+    """Numéro WhatsApp au format wa.me (accepte aussi un lien wa.me collé dans l'admin)."""
+    d = ''.join(c for c in (t or '') if c.isdigit())
+    if len(d) == 8:
+        d = '228' + d
+    return d if len(d) >= 11 else ''
 
 
 def item(request, o, lus=frozenset()):
@@ -69,10 +69,9 @@ def detail(request, pk):
         return error("Cette offre n'est plus disponible.", 404, code='introuvable')
     OffreEmploi.objects.filter(pk=pk).update(vues=F('vues') + 1)
     d = item(request, o, _lus(request))
-    deja = request.user.is_authenticated and CandidatureEmploi.objects.filter(offre=o, user=request.user).exists()
     d.update({'image_grande': grande(request, o.image) if o.image else None, 'description': text(o.description),
-              'telephone': o.telephone, 'whatsapp': _chiffres(o.whatsapp), 'email': o.email_contact, 'lien': o.lien,
-              'postuler': o.candidature_appli, 'deja_postule': deja,
+              'telephone': o.telephone, 'whatsapp': _wa(o.whatsapp), 'email': o.email_contact, 'lien': o.lien,
+              'message_whatsapp': f"Bonjour, je suis intéressé(e) par votre offre : {o.titre}.",
               'url': request.build_absolute_uri(o.get_absolute_url())})
     return Response(d)
 
@@ -85,41 +84,14 @@ def lu(request, pk):
     return Response({'lu': True})
 
 
+CLICS = {'appel': 'clics_appel', 'whatsapp': 'clics_whatsapp', 'lien': 'clics_lien', 'email': 'clics_email'}
+
+
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def postuler(request, pk):
-    o = actives().filter(pk=pk, candidature_appli=True).first()
-    if not o:
-        return error("Cette offre n'accepte pas de candidature.", 404, code='introuvable')
-    if CandidatureEmploi.objects.filter(offre=o, user=request.user).exists():
-        return error("Vous avez déjà postulé à cette offre.", 400, code='deja')
-    cle = f'postuler:{request.user.pk}'
-    if cache.get(cle, 0) >= 10:
-        return error("Trop de candidatures aujourd'hui. Réessayez demain.", 429, code='limite')
-    d = request.data
-    nom = (d.get('nom') or '').strip()[:120]
-    tel = (d.get('telephone') or '').strip()
-    erreurs = {}
-    if not nom:
-        erreurs['nom'] = ["Saisissez votre nom."]
-    if len(_chiffres(tel)) < 8 or any(c not in '0123456789+ ' for c in tel):
-        erreurs['telephone'] = ["Numéro invalide : chiffres uniquement."]
-    cv = request.FILES.get('cv')
-    if cv and (cv.size > MAX_CV or not cv.name.lower().endswith(EXT_CV)):
-        erreurs['cv'] = ["CV : PDF, Word ou image, 5 Mo maximum."]
-    if erreurs:
-        return Response({'detail': "Vérifiez le formulaire.", 'erreurs': erreurs}, status=400)
-    c = CandidatureEmploi.objects.create(offre=o, user=request.user, nom=nom, telephone=tel[:30],
-                                         email=(d.get('email') or request.user.email or '').strip()[:254],
-                                         message=(d.get('message') or '').strip()[:3000], cv=cv or '')
-    cache.set(cle, cache.get(cle, 0) + 1, 86400)
-    return Response({'id': c.pk, 'detail': "Candidature envoyée."}, status=201)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def mes_candidatures(request):
-    qs = CandidatureEmploi.objects.filter(user=request.user).select_related('offre')
-    return Response([{'id': c.pk, 'offre_id': c.offre_id, 'titre': c.offre.titre, 'entreprise': c.offre.entreprise,
-                      'statut': c.statut, 'statut_libelle': c.get_statut_display(), 'date': c.created_at.isoformat()}
-                     for c in qs])
+@permission_classes([AllowAny])
+def clic(request, pk, sorte):
+    """L'appli signale un appui sur Appeler / WhatsApp / Postuler / E-mail (statistiques)."""
+    champ = CLICS.get(sorte)
+    if champ:
+        OffreEmploi.objects.filter(pk=pk).update(**{champ: F(champ) + 1})
+    return Response({'ok': True})

@@ -1,10 +1,12 @@
-"""Emplois : offres publiées comme des actualités (photo, description, contacts) et candidatures depuis l'appli."""
+"""Emplois : offres publiées comme des actualités (photo, description) ; on contacte directement le recruteur
+(Appeler, WhatsApp, E-mail, lien « Postuler »). Aucune candidature n'est gérée chez nous."""
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 
 def _prive():
+    """Gardé pour l'historique des migrations (ancienne table des candidatures)."""
     from Payments.models import private_storage
     return private_storage()
 
@@ -23,14 +25,15 @@ class OffreEmploi(models.Model):
     telephone = models.CharField("Téléphone (Appeler)", max_length=30, blank=True)
     whatsapp = models.CharField("WhatsApp", max_length=30, blank=True)
     email_contact = models.EmailField("E-mail de contact", blank=True)
-    lien = models.URLField("Lien de l'offre", blank=True)
-    candidature_appli = models.BooleanField("Postuler dans l'appli", default=True)
-    email_recruteur = models.EmailField("E-mail du recruteur (candidatures)", blank=True,
-                                        help_text="Facultatif : pour lui transférer les candidatures.")
+    lien = models.URLField("Lien pour postuler", blank=True, help_text="Bouton « Postuler » : ouvre ce lien.")
     notifier = models.BooleanField("Envoyer une notification à la publication", default=False)
     est_exemple = models.BooleanField("Exemple", default=False)
     publie = models.BooleanField("Publiée", default=True)
     vues = models.PositiveIntegerField("Vues", default=0, editable=False)
+    clics_appel = models.PositiveIntegerField("Clics Appeler", default=0, editable=False)
+    clics_whatsapp = models.PositiveIntegerField("Clics WhatsApp", default=0, editable=False)
+    clics_lien = models.PositiveIntegerField("Clics Postuler", default=0, editable=False)
+    clics_email = models.PositiveIntegerField("Clics E-mail", default=0, editable=False)
     notifie_le = models.DateTimeField(null=True, blank=True, editable=False)
     created_at = models.DateTimeField("Publiée le", default=timezone.now)
 
@@ -41,6 +44,11 @@ class OffreEmploi(models.Model):
 
     def __str__(self):
         return self.titre
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not (self.telephone or self.whatsapp or self.lien or self.email_contact):
+            raise ValidationError("Renseignez au moins un contact : téléphone, WhatsApp, lien ou e-mail.")
 
     @property
     def active(self):
@@ -58,26 +66,3 @@ class OffreLue(models.Model):
 
     class Meta:
         unique_together = [('offre', 'user')]
-
-
-class CandidatureEmploi(models.Model):
-    STATUTS = [('recue', 'Reçue'), ('vue', 'Vue'), ('retenue', 'Retenue'), ('refusee', 'Refusée')]
-    offre = models.ForeignKey(OffreEmploi, on_delete=models.CASCADE, related_name='candidatures')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='candidatures_emploi')
-    nom = models.CharField("Nom", max_length=120)
-    telephone = models.CharField("Téléphone", max_length=30)
-    email = models.EmailField("E-mail", blank=True)
-    cv = models.FileField("CV", upload_to='emplois/cv/', storage=_prive, blank=True)
-    message = models.TextField("Message", blank=True)
-    statut = models.CharField("Statut", max_length=8, choices=STATUTS, default='recue', db_index=True)
-    envoyee_recruteur = models.BooleanField("Envoyée au recruteur", default=False)
-    created_at = models.DateTimeField("Reçue le", auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        unique_together = [('offre', 'user')]
-        verbose_name = "Candidature"
-        verbose_name_plural = "Candidatures"
-
-    def __str__(self):
-        return f"{self.nom} — {self.offre}"
