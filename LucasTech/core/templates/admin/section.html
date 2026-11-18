@@ -27,7 +27,7 @@
   .cg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-bottom:28px; }
   .cc { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:hidden; color:inherit !important; text-decoration:none !important; display:flex; flex-direction:column; transition:border-color .15s, box-shadow .15s; }
   .cc:hover { border-color:#CBD8CF; box-shadow:0 6px 20px rgba(11,46,29,.06); }
-  .cc .img { position:relative; aspect-ratio:16/9; background:var(--lt-vert-clair); display:block; }
+  .cc .img { position:relative; aspect-ratio:16/9; background:var(--lt-vert-clair); display:block; overflow:hidden; flex:0 0 auto; }
   .cc .img img { width:100%; height:100%; object-fit:cover; display:block; }
   .cc .img .ms.vide { position:absolute; inset:0; margin:auto; width:auto; height:auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:var(--lt-vert); opacity:.6; }
   .cc .pil { position:absolute; top:10px; left:10px; }
