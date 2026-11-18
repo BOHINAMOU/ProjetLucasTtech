@@ -27,6 +27,8 @@
   }
   .app-wrapper, .app-main { min-height:100vh; }
   .app-main { overflow:visible !important; }  /* la page défile, la barre du haut reste collée */
+  .app-main { padding-top:64px; }
+  @media (min-width: 992px) { body.sidebar-expand-lg .lt-haut { left:var(--lte-sidebar-width); } }
   @media (max-width: 991.98px) { .app-main { margin-left:0 !important; } }
   .lt-side .sidebar-brand { height:68px; border-bottom:1px solid var(--lt-bord) !important; padding:0 18px; display:flex; align-items:center; flex:0 0 auto; }
   .lt-marque { display:flex; align-items:center; gap:11px; text-decoration:none !important; }
@@ -58,7 +60,7 @@
   .lt-moi button:hover { background:#FBE9E7; color:var(--lt-rouge); }
   /* ── Barre du haut (collante) ── */
   #jazzy-navbar { display:none !important; }
-  .lt-haut { position:sticky; top:0; z-index:1030; background:rgba(255,255,255,.96); backdrop-filter:saturate(1.2) blur(6px);
+  .lt-haut { position:fixed; top:0; right:0; left:0; z-index:1030; background:rgba(255,255,255,.96); backdrop-filter:saturate(1.2) blur(6px);
              border-bottom:1px solid var(--lt-bord); height:64px; display:flex; align-items:center; gap:12px; padding:0 28px; }
   .lt-menu { display:none; border:0; background:none; width:40px; height:40px; border-radius:10px; color:var(--lt-texte); align-items:center; justify-content:center; }
   .lt-recherche { flex:1; max-width:560px; position:relative; margin:0; }
