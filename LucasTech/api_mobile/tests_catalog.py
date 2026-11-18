@@ -62,6 +62,11 @@ class CatalogueTests(APITestCase):
                                           starts_at=timezone.now() + timedelta(days=5), cover=jpeg())
         TicketType.objects.create(event=self.event, name='VIP', price=5000, quantity=10)
 
+    def test_categories_boutique(self):
+        r = self.client.get(API + 'boutique/categories/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.json()), 1)
+
     def test_produits_pagines_recherche_et_categorie(self):
         r = self.client.get(API + 'boutique/produits/', {'page': 1})
         self.assertEqual(r.status_code, 200)

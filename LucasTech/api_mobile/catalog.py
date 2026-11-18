@@ -189,7 +189,7 @@ def produit(request, pk):
 @permission_classes([AllowAny])
 @public_cache(300)
 def boutique_categories(request):
-    from Shop.models import Category
+    from Shop.models import Category, Product
     return Response([cat(c) for c in Category.objects.filter(products__in=Product.en_vente()).distinct()])
 
 

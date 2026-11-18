@@ -15,8 +15,7 @@
   <h1 class="h2">Produits</h1>
   <p class="sous">{{ produits|length }} produit{{ produits|length|pluralize }}</p>
   <div class="outils">
-    <form method="get">{% if cat %}<input type="hidden" name="categorie" value="{{ cat }}">{% endif %}<input type="search" name="q" value="{{ q }}" placeholder="Rechercher un produit"></form>
-    {% if cats %}<a class="puce {% if not cat %}on{% endif %}" href="?">Tout</a>{% for c in cats %}<a class="puce {% if cat == c.pk|stringformat:'s' %}on{% endif %}" href="?categorie={{ c.pk }}">{{ c.nom }}</a>{% endfor %}{% endif %}
+    <form method="get"><input type="search" name="q" value="{{ q }}" placeholder="Rechercher un produit"></form>
   </div>
   {% if produits %}
   <div class="grille">

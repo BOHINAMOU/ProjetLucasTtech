@@ -53,12 +53,8 @@ def produits(request, slug):
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(short_description__icontains=q) | Q(description__icontains=q))
-    cat = request.GET.get('categorie', '')
-    if cat.isdigit():
-        qs = qs.filter(categorie_vendeur_id=int(cat))
     ctx = _contexte(v, 'produits')
-    ctx.update(produits=qs, q=q, cat=cat,
-               cats=v.categories.filter(produits__in=_produits(v)).distinct())
+    ctx.update(produits=qs, q=q)
     return render(request, 'minisite/produits.html', ctx)
 
 

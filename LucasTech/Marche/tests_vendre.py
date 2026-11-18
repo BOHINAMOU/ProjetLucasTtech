@@ -10,7 +10,7 @@ from Payments.models import Payment
 from Shop.models import Product
 
 from .espace import envoyer_acces
-from .models import CategorieVendeur, Vendeur
+from .models import Vendeur
 
 MEDIA = tempfile.mkdtemp()
 STORAGES = {'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
@@ -83,16 +83,14 @@ class EspaceVendeurTests(TestCase):
         autre = self._creer('b@example.com')
         c = self._activer(v)
         self.assertEqual(c.get(f'/espace/{autre.code}/tableau/')['Location'], f'/espace/{autre.code}/')
-        c.post(f'/espace/{v.code}/categories/', {'nom': 'Pagnes wax'})
-        cat = CategorieVendeur.objects.get(vendeur=v)
-        CategorieVendeur.objects.create(vendeur=autre, nom='Secret')
-        self.assertNotContains(c.get(f'/espace/{v.code}/categories/'), 'Secret')
+        # Plus de catégories pour les vendeurs : l'ancienne page renvoie vers les produits
+        self.assertEqual(c.get(f'/espace/{v.code}/categories/')['Location'], f'/espace/{v.code}/produits/')
         r = c.post(f'/espace/{v.code}/produits/ajouter/', {
-            'name': 'Pagne', 'categorie_vendeur': cat.pk, 'price': 3000, 'description': 'Beau pagne', 'stock': 2,
+            'name': 'Pagne', 'price': 3000, 'description': 'Beau pagne', 'stock': 2,
             'is_available': 'on', 'mode_commande': 'les_deux', 'contact_whatsapp': '', 'livrable': 'on'})
         self.assertEqual(r.status_code, 302, r.content[:800])
         p = Product.objects.get(name='Pagne')
-        self.assertEqual((p.vendeur, p.categorie_vendeur, p.category.slug), (v, cat, 'boutiques-partenaires'))
+        self.assertEqual((p.vendeur, p.category.slug), (v, 'boutiques-partenaires'))
         # WhatsApp vide : celui des paramètres du vendeur pour la commande
         d = Client().get(f'/api/mobile/v1/boutique/produits/{p.pk}/').json()
         self.assertEqual(d['whatsapp_commande'], '22890112233')

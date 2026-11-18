@@ -17,7 +17,7 @@ from django.utils import timezone
 
 from Repetiteurs.models import whatsapp_togo
 
-from .models import CategorieVendeur, Vendeur
+from .models import Vendeur
 
 ESSAIS = 5  # tentatives de connexion par 15 minutes (par lien et adresse IP)
 
@@ -198,19 +198,17 @@ class ProduitForm(forms.ModelForm):
     class Meta:
         from Shop.models import Product
         model = Product
-        fields = ['name', 'categorie_vendeur', 'price', 'old_price', 'description', 'image', 'stock', 'is_available',
+        fields = ['name', 'price', 'old_price', 'description', 'image', 'stock', 'is_available',
                   'mode_commande', 'contact_whatsapp', 'livrable']
         labels = {'name': "Nom", 'price': "Prix (CFA)", 'old_price': "Ancien prix (CFA)", 'image': "Photo",
-                  'is_available': "En vente", 'contact_whatsapp': "WhatsApp (facultatif)", 'categorie_vendeur': "Catégorie"}
+                  'is_available': "En vente", 'contact_whatsapp': "WhatsApp (facultatif)"}
         help_texts = {'contact_whatsapp': "Vide : le WhatsApp de vos paramètres.", 'old_price': "Facultatif.",
-                      'mode_commande': '', 'livrable': '', 'categorie_vendeur': ''}
+                      'mode_commande': '', 'livrable': ''}
         widgets = {'description': forms.Textarea(attrs={'rows': 4}),
                    'contact_whatsapp': forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel'})}
 
     def __init__(self, *a, vendeur=None, **k):
         super().__init__(*a, **k)
-        self.fields['categorie_vendeur'].queryset = CategorieVendeur.objects.filter(vendeur=vendeur)
-        self.fields['categorie_vendeur'].empty_label = "— Sans catégorie —"
 
     def clean_contact_whatsapp(self):
         w = self.cleaned_data.get('contact_whatsapp') or ''
@@ -225,12 +223,8 @@ def _categorie_partenaires():
 @espace
 def produits(request, v):
     from Shop.models import Product
-    qs = Product.objects.filter(vendeur=v).select_related('categorie_vendeur').order_by('-pk')
-    cat = request.GET.get('categorie')
-    if cat and cat.isdigit():
-        qs = qs.filter(categorie_vendeur_id=int(cat))
-    return render(request, 'marche/espace/produits.html', {
-        'v': v, 'page': 'produits', 'produits': qs, 'categories': v.categories.all(), 'cat': cat})
+    qs = Product.objects.filter(vendeur=v).order_by('-pk')
+    return render(request, 'marche/espace/produits.html', {'v': v, 'page': 'produits', 'produits': qs})
 
 
 @espace
@@ -263,20 +257,7 @@ def produit_supprimer(request, v, pk):
 
 @espace
 def categories(request, v):
-    erreur = ''
-    if request.method == 'POST':
-        if request.POST.get('supprimer'):
-            CategorieVendeur.objects.filter(vendeur=v, pk=request.POST['supprimer']).delete()
-        else:
-            nom = (request.POST.get('nom') or '').strip()[:80]
-            if nom:
-                CategorieVendeur.objects.get_or_create(vendeur=v, nom=nom)
-            else:
-                erreur = "Saisissez un nom."
-        if not erreur:
-            return redirect('espace:categories', v.code)
-    cats = v.categories.annotate(n=Count('produits'))
-    return render(request, 'marche/espace/categories.html', {'v': v, 'page': 'categories', 'cats': cats, 'erreur': erreur})
+    return redirect('espace:produits', v.code)
 
 
 @espace
