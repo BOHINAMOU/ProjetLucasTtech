@@ -1,48 +1,22 @@
-{% load static %}
-<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block titre %}Connexion{% endblock %} — Administration Lantante</title>
-<link rel="icon" href="{% static 'images/logo.png' %}">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% extends 'users/_auth.html' %}
+{% block title %}{% block titre %}Connexion{% endblock %} — Administration Lantante{% endblock %}
+{% block phrase %}Administration de Lantante.{% endblock %}
+{% block extra_head %}
 <style>
-  * { box-sizing:border-box; }
-  body { margin:0; min-height:100vh; font-family:'Inter', system-ui, sans-serif; color:#14231B;
-         background:radial-gradient(1200px 600px at 10% -10%, #E3F5EC 0%, transparent 60%), #F6F8F7;
-         display:flex; align-items:center; justify-content:center; padding:24px 16px; }
-  .carte { width:100%; max-width:420px; background:#fff; border:1px solid #E5EAE7; border-radius:20px;
-           box-shadow:0 24px 60px rgba(11,46,29,.08); padding:34px 30px 28px; }
-  .logo { display:flex; align-items:center; gap:12px; margin-bottom:26px; }
-  .logo img { width:46px; height:46px; border-radius:12px; }
-  .logo b { font-size:1.15rem; font-weight:800; letter-spacing:-.01em; display:block; }
-  .logo span { color:#5F6B65; font-size:.85rem; }
-  h1 { font-size:1.45rem; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
-  p.sous { color:#5F6B65; margin:0 0 22px; font-size:.95rem; line-height:1.5; }
-  label { display:block; font-weight:600; font-size:.88rem; margin:0 0 6px; }
-  input[type=text], input[type=email], input[type=password] { width:100%; height:48px; border:1px solid #D9E2DC; border-radius:12px;
-         padding:0 14px; font-size:1rem; font-family:inherit; margin-bottom:16px; background:#fff; }
-  input:focus { outline:none; border-color:#0B7A4B; box-shadow:0 0 0 4px rgba(11,122,75,.12); }
-  .btn { width:100%; height:50px; border:0; border-radius:12px; background:#0B7A4B; color:#fff; font-weight:700; font-size:1rem;
-         font-family:inherit; cursor:pointer; margin-top:4px; }
-  .btn:hover { filter:brightness(1.06); }
-  .lien { background:none; border:0; color:#0B7A4B; font-weight:600; cursor:pointer; font-family:inherit; font-size:.9rem; padding:0; }
-  .erreur { background:#FDECEA; color:#B42318; border-radius:12px; padding:11px 14px; font-size:.9rem; margin-bottom:16px; }
-  .info { background:#E3F5EC; color:#0B5A38; border-radius:12px; padding:11px 14px; font-size:.9rem; margin-bottom:16px; }
-  .pied { text-align:center; margin-top:20px; color:#5F6B65; font-size:.85rem; }
-  .pied a { color:#0B7A4B; font-weight:600; text-decoration:none; }
-  .cases { display:flex; gap:8px; justify-content:space-between; margin:4px 0 18px; }
-  .cases input { width:100%; max-width:52px; height:58px; text-align:center; font-size:1.5rem; font-weight:800;
-                 border:1px solid #D9E2DC; border-radius:12px; font-family:inherit; }
-  .retenir { display:flex; align-items:center; gap:8px; font-size:.9rem; color:#14231B; margin:0 0 16px; font-weight:500; }
-  .retenir input { width:18px; height:18px; accent-color:#0B7A4B; }
+  p.sous { color:var(--gris); margin:0 0 24px; font-size:.95rem; line-height:1.55; }
+  .auth-card h1 { margin-bottom:6px; }
+  .auth-card label { display:block; margin:0 0 6px; }
+  .auth-card form > input + label, .auth-card form > label + input + label { margin-top:4px; }
+  .auth-card form { gap:10px !important; }
+  .auth-card form > button[type=submit] { margin-top:8px; }
+  .lien { background:none; border:0; color:var(--vert); font-weight:600; cursor:pointer; font-family:inherit; font-size:.9rem; padding:0; }
+  .erreur { background:#FDECEA; color:#B42318; border:1px solid #F5C2BC; border-radius:10px; padding:11px 14px; font-size:.9rem; margin-bottom:16px; }
+  .info { background:var(--vert-c); color:var(--vert-f); border-radius:10px; padding:11px 14px; font-size:.9rem; margin-bottom:16px; }
+  .pied { text-align:center; margin-top:20px; color:var(--gris); font-size:.88rem; }
+  .cases { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; margin:4px 0 12px; }
+  .cases input { width:100% !important; height:56px !important; padding:0 !important; text-align:center; font-size:1.4rem !important; font-weight:700; }
+  .auth-card label.retenir { display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:500; margin:4px 0 6px; }
+  .retenir input { width:18px; height:18px; accent-color:var(--vert); }
 </style>
-</head>
-<body>
-  <div class="carte">
-    <div class="logo"><img src="{% static 'images/logo.png' %}" alt=""><div><b>Lantante</b><span>Administration</span></div></div>
-    {% block corps %}{% endblock %}
-  </div>
-</body>
-</html>
+{% endblock %}
+{% block content %}<div class="auth-card">{% block corps %}{% endblock %}</div>{% endblock %}

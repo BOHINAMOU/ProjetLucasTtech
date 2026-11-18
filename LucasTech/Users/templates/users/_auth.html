@@ -1,0 +1,141 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{% block title %}Lantante Technologie{% endblock %}</title>
+<link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root { --vert:#0B7A4B; --vert-f:#0A5C39; --vert-c:#E3F5EC; --or:#C9A227; --texte:#14231B; --gris:#5F6B65; --bord:#DCE3DF; --fond:#F6F8F7; }
+  *, *::before, *::after { box-sizing:border-box; }
+  html, body { margin:0; padding:0; }
+  body { font-family:'Inter', system-ui, -apple-system, sans-serif; color:var(--texte); background:#fff; -webkit-font-smoothing:antialiased; }
+  a { color:var(--vert); text-decoration:none; font-weight:600; }
+  a:hover { text-decoration:underline; }
+
+  /* Mise en page : panneau de marque à gauche, formulaire à droite */
+  .au { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); min-height:100vh; }
+  .au-marque { position:relative; overflow:hidden; background:linear-gradient(160deg, #0B2E1D 0%, #0B5A38 100%); color:#fff;
+               padding:48px 56px; display:flex; flex-direction:column; justify-content:space-between; }
+  .au-marque::after { content:''; position:absolute; right:-140px; bottom:-140px; width:420px; height:420px; border-radius:50%;
+                      border:60px solid rgba(255,255,255,.05); }
+  .au-logo { display:flex; align-items:center; gap:12px; color:#fff; font-weight:800; font-size:1.15rem; }
+  .au-logo img { width:44px; height:44px; border-radius:12px; background:#fff; padding:4px; object-fit:contain; }
+  .au-logo:hover { text-decoration:none; }
+  .au-phrase { position:relative; z-index:1; max-width:440px; }
+  .au-phrase h2 { font-size:2.1rem; line-height:1.2; font-weight:800; letter-spacing:-.02em; margin:0 0 14px; }
+  .au-phrase p { color:rgba(255,255,255,.75); font-size:1rem; line-height:1.6; margin:0; }
+  .au-points { list-style:none; padding:0; margin:28px 0 0; display:grid; gap:12px; }
+  .au-points li { display:flex; gap:10px; align-items:center; color:rgba(255,255,255,.9); font-size:.95rem; }
+  .au-points i { color:var(--or); width:18px; }
+  .au-pied { color:rgba(255,255,255,.5); font-size:.8rem; position:relative; z-index:1; }
+
+  .au-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; background:#fff; }
+  .au-retour { align-self:flex-start; font-size:.85rem; color:var(--gris); font-weight:500; margin-bottom:auto; }
+  .au-retour:hover { color:var(--vert); }
+  .au-form { width:100%; max-width:400px; margin:auto 0; padding:32px 0; }
+  .au-logo-m { display:none; }
+
+  /* Gabarits des pages (classes communes) */
+  .auth-page, .auth-card { all:unset; display:block; }
+  .auth-logo, .check-icon { display:none !important; }
+  .auth-title, .auth-card h1, .auth-card h2 { font-size:1.75rem; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; text-align:left; font-family:inherit; color:var(--texte); }
+  .auth-subtitle, .auth-card > p { color:var(--gris); font-size:.95rem; line-height:1.55; margin:0 0 24px; text-align:left; }
+  .auth-form, .auth-card form { display:flex; flex-direction:column; gap:16px; margin:0; }
+  .auth-field { display:flex; flex-direction:column; gap:6px; }
+  .auth-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .auth-label, .auth-card label:not(.au-case) { font-size:.88rem; font-weight:600; color:var(--texte); text-transform:none; letter-spacing:0; }
+  .auth-optional { color:var(--gris); font-weight:400; }
+  .auth-section-label { font-size:.8rem; font-weight:600; color:var(--gris); margin-top:4px; }
+  .auth-input, .auth-card input[type=email], .auth-card input[type=text]:not(.otp-input), .auth-card input[type=password],
+  .auth-card input[type=tel], .auth-card select {
+      width:100%; height:48px; padding:0 14px; font:inherit; font-size:.95rem; color:var(--texte); background:#fff;
+      border:1px solid var(--bord); border-radius:10px; outline:none; transition:border-color .15s, box-shadow .15s; }
+  .auth-input:focus, .auth-card input:focus, .auth-card select:focus { border-color:var(--vert); box-shadow:0 0 0 3px rgba(11,122,75,.14); }
+  .auth-input::placeholder { color:#9AA59F; }
+  .input-wrap { position:relative; width:100%; }
+  .input-wrap .auth-input, .input-wrap input { padding-right:48px !important; width:100% !important; }
+  .toggle-pwd { position:absolute; right:4px; top:50%; transform:translateY(-50%); width:40px; height:40px; border:0; background:none;
+                color:var(--gris); cursor:pointer; border-radius:8px; font-size:.95rem; display:flex; align-items:center; justify-content:center; }
+  .toggle-pwd:hover { color:var(--vert); background:var(--fond); }
+  .au-ligne { display:flex; justify-content:flex-end; margin-top:-6px; font-size:.85rem; }
+  .btn-auth, .auth-card .btn, .auth-card button[type=submit]:not(.btn-resend):not(.lien) {
+      display:flex; align-items:center; justify-content:center; gap:8px; width:100%; height:48px; border:0; border-radius:10px;
+      background:var(--vert); color:#fff; font:inherit; font-weight:700; font-size:.98rem; cursor:pointer; text-decoration:none; transition:background .15s; }
+  .btn-auth:hover, .auth-card .btn:hover { background:var(--vert-f); text-decoration:none; }
+  .btn-auth:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-auth i { display:none; }
+  .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; height:48px; border:1px solid var(--bord);
+                border-radius:10px; background:#fff; color:var(--texte); font-weight:600; font-size:.95rem; text-decoration:none; }
+  .btn-google:hover { background:var(--fond); text-decoration:none; }
+  .auth-or { display:flex; align-items:center; gap:12px; color:var(--gris); font-size:.82rem; margin:18px 0; }
+  .auth-or::before, .auth-or::after { content:''; flex:1; height:1px; background:var(--bord); }
+  .secondary-btn { display:flex; align-items:center; justify-content:center; width:100%; height:48px; margin-top:10px; border:1px solid var(--bord);
+                   border-radius:10px; color:var(--texte); font-weight:600; }
+  .form-errors, .global-error, .auth-msg.error { background:#FDECEA; border:1px solid #F5C2BC; color:#B42318; border-radius:10px; padding:11px 14px; font-size:.88rem; margin:0 0 4px; }
+  .form-errors ul, .errorlist { margin:0; padding:0; list-style:none; }
+  .errorlist { color:#B42318; font-size:.82rem; }
+  .auth-msgs { margin-bottom:16px; display:grid; gap:8px; }
+  .auth-msg { border-radius:10px; padding:11px 14px; font-size:.88rem; }
+  .auth-msg.success, .auth-msg.info { background:var(--vert-c); color:var(--vert-f); border:1px solid #BFE5D1; }
+  .field-error { color:#B42318; font-size:.82rem; }
+  .auth-info { display:flex; gap:10px; background:var(--fond); border-radius:10px; padding:12px 14px; color:var(--gris); font-size:.88rem; margin-bottom:16px; }
+  .auth-info i { color:var(--vert); margin-top:2px; }
+  .auth-links { display:flex; justify-content:flex-end; font-size:.88rem; }
+  .auth-footer, .auth-card > p.auth-footer { text-align:center; color:var(--gris); font-size:.92rem; margin:24px 0 0; }
+  .auth-back { display:inline-flex; align-items:center; gap:8px; margin-top:20px; font-size:.88rem; color:var(--gris); font-weight:500; }
+  .auth-cgu { color:var(--gris); font-size:.8rem; line-height:1.5; margin:0; }
+  .otp-row { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:10px; margin:6px 0 4px; }
+  .otp-input { width:100%; height:56px; text-align:center; font:inherit; font-size:1.4rem; font-weight:700; color:var(--texte);
+               border:1px solid var(--bord); border-radius:12px; outline:none; background:#fff; }
+  .otp-input:focus { border-color:var(--vert); box-shadow:0 0 0 3px rgba(11,122,75,.14); }
+  .otp-timer { color:var(--gris); font-size:.85rem; text-align:center; }
+  .otp-timer.expired { color:#B42318; }
+  .resend-row { text-align:center; margin-top:14px; }
+  .btn-resend { border:0; background:none; color:var(--vert); font:inherit; font-weight:600; font-size:.9rem; cursor:pointer; }
+  .btn-resend:disabled { color:var(--gris); cursor:default; }
+
+  @media (max-width: 900px) {
+    .au { grid-template-columns:1fr; }
+    .au-marque { display:none; }
+    .au-zone { justify-content:flex-start; padding:20px 20px 32px; }
+    .au-logo-m { display:flex; align-items:center; gap:10px; margin:28px 0 22px; font-weight:800; color:var(--texte); font-size:1.05rem; }
+    .au-logo-m img { width:40px; height:40px; border-radius:10px; object-fit:contain; }
+    .au-form { margin:0; padding:0; }
+    .auth-row { grid-template-columns:1fr; }
+  }
+  @media (max-width: 380px) { .otp-row { gap:6px; } .otp-input { height:48px; font-size:1.2rem; } }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="au">
+  <aside class="au-marque">
+    <a class="au-logo" href="/"><img src="{% static 'images/logo.png' %}" alt="">Lantante Technologie</a>
+    <div class="au-phrase">
+      <h2>{% block phrase %}Tous vos services au même endroit.{% endblock %}</h2>
+      <p>Concours, formations, boutique, événements, hôtels et plus encore.</p>
+      <ul class="au-points">
+        <li><i class="fas fa-file-lines"></i>Épreuves et corrigés des concours</li>
+        <li><i class="fas fa-graduation-cap"></i>Formations et écoles</li>
+        <li><i class="fas fa-lock"></i>Paiement sécurisé par Mobile Money</li>
+      </ul>
+    </div>
+    <div class="au-pied">© {% now "Y" %} Lantante Technologie</div>
+  </aside>
+  <main class="au-zone">
+    <a class="au-retour" href="/"><i class="fas fa-arrow-left"></i>&nbsp; Retour au site</a>
+    <div class="au-form">
+      {% if request.GET.session == 'expiree' %}<div class="auth-msgs"><div class="auth-msg info">Votre session a expiré, veuillez réessayer.</div></div>{% endif %}
+      <div class="au-logo-m"><img src="{% static 'images/logo.png' %}" alt="">Lantante Technologie</div>
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
