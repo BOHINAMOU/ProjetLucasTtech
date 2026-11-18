@@ -140,9 +140,10 @@
       <h2 style="margin:0;font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:#fff">Vous donnez des cours ?</h2>
       <p style="margin:8px 0 0;color:#dcf3e6;font-size:1.1rem">Proposez-les sur Lantante.</p>
     </div>
-    <a href="{% url 'repetiteurs:devenir' %}" style="display:inline-flex;align-items:center;gap:10px;background:#fff;color:#0b2e1d;
+    <style>@media (max-width:560px){.lt-rep-cta{white-space:normal!important;width:100%;justify-content:center;text-align:center;padding:14px 20px!important}}</style>
+    <a href="{% url 'repetiteurs:devenir' %}" class="lt-rep-cta" style="display:inline-flex;align-items:center;gap:10px;background:#fff;color:#0b2e1d;
        padding:16px 28px;border-radius:999px;font-weight:800;font-size:1.08rem;text-decoration:none;white-space:nowrap">
-      Devenir répétiteur <i class="fa fa-arrow-right"></i></a>
+      Devenir répétiteur de maison <i class="fa fa-arrow-right"></i></a>
   </div>
   <div style="max-width:1080px;margin:16px auto 0;border-radius:28px;padding:clamp(1.4rem,4vw,2.4rem);background:#fff;
               border:1px solid #e3e8e5;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
