@@ -179,7 +179,7 @@ def publication_register_success(request, slug):
 # 💬 COMMENTAIRE ET MESSAGE RAPIDE
 # ─────────────────────────────
 def _client_ip(request):
-    return (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or '?').split(',')[0].strip()
+    return __import__('core.ip', fromlist=['ip_client']).ip_client(request)
 
 
 def _too_many(request, action, limit, seconds=3600):

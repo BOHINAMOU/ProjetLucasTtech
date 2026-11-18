@@ -22,7 +22,7 @@ LIMITE = 40  # requêtes par minute et par adresse IP
 
 
 def _trop(request):
-    ip = (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or '').split(',')[0].strip()
+    ip = __import__('core.ip', fromlist=['ip_client']).ip_client(request)
     cle = f'lieux:debit:{ip}'
     n = cache.get(cle, 0) + 1
     cache.set(cle, n, 60)

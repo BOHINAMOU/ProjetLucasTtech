@@ -17,3 +17,6 @@ class ApiMobileConfig(AppConfig):
                 apres_creation(instance)
 
         post_save.connect(nouvelle, sender=Notification, dispatch_uid='push_notification', weak=False)
+
+        from .cache_listes import brancher
+        brancher()

@@ -132,6 +132,8 @@ REST_FRAMEWORK = {
                                'rest_framework.parsers.FormParser'],
     'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.AnonRateThrottle', 'rest_framework.throttling.UserRateThrottle'],
     'DEFAULT_THROTTLE_RATES': {'anon': '120/min', 'user': '600/min', 'auth': '10/min'},
+    # derrière nginx : seule la dernière adresse de X-Forwarded-For est fiable (anti-contournement des limites)
+    'NUM_PROXIES': 1,
 }
 # Notifications push (Expo) : actives en production seulement.
 PUSH_ENABLED = os.getenv("PUSH_ENABLED", "True" if not DEBUG else "False") == "True"
@@ -496,3 +498,8 @@ JAZZMIN_UI_TWEAKS = {
     "no_navbar_border": True,
     "sidebar_nav_flat_style": True,
 }
+
+# Cache partagé par tous les workers (limites par IP, listes publiques) : Redis si REDIS_URL est défini.
+if os.environ.get('REDIS_URL'):
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                          'LOCATION': os.environ['REDIS_URL'], 'KEY_PREFIX': 'lantante'}}

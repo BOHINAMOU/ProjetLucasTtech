@@ -197,8 +197,8 @@ def team_member_detail(request, pk):
 # 💰 Monétisation : présentation + formulaire d'accompagnement
 # ─────────────────────────────
 def _client_ip(request):
-    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    return forwarded.split(',')[0].strip() if forwarded else request.META.get('REMOTE_ADDR', '')
+    from core.ip import ip_client
+    return ip_client(request)
 
 
 def _monetization_context(form_data=None):

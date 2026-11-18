@@ -39,8 +39,8 @@ LOGIN_WINDOW = 15 * 60  # secondes
 
 
 def _client_ip(request):
-    fwd = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    return fwd.split(',')[0].strip() if fwd else request.META.get('REMOTE_ADDR', '')
+    from core.ip import ip_client
+    return ip_client(request)
 
 
 def _limit_key(prefix, request):

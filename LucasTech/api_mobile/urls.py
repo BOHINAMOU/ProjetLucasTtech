@@ -4,6 +4,7 @@ from django.urls import path
 from Offres import api as emplois
 from Hotels import api as hotels
 from Logements import api as logements
+from .cache_listes import cache_liste
 
 from . import ecoles, lieux, notifs, catalog, repetiteurs, shop, views
 
@@ -38,7 +39,7 @@ urlpatterns = [
     path('abonnements/<int:pk>/concours/', shop.abonnement_concours, name='abonnement_concours'),
 
     # Accueil et catalogues
-    path('home/', views.home, name='home'),
+    path('home/', cache_liste(anonymes_seulement=True)(views.home), name='home'),
     path('carrousel/', catalog.carrousel, name='carrousel'),
     path('version/', catalog.version, name='version'),
     path('auth/web/', views.web_login, name='web_login'),
@@ -50,9 +51,9 @@ urlpatterns = [
     path('boutique/produits/', catalog.produits, name='produits'),
     path('boutique/categories/', catalog.boutique_categories, name='boutique_categories'),
     path('boutique/produits/<int:pk>/', catalog.produit, name='produit'),
-    path('emplois/', emplois.liste, name='emplois'),
-    path('hotels/', hotels.liste, name='hotels'),
-    path('logements/', logements.liste, name='logements'),
+    path('emplois/', cache_liste(anonymes_seulement=True)(emplois.liste), name='emplois'),
+    path('hotels/', cache_liste()(hotels.liste), name='hotels'),
+    path('logements/', cache_liste()(logements.liste), name='logements'),
     path('logements/<int:pk>/', logements.detail, name='logement'),
     path('logements/<int:pk>/clic/', logements.clic, name='logement_clic'),
     path('hotels/chambres/<int:pk>/', hotels.chambre, name='hotel_chambre'),
@@ -69,7 +70,7 @@ urlpatterns = [
     path('services/<int:pk>/', catalog.service, name='service'),
     path('services/<int:pk>/clic/<str:sorte>/', catalog.service_clic, name='service_clic'),
     path('services/<int:pk>/inscription/', catalog.service_inscription, name='service_inscription'),
-    path('publications/', catalog.publications, name='publications'),
+    path('publications/', cache_liste()(catalog.publications), name='publications'),
     path('publications/categories/', catalog.publication_categories, name='publication_categories'),
     path('publications/<int:pk>/', catalog.publication, name='publication'),
     path('publications/lues/', catalog.articles_lus, name='articles_lus'),
@@ -78,7 +79,7 @@ urlpatterns = [
     path('publications/aimes/', catalog.articles_aimes, name='articles_aimes'),
     path('publications/<int:pk>/aimer/', catalog.aimer, name='aimer'),
     path('recherche/', catalog.recherche, name='recherche'),
-    path('ecoles/', ecoles.ecoles, name='ecoles'),
+    path('ecoles/', cache_liste()(ecoles.ecoles), name='ecoles'),
     path('ecoles/<slug:slug>/', ecoles.ecole, name='ecole'),
     path('notifications/', notifs.liste, name='notifications'),
     path('appareils/', notifs.appareil, name='appareil'),

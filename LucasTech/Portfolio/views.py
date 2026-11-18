@@ -9,8 +9,8 @@ from .models import (
 
 
 def _client_ip(request):
-    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    return forwarded.split(',')[0].strip() if forwarded else request.META.get('REMOTE_ADDR', '')
+    from core.ip import ip_client
+    return ip_client(request)
 
 
 def _abs(request, field):

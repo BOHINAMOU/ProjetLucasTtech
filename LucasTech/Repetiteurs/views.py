@@ -16,7 +16,7 @@ LIMITE = 5  # dossiers par adresse IP et par heure (anti-spam)
 
 
 def _ip(request):
-    return (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or '').split(',')[0].strip()
+    return __import__('core.ip', fromlist=['ip_client']).ip_client(request)
 
 
 def _trop(request, cle, limite):
