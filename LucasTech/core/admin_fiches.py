@@ -10,6 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 
 
 def _f(n):
@@ -48,8 +49,9 @@ def cartes(request, code):
             return None
         qs = ma.get_queryset(request).prefetch_related('chambres').order_by('ordre', 'nom')
         return "Hôtels", [{'url': reverse('admin_hotel', args=[h.pk]), 'photo': _url(h, 'photo'), 'titre': h.nom,
-                           'ligne': f"{h.ville} · {len(h.chambres.all())} chambre{'s' if len(h.chambres.all()) > 1 else ''}",
-                           'badge': '' if h.actif else 'Masqué'} for h in qs]
+                           'ligne': h.ville, 'ville': h.ville, 'statut': ('En ligne', 'ok') if h.actif else ('Masqué', 'ko'),
+                           'stats': [('visibility', h.vues), ('event_available', h.clics_reserver),
+                                     ('bed', len(h.chambres.all()))]} for h in qs]
     if code == 'ecoles':
         from Ecoles.models import Ecole
         ma = _admin.site._registry.get(Ecole)
@@ -70,6 +72,41 @@ def cartes(request, code):
                              'titre': v.boutique,
                              'ligne': f"{v.ville} · {len(v.produits.all())} produit{'s' if len(v.produits.all()) > 1 else ''}",
                              'badge': '' if v.actif else v.get_statut_display()} for v in qs]
+    if code == 'formations':
+        from Formations.models import Formation
+        ma = _admin.site._registry.get(Formation)
+        if not ma or not ma.has_view_or_change_permission(request):
+            return None
+        from django.db.models import Count, Q
+        qs = ma.get_queryset(request).annotate(
+            n_ins=Count('registrations', distinct=True),
+            n_pay=Count('payments', filter=Q(payments__status='approved'), distinct=True)).order_by('-created_at')
+        return "Formations", [{'url': reverse('admin_fiche', args=['formations', f.pk]), 'photo': _url(f, 'image'),
+                               'titre': f.title, 'ligne': _f(f.price) if f.price else "Gratuite",
+                               'statut': ('Publiée', 'ok') if f.is_published else ('Brouillon', 'ko'),
+                               'stats': [('how_to_reg', f.n_ins), ('payments', f.n_pay)]} for f in qs]
+    if code == 'emplois':
+        from Offres.models import OffreEmploi
+        ma = _admin.site._registry.get(OffreEmploi)
+        if not ma or not ma.has_view_or_change_permission(request):
+            return None
+        qs = ma.get_queryset(request).order_by('-created_at')
+        return "Offres d'emploi", [{'url': reverse('admin_fiche', args=['emplois', o.pk]), 'photo': _url(o, 'image'),
+                                    'titre': o.titre, 'ligne': ' · '.join(x for x in (o.entreprise, o.ville) if x),
+                                    'ville': o.ville, 'statut': ('En ligne', 'ok') if o.publie else ('Masquée', 'ko'),
+                                    'stats': [('visibility', o.vues), ('call', o.clics_appel + o.clics_whatsapp)]} for o in qs]
+    if code == 'services':
+        from Services.models import Service
+        ma = _admin.site._registry.get(Service)
+        if not ma or not ma.has_view_or_change_permission(request):
+            return None
+        from django.db.models import Count
+        qs = ma.get_queryset(request).select_related('category').annotate(n_c=Count('contacts', distinct=True)).order_by('category__order', 'title')
+        peut = ma.has_change_permission(request)
+        return "Services", [{'url': reverse('admin_fiche', args=['services', s.pk]), 'photo': _url(s, 'image'),
+                             'titre': s.title, 'ligne': s.category.name if s.category_id else '', 'icone_ms': 'design_services',
+                             'interrupteur': {'on': s.is_active, 'url': reverse('admin_service_basculer', args=[s.pk])} if peut else None,
+                             'stats': [('chat', s.clics_whatsapp), ('support_agent', s.clics_support), ('mail', s.n_c)]} for s in qs]
     return None
 
 
@@ -178,7 +215,103 @@ def vendeur_acces(request, pk):
     return redirect('admin_fiche', 'vendeurs', v.pk)
 
 
-FICHES = {'ecoles': _ecole, 'vendeurs': _vendeur}
+def _paiements(qs, ici):
+    """Derniers paiements d'un élément (cartes de la fiche)."""
+    etats = {'approved': "Payé", 'pending': "En attente", 'refunded': "Remboursé"}
+    return [{'photo': '', 'titre': f"{p.first_name} {p.last_name}".strip() or p.phone, 'prix': _f(p.amount),
+             'ligne': f"{timezone.localtime(p.created_at):%d/%m/%Y %H:%M} · {etats.get(p.status, 'Échoué')}",
+             'modifier': reverse('admin:Payments_payment_change', args=[p.pk]) + f'?retour={quote(ici)}', 'supprimer': ''}
+            for p in qs.order_by('-created_at')[:24]]
+
+
+def _formation(request, pk):
+    from django.db.models import Count, Sum
+    from Formations.models import Formation
+    ma, f = _objet(request, Formation, pk)
+    ici = reverse('admin_fiche', args=['formations', f.pk])
+    ok = f.payments.filter(status='approved')
+    a = ok.aggregate(s=Sum('amount'), n=Count('pk'))
+    return {
+        'rubrique': ('formations', "Formations"), 'titre': f.title, 'photo': _url(f, 'image'),
+        'sous_titre': ' · '.join(x for x in (f.get_formation_type_display() if hasattr(f, 'get_formation_type_display') else '',
+                                             f.get_level_display(), f.duration, 'Publiée' if f.is_published else 'Brouillon') if x),
+        'description': f.description, 'pastilles': [_f(f.price) if f.price else "Gratuite"],
+        'kpis': [("Encaissé", _f(a['s'])), ("Ventes payées", a['n'] or 0), ("Inscriptions", f.registrations.count()),
+                 ("En attente", f.payments.filter(status='pending').count())],
+        'actions': [a for a in [
+            ("Modifier la formation", reverse('admin:Formations_formation_change', args=[f.pk]) + f'?retour={quote(ici)}', 'fa-pen', True)
+            if ma.has_change_permission(request, f) else None,
+            ("Inscriptions", reverse('admin:Formations_registration_changelist') + f'?formation__id__exact={f.pk}', 'fa-users', False),
+        ] if a],
+        'enfants_titre': "Derniers paiements", 'enfants': _paiements(f.payments.all(), ici) if request.user.is_superuser else [],
+        'ajouter': None, 'vide': "Aucun paiement pour le moment.",
+    }
+
+
+def _emploi(request, pk):
+    from Offres.models import OffreEmploi
+    ma, o = _objet(request, OffreEmploi, pk)
+    ici = reverse('admin_fiche', args=['emplois', o.pk])
+    return {
+        'rubrique': ('emplois', "Emplois"), 'titre': o.titre, 'photo': _url(o, 'image'),
+        'sous_titre': ' · '.join(x for x in (o.entreprise, o.ville, o.type_contrat,
+                                             f"jusqu'au {o.date_limite:%d/%m/%Y}" if o.date_limite else '',
+                                             'En ligne' if o.publie else 'Masquée') if x),
+        'description': o.description, 'pastilles': [],
+        'kpis': [("Vues", o.vues), ("Appels", o.clics_appel), ("WhatsApp", o.clics_whatsapp),
+                 ("Lien / e-mail", o.clics_lien + o.clics_email)],
+        'actions': [a for a in [
+            ("Modifier l'offre", reverse('admin:Offres_offreemploi_change', args=[o.pk]) + f'?retour={quote(ici)}', 'fa-pen', True)
+            if ma.has_change_permission(request, o) else None,
+        ] if a],
+        'enfants_titre': "Contacts affichés",
+        'enfants': [{'photo': '', 'titre': c.libelle or "Contact", 'prix': '', 'ligne': c.telephone + (" · WhatsApp" if c.whatsapp else ''),
+                     'modifier': '', 'supprimer': ''} for c in o.contacts.all()],
+        'ajouter': None, 'vide': "Aucun contact : modifiez l'offre pour en ajouter.",
+    }
+
+
+def _service(request, pk):
+    from django.db.models import Count, Sum
+    from Services.models import Service
+    ma, s = _objet(request, Service, pk)
+    ici = reverse('admin_fiche', args=['services', s.pk])
+    a = s.payments.filter(status='approved').aggregate(t=Sum('amount'), n=Count('pk'))
+    return {
+        'rubrique': ('services', "Services"), 'titre': s.title, 'photo': _url(s, 'image'),
+        'sous_titre': ' · '.join(x for x in (s.category.name if s.category_id else '', 'Visible' if s.is_active else 'Masqué',
+                                             f"à partir de {_f(s.price_from)}" if s.price_from else '') if x),
+        'description': s.description, 'pastilles': [],
+        'kpis': [("Encaissé", _f(a['t'])), ("Clics WhatsApp", s.clics_whatsapp), ("Clics support", s.clics_support),
+                 ("Demandes de contact", s.contacts.count()), ("Inscriptions", s.inscriptions.count())],
+        'actions': [a for a in [
+            ("Modifier le service", reverse('admin:Services_service_change', args=[s.pk]) + f'?retour={quote(ici)}', 'fa-pen', True)
+            if ma.has_change_permission(request, s) else None,
+        ] if a],
+        'enfants_titre': "Demandes de contact",
+        'enfants': [{'photo': '', 'titre': c.name, 'prix': c.phone, 'ligne': f"{timezone.localtime(c.created_at):%d/%m/%Y} · "
+                     + ("lu" if c.is_read else "non lu") + (f" · {c.message[:60]}" if c.message else ''),
+                     'modifier': reverse('admin:Services_servicecontact_change', args=[c.pk]) + f'?retour={quote(ici)}', 'supprimer': ''}
+                    for c in s.contacts.order_by('-created_at')[:24]],
+        'ajouter': None, 'vide': "Aucune demande de contact.",
+    }
+
+
+@staff_member_required
+def service_basculer(request, pk):
+    """Interrupteur « afficher dans l'appli » d'un service (POST)."""
+    from django.http import JsonResponse
+    from Services.models import Service
+    ma = _admin.site._registry.get(Service)
+    s = Service.objects.filter(pk=pk).first()
+    if request.method != 'POST' or not s or not ma or not ma.has_change_permission(request, s):
+        raise Http404
+    s.is_active = not s.is_active
+    s.save(update_fields=['is_active'])
+    return JsonResponse({'on': s.is_active})
+
+
+FICHES = {'ecoles': _ecole, 'vendeurs': _vendeur, 'formations': _formation, 'emplois': _emploi, 'services': _service}
 
 
 @staff_member_required

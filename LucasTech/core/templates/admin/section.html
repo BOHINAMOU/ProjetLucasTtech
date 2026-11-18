@@ -3,64 +3,88 @@
 {% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item">{{ section.titre }}</li></ol>{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <style>
-  .rb { max-width:1180px; }
-  .rb-tete { display:flex; align-items:center; gap:14px; margin:4px 0 22px; }
-  .rb-tete .ic { width:48px; height:48px; border-radius:14px; background:var(--lt-vert-clair); color:var(--lt-vert);
-                 display:flex; align-items:center; justify-content:center; font-size:1.25rem; }
+  .rb { width:100%; max-width:1400px; }
+  .rb-tete { display:flex; align-items:center; gap:14px; margin:0 0 20px; flex-wrap:wrap; }
+  .rb-tete .ic { width:48px; height:48px; border-radius:12px; background:var(--lt-vert-clair); color:var(--lt-vert); display:flex; align-items:center; justify-content:center; }
+  .rb-tete .ic .ms { font-size:26px; }
+  .rb-tete .t { flex:1; min-width:200px; }
   .rb-tete h1 { margin:0; font-size:1.6rem; font-weight:800; letter-spacing:-.02em; }
-  .rb-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; margin-bottom:26px; }
-  .rb-kpi { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:16px 18px; }
+  .rb-tete small { color:var(--lt-gris); font-size:.9rem; }
+  .rb-b { display:inline-flex; align-items:center; gap:6px; height:42px; padding:0 16px; border-radius:var(--lt-rayon); background:var(--lt-vert); color:#fff !important;
+          font-weight:700; font-size:.9rem; text-decoration:none !important; }
+  .rb-b:hover { background:var(--lt-vert-fonce); }
+  .rb-b.g { background:#fff; color:var(--lt-texte) !important; border:1px solid var(--lt-bord); }
+  .rb-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:20px; }
+  .rb-kpi { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:14px 16px; }
   .rb-kpi small { display:block; color:var(--lt-gris); font-weight:600; font-size:.8rem; margin-bottom:6px; }
-  .rb-kpi b { font-size:1.55rem; font-weight:800; letter-spacing:-.02em; }
-  .rb-h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--lt-gris); font-weight:700; margin:0 0 10px; }
-  .rb-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
-  .rb-el { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;
-           transition:box-shadow .15s, border-color .15s; }
-  .rb-el:hover { border-color:#cfe3d7; box-shadow:0 6px 18px rgba(11,46,29,.06); }
-  .rb-el .haut { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
-  .rb-el .nom { font-weight:700; }
-  .rb-el .n { font-size:1.4rem; font-weight:800; color:var(--lt-vert); }
-  .rb-el .act { display:flex; gap:8px; margin-top:auto; }
-  .rb-el .act a { flex:1; text-align:center; padding:7px 10px; border-radius:10px; font-weight:600; font-size:.85rem; text-decoration:none; }
-  .rb-el .act .g { background:var(--lt-vert); color:#fff; }
-  .rb-el .act .a { background:var(--lt-vert-clair); color:var(--lt-vert); }
+  .rb-kpi b { font-size:1.4rem; font-weight:800; letter-spacing:-.02em; }
+  .rb-h2 { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--lt-gris); font-weight:700; margin:6px 0 10px; }
+  .rb-outils { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+  .rb-outils input { height:40px; min-width:240px; flex:0 1 320px; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); padding:0 14px; font:inherit; font-size:.9rem; background:#fff; outline:none; }
+  .rb-outils input:focus { border-color:var(--lt-vert); }
+  .puce { height:34px; padding:0 14px; border-radius:999px; border:1px solid var(--lt-bord); background:#fff; font-weight:600; font-size:.84rem; color:var(--lt-texte); cursor:pointer; }
+  .puce.on { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff; }
+  .cg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-bottom:28px; }
+  .cc { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:hidden; color:inherit !important; text-decoration:none !important; display:flex; flex-direction:column; transition:border-color .15s, box-shadow .15s; }
+  .cc:hover { border-color:#CBD8CF; box-shadow:0 6px 20px rgba(11,46,29,.06); }
+  .cc .img { position:relative; aspect-ratio:16/9; background:var(--lt-vert-clair); display:block; }
+  .cc .img img { width:100%; height:100%; object-fit:cover; display:block; }
+  .cc .img .ms.vide { position:absolute; inset:0; margin:auto; width:auto; height:auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:var(--lt-vert); opacity:.6; }
+  .cc .pil { position:absolute; top:10px; left:10px; }
+  .cc .c { padding:14px 16px; display:flex; flex-direction:column; gap:4px; flex:1; }
+  .cc .t { font-weight:700; font-size:.98rem; }
+  .cc .m { color:var(--lt-gris); font-size:.85rem; }
+  .cc .st { display:flex; gap:14px; margin-top:auto; padding-top:10px; color:var(--lt-gris); font-size:.84rem; font-weight:600; align-items:center; }
+  .cc .st span { display:inline-flex; align-items:center; gap:4px; }
+  .cc .st .ms { font-size:18px; }
+  .pil { display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:.74rem; }
+  .pil.ok { background:var(--lt-vert-clair); color:var(--lt-vert); } .pil.ko { background:#F0F1EF; color:var(--lt-gris); }
+  .img .pil.ok { background:#fff; } .img .pil.ko { background:#fff; }
+  .sw { margin-left:auto; position:relative; width:42px; height:24px; border-radius:999px; background:#D5DBD6; border:0; cursor:pointer; flex:0 0 auto; transition:background .15s; }
+  .sw::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left .15s; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .sw.on { background:var(--lt-vert); } .sw.on::after { left:21px; }
   .ev-onglets { display:flex; gap:6px; margin:0 0 14px; flex-wrap:wrap; }
-  .ev-onglets a { padding:7px 14px; border-radius:999px; border:1px solid var(--lt-bord); background:#fff; font-weight:600; text-decoration:none; color:var(--lt-texte); font-size:.88rem; }
-  .ev-onglets a.on { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff; }
-  .ev-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:28px; }
-  .ev-carte { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; overflow:hidden; text-decoration:none; color:inherit; }
-  .ev-carte .img { width:100%; aspect-ratio:16/8; object-fit:cover; display:block; background:#e9efeb; }
-  .ev-carte div { padding:12px 14px 14px; }
-  .ev-carte .t { font-weight:700; margin:4px 0; }
-  .ev-carte .m { color:var(--lt-gris); font-size:.85rem; }
-  .pastille { display:inline-block; padding:2px 9px; border-radius:999px; font-size:.75rem; font-weight:700; }
-  .p-cours { background:#E3F5EC; color:#0B7A4B; } .p-venir { background:#EAF1FF; color:#1D4ED8; } .p-passe { background:#F1F2F1; color:#5F6B65; }
-  .p-brouillon { background:#FFF4D6; color:#9A6700; }
+  .ev-onglets a { padding:7px 14px; border-radius:999px; border:1px solid var(--lt-bord); background:#fff; font-weight:600; text-decoration:none !important; color:var(--lt-texte) !important; font-size:.86rem; }
+  .ev-onglets a.on { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff !important; }
+  .pastille { display:inline-block; padding:3px 10px; border-radius:999px; font-size:.74rem; font-weight:700; }
+  .p-cours { background:var(--lt-vert-clair); color:var(--lt-vert); } .p-venir { background:#E8F0FB; color:#2457A6; } .p-passe { background:#F0F1EF; color:var(--lt-gris); }
+  .p-brouillon { background:var(--lt-or-clair); color:#8A6A0E; }
+  .rb-gerer { background:#fff; border:1px solid var(--lt-bord); border-radius:var(--lt-rayon); overflow:hidden; }
+  .rb-gerer a.l { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #F0F2EF; color:var(--lt-texte) !important; text-decoration:none !important; }
+  .rb-gerer > div:last-child a.l { border-bottom:0; }
+  .rb-gerer > div { display:flex; align-items:center; border-bottom:1px solid #F0F2EF; }
+  .rb-gerer > div:last-child { border-bottom:0; }
+  .rb-gerer > div a.l { flex:1; border:0; }
+  .rb-gerer a.l:hover { background:#FAFBF9; }
+  .rb-gerer .n { margin-left:auto; color:var(--lt-gris); font-weight:700; }
+  .rb-gerer .aj { margin-right:12px; height:32px; padding:0 12px; border-radius:9px; background:var(--lt-vert-clair); color:var(--lt-vert) !important; font-weight:700; font-size:.82rem; display:inline-flex; align-items:center; text-decoration:none !important; }
+  @media (max-width:1199.98px) { .cg { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:640px) { .cg { grid-template-columns:minmax(0,1fr); } .rb-outils input { min-width:0; flex:1 1 100%; } }
 </style>
 {% endblock %}
 {% block content %}
 <div class="rb">
-  <div class="rb-tete"><div class="ic"><i class="fas {{ section.icone }}"></i></div><h1>{{ section.titre }}</h1></div>
+  <div class="rb-tete">
+    <div class="ic"><span class="ms">{{ section.ms|default:"folder" }}</span></div>
+    <div class="t"><h1>{{ section.titre }}</h1>{% if cartes and cartes.1 %}<small>{{ cartes.1|length }} élément{{ cartes.1|length|pluralize }}{% if villes %} · {{ villes|length }} ville{{ villes|length|pluralize }}{% endif %}</small>{% endif %}</div>
+    {% with l=section.lignes.0 %}{% if l.ajout %}<a class="rb-b" href="{{ l.ajout }}"><span class="ms">add</span>Ajouter</a>{% endif %}{% endwith %}
+  </div>
 
   {% if section.extra %}
   <div class="rb-kpis">{% for label, v in section.extra %}<div class="rb-kpi"><small>{{ label }}</small><b>{{ v }}</b></div>{% endfor %}</div>
   {% endif %}
 
   {% if onglets %}
-  <p class="rb-h2">Événements</p>
   <div class="ev-onglets">
     {% for code, nom, n in onglets %}<a href="?vue={{ code }}" class="{% if code == vue %}on{% endif %}">{{ nom }} · {{ n }}</a>{% endfor %}
   </div>
   {% if evenements %}
-  <div class="ev-grille">
+  <div class="cg">
     {% for e in evenements %}
-    <a class="ev-carte" href="{% url 'admin_evenement' e.pk %}">
-      {% if e.cover %}<img class="img" src="{{ e.cover.url }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
-      <div>
-        <span class="pastille p-{{ e.statut_code }}">{{ e.statut }}</span>
-        <div class="t">{{ e.title }}</div>
-        <div class="m">{% if e.starts_at %}{{ e.starts_at|date:"d/m/Y H:i" }}{% else %}Sans date{% endif %}{% if e.location %} · {{ e.location }}{% endif %}</div>
-      </div>
+    <a class="cc" href="{% url 'admin_evenement' e.pk %}">
+      <span class="img">{% if e.cover %}<img src="{{ e.cover.url }}" alt="" loading="lazy">{% else %}<span class="ms vide">event</span>{% endif %}<span class="pil pastille p-{{ e.statut_code }}">{{ e.statut }}</span></span>
+      <span class="c"><span class="t">{{ e.title }}</span>
+        <span class="m">{% if e.starts_at %}{{ e.starts_at|date:"d/m/Y H:i" }}{% else %}Sans date{% endif %}{% if e.location %} · {{ e.location }}{% endif %}</span></span>
     </a>
     {% endfor %}
   </div>
@@ -68,29 +92,55 @@
   {% endif %}
 
   {% if cartes and cartes.1 %}
-  <p class="rb-h2">{{ cartes.0 }}</p>
-  <div class="ev-grille">
+  <div class="rb-outils">
+    <input type="search" id="rb-q" placeholder="Rechercher dans {{ cartes.0|lower }}" aria-label="Rechercher">
+    {% if villes|length > 1 %}<button class="puce on" type="button" data-v="">Toutes</button>{% for v in villes %}<button class="puce" type="button" data-v="{{ v }}">{{ v }}</button>{% endfor %}{% endif %}
+  </div>
+  <div class="cg" id="rb-cartes">
     {% for c in cartes.1 %}
-    <a class="ev-carte" href="{{ c.url }}">
-      {% if c.photo %}<img class="img" src="{{ c.photo }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
-      <div>
-        {% if c.badge %}<span class="pastille p-brouillon">{{ c.badge }}</span>{% endif %}
-        <div class="t">{{ c.titre }}</div>
-        <div class="m">{{ c.ligne }}</div>
-      </div>
+    <a class="cc" href="{{ c.url }}" data-t="{{ c.titre|lower }} {{ c.ligne|lower }}" data-v="{{ c.ville|default:'' }}">
+      <span class="img">{% if c.photo %}<img src="{{ c.photo }}" alt="" loading="lazy">{% else %}<span class="ms vide">{{ c.icone_ms|default:section.ms }}</span>{% endif %}
+        {% if c.statut %}<span class="pil {{ c.statut.1 }}">{{ c.statut.0 }}</span>{% elif c.badge %}<span class="pil ko">{{ c.badge }}</span>{% endif %}</span>
+      <span class="c"><span class="t">{{ c.titre }}</span>{% if c.ligne %}<span class="m">{{ c.ligne }}</span>{% endif %}
+        <span class="st">{% for ic, n in c.stats %}<span><span class="ms">{{ ic }}</span>{{ n }}</span>{% endfor %}
+          {% if c.interrupteur %}<button type="button" class="sw {% if c.interrupteur.on %}on{% endif %}" data-url="{{ c.interrupteur.url }}" title="Afficher dans l'appli" aria-label="Afficher dans l'appli"></button>{% endif %}</span></span>
     </a>
     {% endfor %}
   </div>
   {% endif %}
 
-  <p class="rb-h2">Éléments</p>
-  <div class="rb-grille">
+  <p class="rb-h2">Gérer</p>
+  <div class="rb-gerer">
     {% for l in section.lignes %}
-    <div class="rb-el">
-      <div class="haut"><span class="nom">{{ l.nom }}</span><span class="n">{{ l.n }}</span></div>
-      <div class="act"><a class="g" href="{{ l.url }}">Gérer</a>{% if l.ajout %}<a class="a" href="{{ l.ajout }}">Ajouter</a>{% endif %}</div>
-    </div>
+    <div><a class="l" href="{{ l.url }}"><span>{{ l.nom }}</span><span class="n">{{ l.n }}</span></a>{% if l.ajout %}<a class="aj" href="{{ l.ajout }}">Ajouter</a>{% endif %}</div>
     {% endfor %}
   </div>
 </div>
+<script>
+(function () {
+  var q = document.getElementById('rb-q'), g = document.getElementById('rb-cartes'), ville = '';
+  if (!g) return;
+  function filtre() {
+    var t = (q && q.value || '').toLowerCase().trim();
+    g.querySelectorAll('.cc').forEach(function (c) {
+      var ok = (!t || c.dataset.t.indexOf(t) >= 0) && (!ville || c.dataset.v === ville);
+      c.style.display = ok ? '' : 'none';
+    });
+  }
+  if (q) q.addEventListener('input', filtre);
+  document.querySelectorAll('.puce').forEach(function (b) {
+    b.addEventListener('click', function () {
+      ville = b.dataset.v; document.querySelectorAll('.puce').forEach(function (x) { x.classList.toggle('on', x === b); }); filtre();
+    });
+  });
+  var csrf = '{{ csrf_token }}';
+  g.querySelectorAll('.sw').forEach(function (s) {
+    s.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      fetch(s.dataset.url, { method: 'POST', headers: { 'X-CSRFToken': csrf }, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); }).then(function (d) { s.classList.toggle('on', d.on); });
+    });
+  });
+})();
+</script>
 {% endblock %}

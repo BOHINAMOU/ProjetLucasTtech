@@ -276,5 +276,9 @@ def admin_section(request, code):
         from .admin_evenements import onglets
         ctx['onglets'], ctx['vue'], ctx['evenements'] = onglets(request)
     from .admin_fiches import cartes
+    from .rubriques import ICONES
+    section['ms'] = ICONES.get(code, 'folder')
     ctx['cartes'] = cartes(request, code)
+    if ctx['cartes']:
+        ctx['villes'] = sorted({c['ville'] for c in ctx['cartes'][1] if c.get('ville')})
     return render(request, 'admin/section.html', ctx)
