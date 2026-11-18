@@ -1,6 +1,8 @@
 from django.contrib import admin, messages
 from django.db.models import Count, Q, Sum
 
+from core.admin_retour import RetourMixin
+
 from .models import ReglageLivraison, Reversement, Vendeur
 
 
@@ -58,8 +60,8 @@ class _NouveauVendeur(_f.ModelForm):
 
 
 @admin.register(Vendeur)
-class VendeurAdmin(admin.ModelAdmin):
-    list_display = ['boutique', 'user', 'ville', 'statut', 'lien', 'ventes', 'du_f', 'reste_f']
+class VendeurAdmin(RetourMixin, admin.ModelAdmin):
+    list_display = ['fiche', 'user', 'ville', 'statut', 'lien', 'ventes', 'du_f', 'reste_f']
     actions = ['envoyer_les_acces', 'regenerer_lien']
     list_filter = ['statut', 'ville']
     search_fields = ['boutique', 'user__email', 'ville']
@@ -146,6 +148,18 @@ class VendeurAdmin(admin.ModelAdmin):
             v.code = _code_espace()
             v.save(update_fields=['code'])
         self.message_user(request, "Nouveau lien créé. Pensez à l'envoyer au vendeur.", messages.SUCCESS)
+
+    list_display_links = None  # un clic ouvre la fiche du vendeur (détails + produits)
+
+    @admin.display(description="Boutique", ordering='boutique')
+    def fiche(self, v):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        return format_html('<a href="{}"><b>{}</b></a>', reverse('admin_fiche', args=['vendeurs', v.pk]), v.boutique)
+
+    def retour_defaut(self, v):
+        from django.urls import reverse
+        return reverse('admin_fiche', args=['vendeurs', v.pk])
 
     @admin.display(description="Ventes")
     def ventes(self, v):

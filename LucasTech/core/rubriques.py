@@ -29,7 +29,7 @@ RUBRIQUES = {
     'evenements': ("Événements", 'fa-calendar-days', [
         ('Events.Event', "Événements"), ('Events.Ticket', "Tickets vendus"),
         ('Publications.EventRegistration', "Inscriptions (actualités)")]),
-    'ecoles': ("Écoles", 'fa-school', [('Ecoles.Ecole', "Écoles")]),
+    'ecoles': ("Écoles", 'fa-school', [('Ecoles.Ecole', "Écoles"), ('Ecoles.Filiere', "Filières")]),
     'repetiteurs': ("Répétiteurs", 'fa-chalkboard-user', [
         ('Repetiteurs.Repetiteur', "Répétiteurs"), ('Repetiteurs.Candidature', "Candidatures"),
         ('Repetiteurs.ReglageCandidature', "Frais de candidature")]),

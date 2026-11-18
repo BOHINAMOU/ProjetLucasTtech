@@ -141,3 +141,43 @@ class FicheHotelTests(TestCase):
         # retour externe refusé
         r = self.client.post(f'{A}Hotels/chambre/{c.pk}/delete/?retour=https://mal.example/', {'post': 'yes'})
         self.assertNotIn('mal.example', r['Location'])
+
+
+@override_settings(STORAGES=STORAGES)
+class FichesEcoleVendeurTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.su = get_user_model().objects.create_superuser(email='admin@x.tg', password='x')
+        self.client.force_login(self.su)
+
+    def test_ecole_fiche_ajout_filiere_et_retour(self):
+        from Ecoles.models import Ecole, Filiere
+        e = Ecole.objects.create(nom='École Test', type='universite', ville='Lomé')
+        fiche = f'{A}section/ecoles/{e.pk}/'
+        self.assertContains(self.client.get(A + 'section/ecoles/'), fiche)
+        self.assertContains(self.client.get(A + 'Ecoles/ecole/'), fiche)
+        self.assertContains(self.client.get(fiche), 'Ajouter une filière')
+        ajout = f'{A}Ecoles/filiere/add/?ecole={e.pk}&retour={fiche}'
+        self.assertContains(self.client.get(ajout), f'<option value="{e.pk}" selected')
+        r = self.client.post(ajout, {'ecole': e.pk, 'cycle': 'superieur', 'nom': 'Informatique', 'frais': 300000,
+                                     'ordre': 0, '_save': '1'})
+        self.assertRedirects(r, fiche, fetch_redirect_response=False)
+        self.assertTrue(Filiere.objects.filter(ecole=e, nom='Informatique').exists())
+        self.assertContains(self.client.get(fiche), 'Informatique')
+
+    def test_vendeur_fiche_et_produits(self):
+        from Marche.models import Vendeur
+        from Shop.models import Product
+        u = get_user_model().objects.create_user(email='v@x.tg', password='x')
+        v = Vendeur.objects.create(user=u, boutique='Boutique Test', whatsapp='22890000000', ville='Kara', statut='valide')
+        Product.objects.create(name='Sac', price=5000, vendeur=v, stock=3)
+        fiche = f'{A}section/vendeurs/{v.pk}/'
+        self.assertContains(self.client.get(A + 'section/vendeurs/'), fiche)
+        r = self.client.get(fiche)
+        self.assertContains(r, 'Sac')
+        self.assertContains(r, 'Ajouter un produit')
+        self.assertContains(r, f'vendeur={v.pk}')
+
+    def test_fiche_inconnue_ou_interdite(self):
+        self.assertEqual(self.client.get(f'{A}section/inconnu/1/').status_code, 404)
+        self.assertEqual(self.client.get(f'{A}section/ecoles/999/').status_code, 404)

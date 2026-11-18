@@ -67,16 +67,16 @@
   {% else %}<p style="color:var(--lt-gris);margin-bottom:28px">Aucun événement ici.</p>{% endif %}
   {% endif %}
 
-  {% if hotels %}
-  <p class="rb-h2">Hôtels</p>
+  {% if cartes and cartes.1 %}
+  <p class="rb-h2">{{ cartes.0 }}</p>
   <div class="ev-grille">
-    {% for h in hotels %}
-    <a class="ev-carte" href="{% url 'admin_hotel' h.pk %}">
-      {% if h.photo %}<img class="img" src="{{ h.photo.url }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
+    {% for c in cartes.1 %}
+    <a class="ev-carte" href="{{ c.url }}">
+      {% if c.photo %}<img class="img" src="{{ c.photo }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
       <div>
-        {% if not h.actif %}<span class="pastille p-brouillon">Masqué</span>{% endif %}
-        <div class="t">{{ h.nom }}</div>
-        <div class="m">{{ h.ville }} · {{ h.chambres.all|length }} chambre{{ h.chambres.all|length|pluralize }}</div>
+        {% if c.badge %}<span class="pastille p-brouillon">{{ c.badge }}</span>{% endif %}
+        <div class="t">{{ c.titre }}</div>
+        <div class="m">{{ c.ligne }}</div>
       </div>
     </a>
     {% endfor %}

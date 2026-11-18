@@ -285,7 +285,6 @@ def admin_section(request, code):
     if code == 'evenements':
         from .admin_evenements import onglets
         ctx['onglets'], ctx['vue'], ctx['evenements'] = onglets(request)
-    if code == 'hotels':
-        from .admin_hotels import cartes
-        ctx['hotels'] = cartes(request)
+    from .admin_fiches import cartes
+    ctx['cartes'] = cartes(request, code)
     return render(request, 'admin/section.html', ctx)

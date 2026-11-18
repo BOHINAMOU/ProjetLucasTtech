@@ -1,4 +1,4 @@
-"""Hôtels dans l'admin : liste en cartes (page de la rubrique) et fiche détaillée de chaque hôtel avec ses chambres."""
+"""Hôtels dans l'admin : fiche détaillée de chaque hôtel avec ses chambres."""
 from urllib.parse import quote
 
 from django.contrib import admin as _admin
@@ -10,13 +10,6 @@ from django.urls import reverse
 
 def _f(n):
     return f"{int(n):,} CFA".replace(',', ' ') if n else '—'
-
-
-def cartes(request):
-    from Hotels.models import Hotel
-    if not request.user.has_perm('Hotels.view_hotel'):
-        return []
-    return list(Hotel.objects.all().prefetch_related('chambres').order_by('ordre', 'nom'))
 
 
 @staff_member_required

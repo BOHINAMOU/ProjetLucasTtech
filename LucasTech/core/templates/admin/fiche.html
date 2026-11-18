@@ -1,0 +1,38 @@
+{% extends "admin/hotel.html" %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item"><a href="{% url 'admin_section' f.rubrique.0 %}">{{ f.rubrique.1 }}</a></li><li class="breadcrumb-item">{{ f.titre|truncatechars:40 }}</li></ol>{% endblock %}
+{% block content %}
+<div class="ho">
+  <div class="ho-tete">
+    {% if f.photo %}<img class="ho-photo" src="{{ f.photo }}" alt=""{% if f.photo_contenue %} style="object-fit:contain;background:#fff;padding:24px"{% endif %}>{% else %}<div class="ho-photo"></div>{% endif %}
+    <div class="ho-info">
+      {% if f.logo %}<img src="{{ f.logo }}" alt="" style="width:56px;height:56px;object-fit:contain;border-radius:12px;border:1px solid var(--lt-bord);background:#fff;margin-bottom:10px">{% endif %}
+      <h1>{{ f.titre }}</h1>
+      {% if f.sous_titre %}<div class="m">{{ f.sous_titre }}</div>{% endif %}
+      {% if f.description %}<div style="line-height:1.6">{{ f.description|truncatewords:60 }}</div>{% endif %}
+      {% if f.pastilles %}<div class="eq">{% for p in f.pastilles %}<span>{{ p }}</span>{% endfor %}</div>{% endif %}
+      {% if f.actions %}<div class="ho-actions">{% for label, url, icone, principal in f.actions %}<a {% if principal %}class="p" {% endif %}href="{{ url }}"><i class="fas {{ icone }}"></i> {{ label }}</a>{% endfor %}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="kp">{% for label, v in f.kpis %}<div><small>{{ label }}</small><b>{{ v }}</b></div>{% endfor %}</div>
+
+  <div class="ch-tete"><h2>{{ f.enfants_titre }}</h2>{% if f.ajouter %}<a class="lt-btn lt-btn-p" href="{{ f.ajouter.1 }}"><i class="fas fa-plus"></i> {{ f.ajouter.0 }}</a>{% endif %}</div>
+  {% if f.enfants %}
+  <div class="ch-grille">
+    {% for x in f.enfants %}
+    <div class="ch">
+      {% if x.photo %}<img class="img" src="{{ x.photo }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
+      <div class="c">
+        <span class="t">{{ x.titre }}</span>
+        {% if x.prix %}<span class="px">{{ x.prix }}</span>{% endif %}
+        {% if x.ligne %}<span class="m">{{ x.ligne }}</span>{% endif %}
+        {% if x.modifier or x.supprimer %}<div class="a">{% if x.modifier %}<a class="mo" href="{{ x.modifier }}">Modifier</a>{% endif %}{% if x.supprimer %}<a class="su" href="{{ x.supprimer }}">Supprimer</a>{% endif %}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="vide">{{ f.vide }}{% if f.ajouter %} <a href="{{ f.ajouter.1 }}">{{ f.ajouter.0 }}</a>{% endif %}</div>
+  {% endif %}
+</div>
+{% endblock %}

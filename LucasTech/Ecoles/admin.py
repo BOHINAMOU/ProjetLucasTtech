@@ -6,6 +6,8 @@ from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 
+from core.admin_retour import RetourMixin
+
 from .models import CYCLES, NouveauteEcole, Ecole, Filiere, MembreEcole, PhotoEcole
 
 
@@ -62,11 +64,12 @@ class MembreInline(admin.TabularInline):
 
 
 @admin.register(Ecole)
-class EcoleAdmin(admin.ModelAdmin):
-    list_display = ['nom', 'type', 'ville', 'nb_filieres', 'publie']
+class EcoleAdmin(RetourMixin, admin.ModelAdmin):
+    list_display = ['fiche', 'type', 'ville', 'nb_filieres', 'publie']
     list_filter = ['type', 'publie', 'ville']
     search_fields = ['nom', 'ville']
-    inlines = [PhotoInline, FiliereInline, NouveauteInline, MembreInline]
+    list_display_links = None  # un clic ouvre la fiche de l'école (détails + filières)
+    inlines = [PhotoInline, NouveauteInline, MembreInline]  # les filières se gèrent depuis la fiche
     form = EcoleForm
     fieldsets = [
         (None, {'fields': ['nom', 'alias', 'type', 'cycles', 'ville', 'logo', 'couverture', 'description']}),
@@ -88,5 +91,32 @@ class EcoleAdmin(admin.ModelAdmin):
     @admin.display(description="Filières")
     def nb_filieres(self, e):
         return e.filieres.count()
+
+    @admin.display(description="École", ordering='nom')
+    def fiche(self, e):
+        return format_html('<a href="{}"><b>{}</b></a>', reverse('admin_fiche', args=['ecoles', e.pk]), e.nom)
+
+    def retour_defaut(self, e):
+        return reverse('admin_fiche', args=['ecoles', e.pk])
+
+
+@admin.register(Filiere)
+class FiliereAdmin(RetourMixin, admin.ModelAdmin):
+    list_display = ['nom', 'ecole', 'cycle', 'niveau', 'frais', 'ordre']
+    list_filter = ['cycle']
+    search_fields = ['nom', 'ecole__nom']
+    fields = ['ecole', ('cycle', 'nom'), ('niveau', 'duree', 'frais', 'ordre'), 'resume', 'image', 'description',
+              'debouches', 'conditions']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(ecole__in=mes_ecoles(request.user))
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'ecole':
+            kwargs['queryset'] = mes_ecoles(request.user)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def retour_defaut(self, f):
+        return reverse('admin_fiche', args=['ecoles', f.ecole_id])
 
 

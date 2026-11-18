@@ -1,5 +1,7 @@
 # Fichier : Shop/admin.py
 from django.contrib import admin
+
+from core.admin_retour import RetourMixin
 from .models import (
     Announcement, CollabBanner, Category, Product, ProductImage,
     ShopOrder, ShopOrderItem, Reservation, Review,
@@ -67,7 +69,7 @@ class ProduitForm(forms.ModelForm):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(RetourMixin, admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'old_price', 'stock', 'is_available', 'is_featured')
     list_filter = ('category', 'is_available', 'is_featured')
     search_fields = ('name', 'short_description', 'description')
@@ -130,6 +132,10 @@ class ProductAdmin(admin.ModelAdmin):
             if obj.categorie_vendeur_id and obj.categorie_vendeur.vendeur_id != v.pk:
                 obj.categorie_vendeur = None
         super().save_model(request, obj, form, change)
+
+    def retour_defaut(self, p):
+        from django.urls import reverse
+        return reverse('admin_fiche', args=['vendeurs', p.vendeur_id]) if p.vendeur_id else None
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'categorie_vendeur':
