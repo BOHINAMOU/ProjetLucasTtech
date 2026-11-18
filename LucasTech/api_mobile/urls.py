@@ -3,6 +3,7 @@ from django.urls import path
 
 from Offres import api as emplois
 from Hotels import api as hotels
+from Logements import api as logements
 
 from . import ecoles, lieux, notifs, catalog, repetiteurs, shop, views
 
@@ -51,6 +52,9 @@ urlpatterns = [
     path('boutique/produits/<int:pk>/', catalog.produit, name='produit'),
     path('emplois/', emplois.liste, name='emplois'),
     path('hotels/', hotels.liste, name='hotels'),
+    path('logements/', logements.liste, name='logements'),
+    path('logements/<int:pk>/', logements.detail, name='logement'),
+    path('logements/<int:pk>/clic/', logements.clic, name='logement_clic'),
     path('hotels/chambres/<int:pk>/', hotels.chambre, name='hotel_chambre'),
     path('hotels/<slug:slug>/', hotels.detail, name='hotel'),
     path('hotels/<slug:slug>/clic/<str:sorte>/', hotels.clic, name='hotel_clic'),

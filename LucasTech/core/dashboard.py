@@ -190,7 +190,7 @@ def build(request):
     actions = [dict(label=a, icon=b, url=c, tone=d) for a, b, c, d in actions if c]
 
     icones = {'paiements': 'fa-credit-card', 'concours': 'fa-file-alt', 'boutique': 'fa-store', 'vendeurs': 'fa-user-tag',
-               'emplois': 'fa-briefcase', 'hotels': 'fa-hotel', 'formations': 'fa-graduation-cap', 'evenements': 'fa-calendar-days',
+               'emplois': 'fa-briefcase', 'hotels': 'fa-hotel', 'logements': 'fa-house', 'formations': 'fa-graduation-cap', 'evenements': 'fa-calendar-days',
                'ecoles': 'fa-school', 'repetiteurs': 'fa-chalkboard-teacher', 'publications': 'fa-newspaper',
                'services': 'fa-wrench', 'notifications': 'fa-bell', 'utilisateurs': 'fa-users'}
     rubriques = [{'titre': t, 'icon': icones.get(c, 'fa-folder'), 'url': f'/lantanteAdminTech/section/{c}/'}
@@ -260,6 +260,7 @@ SECTIONS = {
                               ('Marche.DemandeVendeur', 'Demandes'), ('Marche.Reversement', 'Reversements')]),
     'emplois': ("Emplois", [('Offres.OffreEmploi', "Offres d'emploi")]),
     'hotels': ("Hôtels", [('Hotels.Hotel', 'Hôtels'), ('Hotels.Chambre', 'Chambres')]),
+    'logements': ("Logements", [('Logements.Logement', 'Logements')]),
     'formations': ("Formations", [('Formations.Formation', 'Formations'), ('Formations.Registration', 'Inscriptions')]),
     'evenements': ("Événements", [('Events.Event', 'Événements'), ('Events.Ticket', 'Tickets')]),
     'ecoles': ("Écoles", [('Ecoles.Ecole', 'Écoles'), ('Ecoles.Filiere', 'Filières')]),
@@ -333,6 +334,11 @@ def _chiffres(code):
         if code == 'vendeurs':
             return [('Vendeurs validés', _count('Marche.Vendeur', statut='valide')),
                     ('Produits des vendeurs', _count('Shop.Product', vendeur__isnull=False))]
+        if code == 'logements':
+            L = _model('Logements.Logement')
+            a = L.objects.aggregate(v=Sum('vues'), c=Sum('contacts'))
+            return [('À louer', L.objects.filter(loue=False).count()), ('Loués', L.objects.filter(loue=True).count()),
+                    ('Vues', a['v'] or 0), ('Contacts', a['c'] or 0)]
         if code == 'hotels':
             a = _model('Hotels.Hotel').objects.aggregate(v=Sum('vues'), r=Sum('clics_reserver'), t=Sum('clics_appel'))
             return [('Vues', a['v'] or 0), ('Clics Réserver', a['r'] or 0), ('Clics Appeler', a['t'] or 0)]

@@ -1,0 +1,43 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ l.nom }} — Logements — Lantante Technologie{% endblock %}
+{% block meta_description %}{{ l.get_type_display }} à louer, {{ l.quartier }}, {{ l.ville }}.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.lg-bande{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:22px;margin-bottom:16px}
+.lg-bande img{flex:0 0 100%;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:22px;scroll-snap-align:start}
+.lg-type{display:inline-block;background:#E3F5EC;color:#0B5A38;border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700}
+.lg-prix{color:#0B7A4B;font-weight:900;font-size:1.3rem;margin:8px 0}
+.lg-infos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}
+.lg-infos div{background:#F6FAF7;border-radius:14px;padding:10px 12px;font-size:.9rem}
+.lg-infos b{display:block;color:#0b2e1d}
+.lg-titre{font-size:1.2rem;margin:20px 0 10px}
+.lg-equip{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.lg-equip div{background:#fff;border:1px solid #e6ece8;border-radius:16px;padding:12px 6px;text-align:center;font-size:.8rem;font-weight:700;color:#0b2e1d}
+.lg-equip i{display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin:0 auto 6px;border-radius:50%;background:#E3F5EC;color:#0B7A4B}
+.lg-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;border-radius:14px;padding:13px;font-weight:800;text-decoration:none}
+</style>{% endblock %}
+{% block content %}
+<div class="rp">
+  {% if l.photos.all %}<div class="lg-bande">{% for p in l.photos.all %}<img src="{{ p.image.url }}" alt="">{% endfor %}</div>{% endif %}
+  <div class="rp-card">
+    <span class="lg-type">{{ l.get_type_display }}</span>{% if l.meuble %} <span class="lg-type">Meublé</span>{% endif %}
+    <h1 style="margin:8px 0 2px;font-size:clamp(1.4rem,4vw,1.9rem)">{{ l.nom }}</h1>
+    <p class="rp-note" style="font-size:1rem"><i class="fas fa-location-dot" style="color:#0B7A4B"></i> {{ l.quartier }}, {{ l.ville }}{% if l.repere %} · {{ l.repere }}{% endif %}</p>
+    <div class="lg-prix">{{ l.loyer }} CFA {{ l.get_periode_display }}</div>
+    <div class="lg-infos">
+      {% if l.pieces %}<div><b>{{ l.pieces }}</b>pièce{{ l.pieces|pluralize }}</div>{% endif %}
+      {% if l.caution %}<div><b>Caution / avance</b>{{ l.caution }}</div>{% endif %}
+      {% if l.compteur_eau %}<div><b>Eau</b>{{ l.get_compteur_eau_display }}</div>{% endif %}
+      {% if l.compteur_electricite %}<div><b>Électricité</b>{{ l.get_compteur_electricite_display }}</div>{% endif %}
+      {% if l.disponible_le %}<div><b>Disponible</b>dès le {{ l.disponible_le|date:"d/m/Y" }}</div>{% endif %}
+    </div>
+    {% if l.description %}<div style="line-height:1.65">{{ l.description|linebreaks }}</div>{% endif %}
+  </div>
+  {% if equip %}<h2 class="lg-titre">Équipements</h2><div class="lg-equip">{% for i, n in equip %}<div><i class="fas {{ i }}"></i>{{ n }}</div>{% endfor %}</div>{% endif %}
+  <div style="display:grid;gap:10px;margin-top:18px">
+    {% if wa %}<a class="lg-wa" href="https://wa.me/{{ wa }}?text={{ message|urlencode }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Nous contacter</a>
+    <a class="rp-btn rp-btn--ghost" href="tel:+{{ wa }}">Appeler</a>{% endif %}
+    <a class="rp-btn rp-btn--ghost" href="{{ itineraire }}" target="_blank" rel="noopener">Itinéraire</a>
+  </div>
+</div>
+{% endblock %}

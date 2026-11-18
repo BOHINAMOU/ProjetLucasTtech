@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% block title %}Logements — Lantante Technologie{% endblock %}
+{% block meta_description %}Chambres, studios, appartements et maisons à louer au Togo.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.lg-recherche{display:flex;gap:8px;margin:0 0 10px}
+.lg-recherche input{flex:1;padding:12px 14px;border:1px solid #dfe6e2;border-radius:14px;font-size:1rem}
+.lg-recherche button{border:0;background:#0B7A4B;color:#fff;border-radius:14px;padding:0 18px;font-weight:700}
+.lg-filtres{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.lg-filtres select{padding:8px 10px;border:1px solid #dfe6e2;border-radius:12px;background:#fff;font-weight:600}
+.lg-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.lg-carte{background:#fff;border:1px solid #e3e8e5;border-radius:18px;overflow:hidden;text-decoration:none;color:inherit}
+.lg-carte img,.lg-carte .ph{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:linear-gradient(135deg,#0b6137,#17a35f)}
+.lg-corps{padding:12px 14px 14px}
+.lg-corps h2{font-size:1.05rem;margin:4px 0}
+.lg-type{display:inline-block;background:#E3F5EC;color:#0B5A38;border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700}
+.lg-meta{color:#6e6e73;font-size:.9rem}
+.lg-prix{color:#0B7A4B;font-weight:800;margin-top:6px}
+.lt-details{display:flex;justify-content:flex-end;margin-top:8px}
+.lt-details span{background:#E3F5EC;color:#0B7A4B;border-radius:999px;padding:5px 12px;font-weight:800;font-size:.85rem}
+.lg-vide{text-align:center;padding:48px 16px}
+</style>{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:1100px">
+  <div class="rp-banniere"><div><h1>Logements</h1><p>Chambres, studios, appartements et maisons à louer.</p></div></div>
+  <form method="get">
+    <div class="lg-recherche"><input name="q" value="{{ q }}" placeholder="Ville, quartier, type…" aria-label="Rechercher"><button>Chercher</button></div>
+    <div class="lg-filtres">
+      <select name="ville" onchange="this.form.submit()"><option value="">Toutes les villes</option>{% for v in villes %}<option value="{{ v }}" {% if g.ville == v %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+      <select name="type" onchange="this.form.submit()"><option value="">Tous les types</option>{% for c, n in types %}<option value="{{ c }}" {% if g.type == c %}selected{% endif %}>{{ n }}</option>{% endfor %}</select>
+      <select name="prix_max" onchange="this.form.submit()"><option value="">Prix max</option>
+        <option value="25000" {% if g.prix_max == "25000" %}selected{% endif %}>25 000 CFA</option>
+        <option value="50000" {% if g.prix_max == "50000" %}selected{% endif %}>50 000 CFA</option>
+        <option value="100000" {% if g.prix_max == "100000" %}selected{% endif %}>100 000 CFA</option>
+        <option value="200000" {% if g.prix_max == "200000" %}selected{% endif %}>200 000 CFA</option></select>
+      <select name="meuble" onchange="this.form.submit()"><option value="">Meublé ou non</option><option value="1" {% if g.meuble == "1" %}selected{% endif %}>Meublé</option><option value="0" {% if g.meuble == "0" %}selected{% endif %}>Non meublé</option></select>
+    </div>
+  </form>
+  {% if logements %}
+  <div class="lg-grille">
+    {% for l in logements %}
+    <a class="lg-carte" href="{{ l.get_absolute_url }}">
+      {% with p=l.photos.all|first %}{% if p %}<img src="{{ p.image.url }}" alt="" loading="lazy">{% else %}<span class="ph"></span>{% endif %}{% endwith %}
+      <div class="lg-corps">
+        <span class="lg-type">{{ l.get_type_display }}</span>{% if l.meuble %} <span class="lg-type">Meublé</span>{% endif %}
+        <h2>{{ l.nom }}</h2>
+        <div class="lg-meta">{{ l.quartier }}, {{ l.ville }}{% if l.pieces %} · {{ l.pieces }} pièce{{ l.pieces|pluralize }}{% endif %}</div>
+        <div class="lg-prix">{{ l.loyer }} CFA {{ l.get_periode_display }}</div>
+        <div class="lt-details"><span>Détails <i class="fas fa-chevron-right"></i></span></div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="lg-vide"><p style="font-size:1.2rem;font-weight:700;color:#0b2e1d">{% if q or g.ville or g.type or g.prix_max or g.meuble %}Aucun logement trouvé.{% else %}Bientôt disponible{% endif %}</p></div>
+  {% endif %}
+</div>
+{% endblock %}
