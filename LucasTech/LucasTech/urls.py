@@ -15,6 +15,7 @@ urlpatterns = [
     path('repetiteurs/', include('Repetiteurs.urls')),
     path('vendre/', include('Marche.urls_vendre')),
     path('emplois/', include('Offres.urls')),
+    path('hotels/', include('Hotels.urls')),
     path('espace/', include('Marche.urls_espace')),
     path(
         'ads.txt',

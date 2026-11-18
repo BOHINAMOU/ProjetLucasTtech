@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'Marche',
     'Repetiteurs',
     'Offres',
+    'Hotels',
 
     'social_django',
 
@@ -349,6 +350,7 @@ JAZZMIN_SETTINGS = {
         "Publications": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/publications/", "icon": "fas fa-chart-pie", "permissions": ["Publications.view_publication"]}],
         "Services": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/services/", "icon": "fas fa-chart-pie", "permissions": ["Services.view_service"]}],
         "Marche": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/vendeurs/", "icon": "fas fa-chart-pie", "permissions": ["Marche.view_vendeur"]}],
+        "Hotels": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/hotels/", "icon": "fas fa-chart-pie", "permissions": ["Hotels.view_hotel"]}],
         "Offres": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/emplois/", "icon": "fas fa-chart-pie", "permissions": ["Offres.view_offreemploi"]}],
         "Repetiteurs": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/repetiteurs/", "icon": "fas fa-chart-pie", "permissions": ["Repetiteurs.view_repetiteur"]}],
         "api_mobile": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/notifications/", "icon": "fas fa-chart-pie", "permissions": ["auth.view_user"]}],

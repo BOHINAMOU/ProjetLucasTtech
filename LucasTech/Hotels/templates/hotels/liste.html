@@ -1,0 +1,43 @@
+{% extends 'core/base.html' %}
+{% block title %}Hôtels — Lantante Technologie{% endblock %}
+{% block meta_description %}Hôtels au Togo : photos, chambres, réservation par WhatsApp.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.ho-recherche{display:flex;gap:8px;margin:0 0 12px}
+.ho-recherche input{flex:1;padding:12px 14px;border:1px solid #dfe6e2;border-radius:14px;font-size:1rem}
+.ho-recherche button{border:0;background:#0B7A4B;color:#fff;border-radius:14px;padding:0 18px;font-weight:700}
+.ho-villes{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px}
+.ho-villes a{white-space:nowrap;border:1px solid #dfe6e2;border-radius:999px;padding:6px 14px;text-decoration:none;color:#0b2e1d;font-weight:600;background:#fff}
+.ho-villes a.on{background:#E3F5EC;border-color:#0B7A4B}
+.ho-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.ho-carte{background:#fff;border:1px solid #e3e8e5;border-radius:18px;overflow:hidden;text-decoration:none;color:inherit}
+.ho-carte img,.ho-carte .ph{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:linear-gradient(135deg,#0b6137,#17a35f)}
+.ho-corps{padding:12px 14px 14px}
+.ho-corps h2{font-size:1.05rem;margin:0 0 4px}
+.ho-meta{color:#6e6e73;font-size:.9rem}
+.ho-prix{color:#0B7A4B;font-weight:800;margin-top:6px}
+.ho-vide{text-align:center;padding:48px 16px;color:#6e6e73}
+</style>{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:1100px">
+  <div class="rp-banniere"><div><h1>Hôtels</h1><p>Chambres et réservation par WhatsApp.</p></div></div>
+  <form class="ho-recherche" method="get"><input name="q" value="{{ q }}" placeholder="Hôtel, ville ou quartier" aria-label="Rechercher"><button>Chercher</button></form>
+  {% if villes|length > 1 %}<div class="ho-villes"><a href="?" class="{% if not ville %}on{% endif %}">Toutes</a>{% for v in villes %}<a href="?ville={{ v|urlencode }}" class="{% if v == ville %}on{% endif %}">{{ v }}</a>{% endfor %}</div>{% endif %}
+  {% if hotels %}
+  <div class="ho-grille">
+    {% for h in hotels %}
+    <a class="ho-carte" href="{{ h.get_absolute_url }}">
+      {% if h.photo %}<img src="{{ h.photo.url }}" alt="" loading="lazy">{% else %}<span class="ph"></span>{% endif %}
+      <div class="ho-corps">
+        <h2>{{ h.nom }}</h2>
+        <div class="ho-meta">{% if h.etoiles %}{% for i in "12345"|make_list|slice:h.etoiles %}★{% endfor %} · {% endif %}{% if h.quartier %}{{ h.quartier }}, {% endif %}{{ h.ville }}</div>
+        {% if h.a_partir_de %}<div class="ho-prix">à partir de {{ h.a_partir_de }} CFA / nuit</div>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="ho-vide"><p style="font-size:1.2rem;font-weight:700;color:#0b2e1d">{% if q or ville %}Aucun hôtel trouvé.{% else %}Bientôt disponible{% endif %}</p></div>
+  {% endif %}
+</div>
+{% endblock %}
