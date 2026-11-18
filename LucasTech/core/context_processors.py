@@ -22,7 +22,6 @@ def partner_cta(request):
         from .models import PartnerApplication
         hide = (
             getattr(user, 'account_type', '') == 'employer'
-            or hasattr(user, 'employer_profile')
             or PartnerApplication.objects.filter(email__iexact=user.email).exists()
         )
     return {'hide_partner_cta': hide}

@@ -333,11 +333,6 @@ class SiteSettings(models.Model):
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
-        try:  # le prix unique d'une publication s'applique à tous les tarifs de publication
-            from Emploi.models import ServicePlan
-            ServicePlan.apply_publication_price(self.publication_price)
-        except Exception:
-            pass
 
     def delete(self, *args, **kwargs):
         pass

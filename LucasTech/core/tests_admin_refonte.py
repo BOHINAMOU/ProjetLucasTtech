@@ -181,3 +181,11 @@ class FichesEcoleVendeurTests(TestCase):
     def test_fiche_inconnue_ou_interdite(self):
         self.assertEqual(self.client.get(f'{A}section/inconnu/1/').status_code, 404)
         self.assertEqual(self.client.get(f'{A}section/ecoles/999/').status_code, 404)
+
+
+class AncienLantanteJobTests(TestCase):
+    def test_anciennes_adresses_redirigees(self):
+        r = self.client.get('/emploi/offres/12/')
+        self.assertEqual((r.status_code, r['Location']), (301, '/emplois/'))
+        self.assertEqual(self.client.get('/app/x').status_code, 301)
+        self.assertEqual(self.client.get('/api/v1/feed/').status_code, 404)

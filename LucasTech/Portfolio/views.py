@@ -88,7 +88,7 @@ def contact(request):
     cache.set(key, sent + 1, 3600)
     msg = ContactMessage.objects.create(name=name, contact=contact_info, message=text)
     try:  # l'équipe est prévenue sur le site, par e-mail et sur l'application
-        from Emploi.services import notify_staff
+        from core.alertes import prevenir_equipe as notify_staff
         notify_staff(f"Portfolio — message de {name} : {text[:120]}",
                      f"/lantanteAdminTech/Portfolio/contactmessage/{msg.pk}/change/")
     except Exception:

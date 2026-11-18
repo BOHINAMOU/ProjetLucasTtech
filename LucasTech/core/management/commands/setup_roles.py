@@ -7,7 +7,6 @@ candidatures, messages, commentaires, boutique, formations, portfolio, réglages
   • AUCUNE permission de suppression (delete_*) ;
   • AUCUNE permission sur les comptes et les droits (Users.*, auth.*, contenttypes, sessions,
     admin.LogEntry, jetons d'API, comptes sociaux) ;
-  • le bannissement de comptes reste réservé au super administrateur (Emploi.AccountBan : lecture seule).
 Les permissions du groupe sont remplacées à chaque exécution : relancer la commande après
 l'ajout d'un modèle suffit à mettre le rôle à jour.
 """
@@ -17,13 +16,13 @@ from django.core.management.base import BaseCommand
 GROUP_NAME = "Administrateur"
 
 # Applications dont le contenu est géré par le rôle.
-CONTENT_APPS = ('core', 'Publications', 'Services', 'Portfolio', 'Shop', 'Formations', 'Emploi', 'concours')
+CONTENT_APPS = ('core', 'Publications', 'Services', 'Portfolio', 'Shop', 'Formations', 'concours')
 
 # Modèles exclus totalement (app_label, model) : jetons d'appareil = données techniques.
-EXCLUDED_MODELS = {('Emploi', 'devicetoken')}
+EXCLUDED_MODELS = set()
 
 # Modèles en lecture seule pour le rôle.
-VIEW_ONLY_MODELS = {('Emploi', 'accountban')}
+VIEW_ONLY_MODELS = set()
 
 
 def role_permissions():

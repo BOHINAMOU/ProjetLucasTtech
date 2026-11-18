@@ -218,7 +218,7 @@ def publication_comment(request, slug):
                                                 email=email)
     messages.success(request, "✓ Merci, votre commentaire a bien été envoyé à notre équipe.")
     try:
-        from Emploi.services import notify_staff
+        from core.alertes import prevenir_equipe as notify_staff
         notify_staff(f"Nouveau commentaire de {name} sur « {publication.title[:60]} » : {text[:120]}",
                      f"/lantanteAdminTech/Publications/publicationcomment/{comment.pk}/change/")
     except Exception:
@@ -246,7 +246,7 @@ def publication_quick_message(request, slug):
         return back
     qm = QuickMessage.objects.create(publication=publication, name=name, contact=contact, message=text)
     try:  # l'équipe est prévenue sur le site, par e-mail et sur l'application
-        from Emploi.services import notify_staff
+        from core.alertes import prevenir_equipe as notify_staff
         notify_staff(f"Message rapide de {name} (« {publication.title[:60]} ») : {text[:120]}",
                      f"/lantanteAdminTech/Publications/quickmessage/{qm.pk}/change/")
     except Exception:

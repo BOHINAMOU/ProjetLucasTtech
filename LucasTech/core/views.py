@@ -81,20 +81,7 @@ def partner_detail(request, pk):
     partner = get_object_or_404(Partner, pk=pk, is_active=True)
     related = Partner.objects.filter(is_active=True, category=partner.category).exclude(pk=partner.pk)[:3] \
         if partner.category else Partner.objects.none()
-    # Si le partenaire a un compte entreprise accepté sur Emploi : ses publications et produits.
-    employer = getattr(partner, 'employer', None)
-    if employer is not None and not employer.is_approved:
-        employer = None
-    posts = []
-    if employer is not None:
-        from Emploi.models import FeedPost
-        posts = FeedPost.objects.filter(author=employer.user, is_hidden=False)[:8]
-    return render(request, 'core/partner_detail.html', {
-        'partner': partner,
-        'related': related,
-        'partner_employer': employer,
-        'partner_posts': posts,
-    })
+    return render(request, 'core/partner_detail.html', {'partner': partner, 'related': related})
 
 
 # ──────────────────────────────────────────
@@ -254,7 +241,7 @@ def monetization_page(request):
         phone_code=phone_code, phone_number=number, platforms=platform, message=message,
     )
     try:  # l'équipe est prévenue sur le site, par e-mail et sur l'application
-        from Emploi.services import notify_staff
+        from core.alertes import prevenir_equipe as notify_staff
         notify_staff(f"Nouvelle demande de monétisation : {req.full_name} ({req.country}), {req.full_phone}",
                      f"/lantanteAdminTech/core/monetizationrequest/{req.pk}/change/")
     except Exception:

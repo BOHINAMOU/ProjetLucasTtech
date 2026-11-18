@@ -8,7 +8,6 @@ from core import admin_connexion, admin_evenements, admin_fiches, admin_hotels
 from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve as serve_static
 
-from Emploi.webapp import webapp
 
 from .sitemaps import sitemaps
 
@@ -28,9 +27,9 @@ urlpatterns = [
         'googlef89010971d315902.html',
         lambda request: HttpResponse("google-site-verification: googlef89010971d315902.html", content_type="text/html"),
     ),
-    # Module Emploi retiré du site (nov. 2026) : ses anciennes adresses renvoient à l'accueil.
-    re_path(r'^(?:emploi|app)(?:/.*)?$', RedirectView.as_view(url='/', permanent=False)),
-    re_path(r'^app/(?P<path>.*)$', webapp, name='webapp'),
+    # Ancien « Lantante Job » supprimé (nov. 2026) : ses adresses mènent aux Emplois, l'ancienne appli web à l'accueil.
+    re_path(r'^emploi(?:/.*)?$', RedirectView.as_view(url='/emplois/', permanent=True)),
+    re_path(r'^app(?:/.*)?$', RedirectView.as_view(url='/', permanent=True)),
     path('users/',        include('Users.urls', namespace='users')),
     path('lantanteAdminTech/verification/', admin_connexion.verification, name='admin_verification'),
     path('lantanteAdminTech/section/evenements/<int:pk>/', admin_evenements.tableau, name='admin_evenement'),
@@ -51,8 +50,6 @@ urlpatterns = [
     path('concours/',     include('concours.urls', namespace='concours')),
     path('abonnements/',  include('abonnements.urls', namespace='abonnements')),
     path('bohinamou/',    include('Portfolio.urls', namespace='portfolio')),
-    path('emploi/',       include('Emploi.urls', namespace='emploi')),
-    path('api/v1/',       include('Emploi.api.urls')),
     path('api/mobile/v1/', include('api_mobile.urls', namespace='api_mobile')),
     path('social-auth/',  include('social_django.urls', namespace='social')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),

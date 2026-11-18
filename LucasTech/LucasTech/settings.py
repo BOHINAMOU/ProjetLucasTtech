@@ -98,7 +98,6 @@ INSTALLED_APPS = [
     'Formations',
     'Services',
     'Publications',
-    'Emploi',
     'core',
     'Portfolio',
     'Payments',
@@ -201,9 +200,6 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
-if DEBUG:  # aperçu web de l'application mobile en développement uniquement
-    MIDDLEWARE.insert(0, 'Emploi.api.devcors.DevCorsMiddleware')
-
 
 ROOT_URLCONF = 'LucasTech.urls'
 
@@ -227,7 +223,6 @@ TEMPLATES = [
                 'core.context_processors.site_settings',
                 'core.context_processors.partner_cta',
                 'core.context_admin.rubriques',
-                'Emploi.context_processors.emploi_counters',
 
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
@@ -379,36 +374,20 @@ JAZZMIN_SETTINGS = {
         {"name": "Actualités", "url": "/actualites/", "new_window": True},
     ],
 
-    "hide_apps": ["Emploi"],
+    "hide_apps": [],
     # Modèles techniques inutiles au quotidien (toujours accessibles par leur adresse).
     "hide_models": ["social_django.association", "social_django.nonce", "authtoken.tokenproxy",
                     "api_mobile.offlinedocument"],
     "custom_css": "css/admin.css",
     "custom_js": "js/admin-mobile.js",
 
-    # Menu « Emploi » regroupé et ordonné dans la barre latérale
     "order_with_respect_to": [
         # Ventes et paiements, Concours et abonnements, Boutique, Formations, Événements, Actualités,
         # Partenaires et services, Utilisateurs, Paramètres
         "Payments", "abonnements", "concours", "Shop", "Formations", "Events", "Ecoles", "Repetiteurs", "Offres", "Publications", "Services",
         "core", "Portfolio", "Users", "auth", "social_django",
-        "Emploi", "Emploi.candidateprofile", "Emploi.employerprofile",
-        "Emploi.staffingrequest", "Emploi.joboffer", "Emploi.application", "Emploi.conversation",
-        "Emploi.appointment", "Emploi.placement", "Emploi.feedpost", "Emploi.notification",
     ],
     "icons": {
-        "Emploi": "fas fa-briefcase",
-        "Emploi.candidateprofile": "fas fa-user-graduate",
-        "Emploi.employerprofile": "fas fa-building",
-        "Emploi.joboffer": "fas fa-bullhorn",
-        "Emploi.staffingrequest": "fas fa-clipboard-list",
-        "Emploi.application": "fas fa-handshake",
-        "Emploi.placement": "fas fa-file-signature",
-        "Emploi.conversation": "fas fa-comments",
-        "Emploi.appointment": "fas fa-calendar-check",
-        "Emploi.feedpost": "fas fa-newspaper",
-        "Emploi.notification": "fas fa-bell",
-        "Emploi.skill": "fas fa-tags",
         "Portfolio": "fas fa-user-tie",
         "Portfolio.profile": "fas fa-id-card",
         "Portfolio.skill": "fas fa-code",
@@ -421,13 +400,6 @@ JAZZMIN_SETTINGS = {
         "Portfolio.stat": "fas fa-chart-simple",
         "Portfolio.contactmessage": "fas fa-envelope",
         # Icônes de tous les autres modèles (plus aucun rond gris par défaut)
-        "Emploi.accountban": "fas fa-user-slash",
-        "Emploi.feedcomment": "fas fa-comment-dots",
-        "Emploi.moderationwarning": "fas fa-triangle-exclamation",
-        "Emploi.publicationorder": "fas fa-receipt",
-        "Emploi.serviceplan": "fas fa-tags",
-        "Emploi.spontaneousrequest": "fas fa-paper-plane",
-        "Emploi.staffprofile": "fas fa-id-badge",
         "Formations": "fas fa-graduation-cap",
         "Formations.formation": "fas fa-graduation-cap",
         "Formations.formationcategory": "fas fa-folder-tree",
