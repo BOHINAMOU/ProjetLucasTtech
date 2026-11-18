@@ -43,6 +43,10 @@ def rubriques(request):
         r['n'] = nb.get(r['code'], 0)
     nom = (u.get_full_name() or u.email or '').strip()
     initiales = ''.join(m[0] for m in nom.replace('@', ' ').split()[:2]).upper() or 'LT'
+    # Prénom seulement (le nom complet ne tient pas dans la barre)
+    prenom = (u.first_name or '').split()
+    court = prenom[-1] if len(prenom) > 1 and prenom[0].isupper() and len(prenom[0]) > 3 else (prenom[0] if prenom else '')
+    court = court or (u.email or '').split('@')[0]
     if u.is_superuser:
         role = "Super-admin"
     elif hasattr(u, 'vendeur'):
@@ -51,4 +55,4 @@ def rubriques(request):
         role = "Équipe Lantante"
     return {'lt_rubriques': rubs, 'lt_groupes': groupes(rubs), 'lt_actif': rubrique_du_chemin(request.path),
             'lt_a_traiter': nb.get('a_traiter', 0),
-            'lt_moi': {'nom': nom.title() if nom.isupper() else nom, 'initiales': initiales, 'role': role}}
+            'lt_moi': {'nom': court.capitalize() if court.isupper() else court, 'complet': nom, 'initiales': initiales, 'role': role}}
