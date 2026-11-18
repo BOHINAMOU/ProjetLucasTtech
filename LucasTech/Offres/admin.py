@@ -3,7 +3,7 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.utils.html import format_html
 
-from .models import OffreEmploi
+from .models import ContactOffre, OffreEmploi
 
 
 def _notifier(offre):
@@ -16,8 +16,15 @@ def _notifier(offre):
     OffreEmploi.objects.filter(pk=offre.pk).update(notifie_le=timezone.now())
 
 
+class ContactOffreInline(admin.TabularInline):
+    model = ContactOffre
+    extra = 1
+    fields = ['libelle', 'telephone', 'whatsapp', 'ordre']
+
+
 @admin.register(OffreEmploi)
 class OffreEmploiAdmin(admin.ModelAdmin):
+    inlines = [ContactOffreInline]
     list_display = ['titre', 'entreprise', 'ville', 'type_contrat', 'date_limite', 'statut', 'vues', 'clics', 'est_exemple']
     list_filter = ['publie', 'type_contrat', 'ville', 'est_exemple']
     search_fields = ['titre', 'entreprise', 'ville', 'description']

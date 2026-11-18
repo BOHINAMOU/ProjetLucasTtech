@@ -59,6 +59,23 @@ class OffreEmploi(models.Model):
         return reverse('offres:detail', args=[self.pk])
 
 
+class ContactOffre(models.Model):
+    """Contact supplémentaire d'une offre (ex. « Lomé », « Kara »), affiché en bas de la page."""
+    offre = models.ForeignKey(OffreEmploi, on_delete=models.CASCADE, related_name='contacts')
+    libelle = models.CharField("Libellé", max_length=60, help_text="Ex. Lomé, Kara, Service RH")
+    telephone = models.CharField("Téléphone", max_length=30)
+    whatsapp = models.BooleanField("WhatsApp", default=False, help_text="Ce numéro répond aussi sur WhatsApp.")
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+
+    class Meta:
+        ordering = ['ordre', 'pk']
+        verbose_name = "Contact"
+        verbose_name_plural = "Autres contacts"
+
+    def __str__(self):
+        return f"{self.libelle} : {self.telephone}"
+
+
 class OffreLue(models.Model):
     offre = models.ForeignKey(OffreEmploi, on_delete=models.CASCADE, related_name='+')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')

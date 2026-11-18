@@ -65,3 +65,21 @@ class EmploisTests(TestCase):
         admin = get_user_model().objects.create_superuser(email='ad@example.com', password='x-Pass-12345')
         self.client.force_login(admin)
         self.assertEqual(self.client.get('/lantanteAdminTech/Offres/offreemploi/').status_code, 200)
+
+
+@override_settings(MEDIA_ROOT=MEDIA, STORAGES=STORAGES, EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class ContactsOffreTests(TestCase):
+    def test_contacts_en_bas_formats(self):
+        from .models import ContactOffre, OffreEmploi
+        o = OffreEmploi.objects.create(titre='Maçon', entreprise='X', ville='Dubaï', description='Postes',
+                                       telephone='+228 90 11 77 87', whatsapp='22890117787')
+        ContactOffre.objects.create(offre=o, libelle='Lomé', telephone='72498909', ordre=1)
+        ContactOffre.objects.create(offre=o, libelle='Kara', telephone='+228 92 51 14 23', whatsapp=True, ordre=2)
+        d = self.client.get(f'/api/mobile/v1/emplois/{o.pk}/').json()
+        self.assertEqual([c['libelle'] for c in d['contacts']], ['Lantante', 'Lomé', 'Kara'])
+        self.assertEqual(d['contacts'][1]['telephone'], '+228 72 49 89 09')
+        self.assertEqual(d['contacts'][1]['whatsapp'], '')
+        self.assertEqual(d['contacts'][2]['whatsapp'], '22892511423')
+        page = self.client.get(f'/emplois/{o.pk}/')
+        self.assertContains(page, 'of-contacts')
+        self.assertContains(page, '+228 92 51 14 23')

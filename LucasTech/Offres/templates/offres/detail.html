@@ -1,7 +1,24 @@
 {% extends 'core/base.html' %}
 {% block title %}{{ o.titre }} — Emplois — Lantante Technologie{% endblock %}
 {% block meta_description %}{{ o.titre }} — {{ o.entreprise }}, {{ o.ville }}.{% endblock %}
-{% block extra_head %}{% include 'repetiteurs/_style.html' %}{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+  .of-texte{margin-top:16px;line-height:1.65;font-size:1rem}
+  .of-texte p{margin:0 0 12px}
+  .of-contacts{background:#fff;border:1px solid #e6ece8;border-radius:22px;padding:6px 18px;margin:18px 0}
+  .of-contacts h2{font-size:1.15rem;margin:14px 0 6px}
+  .of-ligne{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #eef2ef}
+  .of-ligne:first-of-type{border-top:0}
+  .of-ico{width:42px;height:42px;border-radius:50%;background:#E3F5EC;color:#0B7A4B;display:flex;align-items:center;justify-content:center;flex:none}
+  .of-txt{flex:1;min-width:0}
+  .of-txt b{display:block;font-size:.95rem}
+  .of-txt span{color:#475569;font-size:.95rem;white-space:nowrap}
+  .of-btns{display:flex;gap:8px;flex:none}
+  .of-rond{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1.05rem}
+  .of-rond.tel{background:#E3F5EC;color:#0B7A4B}
+  .of-rond.wa{background:#25D366;color:#fff}
+  .of-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;border-radius:16px;padding:15px;font-weight:800;text-decoration:none;font-size:1.05rem}
+</style>{% endblock %}
 {% block content %}
 <div class="rp">
   {% if o.image %}<img src="{{ o.image.url }}" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:22px;margin-bottom:18px">{% endif %}
@@ -9,13 +26,33 @@
     <p style="margin:0"><span class="rp-statut">{{ o.get_type_contrat_display }}</span>{% if o.est_exemple %} <span class="rp-statut a_corriger">Exemple</span>{% endif %}</p>
     <h1 style="margin:10px 0 4px;font-size:clamp(1.5rem,4vw,2rem)">{{ o.titre }}</h1>
     <p class="rp-note" style="font-size:1rem">{{ o.entreprise }} · {{ o.ville }}{% if o.date_limite %} · jusqu'au {{ o.date_limite|date:"d/m/Y" }}{% endif %}</p>
-    <div style="margin-top:16px;line-height:1.65">{{ o.description|linebreaks }}</div>
+    <div class="of-texte">{{ o.description|linebreaks }}</div>
   </div>
+  {% if contacts or o.email_contact %}
+  <div class="of-contacts">
+    <h2>Contacts</h2>
+    {% for c in contacts %}
+    <div class="of-ligne">
+      <div class="of-ico"><i class="fas fa-user"></i></div>
+      <div class="of-txt"><b>{{ c.libelle }}</b><span>{{ c.telephone }}</span></div>
+      <div class="of-btns">
+        <a class="of-rond tel" href="{{ c.appel }}" aria-label="Appeler {{ c.libelle }}"><i class="fas fa-phone"></i></a>
+        {% if c.whatsapp %}<a class="of-rond wa" href="https://wa.me/{{ c.whatsapp }}?text={{ 'Bonjour, je suis intéressé(e) par votre offre : '|add:o.titre|add:'.'|urlencode }}" target="_blank" rel="noopener" aria-label="WhatsApp {{ c.libelle }}"><i class="fab fa-whatsapp"></i></a>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% if o.email_contact %}
+    <div class="of-ligne">
+      <div class="of-ico"><i class="fas fa-envelope"></i></div>
+      <div class="of-txt"><b>E-mail</b><span>{{ o.email_contact }}</span></div>
+      <div class="of-btns"><a class="of-rond tel" href="mailto:{{ o.email_contact }}" aria-label="E-mail"><i class="fas fa-paper-plane"></i></a></div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
   <div style="display:grid;gap:10px">
+    {% if wa %}<a class="of-wa" href="https://wa.me/{{ wa }}?text={{ 'Bonjour, je suis intéressé(e) par votre offre : '|add:o.titre|add:'.'|urlencode }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
     {% if o.lien %}<a class="rp-btn" href="{{ o.lien }}" target="_blank" rel="noopener">Postuler</a>{% endif %}
-    {% if wa %}<a class="rp-btn rp-btn--ghost" href="https://wa.me/{{ wa }}?text={{ 'Bonjour, je suis intéressé(e) par votre offre : '|add:o.titre|add:'.'|urlencode }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
-    {% if o.telephone %}<a class="rp-btn rp-btn--ghost" href="tel:{{ o.telephone }}">Appeler</a>{% endif %}
-    {% if o.email_contact %}<a class="rp-btn rp-btn--ghost" href="mailto:{{ o.email_contact }}">E-mail</a>{% endif %}
   </div>
 </div>
 {% endblock %}

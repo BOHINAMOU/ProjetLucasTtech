@@ -16,6 +16,30 @@ def actives():
         Q(date_limite__isnull=True) | Q(date_limite__gte=timezone.localdate()))
 
 
+def joli(t):
+    """+228 90 11 77 87 (numéros togolais) ; les autres restent tels quels."""
+    d = ''.join(c for c in (t or '') if c.isdigit())
+    if len(d) == 8:
+        d = '228' + d
+    if len(d) == 11 and d.startswith('228'):
+        return '+228 ' + ' '.join(d[i:i + 2] for i in range(3, 11, 2))
+    return (t or '').strip()
+
+
+def contacts(o):
+    """Contacts affichés en bas : le contact principal, puis les autres (Lomé, Kara…)."""
+    l = []
+    if o.telephone or o.whatsapp:
+        tel = o.telephone or o.whatsapp
+        l.append({'libelle': 'Lantante', 'telephone': joli(tel), 'appel': 'tel:' + ''.join(c for c in tel if c.isdigit() or c == '+'),
+                  'whatsapp': _wa(o.whatsapp)})
+    for c in o.contacts.all():
+        l.append({'libelle': c.libelle, 'telephone': joli(c.telephone),
+                  'appel': 'tel:' + ''.join(ch for ch in c.telephone if ch.isdigit() or ch == '+'),
+                  'whatsapp': _wa(c.telephone) if c.whatsapp else ''})
+    return l
+
+
 def _wa(t):
     """Numéro WhatsApp au format wa.me (accepte aussi un lien wa.me collé dans l'admin)."""
     d = ''.join(c for c in (t or '') if c.isdigit())
@@ -72,6 +96,7 @@ def detail(request, pk):
     d.update({'image_grande': grande(request, o.image) if o.image else None, 'description': text(o.description),
               'telephone': o.telephone, 'whatsapp': _wa(o.whatsapp), 'email': o.email_contact, 'lien': o.lien,
               'message_whatsapp': f"Bonjour, je suis intéressé(e) par votre offre : {o.titre}.",
+              'contacts': contacts(o),
               'url': request.build_absolute_uri(o.get_absolute_url())})
     return Response(d)
 

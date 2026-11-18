@@ -14,4 +14,5 @@ def detail(request, pk):
     from django.db.models import F
     OffreEmploi.objects.filter(pk=pk).update(vues=F('vues') + 1)
     wa = _wa(o.whatsapp)
-    return render(request, 'offres/detail.html', {'o': o, 'wa': wa})
+    from .api import contacts
+    return render(request, 'offres/detail.html', {'o': o, 'wa': wa, 'contacts': contacts(o)})
