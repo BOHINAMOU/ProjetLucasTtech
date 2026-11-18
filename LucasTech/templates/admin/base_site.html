@@ -1,1 +1,121 @@
 {% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --lt-vert:#0B7A4B; --lt-vert-fonce:#0B2E1D; --lt-vert-clair:#E3F5EC; --lt-or:#C9A227; --lt-fond:#F6F8F7;
+          --lt-bord:#E5EAE7; --lt-texte:#14231B; --lt-gris:#5F6B65; }
+  body, .app-main, .card, .table, .btn, input, select, textarea { font-family:'Inter', system-ui, sans-serif !important; }
+  body { background:var(--lt-fond) !important; color:var(--lt-texte); }
+  .app-main { background:var(--lt-fond) !important; }
+  /* Barre latérale : grands titres seulement */
+  #jazzy-sidebar.lt-side { background:#0E2A1C !important; }
+  .lt-side .sidebar-brand { border-bottom:1px solid rgba(255,255,255,.08); }
+  .lt-side .brand-text { font-weight:800 !important; letter-spacing:-.01em; }
+  .lt-nav { list-style:none; margin:10px 0; padding:0 10px; }
+  .lt-nav li a { display:flex; align-items:center; gap:12px; padding:10px 12px; margin:2px 0; border-radius:10px;
+                 color:rgba(255,255,255,.78); text-decoration:none; font-weight:600; font-size:.93rem; }
+  .lt-nav li a i { width:20px; text-align:center; font-size:.95rem; color:rgba(255,255,255,.55); }
+  .lt-nav li a:hover { background:rgba(255,255,255,.06); color:#fff; }
+  .lt-nav li a.actif { background:rgba(255,255,255,.10); color:#fff; box-shadow:inset 3px 0 0 var(--lt-or); }
+  .lt-nav li a.actif i { color:var(--lt-or); }
+  .lt-nav .lt-sep { height:1px; background:rgba(255,255,255,.08); margin:10px 6px; }
+  .lt-user { display:flex; align-items:center; gap:10px; margin:12px 16px 4px; padding:10px 12px; border-radius:12px;
+             background:rgba(255,255,255,.05); color:#fff; font-size:.85rem; overflow:hidden; }
+  .lt-user span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* Contenu : cartes sobres */
+  .card { border:1px solid var(--lt-bord) !important; border-radius:14px !important; box-shadow:0 1px 2px rgba(16,24,40,.04) !important; }
+  .app-content-header h3, .content-header h1 { font-weight:800 !important; letter-spacing:-.02em; }
+  .btn-success, .btn-primary { background:var(--lt-vert) !important; border-color:var(--lt-vert) !important; }
+  .btn-outline-success { color:var(--lt-vert) !important; border-color:var(--lt-vert) !important; }
+  .btn-outline-success:hover { background:var(--lt-vert-clair) !important; }
+  .table thead th { font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:var(--lt-gris); background:#fafbfa; }
+  a { color:var(--lt-vert); }
+  /* Bandeau d'accueil : plus léger */
+  .ltd-hero { background:#fff !important; color:var(--lt-texte) !important; border:1px solid var(--lt-bord) !important;
+              border-bottom:3px solid var(--lt-vert) !important; box-shadow:none !important; }
+  .ltd-hero h2 { color:var(--lt-texte) !important; }
+  .ltd-hero p { color:var(--lt-gris) !important; }
+
+  /* ── Formulaires : libellés au-dessus, 2 colonnes sur grand écran, aides discrètes ── */
+  #content-main form .card-body .form-group.row, .change-form .card-body .form-group.row { display:block; margin:0 0 16px; }
+  .change-form .card-body .form-group.row > label, .change-form .card-body .form-group.row > div[class*="col-"] {
+      width:100% !important; max-width:100% !important; flex:none !important; padding-left:0; padding-right:0; text-align:left !important; }
+  .change-form .card-body .form-group.row > label { font-weight:600; font-size:.88rem; margin-bottom:6px; color:var(--lt-texte); }
+  @media (min-width: 1100px) {
+    .change-form fieldset .card-body { display:grid; grid-template-columns:1fr 1fr; column-gap:22px; }
+    .change-form fieldset .card-body > .form-group:has(textarea), .change-form fieldset .card-body > .form-group:has(.related-widget-wrapper select[multiple]),
+    .change-form fieldset .card-body > .form-group:has(ul), .change-form fieldset .card-body > .form-group:has(input[type=file]) { grid-column:1 / -1; }
+  }
+  .change-form .help-block, .change-form .help, .change-form small.form-text { color:var(--lt-gris) !important; font-size:.8rem; }
+  .change-form input.form-control, .change-form select.form-control, .change-form .vTextField, .change-form .vIntegerField { min-height:42px; border-radius:10px; }
+  .change-form textarea { min-height:110px; max-height:340px; border-radius:10px; }
+  .change-form .card-header { background:#fff; border-bottom:1px solid var(--lt-bord); font-weight:800; }
+  .nav-tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:thin; }
+  .nav-tabs .nav-link { white-space:nowrap; }
+  /* Barre d'actions */
+  .lt-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .lt-btn { border:1px solid var(--lt-bord); background:#fff; color:var(--lt-texte); border-radius:10px; padding:8px 14px;
+            font-weight:600; font-size:.88rem; text-decoration:none; line-height:1.2; }
+  .lt-btn-p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff; }
+  .lt-btn-p:hover { filter:brightness(1.07); color:#fff; }
+  .lt-suppr { color:#B42318; font-weight:600; font-size:.85rem; margin-left:auto; text-decoration:none; padding:6px 4px; }
+  .lt-suppr:hover { text-decoration:underline; color:#B42318; }
+  #jazzy-actions .lt-actions, .submit-row .lt-actions { flex-direction:column; align-items:stretch; }
+  #jazzy-actions .lt-suppr { margin:6px 0 0; text-align:center; }
+  /* Photos : aperçu + zone glisser-déposer */
+  .lt-apercu { display:block; width:140px; height:96px; object-fit:cover; border-radius:10px; border:1px solid var(--lt-bord); margin:4px 0 8px; }
+  .change-form input[type=file] { display:block; width:100%; padding:16px; border:1.5px dashed #b9d8c6; border-radius:12px;
+                                   background:#F6FBF8; cursor:pointer; font-size:.85rem; }
+  .change-form input[type=file]:hover { border-color:var(--lt-vert); }
+  .inline-group .tabular td img.lt-apercu, .inline-related img.lt-apercu { width:84px; height:60px; }
+  /* Listes */
+  #changelist .card, #result_list { border-radius:12px; }
+  #result_list td, #result_list th { vertical-align:middle; }
+  #changelist-search input { border-radius:10px; min-height:40px; }
+</style>
+<script>
+  // Aperçu de l'image actuelle au-dessus de chaque champ fichier (photos, logos, couvertures)
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.change-form a[href]').forEach(function (a) {
+      var h = (a.getAttribute('href') || '').split('?')[0].toLowerCase();
+      if (!/\.(jpe?g|png|webp|gif)$/.test(h)) return;
+      var zone = a.closest('.form-group, td, p.file-upload');
+      if (!zone || zone.querySelector('img.lt-apercu')) return;
+      var img = document.createElement('img'); img.src = a.href; img.className = 'lt-apercu'; img.alt = '';
+      a.parentNode.insertBefore(img, a);
+    });
+    document.querySelectorAll('.change-form input[type=file]').forEach(function (i) {
+      ['dragenter', 'dragover'].forEach(function (ev) { i.addEventListener(ev, function () { i.style.borderColor = '#0B7A4B'; }); });
+      ['dragleave', 'drop'].forEach(function (ev) { i.addEventListener(ev, function () { i.style.borderColor = ''; }); });
+    });
+  });
+</script>
+{% endblock %}
+
+{% block sidebar %}
+<aside class="app-sidebar shadow lt-side" id="jazzy-sidebar" data-bs-theme="dark">
+  <div class="sidebar-brand">
+    <a href="{% url 'admin:index' %}" class="brand-link" id="jazzy-logo">
+      <img src="{% static jazzmin_settings.site_logo %}" alt="" class="brand-image opacity-75 shadow">
+      <span class="brand-text">Lantante</span>
+    </a>
+  </div>
+  <div class="sidebar-wrapper">
+    <div class="lt-user"><i class="fas fa-user-circle"></i><span>{{ request.user.get_full_name|default:request.user.email }}</span></div>
+    <nav>
+      <ul class="lt-nav" id="jazzy-navigation">
+        <li><a href="{% url 'admin:index' %}" class="{% if not lt_actif %}actif{% endif %}"><i class="fas fa-gauge"></i>Tableau de bord</a></li>
+        <li class="lt-sep"></li>
+        {% for r in lt_rubriques %}
+        <li><a href="{{ r.url }}" class="{% if r.code == lt_actif %}actif{% endif %}"><i class="fas {{ r.icone }}"></i>{{ r.titre }}</a></li>
+        {% endfor %}
+        <li class="lt-sep"></li>
+        <li><a href="/" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i>Voir le site</a></li>
+      </ul>
+    </nav>
+  </div>
+</aside>
+{% endblock %}

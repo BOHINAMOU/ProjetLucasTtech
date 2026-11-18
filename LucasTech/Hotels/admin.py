@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
+
+from core.admin_retour import RetourMixin
 
 from .models import EQUIPEMENTS, Chambre, Hotel, PhotoChambre, PhotoHotel
 
@@ -37,29 +40,38 @@ class ChambreInline(admin.TabularInline):
 
 
 @admin.register(Hotel)
-class HotelAdmin(admin.ModelAdmin):
+class HotelAdmin(RetourMixin, admin.ModelAdmin):
     form = HotelForm
-    list_display = ['apercu', 'nom', 'ville', 'quartier', 'etoiles', 'nb_chambres', 'vues', 'clics_reserver',
+    list_display = ['apercu', 'fiche', 'ville', 'quartier', 'etoiles', 'nb_chambres', 'vues', 'clics_reserver',
                     'clics_appel', 'actif', 'ordre']
-    list_display_links = ['apercu', 'nom']
+    list_display_links = None  # un clic ouvre la fiche de l'hôtel (détails + chambres)
     list_editable = ['actif', 'ordre']
     list_filter = ['actif', 'ville', 'etoiles']
     search_fields = ['nom', 'ville', 'quartier', 'adresse', 'alias']
     readonly_fields = ['vues', 'clics_reserver', 'clics_appel']
-    inlines = [PhotoHotelInline, ChambreInline]
+    inlines = [PhotoHotelInline]  # les chambres se gèrent depuis la fiche de l'hôtel
     fieldsets = (
         (None, {'fields': ('nom', 'photo', 'legende_photo', 'description', 'etoiles', 'prix_min', 'equipements')}),
         ("Lieu", {'fields': ('ville', 'quartier', 'adresse', ('latitude', 'longitude'))}),
         ("Contacts du propriétaire", {'fields': ('telephone', 'whatsapp', 'site_web'),
                                       'description': "Sans WhatsApp, « Réserver » utilise notre numéro principal."}),
         ("Publication", {'fields': ('actif', 'ordre', 'alias')}),
-        ("Statistiques", {'fields': ('vues', 'clics_reserver', 'clics_appel')}),
     )
+
+    def retour_defaut(self, h):
+        return reverse('admin_hotel', args=[h.pk])
+
+    def _lien(self, h, contenu):
+        return format_html('<a href="{}">{}</a>', reverse('admin_hotel', args=[h.pk]), contenu)
+
+    @admin.display(description="Hôtel", ordering='nom')
+    def fiche(self, h):
+        return self._lien(h, format_html('<b>{}</b>', h.nom))
 
     @admin.display(description="")
     def apercu(self, h):
-        return format_html('<img src="{}" style="width:56px;height:40px;object-fit:cover;border-radius:6px">',
-                           h.photo.url) if h.photo else '—'
+        return self._lien(h, format_html('<img src="{}" style="width:56px;height:40px;object-fit:cover;border-radius:6px">',
+                                         h.photo.url)) if h.photo else self._lien(h, '—')
 
     @admin.display(description="Chambres")
     def nb_chambres(self, h):
@@ -73,7 +85,7 @@ class PhotoChambreInline(admin.TabularInline):
 
 
 @admin.register(Chambre)
-class ChambreAdmin(admin.ModelAdmin):
+class ChambreAdmin(RetourMixin, admin.ModelAdmin):
     form = ChambreForm
     list_display = ['nom', 'hotel', 'prix_nuit', 'capacite', 'vues', 'actif', 'ordre']
     list_filter = ['hotel', 'actif']
@@ -81,3 +93,6 @@ class ChambreAdmin(admin.ModelAdmin):
     search_fields = ['nom', 'hotel__nom']
     readonly_fields = ['vues']
     inlines = [PhotoChambreInline]
+
+    def retour_defaut(self, c):
+        return reverse('admin_hotel', args=[c.hotel_id])

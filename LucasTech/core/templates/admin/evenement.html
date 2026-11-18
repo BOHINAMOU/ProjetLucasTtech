@@ -1,0 +1,77 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item"><a href="/lantanteAdminTech/section/evenements/">Événements</a></li><li class="breadcrumb-item">{{ e.title|truncatechars:40 }}</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  .ev { max-width:1180px; }
+  .ev-tete { display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+  .ev-tete img { width:120px; height:80px; object-fit:cover; border-radius:12px; border:1px solid var(--lt-bord); }
+  .ev-tete h1 { margin:6px 0 2px; font-size:1.55rem; font-weight:800; letter-spacing:-.02em; }
+  .ev-tete .m { color:var(--lt-gris); }
+  .ev-actions { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+  .ev-actions a { padding:8px 14px; border-radius:10px; font-weight:600; font-size:.88rem; text-decoration:none; border:1px solid var(--lt-bord); background:#fff; color:var(--lt-texte); }
+  .ev-actions a.p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff; }
+  .kp { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; margin-bottom:18px; }
+  .kp div { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:16px 18px; }
+  .kp small { display:block; color:var(--lt-gris); font-weight:600; font-size:.8rem; margin-bottom:6px; }
+  .kp b { font-size:1.4rem; font-weight:800; }
+  .bloc { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:18px; margin-bottom:18px; }
+  .bloc h2 { font-size:1rem; font-weight:800; margin:0 0 14px; }
+  .courbe { display:flex; align-items:flex-end; gap:3px; height:140px; }
+  .courbe span { flex:1; background:var(--lt-vert); border-radius:4px 4px 0 0; min-width:3px; opacity:.85; }
+  .courbe span:hover { opacity:1; }
+  .axe { display:flex; justify-content:space-between; color:var(--lt-gris); font-size:.75rem; margin-top:6px; }
+  table.lt { width:100%; border-collapse:collapse; font-size:.9rem; }
+  table.lt th { text-align:left; color:var(--lt-gris); font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; padding:8px 10px; border-bottom:1px solid var(--lt-bord); }
+  table.lt td { padding:9px 10px; border-bottom:1px solid #f0f3f1; }
+  .pastille { display:inline-block; padding:2px 9px; border-radius:999px; font-size:.75rem; font-weight:700; }
+  .p-cours, .p-approved { background:#E3F5EC; color:#0B7A4B; } .p-venir { background:#EAF1FF; color:#1D4ED8; }
+  .p-passe, .p-canceled { background:#F1F2F1; color:#5F6B65; } .p-brouillon, .p-pending { background:#FFF4D6; color:#9A6700; }
+  .p-declined { background:#FDECEA; color:#B42318; } .p-refunded { background:#EEE7FD; color:#6D28D9; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="ev">
+  <div class="ev-tete">
+    {% if e.cover %}<img src="{{ e.cover.url }}" alt="">{% endif %}
+    <div>
+      <span class="pastille p-{{ e.statut_code }}">{{ e.statut }}</span>
+      <h1>{{ e.title }}</h1>
+      <div class="m">{% if e.starts_at %}{{ e.starts_at|date:"l d F Y, H:i" }}{% else %}Sans date{% endif %}{% if e.location %} · {{ e.location }}{% endif %} · {{ e.get_kind_display }}</div>
+    </div>
+    <div class="ev-actions">
+      <a class="p" href="{{ liens.modifier }}"><i class="fas fa-pen"></i> Modifier</a>
+      <a href="{{ liens.csv }}"><i class="fas fa-file-csv"></i> Exporter</a>
+      <a href="{{ liens.notifier }}"><i class="fas fa-bell"></i> Notifier</a>
+      <a href="{{ liens.site }}" target="_blank" rel="noopener"><i class="fas fa-eye"></i> Voir</a>
+    </div>
+  </div>
+
+  <div class="kp">{% for label, v in kpis %}<div><small>{{ label }}</small><b>{{ v }}</b></div>{% endfor %}</div>
+
+  <div class="bloc">
+    <h2>Encaissements par jour</h2>
+    <div class="courbe">{% for j in jours %}<span style="height:{{ j.h }}%" title="{{ j.label }} : {{ j.txt }}"></span>{% endfor %}</div>
+    <div class="axe"><span>{{ jours.0.label }}</span><span>{{ jours|last|default_if_none:"" }}</span></div>
+  </div>
+
+  {% if par_type %}
+  <div class="bloc">
+    <h2>Tickets par type</h2>
+    <table class="lt"><thead><tr><th>Type</th><th>Prix</th><th>Vendus</th><th>Places</th></tr></thead><tbody>
+    {% for t in par_type %}<tr><td>{{ t.nom }}</td><td>{{ t.prix }}</td><td><b>{{ t.vendus }}</b></td><td>{{ t.places }}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  {% endif %}
+
+  <div class="bloc">
+    <h2 style="display:flex;justify-content:space-between">Derniers paiements <a href="{{ liens.paiements }}" style="font-size:.85rem">Tous les paiements →</a></h2>
+    <table class="lt"><thead><tr><th>Date</th><th>Nom</th><th>Type</th><th>Montant</th><th>Statut</th></tr></thead><tbody>
+    {% for p in derniers %}
+      <tr><td>{{ p.created_at|date:"d/m/Y H:i" }}</td><td>{{ p.first_name }} {{ p.last_name }}</td><td>{{ p.get_kind_display }}</td>
+          <td><b>{{ p.amount }} CFA</b></td><td><span class="pastille p-{{ p.status }}">{{ p.get_status_display }}</span></td></tr>
+    {% empty %}<tr><td colspan="5" style="color:var(--lt-gris)">Aucun paiement pour le moment.</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+</div>
+{% endblock %}

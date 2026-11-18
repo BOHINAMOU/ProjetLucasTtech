@@ -206,6 +206,10 @@ def _dashboard_index(request, extra_context=None):
 
 admin.site.index = _dashboard_index
 
+# Connexion : page sur mesure + code à 6 chiffres par e-mail (si ADMIN_2FA=1)
+from .admin_connexion import connexion as _connexion  # noqa: E402
+admin.site.login = _connexion
+
 
 from .models import Delegation  # noqa: E402
 

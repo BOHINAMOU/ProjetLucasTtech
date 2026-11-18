@@ -1,0 +1,17 @@
+{% extends "admin/_connexion_style.html" %}
+{% block titre %}Connexion{% endblock %}
+{% block corps %}
+<h1>Connexion</h1>
+<p class="sous">Accédez à l'administration de Lantante.</p>
+{% if erreur %}<div class="erreur">{{ erreur }}</div>{% endif %}
+{% if form.errors and not erreur %}<div class="erreur">E-mail ou mot de passe incorrect.</div>{% endif %}
+<form method="post" action="{% url 'admin:login' %}">{% csrf_token %}
+  <label for="id_username">E-mail</label>
+  <input type="email" name="username" id="id_username" autocomplete="username" autofocus required value="{{ form.username.value|default:'' }}">
+  <label for="id_password">Mot de passe</label>
+  <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn" type="submit">Se connecter</button>
+</form>
+<div class="pied"><a href="{% url 'users:password_reset' %}">Mot de passe oublié ?</a></div>
+{% endblock %}

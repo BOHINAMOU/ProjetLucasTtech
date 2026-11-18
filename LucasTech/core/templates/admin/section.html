@@ -1,22 +1,94 @@
 {% extends "admin/base_site.html" %}
-{% block content_title %}<h1>{{ section.titre }}</h1>{% endblock %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item">{{ section.titre }}</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  .rb { max-width:1180px; }
+  .rb-tete { display:flex; align-items:center; gap:14px; margin:4px 0 22px; }
+  .rb-tete .ic { width:48px; height:48px; border-radius:14px; background:var(--lt-vert-clair); color:var(--lt-vert);
+                 display:flex; align-items:center; justify-content:center; font-size:1.25rem; }
+  .rb-tete h1 { margin:0; font-size:1.6rem; font-weight:800; letter-spacing:-.02em; }
+  .rb-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; margin-bottom:26px; }
+  .rb-kpi { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:16px 18px; }
+  .rb-kpi small { display:block; color:var(--lt-gris); font-weight:600; font-size:.8rem; margin-bottom:6px; }
+  .rb-kpi b { font-size:1.55rem; font-weight:800; letter-spacing:-.02em; }
+  .rb-h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--lt-gris); font-weight:700; margin:0 0 10px; }
+  .rb-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+  .rb-el { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;
+           transition:box-shadow .15s, border-color .15s; }
+  .rb-el:hover { border-color:#cfe3d7; box-shadow:0 6px 18px rgba(11,46,29,.06); }
+  .rb-el .haut { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .rb-el .nom { font-weight:700; }
+  .rb-el .n { font-size:1.4rem; font-weight:800; color:var(--lt-vert); }
+  .rb-el .act { display:flex; gap:8px; margin-top:auto; }
+  .rb-el .act a { flex:1; text-align:center; padding:7px 10px; border-radius:10px; font-weight:600; font-size:.85rem; text-decoration:none; }
+  .rb-el .act .g { background:var(--lt-vert); color:#fff; }
+  .rb-el .act .a { background:var(--lt-vert-clair); color:var(--lt-vert); }
+  .ev-onglets { display:flex; gap:6px; margin:0 0 14px; flex-wrap:wrap; }
+  .ev-onglets a { padding:7px 14px; border-radius:999px; border:1px solid var(--lt-bord); background:#fff; font-weight:600; text-decoration:none; color:var(--lt-texte); font-size:.88rem; }
+  .ev-onglets a.on { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff; }
+  .ev-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:28px; }
+  .ev-carte { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; overflow:hidden; text-decoration:none; color:inherit; }
+  .ev-carte .img { width:100%; aspect-ratio:16/8; object-fit:cover; display:block; background:#e9efeb; }
+  .ev-carte div { padding:12px 14px 14px; }
+  .ev-carte .t { font-weight:700; margin:4px 0; }
+  .ev-carte .m { color:var(--lt-gris); font-size:.85rem; }
+  .pastille { display:inline-block; padding:2px 9px; border-radius:999px; font-size:.75rem; font-weight:700; }
+  .p-cours { background:#E3F5EC; color:#0B7A4B; } .p-venir { background:#EAF1FF; color:#1D4ED8; } .p-passe { background:#F1F2F1; color:#5F6B65; }
+  .p-brouillon { background:#FFF4D6; color:#9A6700; }
+</style>
+{% endblock %}
 {% block content %}
-<div style="max-width:1100px">
+<div class="rb">
+  <div class="rb-tete"><div class="ic"><i class="fas {{ section.icone }}"></i></div><h1>{{ section.titre }}</h1></div>
+
   {% if section.extra %}
-  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-    {% for label, v in section.extra %}
-    <div style="background:#0B7A4B;color:#fff;border-radius:14px;padding:14px 20px;min-width:200px">
-      <div style="opacity:.85;font-size:13px">{{ label }}</div><div style="font-size:26px;font-weight:800">{{ v }}</div></div>
+  <div class="rb-kpis">{% for label, v in section.extra %}<div class="rb-kpi"><small>{{ label }}</small><b>{{ v }}</b></div>{% endfor %}</div>
+  {% endif %}
+
+  {% if onglets %}
+  <p class="rb-h2">Événements</p>
+  <div class="ev-onglets">
+    {% for code, nom, n in onglets %}<a href="?vue={{ code }}" class="{% if code == vue %}on{% endif %}">{{ nom }} · {{ n }}</a>{% endfor %}
+  </div>
+  {% if evenements %}
+  <div class="ev-grille">
+    {% for e in evenements %}
+    <a class="ev-carte" href="{% url 'admin_evenement' e.pk %}">
+      {% if e.cover %}<img class="img" src="{{ e.cover.url }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
+      <div>
+        <span class="pastille p-{{ e.statut_code }}">{{ e.statut }}</span>
+        <div class="t">{{ e.title }}</div>
+        <div class="m">{% if e.starts_at %}{{ e.starts_at|date:"d/m/Y H:i" }}{% else %}Sans date{% endif %}{% if e.location %} · {{ e.location }}{% endif %}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<p style="color:var(--lt-gris);margin-bottom:28px">Aucun événement ici.</p>{% endif %}
+  {% endif %}
+
+  {% if hotels %}
+  <p class="rb-h2">Hôtels</p>
+  <div class="ev-grille">
+    {% for h in hotels %}
+    <a class="ev-carte" href="{% url 'admin_hotel' h.pk %}">
+      {% if h.photo %}<img class="img" src="{{ h.photo.url }}" alt="" loading="lazy">{% else %}<span class="img"></span>{% endif %}
+      <div>
+        {% if not h.actif %}<span class="pastille p-brouillon">Masqué</span>{% endif %}
+        <div class="t">{{ h.nom }}</div>
+        <div class="m">{{ h.ville }} · {{ h.chambres.all|length }} chambre{{ h.chambres.all|length|pluralize }}</div>
+      </div>
+    </a>
     {% endfor %}
   </div>
   {% endif %}
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+
+  <p class="rb-h2">Éléments</p>
+  <div class="rb-grille">
     {% for l in section.lignes %}
-    <div style="background:#fff;border:1px solid #e6eaee;border-radius:14px;padding:16px 18px">
-      <div style="font-size:28px;font-weight:800;color:#0B7A4B">{{ l.n }}</div>
-      <div style="font-weight:700;margin-bottom:10px">{{ l.nom }}</div>
-      <a class="btn btn-sm btn-outline-success" href="{{ l.url }}">Gérer</a>
-      {% if l.ajout %}<a class="btn btn-sm btn-success" href="{{ l.ajout }}">Ajouter</a>{% endif %}
+    <div class="rb-el">
+      <div class="haut"><span class="nom">{{ l.nom }}</span><span class="n">{{ l.n }}</span></div>
+      <div class="act"><a class="g" href="{{ l.url }}">Gérer</a>{% if l.ajout %}<a class="a" href="{{ l.ajout }}">Ajouter</a>{% endif %}</div>
     </div>
     {% endfor %}
   </div>

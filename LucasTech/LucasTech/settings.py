@@ -226,6 +226,7 @@ TEMPLATES = [
                 'core.context_processors.cache_bust',
                 'core.context_processors.site_settings',
                 'core.context_processors.partner_cta',
+                'core.context_admin.rubriques',
                 'Emploi.context_processors.emploi_counters',
 
                 'social_django.context_processors.backends',
@@ -342,6 +343,8 @@ JAZZMIN_SETTINGS = {
     "site_icon": "images/logo.png",
     "site_logo_classes": "img-circle",
     "navigation_expanded": False,
+    # formulaires : sections en cartes les unes sous les autres (plus d'onglets coupés)
+    "changeform_format": "single",
     # Un lien « Tableau de bord » en tête de chaque grand titre (statistiques + gestion).
     "custom_links": {
         "Payments": [{"name": "Tableau de bord", "url": "/lantanteAdminTech/section/paiements/", "icon": "fas fa-chart-pie", "permissions": ["Payments.view_payment"]}],

@@ -1,0 +1,24 @@
+{% load i18n admin_urls jazzmin %}
+{% block submit-row %}
+{# Barre d'actions sobre : « Enregistrer » en principal, le reste dans un menu, « Supprimer » discret #}
+<div class="lt-actions">
+  {% if show_save %}<button type="submit" class="lt-btn lt-btn-p" name="_save"><i class="fas fa-check"></i> Enregistrer</button>{% endif %}
+  {% if show_save_and_continue or show_save_and_add_another or show_save_as_new %}
+  <div class="dropdown lt-plus">
+    <button type="button" class="lt-btn lt-btn-s dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Autres options</button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      {% if show_save_and_continue %}<li><button type="submit" class="dropdown-item" name="_continue">{% if can_change %}Enregistrer et continuer{% else %}Enregistrer et voir{% endif %}</button></li>{% endif %}
+      {% if show_save_and_add_another %}<li><button type="submit" class="dropdown-item" name="_addanother">Enregistrer et ajouter un autre</button></li>{% endif %}
+      {% if show_save_as_new %}<li><button type="submit" class="dropdown-item" name="_saveasnew">Enregistrer comme nouveau</button></li>{% endif %}
+    </ul>
+  </div>
+  {% endif %}
+  {% with r=request.GET.retour|default:'' %}{% if r|slice:':19' == '/lantanteAdminTech/' %}<a href="{{ r }}" class="lt-btn lt-btn-s">Fermer</a>{% elif show_close %}<a href="{% url opts|admin_urlname:'changelist' %}" class="lt-btn lt-btn-s">Fermer</a>{% endif %}{% endwith %}
+  {% if original and original.get_absolute_url %}<a href="{{ original.get_absolute_url }}" target="_blank" rel="noopener" class="lt-btn lt-btn-s"><i class="fas fa-eye"></i> Voir sur le site</a>{% endif %}
+  {% if show_delete_link and original %}
+    {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
+    <a href="{% add_preserved_filters delete_url %}{% if request.GET.retour %}{% if '?' in delete_url %}&{% else %}?{% endif %}retour={{ request.GET.retour|urlencode }}{% endif %}" class="lt-suppr"><i class="fas fa-trash"></i> Supprimer</a>
+  {% endif %}
+  {% block extra-actions %}{% endblock %}
+</div>
+{% endblock %}

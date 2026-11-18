@@ -249,40 +249,20 @@ def build_delegue(request):
     return {'greeting': u.first_name or u.email, 'cartes': cartes}
 
 
-SECTIONS = {
-    'paiements': ("Paiements", [('Payments.Payment', 'Paiements')]),
-    'concours': ("Concours", [('concours.Contest', 'Concours'), ('concours.ContestSession', 'Années'),
-                              ('concours.ExamPaper', 'Épreuves'), ('concours.Correction', 'Corrigés'),
-                              ('abonnements.UserSubscription', 'Abonnements (anciens)')]),
-    'boutique': ("Boutique", [('Shop.Product', 'Produits'), ('Shop.Category', 'Catégories'), ('Shop.ShopOrder', 'Commandes'),
-                              ('Marche.ReglageLivraison', 'Livraisons'), ('Payments.CodePromo', 'Codes promo')]),
-    'vendeurs': ("Vendeurs", [('Marche.Vendeur', 'Vendeurs'), ('Marche.CategorieVendeur', 'Catégories des vendeurs'),
-                              ('Marche.DemandeVendeur', 'Demandes'), ('Marche.Reversement', 'Reversements')]),
-    'emplois': ("Emplois", [('Offres.OffreEmploi', "Offres d'emploi")]),
-    'hotels': ("Hôtels", [('Hotels.Hotel', 'Hôtels'), ('Hotels.Chambre', 'Chambres')]),
-    'logements': ("Location de chambres ou appartements", [('Logements.Logement', 'Annonces de location')]),
-    'formations': ("Formations", [('Formations.Formation', 'Formations'), ('Formations.Registration', 'Inscriptions')]),
-    'evenements': ("Événements", [('Events.Event', 'Événements'), ('Events.Ticket', 'Tickets')]),
-    'ecoles': ("Écoles", [('Ecoles.Ecole', 'Écoles'), ('Ecoles.Filiere', 'Filières')]),
-    'repetiteurs': ("Répétiteurs", [('Repetiteurs.Repetiteur', 'Répétiteurs'), ('Repetiteurs.Candidature', 'Candidatures'),
-                                    ('Repetiteurs.ReglageCandidature', 'Réglages des candidatures')]),
-    'publications': ("Actualités", [('Publications.Publication', 'Articles'), ('Publications.PublicationCategory', 'Catégories'),
-                                    ('Publications.PublicationComment', 'Commentaires'),
-                                    ('Publications.PublicationLike', "J'aime")]),
-    'services': ("Services", [('Services.Service', 'Services'), ('Services.InscriptionService', 'Inscriptions'),
-                              ('Services.ServiceCategory', 'Catégories')]),
-    'notifications': ("Notifications et accueil", [('api_mobile.Notification', 'Notifications'),
-                                                   ('api_mobile.CarouselItem', "Carrousel de l'accueil")]),
-    'utilisateurs': ("Utilisateurs et rôles", [('Users.User', 'Utilisateurs'), ('core.Delegation', 'Rôles délégués')]),
-}
+from .rubriques import RUBRIQUES, modeles as _modeles_rubrique  # noqa: E402
+
+# grands titres de l'admin (titre, éléments) — la source unique est core/rubriques.py
+SECTIONS = {code: (titre, liste) for code, (titre, icone, liste) in RUBRIQUES.items()}
 
 
 def build_section(request, code):
     """Page d'un grand titre : chiffres de chaque élément + liens « Gérer » / « Ajouter »."""
-    titre, modeles = SECTIONS[code]
+    titre = SECTIONS[code][0]
+    icone = RUBRIQUES[code][1]
+    modeles = _modeles_rubrique(code)
     lignes = []
     if code == 'paiements' and not request.user.is_superuser:
-        return {'titre': titre, 'lignes': [], 'extra': []}
+        return {'titre': titre, 'icone': icone, 'lignes': [], 'extra': []}
     for label, nom in modeles:
         m = _model(label)
         if not m:
@@ -300,7 +280,7 @@ def build_section(request, code):
         lignes.append({'nom': nom, 'n': n, 'url': _url(label), 'ajout': ajout})
     extra = []
     if not request.user.is_superuser:  # chiffres d'argent : super-admins seulement
-        return {'titre': titre, 'lignes': lignes, 'extra': _chiffres(code) if lignes else []}
+        return {'titre': titre, 'icone': icone, 'lignes': lignes, 'extra': _chiffres(code) if lignes else []}
     P = _model('Payments.Payment')
     kinds = {'paiements': None, 'concours': ('concours', 'abonnement'), 'boutique': ('product', 'shop'),
              'formations': ('formation',), 'evenements': ('ticket', 'soutien'), 'services': ('service',)}
@@ -310,7 +290,7 @@ def build_section(request, code):
             ok = ok.filter(kind__in=kinds[code])
         extra = [('Encaissé', _f(ok.aggregate(s=Sum('amount'))['s'])), ('Paiements réussis', ok.count())]
     extra += _chiffres(code)
-    return {'titre': titre, 'lignes': lignes, 'extra': extra}
+    return {'titre': titre, 'icone': icone, 'lignes': lignes, 'extra': extra}
 
 
 def _chiffres(code):

@@ -4,6 +4,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.http import HttpResponse
 from core import views as core_views
 from django.urls import path, include, re_path
+from core import admin_connexion, admin_evenements, admin_hotels
 from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve as serve_static
 
@@ -31,6 +32,10 @@ urlpatterns = [
     re_path(r'^(?:emploi|app)(?:/.*)?$', RedirectView.as_view(url='/', permanent=False)),
     re_path(r'^app/(?P<path>.*)$', webapp, name='webapp'),
     path('users/',        include('Users.urls', namespace='users')),
+    path('lantanteAdminTech/verification/', admin_connexion.verification, name='admin_verification'),
+    path('lantanteAdminTech/section/evenements/<int:pk>/', admin_evenements.tableau, name='admin_evenement'),
+    path('lantanteAdminTech/section/hotels/<int:pk>/', admin_hotels.fiche, name='admin_hotel'),
+    path('lantanteAdminTech/section/evenements/<int:pk>/export/', admin_evenements.export_csv, name='admin_evenement_csv'),
     path('lantanteAdminTech/section/<slug:code>/', core_views.admin_section, name='admin_section'),
     path('lantanteAdminTech/', admin.site.urls),
     path('shop/',         include('Shop.urls')),

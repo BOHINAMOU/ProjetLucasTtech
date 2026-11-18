@@ -1,0 +1,39 @@
+{% extends "admin/_connexion_style.html" %}
+{% block titre %}Code de connexion{% endblock %}
+{% block corps %}
+<h1>Code de vérification</h1>
+<p class="sous">Entrez le code à 6 chiffres envoyé à <b>{{ email }}</b>.</p>
+{% if erreur %}<div class="erreur">{{ erreur }}</div>{% endif %}
+{% if info %}<div class="info">{{ info }}</div>{% endif %}
+<form method="post" id="f">{% csrf_token %}
+  <div class="cases" id="cases">
+    {% for i in "123456" %}<input inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="Chiffre {{ i }}">{% endfor %}
+  </div>
+  <input type="hidden" name="code" id="code">
+  <label class="retenir"><input type="checkbox" name="retenir" value="1"> Se souvenir de cet appareil 30 jours</label>
+  <button class="btn" type="submit">Valider</button>
+</form>
+<form method="post" style="text-align:center;margin-top:14px">{% csrf_token %}<button class="lien" name="renvoyer" value="1">Renvoyer le code</button></form>
+<div class="pied"><a href="{% url 'admin:login' %}">Retour</a></div>
+<script>
+  (function () {
+    var c = Array.from(document.querySelectorAll('#cases input')), h = document.getElementById('code');
+    function maj() { h.value = c.map(function (x) { return x.value; }).join(''); }
+    c.forEach(function (x, i) {
+      x.addEventListener('input', function () {
+        x.value = x.value.replace(/\D/g, '').slice(-1); maj();
+        if (x.value && i < c.length - 1) c[i + 1].focus();
+        if (h.value.length === 6) document.getElementById('f').submit();
+      });
+      x.addEventListener('keydown', function (e) { if (e.key === 'Backspace' && !x.value && i > 0) c[i - 1].focus(); });
+      x.addEventListener('paste', function (e) {
+        var t = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+        if (!t) return; e.preventDefault();
+        t.split('').forEach(function (d, k) { if (c[k]) c[k].value = d; }); maj();
+        if (t.length === 6) document.getElementById('f').submit();
+      });
+    });
+    c[0].focus();
+  })();
+</script>
+{% endblock %}

@@ -381,3 +381,14 @@ class Delegation(models.Model):
         super().save(*args, **kwargs)
         from .delegations import appliquer
         appliquer(self)
+
+
+class Exemption2FA(models.Model):
+    """Compte dispensé du code par e-mail (secours : `manage.py deux_facteurs desactiver <email>`)."""
+    user = models.OneToOneField("Users.User", on_delete=models.CASCADE, related_name="exemption_2fa")
+    motif = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Dispense de code de connexion"
+        verbose_name_plural = "Dispenses de code de connexion"

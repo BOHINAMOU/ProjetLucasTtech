@@ -1,0 +1,77 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item"><a href="/lantanteAdminTech/section/hotels/">Hôtels</a></li><li class="breadcrumb-item">{{ h.nom|truncatechars:40 }}</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  .ho { max-width:1180px; }
+  .ho-tete { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:20px; margin-bottom:18px; }
+  @media (max-width: 900px) { .ho-tete { grid-template-columns:1fr; } }
+  .ho-photo { width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:16px; border:1px solid var(--lt-bord); background:#e9efeb; }
+  .ho-info { background:#fff; border:1px solid var(--lt-bord); border-radius:16px; padding:20px; }
+  .ho-info h1 { font-size:1.5rem; font-weight:800; letter-spacing:-.02em; margin:0 0 4px; }
+  .ho-info .m { color:var(--lt-gris); margin-bottom:12px; }
+  .etoiles { color:#F59E0B; }
+  .ho-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .ho-actions a { padding:9px 14px; border-radius:10px; font-weight:600; font-size:.88rem; text-decoration:none; border:1px solid var(--lt-bord); background:#fff; color:var(--lt-texte); }
+  .ho-actions a.p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff; }
+  .eq { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .eq span { background:var(--lt-vert-clair); color:#0B5A38; border-radius:999px; padding:4px 10px; font-size:.8rem; font-weight:600; }
+  .kp { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; margin-bottom:18px; }
+  .kp div { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:14px 16px; }
+  .kp small { display:block; color:var(--lt-gris); font-weight:600; font-size:.8rem; margin-bottom:4px; }
+  .kp b { font-size:1.3rem; font-weight:800; }
+  .ch-tete { display:flex; justify-content:space-between; align-items:center; margin:8px 0 12px; }
+  .ch-tete h2 { font-size:1.1rem; font-weight:800; margin:0; }
+  .ch-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+  .ch { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+  .ch .img { width:100%; aspect-ratio:16/10; object-fit:cover; background:#e9efeb; display:block; }
+  .ch .c { padding:12px 14px 14px; display:flex; flex-direction:column; gap:4px; flex:1; }
+  .ch .t { font-weight:700; }
+  .ch .px { color:var(--lt-vert); font-weight:800; }
+  .ch .m { color:var(--lt-gris); font-size:.85rem; }
+  .ch .a { display:flex; gap:8px; margin-top:10px; }
+  .ch .a a { flex:1; text-align:center; padding:7px; border-radius:10px; font-weight:600; font-size:.85rem; text-decoration:none; }
+  .ch .a .mo { background:var(--lt-vert-clair); color:var(--lt-vert); }
+  .ch .a .su { color:#B42318; border:1px solid #f2d0cc; }
+  .vide { background:#fff; border:1px dashed #b9d8c6; border-radius:14px; padding:24px; text-align:center; color:var(--lt-gris); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="ho">
+  <div class="ho-tete">
+    {% if h.photo %}<img class="ho-photo" src="{{ h.photo.url }}" alt="">{% else %}<div class="ho-photo"></div>{% endif %}
+    <div class="ho-info">
+      <h1>{{ h.nom }}</h1>
+      <div class="m">{% if h.etoiles %}<span class="etoiles">{% for i in "12345"|make_list|slice:h.etoiles %}★{% endfor %}</span> · {% endif %}{% if h.quartier %}{{ h.quartier }}, {% endif %}{{ h.ville }}{% if not h.actif %} · <b style="color:#9A6700">Masqué</b>{% endif %}</div>
+      {% if h.description %}<div style="line-height:1.6">{{ h.description|truncatewords:60 }}</div>{% endif %}
+      {% if equipements %}<div class="eq">{% for e in equipements %}<span>{{ e }}</span>{% endfor %}</div>{% endif %}
+      <div class="ho-actions">
+        <a class="p" href="{{ liens.modifier }}"><i class="fas fa-pen"></i> Modifier l'hôtel</a>
+        <a href="{{ liens.ajouter }}"><i class="fas fa-plus"></i> Ajouter une chambre</a>
+        <a href="{{ liens.site }}" target="_blank" rel="noopener"><i class="fas fa-eye"></i> Voir</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="kp">{% for label, v in kpis %}<div><small>{{ label }}</small><b>{{ v }}</b></div>{% endfor %}</div>
+
+  <div class="ch-tete"><h2>Chambres</h2><a class="lt-btn lt-btn-p" href="{{ liens.ajouter }}"><i class="fas fa-plus"></i> Ajouter une chambre</a></div>
+  {% if chambres %}
+  <div class="ch-grille">
+    {% for x in chambres %}
+    <div class="ch">
+      {% if x.photo %}<img class="img" src="{{ x.photo }}" alt="">{% else %}<span class="img"></span>{% endif %}
+      <div class="c">
+        <span class="t">{{ x.c.nom }}{% if not x.c.actif %} <small style="color:#9A6700">(masquée)</small>{% endif %}</span>
+        <span class="px">{{ x.prix }}{% if x.c.prix_nuit %} / nuit{% endif %}</span>
+        {% if x.c.capacite %}<span class="m">{{ x.c.capacite }} personne{{ x.c.capacite|pluralize }}</span>{% endif %}
+        <div class="a"><a class="mo" href="{{ x.modifier }}">Modifier</a><a class="su" href="{{ x.supprimer }}">Supprimer</a></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="vide">Aucune chambre pour le moment. <a href="{{ liens.ajouter }}">Ajouter la première chambre</a></div>
+  {% endif %}
+</div>
+{% endblock %}

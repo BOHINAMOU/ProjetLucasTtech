@@ -282,4 +282,10 @@ def admin_section(request, code):
     if not section['lignes']:
         raise Http404
     ctx = dict(_admin.site.each_context(request), section=section, title=SECTIONS[code][0])
+    if code == 'evenements':
+        from .admin_evenements import onglets
+        ctx['onglets'], ctx['vue'], ctx['evenements'] = onglets(request)
+    if code == 'hotels':
+        from .admin_hotels import cartes
+        ctx['hotels'] = cartes(request)
     return render(request, 'admin/section.html', ctx)
