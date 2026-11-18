@@ -193,7 +193,7 @@ class AccesVendeurTests(TestCase):
         from Marche.acces_vendeur import fin_pour, reactiver, suspendre
         from Shop.models import Product
         suspendre(self.v)
-        self.assertEqual(self.client.get(self.v.lien_public()).status_code, 404)
+        self.assertContains(self.client.get(self.v.lien_public()), 'momentanément indisponible', status_code=503)
         self.assertFalse(Product.en_vente().filter(pk=self.p.pk).exists())
         self.assertTrue(Product.objects.filter(pk=self.p.pk, is_available=True).exists())  # rien d'effacé
         self.client.login(email='vend@x.tg', password='Motdepasse-1')
@@ -226,5 +226,47 @@ class AccesVendeurTests(TestCase):
     def test_mon_lien(self):
         self.client.login(email='vend@x.tg', password='Motdepasse-1')
         r = self.client.get(f'/espace/{self.v.code}/mon-lien/')
-        self.assertContains(r, '/shop/vendeur/ma-boutique/')
+        self.assertContains(r, '/s/ma-boutique/')
         self.assertContains(r, 'Partager sur WhatsApp')
+
+
+@override_settings(STORAGES={'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+                             'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
+class MiniSiteTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from Marche.models import SectionSite, Vendeur
+        from Shop.models import Product
+        self.u = get_user_model().objects.create_user(email='ms@x.tg', password='Motdepasse-1')
+        self.v = Vendeur.objects.create(user=self.u, boutique='Mode Ama', whatsapp='22890000000', ville='Lomé',
+                                        statut='valide', slogan='Le pagne autrement', couleur='#AA3366')
+        SectionSite.objects.create(vendeur=self.v, titre='Notre histoire', texte='Depuis 2015.')
+        self.p = Product.objects.create(name='Robe wax', price=15000, vendeur=self.v, stock=2)
+
+    def test_pages_du_mini_site(self):
+        r = self.client.get('/s/mode-ama/')
+        self.assertContains(r, 'Le pagne autrement')
+        self.assertContains(r, 'Notre histoire')
+        self.assertContains(r, '#AA3366')
+        self.assertNotContains(r, 'Monétisation')  # aucun menu Lantante
+        self.assertContains(self.client.get('/s/mode-ama/produits/?q=robe'), 'Robe wax')
+        r = self.client.get(f'/s/mode-ama/produits/{self.p.pk}/')
+        self.assertContains(r, 'Commander sur WhatsApp')
+        self.assertContains(self.client.get('/s/mode-ama/contact/'), 'wa.me/22890000000')
+
+    def test_ancienne_adresse_et_espace(self):
+        r = self.client.get('/shop/vendeur/mode-ama/')
+        self.assertEqual((r.status_code, r['Location']), (301, '/s/mode-ama/'))
+        self.client.login(email='ms@x.tg', password='Motdepasse-1')
+        r = self.client.get(f'/espace/{self.v.code}/mon-site/')
+        self.assertContains(r, 'Sections de l')
+        data = {'site-boutique': 'Mode Ama', 'site-slogan': 'Nouveau slogan', 'site-couleur': '#112233',
+                'site-whatsapp': '90000000', 'site-ville': 'Lomé', 'site-description': '', 'site-telephone': '',
+                'site-email_contact': '', 'site-adresse_retrait': '', 'site-facebook': '', 'site-instagram': '', 'site-tiktok': '',
+                'sec-TOTAL_FORMS': '2', 'sec-INITIAL_FORMS': '1', 'sec-MIN_NUM_FORMS': '0', 'sec-MAX_NUM_FORMS': '8',
+                'sec-0-id': str(self.v.sections.first().pk), 'sec-0-titre': 'Notre histoire', 'sec-0-texte': 'x', 'sec-0-ordre': '1',
+                'sec-1-titre': 'Livraison', 'sec-1-texte': 'Partout à Lomé', 'sec-1-ordre': '2'}
+        r = self.client.post(f'/espace/{self.v.code}/mon-site/', data)
+        self.assertEqual(r.status_code, 302)
+        self.v.refresh_from_db()
+        self.assertEqual((self.v.slogan, self.v.couleur, self.v.sections.count()), ('Nouveau slogan', '#112233', 2))

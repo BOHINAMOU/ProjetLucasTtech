@@ -18,4 +18,5 @@ urlpatterns = [
     path('<str:code>/commandes/', e.commandes, name='commandes'),
     path('<str:code>/parametres/', e.parametres, name='parametres'),
     path('<str:code>/mon-lien/', e.mon_lien, name='mon_lien'),
+    path('<str:code>/mon-site/', e.mon_site, name='mon_site'),
 ]

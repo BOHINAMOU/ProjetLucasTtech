@@ -1,0 +1,44 @@
+{% extends 'minisite/base.html' %}
+{% block titre %}Contact · {{ v.boutique }}{% endblock %}
+{% block tete %}<style>
+  .ct { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; align-items:start; margin-top:32px; }
+  .ct .acts { display:flex; flex-direction:column; gap:12px; }
+  .ct .acts .btn { width:100%; height:56px; font-size:1.05rem; }
+  .ct .inf { border:1px solid var(--b); border-radius:16px; overflow:hidden; }
+  .ct .inf div { display:flex; gap:12px; padding:16px 18px; border-bottom:1px solid var(--b); align-items:flex-start; }
+  .ct .inf div:last-child { border-bottom:0; }
+  .ct .inf b { display:block; font-size:.82rem; color:var(--m); font-weight:600; margin-bottom:2px; }
+  .ct .inf .ic { width:38px; height:38px; border-radius:10px; background:color-mix(in srgb, var(--c) 12%, white); color:var(--c); display:flex; align-items:center; justify-content:center; flex:0 0 auto; font-weight:800; }
+  .reseaux { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .reseaux a { height:42px; padding:0 16px; border-radius:10px; border:1px solid var(--b); display:inline-flex; align-items:center; font-weight:600; }
+  .carte-map { margin-top:24px; border-radius:16px; overflow:hidden; border:1px solid var(--b); }
+  .carte-map iframe { width:100%; height:300px; border:0; display:block; }
+  @media (max-width:760px) { .ct { grid-template-columns:1fr; } }
+</style>{% endblock %}
+{% block contenu %}
+<div class="in" style="padding-top:32px">
+  <h1 class="h2">Contact</h1>
+  <p class="sous">Écrivez-nous ou appelez-nous, nous répondons vite.</p>
+  <div class="ct">
+    <div class="acts">
+      {% if wa %}<a class="btn wa" href="{{ wa }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
+      {% if tel %}<a class="btn" href="tel:+{{ tel }}">Appeler</a>{% endif %}
+      {% if v.email_contact %}<a class="btn cl" href="mailto:{{ v.email_contact }}">Envoyer un e-mail</a>{% endif %}
+      {% if v.facebook or v.instagram or v.tiktok %}<div class="reseaux">
+        {% if v.facebook %}<a href="{{ v.facebook }}" target="_blank" rel="noopener">Facebook</a>{% endif %}
+        {% if v.instagram %}<a href="{{ v.instagram }}" target="_blank" rel="noopener">Instagram</a>{% endif %}
+        {% if v.tiktok %}<a href="{{ v.tiktok }}" target="_blank" rel="noopener">TikTok</a>{% endif %}
+      </div>{% endif %}
+    </div>
+    <div class="inf">
+      {% if v.whatsapp %}<div><span class="ic">W</span><span><b>WhatsApp</b>+{{ v.whatsapp }}</span></div>{% endif %}
+      {% if v.telephone %}<div><span class="ic">T</span><span><b>Téléphone</b>{{ v.telephone }}</span></div>{% endif %}
+      {% if v.email_contact %}<div><span class="ic">@</span><span><b>E-mail</b>{{ v.email_contact }}</span></div>{% endif %}
+      {% if v.adresse_retrait or v.ville %}<div><span class="ic">⌂</span><span><b>Adresse</b>{% if v.adresse_retrait %}{{ v.adresse_retrait }}, {% endif %}{{ v.ville }}</span></div>{% endif %}
+    </div>
+  </div>
+  {% if carte %}
+  <div class="carte-map"><iframe loading="lazy" title="Carte" src="{{ carte }}"></iframe></div>
+  {% endif %}
+</div>
+{% endblock %}

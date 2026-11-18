@@ -21,6 +21,13 @@ def comptes(v):
             'reverse': reverse, 'reste': du - reverse}
 
 
+class SectionSiteInline(admin.StackedInline):
+    from .models import SectionSite as model  # noqa: N811
+    extra = 0
+    fields = [('titre', 'ordre'), 'texte', 'image']
+    verbose_name_plural = "Sections de l'accueil du site"
+
+
 class ReversementInline(admin.TabularInline):
     model = Reversement
     extra = 0
@@ -104,7 +111,7 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
     list_filter = [EtatVendeurFiltre, 'ville']
     search_fields = ['boutique', 'user__email', 'ville']
     autocomplete_fields = ['user']
-    inlines = [ReversementInline]
+    inlines = [ReversementInline, SectionSiteInline]
     readonly_fields = ['chiffres', 'lien']
     fieldsets = (
         (None, {'fields': ('user', 'boutique', 'whatsapp', 'statut', 'lien')}),
@@ -114,6 +121,9 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
         ('Point de retrait', {'fields': ('ville', 'adresse_retrait', 'latitude', 'longitude'),
                               'description': "Position GPS : dans Google Maps, appui long sur le lieu, puis copier les deux nombres."}),
         ('Argent', {'fields': ('commission_pct', 'numero_reversement', 'chiffres')}),
+        ("Site du vendeur", {'fields': ('slug', 'logo', 'banniere', 'slogan', 'couleur', 'description', 'telephone',
+                                        'email_contact', 'facebook', 'instagram', 'tiktok'),
+                             'description': "Mini-site public : /s/<adresse>/"}),
     )
 
     def get_queryset(self, request):

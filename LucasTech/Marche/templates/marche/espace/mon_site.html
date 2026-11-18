@@ -1,0 +1,94 @@
+{% extends 'marche/espace/base.html' %}
+{% block titre %}Mon site{% endblock %}
+{% block tete %}<style>
+main { max-width:1400px; }
+.ms-deux { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; }
+.ms-bloc { margin-bottom:16px; }
+.ms-bloc h2 { font-size:1.05rem; font-weight:800; margin:0 0 14px; }
+.sec { border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; background:#FAFBF9; }
+.sec .ent { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:700; }
+.sec .ent label { display:flex; align-items:center; gap:6px; font-weight:600; color:var(--danger); font-size:.88rem; }
+.sec img.ap { width:100%; max-height:160px; object-fit:cover; border-radius:10px; margin-bottom:8px; }
+.ap-ban { width:100%; aspect-ratio:3/1; border-radius:12px; object-fit:cover; background:var(--gl); margin-bottom:8px; display:block; }
+.apercu { position:sticky; top:20px; }
+.apercu .cadre { border:1px solid var(--line); border-radius:16px; overflow:hidden; background:#fff; height:calc(100vh - 140px); }
+.apercu iframe { width:100%; height:100%; border:0; }
+.apercu .bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.champ input[type=color] { height:48px; padding:4px; width:100px; }
+@media (max-width: 1100px) { .ms-deux { grid-template-columns:minmax(0,1fr); } .apercu { position:static; } .apercu .cadre { height:560px; } }
+</style>{% endblock %}
+{% block contenu %}
+<div class="tete">
+  <div><h1>Mon site</h1><p>Votre propre site, à votre nom. Vos clients y voient seulement vos produits.</p></div>
+</div>
+{% if ok %}<div class="alerte ok">Enregistré. L'aperçu est à jour.</div>{% endif %}
+{% if form.errors or fs.total_error_count %}<div class="alerte">Vérifiez les champs en rouge.</div>{% endif %}
+
+<div class="ms-deux">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="carte ms-bloc">
+      <h2>Identité</h2>
+      <div class="grille">
+        {% for f in form %}{% if f.name in 'boutique slogan couleur' %}
+        <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
+        {% endif %}{% endfor %}
+      </div>
+      <div class="grille">
+        <div class="champ"><label for="{{ form.logo.id_for_label }}">Logo</label>{% if v.logo %}<img src="{{ v.logo.url }}" alt="" style="width:64px;height:64px;border-radius:14px;object-fit:cover">{% endif %}{{ form.logo }}</div>
+        <div class="champ"><label for="{{ form.banniere.id_for_label }}">Image de bannière</label>{% if v.banniere %}<img class="ap-ban" src="{{ v.banniere.url }}" alt="">{% endif %}{{ form.banniere }}<small>Grande image en haut de votre site.</small></div>
+      </div>
+      <div class="champ"><label for="{{ form.description.id_for_label }}">Présentation</label>{{ form.description }}</div>
+    </div>
+
+    <div class="carte ms-bloc">
+      <h2>Sections de l'accueil</h2>
+      {{ fs.management_form }}
+      {% for f in fs %}
+      <div class="sec">
+        {{ f.id }}
+        <div class="ent"><span>{% if f.instance.pk %}{{ f.instance.titre }}{% else %}Nouvelle section{% endif %}</span>
+          {% if f.instance.pk %}<label>{{ f.DELETE }} Supprimer</label>{% endif %}</div>
+        {% if f.instance.image %}<img class="ap" src="{{ f.instance.image.url }}" alt="">{% endif %}
+        <div class="grille">
+          <div class="champ"><label for="{{ f.titre.id_for_label }}">Titre</label>{{ f.titre }}{% for e in f.titre.errors %}<em>{{ e }}</em>{% endfor %}</div>
+          <div class="champ"><label for="{{ f.ordre.id_for_label }}">Position</label>{{ f.ordre }}</div>
+        </div>
+        <div class="champ"><label for="{{ f.texte.id_for_label }}">Texte</label>{{ f.texte }}</div>
+        <div class="champ"><label for="{{ f.image.id_for_label }}">Image</label>{{ f.image }}</div>
+      </div>
+      {% endfor %}
+      <small style="color:var(--mut)">Une nouvelle section vide apparaît à chaque enregistrement (8 au maximum). Position : 1 en haut, 2 dessous…</small>
+    </div>
+
+    <div class="carte ms-bloc">
+      <h2>Contacts</h2>
+      <div class="grille">
+        {% for f in form %}{% if f.name in 'whatsapp telephone email_contact ville adresse_retrait facebook instagram tiktok' %}
+        <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% if f.help_text %}<small>{{ f.help_text }}</small>{% endif %}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+    <button class="btn" type="submit" style="width:100%">Enregistrer</button>
+  </form>
+
+  <div class="apercu">
+    <div class="bar">
+      {% if lien %}<a class="btn" href="{{ lien }}" target="_blank" rel="noopener"><span class="ms">open_in_new</span>Voir mon site</a>
+      <button class="btn ghost" type="button" id="copier" data-l="{{ lien }}"><span class="ms">content_copy</span>Copier mon lien</button>{% endif %}
+    </div>
+    {% if lien %}<div class="cadre"><iframe src="{{ lien }}" title="Aperçu de mon site"></iframe></div>
+    {% else %}<div class="alerte">Votre site sera visible après la validation de votre boutique.</div>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block js %}<script>
+(function () {
+  var b = document.getElementById('copier'); if (!b) return;
+  b.addEventListener('click', function () {
+    var l = b.dataset.l;
+    function fini() { b.lastChild.textContent = 'Copié'; setTimeout(function () { b.lastChild.textContent = 'Copier mon lien'; }, 2000); }
+    if (navigator.clipboard) navigator.clipboard.writeText(l).then(fini); else { prompt('Votre lien', l); }
+  });
+})();
+</script>{% endblock %}

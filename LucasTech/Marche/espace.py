@@ -314,3 +314,53 @@ def parametres(request, v):
         form.save()
         ok = True
     return render(request, 'marche/espace/parametres.html', {'v': v, 'page': 'parametres', 'form': form, 'ok': ok})
+
+
+# ── Mon site (mini-site du vendeur) ──
+
+class SiteForm(forms.ModelForm):
+    class Meta:
+        model = Vendeur
+        fields = ['boutique', 'slogan', 'logo', 'banniere', 'couleur', 'description', 'whatsapp', 'telephone',
+                  'email_contact', 'ville', 'adresse_retrait', 'facebook', 'instagram', 'tiktok']
+        labels = {'boutique': "Nom de la boutique", 'adresse_retrait': "Adresse", 'description': "Présentation"}
+        help_texts = {'whatsapp': "+228 suivi de 8 chiffres.", 'couleur': '', 'banniere': "Grande image en haut de votre site."}
+        widgets = {'couleur': forms.TextInput(attrs={'type': 'color'}),
+                   'whatsapp': forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel'}),
+                   'telephone': forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel'}),
+                   'description': forms.Textarea(attrs={'rows': 3})}
+
+    def clean_whatsapp(self):
+        return whatsapp_togo(self.cleaned_data.get('whatsapp'))
+
+    def clean_couleur(self):
+        import re
+        c = (self.cleaned_data.get('couleur') or '').strip()
+        return c if re.match(r'^#[0-9a-fA-F]{6}$', c) else '#0F6B3E'
+
+
+def _sections_formset():
+    from .models import SectionSite
+    return forms.modelformset_factory(
+        SectionSite, fields=['titre', 'texte', 'image', 'ordre'], extra=1, can_delete=True, max_num=8,
+        labels={'titre': "Titre", 'texte': "Texte", 'image': "Image", 'ordre': "Position"},
+        widgets={'texte': forms.Textarea(attrs={'rows': 3}), 'ordre': forms.NumberInput(attrs={'min': 0, 'max': 20})})
+
+
+@espace
+def mon_site(request, v):
+    FS = _sections_formset()
+    form = SiteForm(request.POST or None, request.FILES or None, instance=v, prefix='site')
+    fs = FS(request.POST or None, request.FILES or None, queryset=v.sections.all(), prefix='sec')
+    ok = False
+    if request.method == 'POST' and form.is_valid() and fs.is_valid():
+        form.save()
+        for s in fs.save(commit=False):
+            s.vendeur = v
+            s.save()
+        for s in fs.deleted_objects:
+            s.delete()
+        return redirect(f"{request.path}?ok=1")
+    return render(request, 'marche/espace/mon_site.html', {
+        'v': v, 'page': 'site', 'form': form, 'fs': fs, 'ok': request.GET.get('ok') == '1',
+        'lien': _lien_public(request, v)})

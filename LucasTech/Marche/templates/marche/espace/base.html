@@ -96,6 +96,7 @@ th { color: var(--mut); font-weight: 600; font-size: .78rem; text-transform: upp
       <a href="{% url 'espace:produits' v.code %}" class="{% if page == 'produits' %}on{% endif %}"><span class="ms">inventory_2</span>Mes produits</a>
       <a href="{% url 'espace:categories' v.code %}" class="{% if page == 'categories' %}on{% endif %}"><span class="ms">category</span>Mes catégories</a>
       <a href="{% url 'espace:commandes' v.code %}" class="{% if page == 'commandes' %}on{% endif %}"><span class="ms">receipt_long</span>Commandes</a>
+      <a href="{% url 'espace:mon_site' v.code %}" class="{% if page == 'site' %}on{% endif %}"><span class="ms">web</span>Mon site</a>
       <a href="{% url 'espace:mon_lien' v.code %}" class="{% if page == 'lien' %}on{% endif %}"><span class="ms">link</span>Mon lien</a>
       <a href="{% url 'espace:parametres' v.code %}" class="{% if page == 'parametres' %}on{% endif %}"><span class="ms">settings</span>Paramètres</a>
       <div class="bas">

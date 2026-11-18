@@ -62,6 +62,15 @@ class Vendeur(models.Model):
     logo = models.ImageField("Logo", upload_to='vendeurs/logos/', blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     description = models.TextField("Description", blank=True)
+    # Mini-site du vendeur (/s/<adresse>/)
+    banniere = models.ImageField("Image de bannière", upload_to='vendeurs/bannieres/', blank=True)
+    slogan = models.CharField("Phrase d'accueil", max_length=140, blank=True)
+    couleur = models.CharField("Couleur principale", max_length=7, default='#0F6B3E',
+                               help_text="Code couleur, ex. #0F6B3E")
+    email_contact = models.EmailField("E-mail de contact", blank=True)
+    facebook = models.URLField("Facebook", blank=True)
+    instagram = models.URLField("Instagram", blank=True)
+    tiktok = models.URLField("TikTok", blank=True)
     created_at = models.DateTimeField("Créé le", auto_now_add=True)
 
     class Meta:
@@ -98,7 +107,7 @@ class Vendeur(models.Model):
 
     def lien_public(self):
         from django.urls import reverse
-        return reverse('shop:vendeur', args=[self.slug]) if self.slug else ''
+        return reverse('minisite:accueil', args=[self.slug]) if self.slug else ''
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -238,3 +247,20 @@ class ContactVendeur(models.Model):
         from urllib.parse import quote
         n = ''.join(c for c in self.telephone if c.isdigit())
         return f"https://wa.me/{n}?text={quote(f'Bonjour {self.nom}, ici Lantante. Merci pour votre demande pour « {self.boutique} ».')}"
+
+
+class SectionSite(models.Model):
+    """Bloc de la page d'accueil du mini-site d'un vendeur : titre, texte, image."""
+    vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, related_name='sections')
+    titre = models.CharField("Titre", max_length=120)
+    texte = models.TextField("Texte", blank=True)
+    image = models.ImageField("Image", upload_to='vendeurs/sections/', blank=True)
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+
+    class Meta:
+        verbose_name = "Section du site"
+        verbose_name_plural = "Sections du site"
+        ordering = ['ordre', 'pk']
+
+    def __str__(self):
+        return self.titre

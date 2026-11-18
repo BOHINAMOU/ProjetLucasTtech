@@ -14,6 +14,7 @@ from .sitemaps import sitemaps
 urlpatterns = [
     path('repetiteurs/', include('Repetiteurs.urls')),
     path('vendre/', include('Marche.urls_vendre')),
+    path('s/', include('Marche.urls_minisite')),
     path('emplois/', include('Offres.urls')),
     path('hotels/', include('Hotels.urls')),
     path('location/', include('Logements.urls')),

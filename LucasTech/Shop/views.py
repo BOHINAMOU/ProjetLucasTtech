@@ -359,25 +359,7 @@ def add_review(request, pk):
 
 
 def vendeur_boutique(request, slug):
-    """Page publique d'un vendeur : uniquement SES produits en vente, commande directe sur son WhatsApp."""
-    from Marche.models import Vendeur
-    v = get_object_or_404(Vendeur, slug=slug)
-    if not v.actif:
-        raise Http404
-    qs = Product.en_vente().filter(vendeur=v).select_related('categorie_vendeur').order_by('-is_featured', '-pk')
-    cats = v.categories.filter(produits__vendeur=v, produits__is_available=True).distinct()
-    cat = request.GET.get('categorie', '')
-    if cat.isdigit():
-        qs = qs.filter(categorie_vendeur_id=int(cat))
-    q = request.GET.get('q', '').strip()
-    if q:
-        qs = qs.filter(Q(name__icontains=q) | Q(short_description__icontains=q) | Q(description__icontains=q))
-    num = ''.join(c for c in (v.whatsapp or '') if c.isdigit())
-    produits = []
-    for p in qs:
-        n = ''.join(c for c in (p.contact_whatsapp or '') if c.isdigit()) or num
-        txt = f"Bonjour {v.boutique}, je souhaite commander « {p.name} » ({int(p.price):,} CFA) vu sur Lantante.".replace(',', ' ')
-        produits.append({'p': p, 'wa': f"https://wa.me/{n}?text={urllib.parse.quote(txt)}" if n else ''})
-    wa = f"https://wa.me/{num}?text={urllib.parse.quote(f'Bonjour {v.boutique}, je vous contacte depuis Lantante.')}" if num else ''
-    return render(request, 'shop/vendeur.html', {'v': v, 'produits': produits, 'cats': cats, 'cat': cat, 'q': q,
-                                                 'wa': wa, 'total': Product.en_vente().filter(vendeur=v).count()})
+    """Ancienne page publique : redirige (301) vers le mini-site du vendeur."""
+    from django.http import HttpResponsePermanentRedirect
+    from django.urls import reverse
+    return HttpResponsePermanentRedirect(reverse('minisite:accueil', args=[slug]))
