@@ -25,6 +25,18 @@ def contact(h):
     return wa, tel
 
 
+def message_reservation(h, c=None, lien=''):
+    """Message WhatsApp de réservation (le client complète dates et personnes avant d'envoyer)."""
+    lignes = ["Bonjour, je souhaite faire une réservation.", f"Hôtel : {h.nom} ({h.ville})"]
+    if c is not None:
+        lignes.append(f"Chambre : {c.nom}")
+        lignes.append(f"Prix : {c.prix_nuit:,} CFA / nuit".replace(',', ' ') if c.prix_nuit else "Prix : sur demande")
+    lignes += ["Arrivée : … — Départ : …", "Nombre de personnes : …"]
+    if lien:
+        lignes.append(f"Lien : {lien}")
+    return "\n".join(lignes)
+
+
 def _equip(codes):
     return [{'code': c, 'nom': CODES[c]} for c in (codes or []) if c in CODES]
 
@@ -89,9 +101,9 @@ def detail(request, slug):
               'latitude': float(h.latitude) if h.latitude is not None else None,
               'longitude': float(h.longitude) if h.longitude is not None else None,
               'equipements': _equip(h.equipements), 'bande': bande, 'site_web': h.site_web,
+              'itineraire': __import__('Hotels.views', fromlist=['itineraire']).itineraire(h),
               'whatsapp': wa, 'telephone': tel,
-              'message_whatsapp': (f"Bonjour, je souhaite réserver : {h.nom}. Dates : … Nombre de personnes : …\n"
-                                   + request.build_absolute_uri(h.get_absolute_url())),
+              'message_whatsapp': message_reservation(h, lien=request.build_absolute_uri(h.get_absolute_url())),
               'url': request.build_absolute_uri(h.get_absolute_url()),
               'chambres': [_chambre(request, c, h) for c in chambres]})
     return Response(d)
@@ -106,8 +118,8 @@ def chambre(request, pk):
     Chambre.objects.filter(pk=pk).update(vues=F('vues') + 1)
     d = _chambre(request, c, c.hotel, courte=False)
     d['url'] = request.build_absolute_uri(c.hotel.get_absolute_url())
-    d['message_whatsapp'] = (f"Bonjour, je souhaite réserver : {c.nom} — {c.hotel.nom}. "
-                             f"Dates : … Nombre de personnes : …\n{d['url']}")
+    d['hotel']['ville'] = c.hotel.ville
+    d['message_whatsapp'] = message_reservation(c.hotel, c, d['url'])
     return Response(d)
 
 

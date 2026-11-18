@@ -39,7 +39,9 @@ class HotelsTests(TestCase):
         self.assertEqual(d['whatsapp'], '22892967787')  # pas de WhatsApp de l'hôtel : notre numéro
         self.assertEqual(d['chambres'][0]['nom'], 'Chambre double')
         c = self.client.get(f'/api/mobile/v1/hotels/chambres/{self.c.pk}/').json()
-        self.assertIn('Chambre double — Hôtel Océan', c['message_whatsapp'])
+        self.assertIn('Hôtel : Hôtel Océan (Lomé)', c['message_whatsapp'])
+        self.assertIn('Chambre : Chambre double', c['message_whatsapp'])
+        self.assertIn('Prix : 25 000 CFA / nuit', c['message_whatsapp'])
         self.assertIn('/hotels/', c['message_whatsapp'])
         self.h.refresh_from_db()
         self.h.whatsapp = '90112233'
