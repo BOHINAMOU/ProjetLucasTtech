@@ -7,7 +7,7 @@
 <style>
 .app-hero{background:linear-gradient(135deg,#0B1F3A 0%,#123E6B 100%);color:#fff}
 .app-hero .bq-wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:2.5rem;align-items:center;padding-top:clamp(2.2rem,6vw,4rem);padding-bottom:clamp(2.2rem,6vw,4rem)}
-.app-hero__logo{width:84px;height:84px;border-radius:22px;background:#fff;padding:10px;box-shadow:0 14px 34px rgba(0,0,0,.25)}
+.app-hero__logo{width:84px;height:84px;border-radius:22px;background:#fff;padding:0;box-shadow:0 14px 34px rgba(0,0,0,.25)}
 .app-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin:1.2rem 0 .8rem;color:#fff}
 .app-hero h1 em{font-style:normal;color:#F2B705}
 .app-hero p{font-size:1.08rem;opacity:.9;max-width:560px;line-height:1.55;margin:0}
@@ -17,7 +17,7 @@
 .app-dl small{font-weight:500;opacity:.85}
 .app-ios{display:flex;align-items:center;gap:.5rem;margin:1rem 0 0 .2rem;font-size:.95rem;opacity:.85}
 .app-phone{justify-self:center;width:min(260px,70vw);aspect-ratio:9/18;border-radius:38px;background:#0d1626;border:10px solid #1d2a40;box-shadow:0 30px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:#fff;text-align:center;padding:1.2rem}
-.app-phone img{width:72px;height:72px;border-radius:18px;background:#fff;padding:8px}
+.app-phone{background:#fff !important;color:#0d1626 !important}.app-phone img{width:88%;height:auto}
 .app-phone b{font-size:1.2rem}.app-phone span{font-size:.85rem;opacity:.75}
 .app-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:2.4rem 0}
 .app-step{background:#fff;border-radius:22px;padding:1.4rem 1.3rem}
@@ -33,15 +33,15 @@
   <section class="app-hero">
     <div class="bq-wrap">
       <div>
-        <img class="app-hero__logo" src="{% static 'images/logo.png' %}" alt="Lantante Technologie">
+        <img class="app-hero__logo" src="{% static 'images/app/lantante-express-icone.png' %}" alt="Lantante Express">
         <h1>Téléchargez l'application <em>Lantante Express</em> pour Android.</h1>
         <p>Concours, épreuves et corrigés, boutique, formations et événements : tout Lantante Technologie dans votre téléphone, avec le même compte que sur le site.</p>
         <a class="app-dl" href="{% url 'core:application_download' %}?v={{ apk_version }}"><i class="fab fa-android"></i> Télécharger <small>({{ apk_size }} Mo)</small></a>
         <div class="app-ios"><i class="fab fa-apple"></i> iPhone : bientôt disponible</div>
       </div>
       <div class="app-phone" aria-hidden="true">
-        <img src="{% static 'images/logo.png' %}" alt="">
-        <b>Lantante</b><span>Un compte · Plusieurs services</span>
+        <img src="{% static 'images/app/lantante-express-logo.png' %}" alt="">
+        <span>Un compte · Plusieurs services</span>
       </div>
     </div>
   </section>
