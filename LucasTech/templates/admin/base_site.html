@@ -29,7 +29,12 @@
   .app-main { overflow:visible !important; }  /* la page défile, la barre du haut reste collée */
   .app-main { padding-top:64px; }
   @media (min-width: 992px) { body.sidebar-expand-lg .lt-haut { left:var(--lte-sidebar-width); } }
-  @media (max-width: 991.98px) { .app-main { margin-left:0 !important; } }
+  @media (max-width: 991.98px) {
+    .app-main { margin-left:0 !important; }
+    /* tiroir du téléphone : les liens défilent, le bloc utilisateur reste en bas */
+    #jazzy-sidebar.lt-side { overflow:hidden !important; display:flex !important; flex-direction:column; }
+    #jazzy-sidebar.lt-side .sidebar-wrapper { overflow-y:auto !important; flex:1 1 auto; min-height:0; height:auto !important; }
+  }
   .lt-side .sidebar-brand { height:68px; border-bottom:1px solid var(--lt-bord) !important; padding:0 18px; display:flex; align-items:center; flex:0 0 auto; }
   .lt-marque { display:flex; align-items:center; gap:11px; text-decoration:none !important; }
   .lt-logo { width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,#0F6B3E,#2E8A57); color:#fff; display:flex; align-items:center;
