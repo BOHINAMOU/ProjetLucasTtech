@@ -31,7 +31,9 @@ def publications(request):
         (cat, CAT_COLORS[i % len(CAT_COLORS)]) for i, cat in enumerate(categories)
     ]
 
-    qs = Publication.objects.filter(is_published=True, show_on_site=True).select_related('author', 'category')
+    from django.db.models import Count
+    qs = Publication.objects.filter(is_published=True, show_on_site=True).select_related('author', 'category').annotate(
+        nb_likes=Count('likes', distinct=True))
 
     active_category = None
     if category_slug:
@@ -81,6 +83,8 @@ def publication_detail(request, slug):
 
     return render(request, 'publications/publication_detail.html', {
         'publication': publication,
+        'nb_likes':    publication.likes.count(),
+        'aime':        request.user.is_authenticated and publication.likes.filter(user=request.user).exists(),
         'related':     related,
         'comments':    publication.comments.select_related('user') if request.user.is_staff else [],  # visibles par l'équipe seulement
     })
@@ -249,3 +253,17 @@ def publication_quick_message(request, slug):
         pass
     messages.success(request, "✓ Message envoyé. Nous vous répondons très vite.")
     return back
+
+
+@require_POST
+def publication_aimer(request, slug):
+    """« J'aime » sur le site : réservé aux comptes connectés (un seul par compte)."""
+    from django.http import JsonResponse
+    from .models import basculer_like
+    publication = get_object_or_404(Publication, slug=slug, is_published=True, show_on_site=True)
+    if not request.user.is_authenticated:
+        return JsonResponse({'connexion': f"{settings.LOGIN_URL}?next={reverse('publications:publication_detail', args=[slug])}"}, status=401)
+    if _too_many(request, f'aimer-{request.user.pk}', 60, 60):
+        return JsonResponse({'detail': "Trop rapide."}, status=429)
+    aime, nombre = basculer_like(publication, request.user)
+    return JsonResponse({'aime': aime, 'likes': nombre})

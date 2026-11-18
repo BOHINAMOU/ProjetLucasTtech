@@ -252,3 +252,31 @@ class QuickMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.message[:40]}"
+
+
+class PublicationLike(models.Model):
+    """« J'aime » d'une actualité : un seul par compte (contrainte d'unicité en base)."""
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='likes', verbose_name="Actualité")
+    user = models.ForeignKey('Users.User', on_delete=models.CASCADE, related_name='publication_likes', verbose_name="Compte")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Le")
+
+    class Meta:
+        verbose_name = "J'aime"
+        verbose_name_plural = "J'aime"
+        constraints = [models.UniqueConstraint(fields=['publication', 'user'], name='un_like_par_compte')]
+
+
+def basculer_like(publication, user):
+    """Ajoute ou retire le « J'aime » de [user]. Sûr en cas de double clic ou de requêtes simultanées.
+    Renvoie (aime, nombre)."""
+    from django.db import IntegrityError, transaction
+    supprimes, _ = PublicationLike.objects.filter(publication=publication, user=user).delete()
+    aime = False
+    if not supprimes:
+        try:
+            with transaction.atomic():
+                PublicationLike.objects.create(publication=publication, user=user)
+            aime = True
+        except IntegrityError:  # l'autre requête simultanée vient de le créer
+            aime = True
+    return aime, publication.likes.count()

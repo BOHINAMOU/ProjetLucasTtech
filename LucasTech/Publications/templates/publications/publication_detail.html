@@ -544,6 +544,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       <a class="nd-in" href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.scheme }}://{{ request.get_host }}{{ request.path|urlencode }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       <a class="nd-mail" href="mailto:?subject={{ publication.title|urlencode }}&body={{ request.scheme }}://{{ request.get_host }}{{ request.path }}" aria-label="E-mail"><i class="fas fa-envelope"></i></a>
     </div>
+
+  <!-- ══ J'AIME (un par compte) ══ -->
+  <div class="nd-like-bar">
+    <button type="button" id="nd-like" class="nd-like{% if aime %} on{% endif %}" data-url="{% url 'publications:publication_aimer' publication.slug %}" aria-pressed="{% if aime %}true{% else %}false{% endif %}">
+      <i class="{% if aime %}fas{% else %}far{% endif %} fa-heart"></i> <span>J'aime</span> <b id="nd-like-n">{{ nb_likes }}</b>
+    </button>
+  </div>
+  <style>
+    .nd-like-bar{display:flex;margin:18px 0 6px}
+    .nd-like{display:inline-flex;align-items:center;gap:8px;border:1.5px solid #e11d48;color:#e11d48;background:#fff;border-radius:999px;padding:9px 18px;font-weight:700;font-size:15px;cursor:pointer}
+    .nd-like.on{background:#e11d48;color:#fff}
+    .nd-like b{font-weight:800}
+  </style>
+  <script>
+  (function(){
+    var b=document.getElementById('nd-like'); if(!b) return;
+    function csrf(){var m=document.cookie.match(/csrftoken=([^;]+)/);return m?m[1]:'';}
+    b.addEventListener('click',function(){
+      var on=!b.classList.contains('on'), n=document.getElementById('nd-like-n'), i=b.querySelector('i');
+      var avant=parseInt(n.textContent||'0',10);
+      b.classList.toggle('on',on); i.className=(on?'fas':'far')+' fa-heart'; n.textContent=Math.max(0,avant+(on?1:-1));
+      fetch(b.dataset.url,{method:'POST',headers:{'X-CSRFToken':csrf()},credentials:'same-origin'})
+        .then(function(r){return r.json().then(function(d){return {s:r.status,d:d};});})
+        .then(function(x){
+          if(x.s===401&&x.d.connexion){window.location=x.d.connexion;return;}
+          if(x.s!==200){b.classList.toggle('on',!on);i.className=(!on?'fas':'far')+' fa-heart';n.textContent=avant;return;}
+          b.classList.toggle('on',x.d.aime);i.className=(x.d.aime?'fas':'far')+' fa-heart';n.textContent=x.d.likes;
+        }).catch(function(){b.classList.toggle('on',!on);n.textContent=avant;});
+    });
+  })();
+  </script>
   <!-- ══ COMMENTAIRES ET MESSAGE RAPIDE ══ -->
   <section class="nd-feedback" id="commentaires">
     {% for m in messages %}<div class="nd-flash {{ m.tags }}">{{ m }}</div>{% endfor %}

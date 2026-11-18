@@ -572,7 +572,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
       </div>
 
       <div class="pb-card-footer">
-        <span>Publié le {{ pub.created_at|date:"d M Y" }}</span>
+        <span>Publié le {{ pub.created_at|date:"d M Y" }}{% if pub.nb_likes %} · <i class="fas fa-heart" style="color:#e11d48"></i> {{ pub.nb_likes }}{% endif %}</span>
         <span class="pb-share">Partager sur :
           <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{% url 'publications:publication_detail' pub.slug %}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
           <a href="https://wa.me/?text={{ pub.title|urlencode }}%20{{ request.scheme }}://{{ request.get_host }}{% url 'publications:publication_detail' pub.slug %}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>

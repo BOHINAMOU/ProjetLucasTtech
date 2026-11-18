@@ -265,7 +265,8 @@ SECTIONS = {
     'repetiteurs': ("Répétiteurs", [('Repetiteurs.Repetiteur', 'Répétiteurs'), ('Repetiteurs.Candidature', 'Candidatures'),
                                     ('Repetiteurs.ReglageCandidature', 'Réglages des candidatures')]),
     'publications': ("Actualités", [('Publications.Publication', 'Articles'), ('Publications.PublicationCategory', 'Catégories'),
-                                    ('Publications.PublicationComment', 'Commentaires')]),
+                                    ('Publications.PublicationComment', 'Commentaires'),
+                                    ('Publications.PublicationLike', "J'aime")]),
     'services': ("Services", [('Services.Service', 'Services'), ('Services.InscriptionService', 'Inscriptions'),
                               ('Services.ServiceCategory', 'Catégories')]),
     'notifications': ("Notifications et accueil", [('api_mobile.Notification', 'Notifications'),
@@ -322,6 +323,7 @@ def _chiffres(code):
                     ('Contacts (appel, WhatsApp, lien, e-mail)', sum((a[k] or 0) for k in 'twle'))]
         if code == 'publications':
             return [('Lectures', _model('Publications.Publication').objects.aggregate(v=Sum('views_count'))['v'] or 0),
+                    ("J'aime", _count('Publications.PublicationLike')),
                     ('Commentaires non lus', _count('Publications.PublicationComment', is_read=False)),
                     ('Sans réponse', _count('Publications.PublicationComment', repondu_le__isnull=True))]
         if code == 'repetiteurs':

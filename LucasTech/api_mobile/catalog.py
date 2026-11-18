@@ -335,12 +335,15 @@ def publication_item(request, p):
         'categorie': cat(p.category), 'date': dt(p.created_at), 'a_la_une': p.is_featured,
         'type': p.publication_type,
         'url_site': absolute(request, reverse('publications:publication_detail', args=[p.slug])),
+        'likes': p.nb_likes if hasattr(p, 'nb_likes') else p.likes.count(),
     }
 
 
 def _publications():
     from Publications.models import Publication
-    return Publication.objects.filter(is_published=True, show_in_app=True).select_related('category').order_by('-created_at')
+    from django.db.models import Count
+    return Publication.objects.filter(is_published=True, show_in_app=True).select_related('category').annotate(
+        nb_likes=Count('likes', distinct=True)).order_by('-created_at')
 
 
 @api_view(['GET'])
@@ -669,6 +672,30 @@ def espace_services(request):
 def articles_lus(request):
     from .models import ArticleLu
     return Response(list(ArticleLu.objects.filter(user=request.user).values_list('publication_id', flat=True)))
+
+
+@api_view(['GET'])
+def articles_aimes(request):
+    """Actualités aimées par le compte (pour afficher le cœur plein)."""
+    from Publications.models import PublicationLike
+    return Response(list(PublicationLike.objects.filter(user=request.user).values_list('publication_id', flat=True)))
+
+
+@api_view(['POST'])
+def aimer(request, pk):
+    """Ajoute ou retire le « J'aime » (un seul par compte)."""
+    from django.core.cache import cache
+    from Publications.models import basculer_like
+    p = _publications().filter(pk=pk).first()
+    if not p:
+        return error("Article introuvable.", 404, code='introuvable')
+    cle = f'aimer-{request.user.pk}'
+    n = cache.get(cle, 0)
+    if n >= 60:  # au plus 60 par minute et par compte
+        return error("Trop rapide. Réessayez dans un moment.", 429, code='trop_rapide')
+    cache.set(cle, n + 1, 60)
+    aime, nombre = basculer_like(p, request.user)
+    return Response({'aime': aime, 'likes': nombre})
 
 
 @api_view(['POST'])

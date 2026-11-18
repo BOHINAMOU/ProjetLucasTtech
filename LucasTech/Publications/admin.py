@@ -108,7 +108,15 @@ def export_registrations_excel(modeladmin, request, queryset):
 # ─────────────────────────────
 @admin.register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
-    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'show_on_site', 'show_in_app', 'is_featured', 'views_count', 'registrations_link', 'created_at']
+    list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'show_on_site', 'show_in_app', 'is_featured', 'views_count', 'nb_jaime', 'registrations_link', 'created_at']
+
+    def get_queryset(self, request):
+        from django.db.models import Count
+        return super().get_queryset(request).annotate(_jaime=Count('likes', distinct=True))
+
+    @admin.display(description="J'aime", ordering='_jaime')
+    def nb_jaime(self, obj):
+        return obj._jaime
     list_filter    = ['is_published', 'show_on_site', 'show_in_app', 'is_featured', 'publication_type', 'category']
     list_editable  = ['is_published', 'show_on_site', 'show_in_app', 'is_featured']
     search_fields  = ['title', 'content']
@@ -338,4 +346,20 @@ class QuickMessageAdmin(MarkReadOnOpenMixin, admin.ModelAdmin):
         return obj.message[:80]
 
     def has_add_permission(self, request):
+        return False
+
+
+from .models import PublicationLike  # noqa: E402
+
+
+@admin.register(PublicationLike)
+class PublicationLikeAdmin(admin.ModelAdmin):
+    list_display = ['publication', 'user', 'created_at']
+    list_filter = ['publication']
+    search_fields = ['publication__title', 'user__email']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False
