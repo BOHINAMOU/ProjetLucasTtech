@@ -280,6 +280,8 @@ def service(request, pk):
     data.update({
         'images': [grande(request, s.image)] if s.image else [], 'description': text(s.description),
         'video': media(request, s.video), 'whatsapp': s.whatsapp or '', 'telephone': s.phone or '',
+        # « Contactez-nous » : notre WhatsApp principal + lien partageable de la page du service
+        'whatsapp_commande': _wa_valide(_whatsapp_lantante()), 'lien': absolute(request, s.get_absolute_url()),
         'url_paiement': paiement(request, reverse('payments:checkout', args=['service', s.pk])) if s.price else None,
         'inscription': {
             'ouverte': bool(s.inscriptions_ouvertes and s.champs.exists()),
@@ -778,6 +780,19 @@ def _depart(p):
     lat, lng, ville = depart(p)
     return {'lat': lat, 'lng': lng, 'ville': ville}
 
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def service_clic(request, pk, sorte):
+    """L'appli signale un appui sur « Contactez-nous » → WhatsApp ou Support (statistiques)."""
+    from django.db.models import F
+    from Services.models import Service
+    champ = {'whatsapp': 'clics_whatsapp', 'support': 'clics_support'}.get(sorte)
+    if not champ:
+        return error("Inconnu.", 404, code='introuvable')
+    Service.objects.filter(pk=pk).update(**{champ: F(champ) + 1})
+    return Response({'ok': True})
 
 
 @api_view(['POST'])

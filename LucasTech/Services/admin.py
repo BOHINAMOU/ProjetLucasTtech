@@ -21,7 +21,8 @@ class ChampInscriptionInline(admin.TabularInline):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display  = ['title', 'category', 'inscriptions_ouvertes', 'nb_inscriptions', 'is_featured', 'is_active']
+    list_display  = ['title', 'category', 'inscriptions_ouvertes', 'nb_inscriptions', 'clics_whatsapp', 'clics_support',
+                     'is_featured', 'is_active']
     list_filter   = ['is_active', 'inscriptions_ouvertes', 'is_featured', 'category']
     inlines       = [ChampInscriptionInline]
     actions       = ['cloturer', 'ouvrir']

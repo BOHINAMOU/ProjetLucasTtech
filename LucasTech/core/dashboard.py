@@ -330,6 +330,9 @@ def _chiffres(code):
         if code == 'vendeurs':
             return [('Vendeurs validés', _count('Marche.Vendeur', statut='valide')),
                     ('Produits des vendeurs', _count('Shop.Product', vendeur__isnull=False))]
+        if code == 'services':
+            a = _model('Services.Service').objects.aggregate(w=Sum('clics_whatsapp'), s=Sum('clics_support'))
+            return [('Contacts WhatsApp', a['w'] or 0), ('Contacts support', a['s'] or 0)]
         if code == 'boutique':
             P = _model('Shop.Product')
             a = P.objects.aggregate(v=Sum('vues'), w=Sum('clics_whatsapp'))

@@ -57,6 +57,7 @@ urlpatterns = [
     path('services/', catalog.services, name='services'),
     path('services/categories/', catalog.service_categories, name='service_categories'),
     path('services/<int:pk>/', catalog.service, name='service'),
+    path('services/<int:pk>/clic/<str:sorte>/', catalog.service_clic, name='service_clic'),
     path('services/<int:pk>/inscription/', catalog.service_inscription, name='service_inscription'),
     path('publications/', catalog.publications, name='publications'),
     path('publications/categories/', catalog.publication_categories, name='publication_categories'),

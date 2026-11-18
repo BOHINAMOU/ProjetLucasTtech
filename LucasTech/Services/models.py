@@ -89,6 +89,8 @@ class Service(models.Model):
                                                 help_text="Affiche « S'inscrire » avec le formulaire ci-dessous. "
                                                           "Décochez pour clôturer.")
     is_featured = models.BooleanField(default=False, verbose_name="Mis en avant")
+    clics_whatsapp = models.PositiveIntegerField("Contacts WhatsApp", default=0, editable=False)
+    clics_support = models.PositiveIntegerField("Contacts support", default=0, editable=False)
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     updated_at  = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
 
