@@ -79,11 +79,11 @@ def detail(request, slug):
     # bandeau : photo principale, photos de l'hôtel, puis photos des chambres (nom en légende)
     bande = []
     if h.photo:
-        bande.append({'image': grande(request, h.photo), 'legende': h.legende_photo})
-    bande += [{'image': grande(request, p.image), 'legende': p.legende} for p in h.photos.all()]
+        bande.append({'image': grande(request, h.photo), 'legende': h.legende_photo, 'type': 'hotel'})
+    bande += [{'image': grande(request, p.image), 'legende': p.legende, 'type': 'hotel'} for p in h.photos.all()]
     for c in chambres:
         for p in c.photos.all()[:2]:
-            bande.append({'image': grande(request, p.image), 'legende': c.nom})
+            bande.append({'image': grande(request, p.image), 'legende': c.nom, 'type': 'chambre'})
     d = item(request, h)
     d.update({'description': text(h.description), 'adresse': h.adresse,
               'latitude': float(h.latitude) if h.latitude is not None else None,
