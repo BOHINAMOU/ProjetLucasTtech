@@ -40,3 +40,10 @@ class Command(BaseCommand):
                     a.save(update_fields=['rappel_7'])
                     n += 1
         self.stdout.write(f"{n} rappel(s)")
+        # Même tâche du matin : accès des vendeurs (expiration automatique + rappels 7 j et 1 j)
+        try:
+            from Marche.acces_vendeur import verifier_tous
+            e, r = verifier_tous()
+            self.stdout.write(f"Vendeurs : {e} expiré(s), {r} rappel(s)")
+        except Exception as ex:  # ne jamais bloquer les rappels d'abonnement
+            self.stderr.write(f"Vendeurs : erreur {type(ex).__name__}")

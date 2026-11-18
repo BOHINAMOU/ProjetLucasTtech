@@ -34,6 +34,7 @@ urlpatterns = [
     path('lantanteAdminTech/verification/', admin_connexion.verification, name='admin_verification'),
     path('lantanteAdminTech/section/evenements/<int:pk>/', admin_evenements.tableau, name='admin_evenement'),
     path('lantanteAdminTech/section/hotels/<int:pk>/', admin_hotels.fiche, name='admin_hotel'),
+    path('lantanteAdminTech/section/vendeurs/<int:pk>/acces/', admin_fiches.vendeur_acces, name='admin_vendeur_acces'),
     path('lantanteAdminTech/section/<str:code>/<int:pk>/', admin_fiches.fiche, name='admin_fiche'),
     path('lantanteAdminTech/section/evenements/<int:pk>/export/', admin_evenements.export_csv, name='admin_evenement_csv'),
     path('lantanteAdminTech/section/<slug:code>/', core_views.admin_section, name='admin_section'),

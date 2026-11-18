@@ -1,0 +1,7 @@
+{% extends 'marche/espace/_auth.html' %}
+{% block titre %}Accès {{ v.etat.1|lower }}{% endblock %}
+{% block auth %}
+<h1>Votre accès est {{ v.etat.1|lower }}</h1>
+<p class="sous">{% if v.etat.0 == 'expire' and v.fin_acces %}Il s'est terminé le {{ v.fin_acces|date:"d/m/Y" }}. {% endif %}Vos produits et vos commandes sont conservés. Contactez Lantante pour réactiver votre boutique.</p>
+<a class="btn wa" href="{{ wa }}" target="_blank" rel="noopener" style="width:100%">Contacter Lantante sur WhatsApp</a>
+{% endblock %}

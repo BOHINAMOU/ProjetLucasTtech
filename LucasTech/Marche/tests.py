@@ -167,3 +167,64 @@ class MarcheTests(APITestCase):
         d = self.client.get(f"{API}boutique/produits/{lantante.pk}/").json()
         self.assertEqual((d['whatsapp'], d['livrable']), ('22890000000', True))
         self.assertFalse(self.client.get(f"{API}boutique/produits/{formation.pk}/").json()['livrable'])
+
+
+from django.test import TestCase, override_settings  # noqa: E402
+
+
+@override_settings(STORAGES={'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+                             'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
+class AccesVendeurTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from Marche.models import Vendeur
+        from Shop.models import Product
+        self.u = get_user_model().objects.create_user(email='vend@x.tg', password='Motdepasse-1')
+        self.v = Vendeur.objects.create(user=self.u, boutique='Ma Boutique', whatsapp='22890000000', ville='Lomé', statut='valide')
+        self.p = Product.objects.create(name='Sac rouge', price=5000, vendeur=self.v, stock=2)
+
+    def test_lien_public_et_produits(self):
+        self.assertEqual(self.v.slug, 'ma-boutique')
+        r = self.client.get(self.v.lien_public())
+        self.assertContains(r, 'Sac rouge')
+        self.assertContains(r, 'wa.me/22890000000')
+
+    def test_suspendre_masque_sans_effacer_puis_reactiver(self):
+        from Marche.acces_vendeur import fin_pour, reactiver, suspendre
+        from Shop.models import Product
+        suspendre(self.v)
+        self.assertEqual(self.client.get(self.v.lien_public()).status_code, 404)
+        self.assertFalse(Product.en_vente().filter(pk=self.p.pk).exists())
+        self.assertTrue(Product.objects.filter(pk=self.p.pk, is_available=True).exists())  # rien d'effacé
+        self.client.login(email='vend@x.tg', password='Motdepasse-1')
+        r = self.client.get(f'/espace/{self.v.code}/tableau/')
+        self.assertContains(r, 'suspendu', status_code=403)
+        reactiver(self.v, fin_pour('3'))
+        self.assertTrue(Product.en_vente().filter(pk=self.p.pk).exists())
+        self.client.login(email='vend@x.tg', password='Motdepasse-1')
+        self.assertEqual(self.client.get(f'/espace/{self.v.code}/tableau/').status_code, 200)
+
+    def test_expiration_automatique_et_rappels(self):
+        from datetime import timedelta
+        from django.core import mail
+        from django.utils import timezone
+        from Marche.acces_vendeur import verifier_tous
+        from Shop.models import Product
+        t = timezone.localdate()
+        self.v.fin_acces = t - timedelta(days=1)
+        self.v.save()
+        self.assertFalse(Product.en_vente().filter(pk=self.p.pk).exists())  # masqué dès le lendemain
+        e, r = verifier_tous()
+        self.v.refresh_from_db()
+        self.assertEqual((e, self.v.statut), (1, 'expire'))
+        self.assertTrue(mail.outbox)
+        self.v.statut, self.v.fin_acces = 'valide', t + timedelta(days=7)
+        self.v.save()
+        self.assertEqual(verifier_tous()[1], 1)
+        self.assertEqual(self.v.etat[0], 'bientot')
+
+    def test_mon_lien(self):
+        self.client.login(email='vend@x.tg', password='Motdepasse-1')
+        r = self.client.get(f'/espace/{self.v.code}/mon-lien/')
+        self.assertContains(r, '/shop/vendeur/ma-boutique/')
+        self.assertContains(r, 'Partager sur WhatsApp')

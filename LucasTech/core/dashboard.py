@@ -41,6 +41,23 @@ def _change_url(obj):
         return ''
 
 
+def _vendeurs_bientot():
+    from django.db.models import Q
+    V = _model('Marche.Vendeur')
+    if not V:
+        return 0
+    t = timezone.localdate()
+    return V.objects.filter(statut='valide', fin_acces__gte=t, fin_acces__lte=t + timedelta(days=7)).count()
+
+
+def _vendeurs_expires():
+    from django.db.models import Q
+    V = _model('Marche.Vendeur')
+    if not V:
+        return 0
+    return V.objects.filter(Q(statut='expire') | Q(statut='valide', fin_acces__lt=timezone.localdate())).count()
+
+
 def build(request):
     now = timezone.now()
     week = now - timedelta(days=7)
@@ -59,6 +76,8 @@ def build(request):
         ('Demandes de partenariat', _count('core.PartnerApplication', status='pending'), 'fa-ribbon', _url('core.PartnerApplication', '?status__exact=pending'), 'blue'),
         ('Dossiers de répétiteurs à vérifier', _count('Repetiteurs.Candidature', statut='a_verifier'), 'fa-chalkboard-teacher', _url('Repetiteurs.Candidature', '?statut__exact=a_verifier'), 'orange'),
         ('Demandes de vendeurs', _count('Marche.DemandeVendeur', statut='en_attente'), 'fa-user-tag', _url('Marche.DemandeVendeur', '?statut__exact=en_attente'), 'blue'),
+        ('Vendeurs : accès bientôt terminé', _vendeurs_bientot(), 'fa-hourglass-half', _url('Marche.Vendeur', '?acces=bientot'), 'orange'),
+        ('Vendeurs : accès expiré', _vendeurs_expires(), 'fa-user-clock', _url('Marche.Vendeur', '?acces=expire'), 'red'),
     ]
     todo = [dict(label=a, n=b, icon=c, url=d, tone=e) for a, b, c, d, e in todo]
     total_todo = sum(t['n'] for t in todo)

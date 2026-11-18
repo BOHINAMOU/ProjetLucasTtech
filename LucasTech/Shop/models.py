@@ -133,6 +133,14 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def en_vente(cls):
+        """Produits visibles par le public : disponibles, et vendeur actif (ni suspendu ni expiré)."""
+        from django.db.models import Q
+        from django.utils import timezone
+        ok = Q(vendeur__statut='valide') & (Q(vendeur__fin_acces__isnull=True) | Q(vendeur__fin_acces__gte=timezone.localdate()))
+        return cls.objects.filter(is_available=True).filter(Q(vendeur__isnull=True) | ok)
+
     @property
     def card_description(self):
         """Phrase courte de la carte boutique (description courte, sinon début de la description complète)."""

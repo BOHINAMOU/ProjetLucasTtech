@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import Http404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Case, When, Value, IntegerField, Count, Min, Max
@@ -45,7 +46,7 @@ def shop(request):
     # Les livres (catégorie « livres ») passent toujours en fin de liste ;
     # le reste garde l'ordre habituel (du plus récent au plus ancien).
     products = (
-        Product.objects.filter(is_available=True)
+        Product.en_vente()
         .select_related('category')
         .annotate(is_book=Case(
             When(category__slug='livres', then=Value(1)),
@@ -81,7 +82,7 @@ def shop(request):
     if category_slug:
         active_category = Category.objects.filter(slug=category_slug).first()
 
-    available = Product.objects.filter(is_available=True)
+    available = Product.en_vente()
     cat_counts = dict(
         available.values_list('category_id').annotate(n=Count('id')).values_list('category_id', 'n')
     )
@@ -109,12 +110,12 @@ def shop(request):
 # 🔍 DÉTAIL PRODUIT
 # ─────────────────────────────
 def product_detail(request, pk):
-    product = get_object_or_404(Product, pk=pk, is_available=True)
+    product = get_object_or_404(Product.en_vente(), pk=pk)
     reviews = product.reviews.all()
     ratings = [r.rating for r in reviews]
     avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else None
-    related_products = Product.objects.filter(
-        category=product.category, is_available=True
+    related_products = Product.en_vente().filter(
+        category=product.category
     ).exclude(pk=product.pk)[:4] if product.category else Product.objects.none()
     # Image de la vignette catégorie dans "Explorer" : la photo du produit
     # lui-même si elle existe, sinon celle d'un produit de la même catégorie
@@ -165,7 +166,7 @@ def cart(request):
     cart_items  = cart_obj.items.select_related('product__category').all()
     total_price = cart_obj.total_price()
     in_cart_ids = cart_items.values_list('product_id', flat=True)
-    recommended = Product.objects.filter(is_available=True).exclude(pk__in=in_cart_ids).order_by('-is_featured', '-created_at')[:4]
+    recommended = Product.en_vente().exclude(pk__in=in_cart_ids).order_by('-is_featured', '-created_at')[:4]
     return render(request, 'shop/cart.html', {
         'cart':        cart_obj,
         'cart_items':  cart_items,   # ← nom correct
@@ -355,3 +356,28 @@ def add_review(request, pk):
         messages.success(request, 'Merci pour votre avis !')
     return redirect('shop:product_detail', pk=pk)
 
+
+
+def vendeur_boutique(request, slug):
+    """Page publique d'un vendeur : uniquement SES produits en vente, commande directe sur son WhatsApp."""
+    from Marche.models import Vendeur
+    v = get_object_or_404(Vendeur, slug=slug)
+    if not v.actif:
+        raise Http404
+    qs = Product.en_vente().filter(vendeur=v).select_related('categorie_vendeur').order_by('-is_featured', '-pk')
+    cats = v.categories.filter(produits__vendeur=v, produits__is_available=True).distinct()
+    cat = request.GET.get('categorie', '')
+    if cat.isdigit():
+        qs = qs.filter(categorie_vendeur_id=int(cat))
+    q = request.GET.get('q', '').strip()
+    if q:
+        qs = qs.filter(Q(name__icontains=q) | Q(short_description__icontains=q) | Q(description__icontains=q))
+    num = ''.join(c for c in (v.whatsapp or '') if c.isdigit())
+    produits = []
+    for p in qs:
+        n = ''.join(c for c in (p.contact_whatsapp or '') if c.isdigit()) or num
+        txt = f"Bonjour {v.boutique}, je souhaite commander « {p.name} » ({int(p.price):,} CFA) vu sur Lantante.".replace(',', ' ')
+        produits.append({'p': p, 'wa': f"https://wa.me/{n}?text={urllib.parse.quote(txt)}" if n else ''})
+    wa = f"https://wa.me/{num}?text={urllib.parse.quote(f'Bonjour {v.boutique}, je vous contacte depuis Lantante.')}" if num else ''
+    return render(request, 'shop/vendeur.html', {'v': v, 'produits': produits, 'cats': cats, 'cat': cat, 'q': q,
+                                                 'wa': wa, 'total': Product.en_vente().filter(vendeur=v).count()})

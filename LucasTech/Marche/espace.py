@@ -60,18 +60,30 @@ def espace(vue):
         v = _vendeur(code)
         if not request.user.is_authenticated or request.user.pk != v.user_id:
             return redirect('espace:connexion', code)
-        if v.statut != 'valide':
+        if not v.actif:
             logout(request)
-            return render(request, 'marche/espace/connexion.html', {'v': v, 'erreur': "Espace désactivé."})
+            return _suspendu(request, v)
         return vue(request, v, *a, **k)
     return w
+
+
+def _suspendu(request, v):
+    from urllib.parse import quote
+    from core.models import SiteSettings
+    try:
+        num = ''.join(c for c in (SiteSettings.load().whatsapp_1 or '') if c.isdigit())
+    except Exception:
+        num = ''
+    num = num or '22892967787'
+    txt = f"Bonjour Lantante, je suis le vendeur « {v.boutique} ». Mon accès est {v.etat[1].lower()}, je souhaite le réactiver."
+    return render(request, 'marche/espace/suspendu.html', {'v': v, 'wa': f"https://wa.me/{num}?text={quote(txt)}"}, status=403)
 
 
 # ── Connexion, activation, mot de passe oublié ──
 
 def connexion(request, code):
     v = _vendeur(code)
-    if request.user.is_authenticated and request.user.pk == v.user_id and v.statut == 'valide':
+    if request.user.is_authenticated and request.user.pk == v.user_id and v.actif:
         return redirect('espace:tableau', code)
     erreur = ''
     if request.method == 'POST':
@@ -80,7 +92,9 @@ def connexion(request, code):
             erreur = "Trop de tentatives. Réessayez dans 15 minutes."
         else:
             u = authenticate(request, email=request.POST.get('email', '').strip(), password=request.POST.get('password', ''))
-            if u and u.pk == v.user_id and v.statut == 'valide':
+            if u and u.pk == v.user_id and not v.actif:
+                return _suspendu(request, v)
+            if u and u.pk == v.user_id:
                 cache.delete(cle)
                 login(request, u, backend='django.contrib.auth.backends.ModelBackend')
                 return redirect('espace:tableau', code)
@@ -134,14 +148,18 @@ def deconnexion(request, code):
 
 # ── Pages de l'espace ──
 
+def _lien_public(request, v):
+    return request.build_absolute_uri(v.lien_public()) if v.slug else ''
+
+
 @espace
 def tableau(request, v):
     from Payments.models import Payment
     from Shop.models import Product
+    from .admin import comptes
     produits = Product.objects.filter(vendeur=v)
     p = produits.aggregate(n=Count('pk'), vues=Sum('vues'), clics=Sum('clics_whatsapp'))
     ventes = Payment.objects.filter(vendeur=v, status='approved')
-    total = ventes.aggregate(n=Count('pk'), s=Sum('amount'))
     debut = timezone.localdate() - timedelta(days=13)
     jours = {debut + timedelta(days=i): 0 for i in range(14)}
     for pay in ventes.filter(created_at__date__gte=debut).values('created_at', 'amount'):
@@ -149,11 +167,31 @@ def tableau(request, v):
         if d in jours:
             jours[d] += pay['amount']
     haut = max(jours.values()) or 1
-    barres = [{'jour': d, 'montant': m, 'h': max(4, int(m * 100 / haut)) if m else 4} for d, m in jours.items()]
+    barres = [{'jour': d, 'montant': m, 'h': max(3, int(m * 100 / haut)) if m else 3} for d, m in jours.items()]
+    a_faire = []
+    sans_photo = produits.filter(image='').count() + produits.filter(image__isnull=True).count()
+    if sans_photo:
+        a_faire.append((f"{sans_photo} produit{'s' if sans_photo > 1 else ''} sans photo", 'add_a_photo'))
+    rupture = produits.filter(is_available=True, stock=0).count()
+    if rupture:
+        a_faire.append((f"{rupture} produit{'s' if rupture > 1 else ''} en stock 0", 'inventory_2'))
+    if not v.logo:
+        a_faire.append(("Ajoutez votre logo dans Paramètres", 'storefront'))
     return render(request, 'marche/espace/tableau.html', {
         'v': v, 'page': 'tableau', 'nb_produits': p['n'] or 0, 'vues': p['vues'] or 0, 'clics': p['clics'] or 0,
-        'commandes': total['n'] or 0, 'ventes': total['s'] or 0, 'barres': barres,
-        'derniers': produits.order_by('-pk')[:5]})
+        'c': comptes(v), 'barres': barres, 'total14': sum(jours.values()), 'a_faire': a_faire,
+        'lien': _lien_public(request, v),
+        'derniers': produits.order_by('-pk')[:4],
+        'commandes': Payment.objects.filter(vendeur=v).order_by('-created_at')[:5]})
+
+
+@espace
+def mon_lien(request, v):
+    from urllib.parse import quote
+    lien = _lien_public(request, v)
+    txt = f"Découvrez ma boutique « {v.boutique} » sur Lantante : {lien}"
+    return render(request, 'marche/espace/mon_lien.html', {'v': v, 'page': 'lien', 'lien': lien,
+                                                           'wa': f"https://wa.me/?text={quote(txt)}"})
 
 
 class ProduitForm(forms.ModelForm):

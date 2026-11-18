@@ -1,0 +1,81 @@
+{% extends 'core/base.html' %}
+{% load montants %}
+{% block title %}{{ v.boutique }} — Boutique sur Lantante{% endblock %}
+{% block meta_description %}{{ v.boutique }}{% if v.ville %} à {{ v.ville }}{% endif %} : découvrez ses produits et commandez directement sur WhatsApp.{% endblock %}
+{% block og_title %}{{ v.boutique }} — Boutique sur Lantante{% endblock %}
+{% block og_description %}{{ total }} produit{{ total|pluralize }} à découvrir. Commande directe sur WhatsApp.{% endblock %}
+{% block og_image %}{% if v.logo %}{{ v.logo.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block extra_head %}
+<style>
+  .vb { --g:#0F6B3E; --gf:#0B5531; --gc:#E8F3EC; --or:#C9A227; --t:#16201A; --m:#6B746E; --b:#E6E8E4; font-family:Inter,system-ui,sans-serif; color:var(--t); background:#F6F7F5; padding:28px 16px 56px; }
+  .vb * { box-sizing:border-box; }
+  .vb-in { max-width:1180px; margin:0 auto; }
+  .vb-tete { background:#fff; border:1px solid var(--b); border-radius:16px; overflow:hidden; margin-bottom:20px; }
+  .vb-ban { height:110px; background:linear-gradient(120deg,#0B3A23,#0F6B3E 60%,#2E8A57); position:relative; }
+  .vb-ban::after { content:''; position:absolute; left:0; right:0; bottom:0; height:4px; background:var(--or); }
+  .vb-id { display:flex; gap:18px; align-items:flex-end; padding:0 24px 20px; margin-top:-44px; flex-wrap:wrap; position:relative; }
+  .vb-logo { width:96px; height:96px; border-radius:20px; background:#fff; border:4px solid #fff; box-shadow:0 4px 14px rgba(0,0,0,.08); object-fit:cover; display:flex; align-items:center; justify-content:center; font-size:2.2rem; font-weight:800; color:var(--g); }
+  .vb-nom { flex:1; min-width:220px; }
+  .vb-nom h1 { font-size:1.6rem; font-weight:800; letter-spacing:-.02em; margin:0 0 4px; color:var(--t); }
+  .vb-nom p { margin:0; color:var(--m); font-size:.92rem; }
+  .vb-wa { display:inline-flex; align-items:center; gap:8px; height:46px; padding:0 20px; border-radius:12px; background:#1FA855; color:#fff !important; font-weight:700; text-decoration:none !important; }
+  .vb-wa:hover { background:#178A45; }
+  .vb-desc { padding:0 24px 20px; color:#3A443E; line-height:1.6; margin:0; white-space:pre-line; }
+  .vb-outils { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .vb-outils form { flex:1; min-width:220px; max-width:380px; }
+  .vb-outils input { width:100%; height:44px; border:1px solid var(--b); border-radius:12px; padding:0 14px; font:inherit; background:#fff; }
+  .vb-puce { display:inline-flex; align-items:center; height:36px; padding:0 14px; border-radius:999px; border:1px solid var(--b); background:#fff; color:var(--t) !important; font-weight:600; font-size:.88rem; text-decoration:none !important; }
+  .vb-puce.on { background:var(--g); border-color:var(--g); color:#fff !important; }
+  .vb-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+  .vb-carte { background:#fff; border:1px solid var(--b); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+  .vb-carte .img { display:block; aspect-ratio:1/1; background:var(--gc); overflow:hidden; }
+  .vb-carte .img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .25s; }
+  .vb-carte:hover .img img { transform:scale(1.03); }
+  .vb-carte .c { padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .vb-carte .n { font-weight:700; color:var(--t) !important; text-decoration:none !important; line-height:1.3; }
+  .vb-carte .px { font-weight:800; color:var(--g); font-size:1.05rem; }
+  .vb-carte .px s { color:var(--m); font-weight:500; font-size:.85rem; margin-left:6px; }
+  .vb-carte .cmd { margin-top:auto; display:flex; align-items:center; justify-content:center; gap:6px; height:40px; border-radius:10px; background:var(--g); color:#fff !important; font-weight:700; font-size:.9rem; text-decoration:none !important; }
+  .vb-carte .cmd:hover { background:var(--gf); }
+  .vb-vide { background:#fff; border:1px dashed #C8D3CC; border-radius:14px; padding:40px 16px; text-align:center; color:var(--m); }
+  .vb-pied { text-align:center; color:var(--m); font-size:.85rem; margin-top:28px; }
+  @media (max-width:600px) { .vb-grille { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .vb-id { padding:0 16px 16px; } .vb-desc { padding:0 16px 16px; }
+    .vb-logo { width:80px; height:80px; } .vb-nom h1 { font-size:1.3rem; } .vb-wa { width:100%; justify-content:center; } .vb-carte .c { padding:10px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="vb"><div class="vb-in">
+  <div class="vb-tete">
+    <div class="vb-ban"></div>
+    <div class="vb-id">
+      {% if v.logo %}<img class="vb-logo" src="{{ v.logo.url }}" alt="{{ v.boutique }}">{% else %}<span class="vb-logo">{{ v.boutique|slice:":1"|upper }}</span>{% endif %}
+      <div class="vb-nom"><h1>{{ v.boutique }}</h1><p>{% if v.ville %}{{ v.ville }} · {% endif %}{{ total }} produit{{ total|pluralize }}{% if v.adresse_retrait %} · Retrait : {{ v.adresse_retrait }}{% endif %}</p></div>
+      {% if wa %}<a class="vb-wa" href="{{ wa }}" target="_blank" rel="noopener">Écrire sur WhatsApp</a>{% endif %}
+    </div>
+    {% if v.description %}<p class="vb-desc">{{ v.description }}</p>{% endif %}
+  </div>
+
+  <div class="vb-outils">
+    <form method="get">{% if cat %}<input type="hidden" name="categorie" value="{{ cat }}">{% endif %}<input type="search" name="q" value="{{ q }}" placeholder="Rechercher un produit"></form>
+    {% if cats %}<a class="vb-puce {% if not cat %}on{% endif %}" href="?">Tout</a>{% for c in cats %}<a class="vb-puce {% if cat == c.pk|stringformat:'s' %}on{% endif %}" href="?categorie={{ c.pk }}">{{ c.nom }}</a>{% endfor %}{% endif %}
+  </div>
+
+  {% if produits %}
+  <div class="vb-grille">
+    {% for x in produits %}
+    <div class="vb-carte">
+      <a class="img" href="{% url 'shop:product_detail' x.p.pk %}">{% if x.p.image %}<img src="{{ x.p.image.url }}" alt="{{ x.p.name }}" loading="lazy">{% endif %}</a>
+      <div class="c">
+        <a class="n" href="{% url 'shop:product_detail' x.p.pk %}">{{ x.p.name }}</a>
+        <span class="px">{{ x.p.price|cfa }}{% if x.p.old_price and x.p.old_price > x.p.price %}<s>{{ x.p.old_price|cfa }}</s>{% endif %}</span>
+        {% if x.wa %}<a class="cmd" href="{{ x.wa }}" target="_blank" rel="noopener">Commander</a>{% else %}<a class="cmd" href="{% url 'shop:product_detail' x.p.pk %}">Voir</a>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="vb-vide">{% if q or cat %}Aucun produit ne correspond.{% else %}Aucun produit en vente pour le moment.{% endif %}</div>
+  {% endif %}
+  <p class="vb-pied">Boutique partenaire de <a href="{% url 'shop:shop' %}">Lantante</a>.</p>
+</div></div>
+{% endblock %}

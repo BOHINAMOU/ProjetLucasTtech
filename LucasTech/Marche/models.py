@@ -38,7 +38,7 @@ def _code_espace():
 
 
 class Vendeur(models.Model):
-    STATUTS = [('en_attente', 'En attente'), ('valide', 'Validé'), ('suspendu', 'Suspendu')]
+    STATUTS = [('en_attente', 'En attente'), ('valide', 'Actif'), ('suspendu', 'Suspendu'), ('expire', 'Expiré')]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='vendeur',
                                 verbose_name="Compte")
     boutique = models.CharField("Nom de la boutique", max_length=120)
@@ -54,6 +54,10 @@ class Vendeur(models.Model):
     statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente')
     # Espace vendeur séparé : lien propre à chaque vendeur + connexion obligatoire
     code = models.CharField("Code du lien", max_length=32, unique=True, default=_code_espace, editable=False)
+    debut_acces = models.DateField("Début de l'accès", null=True, blank=True)
+    fin_acces = models.DateField("Fin de l'accès", null=True, blank=True, help_text="Vide = sans limite.")
+    slug = models.SlugField("Adresse de la boutique", max_length=140, unique=True, null=True, blank=True,
+                            help_text="Lien public : /shop/vendeur/<adresse>/ (rempli automatiquement).")
     activation = models.CharField(max_length=64, blank=True, editable=False)
     logo = models.ImageField("Logo", upload_to='vendeurs/logos/', blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
@@ -70,11 +74,45 @@ class Vendeur(models.Model):
 
     @property
     def actif(self):
-        return self.statut == 'valide'
+        """Peut vendre : validé, ni suspendu, et accès pas encore terminé."""
+        from django.utils import timezone
+        return self.statut == 'valide' and (self.fin_acces is None or self.fin_acces >= timezone.localdate())
+
+    @property
+    def etat(self):
+        """(code, libellé) : actif, bientot (fin dans 7 jours ou moins), expire, suspendu, attente."""
+        from django.utils import timezone
+        if self.statut == 'suspendu':
+            return 'suspendu', "Suspendu"
+        if self.statut == 'en_attente':
+            return 'attente', "En attente"
+        if self.statut == 'expire' or not self.actif:
+            return 'expire', "Expiré"
+        if self.fin_acces and (self.fin_acces - timezone.localdate()).days <= 7:
+            return 'bientot', "Expire bientôt"
+        return 'actif', "Actif"
 
     def lien_espace(self):
         from django.urls import reverse
         return reverse('espace:connexion', args=[self.code])
+
+    def lien_public(self):
+        from django.urls import reverse
+        return reverse('shop:vendeur', args=[self.slug]) if self.slug else ''
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slug_unique(self)
+        super().save(*args, **kwargs)
+
+
+def slug_unique(v):
+    from django.utils.text import slugify
+    base = (slugify(v.boutique) or 'boutique')[:120]
+    s, i = base, 2
+    while Vendeur.objects.filter(slug=s).exclude(pk=v.pk).exists():
+        s, i = f'{base}-{i}', i + 1
+    return s
 
 
 class Reversement(models.Model):

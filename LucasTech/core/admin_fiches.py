@@ -129,7 +129,9 @@ def _vendeur(request, pk):
     ajout = _lien_retour('admin:Shop_product_add', None, ici, f'vendeur={v.pk}&')
     return {
         'rubrique': ('vendeurs', "Vendeurs"), 'titre': v.boutique, 'photo': _url(v, 'logo'), 'photo_contenue': True,
-        'sous_titre': ' · '.join(x for x in (v.ville, v.get_statut_display()) if x),
+        'sous_titre': ' · '.join(x for x in (v.ville, v.etat[1],
+                                             f"accès jusqu'au {v.fin_acces:%d/%m/%Y}" if v.fin_acces else "accès sans limite") if x),
+        'acces': {'etat': v.etat, 'url': reverse('admin_vendeur_acces', args=[v.pk])} if request.user.is_superuser else None,
         'description': v.description,
         'pastilles': [x for x in (v.adresse_retrait and f"Retrait : {v.adresse_retrait}",
                                   v.whatsapp and f"WhatsApp {v.whatsapp}") if x],
@@ -138,11 +140,42 @@ def _vendeur(request, pk):
             ("Modifier le vendeur", _lien_retour('admin:Marche_vendeur_change', v.pk, ici), 'fa-pen', True)
             if ma.has_change_permission(request, v) else None,
             ("Ajouter un produit", ajout, 'fa-plus', False) if peut('add') else None,
+            ("Boutique publique", v.lien_public(), 'fa-store', False) if v.slug else None,
         ] if a],
         'enfants_titre': "Produits", 'enfants': enfants,
         'ajouter': ("Ajouter un produit", ajout) if peut('add') else None,
         'vide': "Aucun produit pour le moment.",
     }
+
+
+@staff_member_required
+def vendeur_acces(request, pk):
+    """Suspendre / réactiver un vendeur (super-admin, POST). Rien n'est effacé."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from Marche.acces_vendeur import fin_pour, reactiver, suspendre
+    from Marche.models import Vendeur
+    if request.method != 'POST' or not request.user.is_superuser:
+        raise Http404
+    v = Vendeur.objects.filter(pk=pk).first()
+    if not v:
+        raise Http404
+    if request.POST.get('action') == 'suspendre':
+        suspendre(v)
+        messages.success(request, f"« {v.boutique} » est suspendu. Ses produits sont masqués, rien n'est effacé.")
+    else:
+        from datetime import date
+        duree = request.POST.get('duree', '3')
+        libre = None
+        if duree == 'date':
+            try:
+                libre = date.fromisoformat(request.POST.get('date_fin', ''))
+            except ValueError:
+                messages.error(request, "Date de fin invalide.")
+                return redirect('admin_fiche', 'vendeurs', v.pk)
+        reactiver(v, fin_pour(duree, libre))
+        messages.success(request, f"« {v.boutique} » est actif" + (f" jusqu'au {v.fin_acces:%d/%m/%Y}." if v.fin_acces else " sans limite."))
+    return redirect('admin_fiche', 'vendeurs', v.pk)
 
 
 FICHES = {'ecoles': _ecole, 'vendeurs': _vendeur}

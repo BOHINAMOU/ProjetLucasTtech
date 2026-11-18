@@ -63,7 +63,7 @@ def _cible(user, d):
         return {'kind': 'formation', 'formation': f}, int(f.price), f"Formation : {f.title}", None
     if kind == 'produit':
         from Shop.models import Product
-        p = Product.objects.filter(pk=pk, is_available=True).first()
+        p = Product.en_vente().filter(pk=pk).first()
         if not p or p.stock <= 0:
             raise ValidationError("Ce produit n'est plus disponible.")
         try:

@@ -109,7 +109,7 @@ class EspaceVendeurTests(TestCase):
         v = self._creer()
         c = self._activer(v)
         Vendeur.objects.filter(pk=v.pk).update(statut='suspendu')
-        self.assertContains(c.get(f'/espace/{v.code}/tableau/'), 'Espace désactivé')
+        self.assertContains(c.get(f'/espace/{v.code}/tableau/'), 'suspendu', status_code=403)
         ancien = v.code
         a = Client()
         a.force_login(self.admin)

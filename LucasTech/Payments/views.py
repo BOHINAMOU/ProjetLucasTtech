@@ -107,7 +107,7 @@ def _target(request, kind, pk):
             obj.get_absolute_url()
     if kind == 'produit':
         from Shop.models import Product
-        obj = get_object_or_404(Product, pk=pk, is_available=True)
+        obj = get_object_or_404(Product.en_vente(), pk=pk)
         try:
             qty = int(request.POST.get('qty') or request.GET.get('qty') or 1)
         except ValueError:
@@ -195,7 +195,7 @@ def livraison_json(request, pk):
     from django.core.exceptions import ValidationError
     from Shop.models import Product
     from Marche.livraison import calculer
-    p = get_object_or_404(Product, pk=pk, is_available=True)
+    p = get_object_or_404(Product.en_vente(), pk=pk)
     try:
         qty = max(1, min(int(request.GET.get('qty') or 1), p.stock or 1))
     except ValueError:

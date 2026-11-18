@@ -1,13 +1,23 @@
 {% extends 'marche/espace/base.html' %}
 {% block titre %}{% if obj %}{{ obj.name }}{% else %}Nouveau produit{% endif %}{% endblock %}
+{% block tete %}<style>
+.photo-zone { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.photo-ap { width: 180px; height: 180px; border-radius: 14px; border: 1.5px dashed #B9D3C3; background: #F7FBF8; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--g); font-weight: 700; cursor: pointer; overflow: hidden; }
+.photo-ap img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 760px) { .photo-ap { width: 100%; height: 220px; } form .btn[type=submit] { width: 100%; } }
+</style>{% endblock %}
 {% block contenu %}
 <div class="tete"><h1>{% if obj %}{{ obj.name }}{% else %}Nouveau produit{% endif %}</h1>
   <a class="btn ghost" href="{% url 'espace:produits' v.code %}">Retour</a></div>
 <form method="post" enctype="multipart/form-data" class="carte">
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="alerte">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  <div class="photo-zone">
+    <label for="{{ form.image.id_for_label }}" class="photo-ap" id="apercu">{% if obj.image %}<img src="{{ obj.image.url }}" alt="">{% else %}<span><span class="ms" style="font-size:40px;width:auto">add_a_photo</span><br>Ajouter une photo</span>{% endif %}</label>
+    <div class="champ" style="flex:1;min-width:220px">{{ form.image }}<small>Une photo nette, de face, sur fond clair.</small>{% for e in form.image.errors %}<em>{{ e }}</em>{% endfor %}</div>
+  </div>
   <div class="grille">
-    {% for f in form %}{% if f.name != 'description' and f.name != 'is_available' and f.name != 'livrable' %}
+    {% for f in form %}{% if f.name != 'description' and f.name != 'is_available' and f.name != 'livrable' and f.name != 'image' %}
     <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} *{% endif %}</label>{{ f }}
       {% if f.help_text %}<small>{{ f.help_text }}</small>{% endif %}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
     {% endif %}{% endfor %}
@@ -23,3 +33,13 @@
 </form>
 {% endif %}
 {% endblock %}
+{% block js %}<script>
+(function () {
+  var i = document.getElementById('{{ form.image.id_for_label }}'), a = document.getElementById('apercu');
+  if (!i || !a) return;
+  i.addEventListener('change', function () {
+    if (!i.files || !i.files[0]) return;
+    var r = new FileReader(); r.onload = function (e) { a.innerHTML = '<img src="' + e.target.result + '" alt="">'; }; r.readAsDataURL(i.files[0]);
+  });
+})();
+</script>{% endblock %}

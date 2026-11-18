@@ -81,8 +81,8 @@ def formation_detail(request, pk):
     from Shop.models import Product
     from Publications.models import Publication
     shop_sample = (
-        Product.objects.filter(is_available=True, is_featured=True).exclude(image='').first()
-        or Product.objects.filter(is_available=True).exclude(image='').first()
+        Product.en_vente().filter(is_featured=True).exclude(image='').first()
+        or Product.en_vente().filter().exclude(image='').first()
     )
     pub_sample = Publication.objects.filter(is_published=True).exclude(cover_image='').first()
 

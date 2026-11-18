@@ -17,7 +17,7 @@ def home(request):
         'news_items': NewsTickerItem.objects.filter(is_active=True),
         'home_products': (
             # Accueil : on met en avant le matériel et les autres articles, pas les livres / annales
-            Product.objects.filter(is_available=True)
+            Product.en_vente()
             .exclude(category__slug='livres')
             .exclude(name__icontains='annale')
             .select_related('category')

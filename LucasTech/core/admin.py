@@ -225,3 +225,20 @@ class DelegationAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return request.user.is_superuser
 
+
+
+# Un vendeur suspendu ou expiré n'a plus accès à l'administration (ses données restent intactes).
+_has_permission_origine = admin.site.has_permission
+
+
+def _has_permission(request):
+    if not _has_permission_origine(request):
+        return False
+    if request.user.is_superuser:
+        return True
+    from Marche.models import Vendeur
+    v = Vendeur.objects.filter(user=request.user).first()
+    return v is None or v.actif
+
+
+admin.site.has_permission = _has_permission

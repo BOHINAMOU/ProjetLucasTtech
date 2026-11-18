@@ -28,7 +28,7 @@ class ProductSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Product.objects.filter(is_available=True)
+        return Product.en_vente()
 
     def lastmod(self, obj):
         return obj.updated_at

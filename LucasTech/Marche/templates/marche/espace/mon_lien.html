@@ -1,0 +1,55 @@
+{% extends 'marche/espace/base.html' %}
+{% block titre %}Mon lien{% endblock %}
+{% block tete %}<style>
+.lien { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0 18px; }
+.lien input { flex: 1; min-width: 220px; height: 48px; border: 1px solid #D5DBD6; border-radius: 12px; padding: 0 14px; font: inherit; font-size: 1rem; background: #FAFBF9; }
+.acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.qr { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.qr #qr { background: #fff; padding: 12px; border: 1px solid var(--line); border-radius: 12px; width: 204px; height: 204px; }
+.qr p { color: var(--mut); max-width: 340px; line-height: 1.6; margin: 0 0 12px; }
+@media (max-width: 760px) { .acts .btn { flex: 1; } }
+</style>{% endblock %}
+{% block contenu %}
+<div class="tete"><div><h1>Mon lien</h1><p>Partagez ce lien : vos clients voient uniquement vos produits.</p></div></div>
+{% if lien %}
+<div class="carte" style="margin-bottom:16px">
+  <b>Adresse de votre boutique</b>
+  <div class="lien"><input id="lien" type="text" value="{{ lien }}" readonly onclick="this.select()"></div>
+  <div class="acts">
+    <button class="btn" type="button" id="copier"><span class="ms">content_copy</span>Copier le lien</button>
+    <a class="btn wa" href="{{ wa }}" target="_blank" rel="noopener"><span class="ms">share</span>Partager sur WhatsApp</a>
+    <a class="btn ghost" href="{{ lien }}" target="_blank" rel="noopener"><span class="ms">open_in_new</span>Voir ma boutique</a>
+  </div>
+</div>
+<div class="carte qr">
+  <div id="qr"></div>
+  <div><b>Code QR</b><p>Imprimez-le sur vos cartes, affiches ou emballages : vos clients le scannent avec leur téléphone.</p>
+    <button class="btn ghost" type="button" id="telecharger"><span class="ms">download</span>Télécharger</button></div>
+</div>
+{% else %}
+<div class="alerte">Votre lien sera prêt après la validation de votre boutique.</div>
+{% endif %}
+{% endblock %}
+{% block js %}
+{% if lien %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  var l = document.getElementById('lien').value;
+  try { new QRCode(document.getElementById('qr'), { text: l, width: 180, height: 180, colorDark: '#0B3A23', colorLight: '#ffffff' }); } catch (e) {}
+  document.getElementById('copier').addEventListener('click', function () {
+    var b = this, i = document.getElementById('lien');
+    function fini() { b.lastChild.textContent = 'Copié'; setTimeout(function () { b.lastChild.textContent = 'Copier le lien'; }, 2000); }
+    if (navigator.clipboard) { navigator.clipboard.writeText(l).then(fini, function () { i.select(); document.execCommand('copy'); fini(); }); }
+    else { i.select(); document.execCommand('copy'); fini(); }
+  });
+  document.getElementById('telecharger').addEventListener('click', function () {
+    var c = document.querySelector('#qr canvas'), im = document.querySelector('#qr img');
+    var src = c ? c.toDataURL('image/png') : (im ? im.src : '');
+    if (!src) return;
+    var a = document.createElement('a'); a.href = src; a.download = 'qr-{{ v.slug }}.png'; document.body.appendChild(a); a.click(); a.remove();
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

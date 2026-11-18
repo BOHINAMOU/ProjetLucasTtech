@@ -138,7 +138,7 @@ def product_item(request, p):
 def _products():
     from Shop.models import Product
     # ordre des catégories (réglable dans l'admin) d'abord, puis mis en avant, puis les plus récents
-    return Product.objects.filter(is_available=True).select_related('category').order_by(
+    return Product.en_vente().select_related('category').order_by(
         'category__order', '-is_featured', '-created_at')
 
 
@@ -190,7 +190,7 @@ def produit(request, pk):
 @public_cache(300)
 def boutique_categories(request):
     from Shop.models import Category
-    return Response([cat(c) for c in Category.objects.filter(products__is_available=True).distinct()])
+    return Response([cat(c) for c in Category.objects.filter(products__in=Product.en_vente()).distinct()])
 
 
 # ─────────────────────────────

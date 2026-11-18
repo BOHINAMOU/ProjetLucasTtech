@@ -41,6 +41,17 @@ from django import forms as _f  # noqa: E402
 
 class _NouveauVendeur(_f.ModelForm):
     email = _f.EmailField(label="E-mail du vendeur", help_text="Son identifiant de connexion.")
+    duree = _f.ChoiceField(label="Durée de l'accès", initial='3', widget=_f.RadioSelect, required=False,
+                           choices=[('1', "1 mois"), ('3', "3 mois"), ('6', "6 mois"), ('12', "1 an"),
+                                    ('illimite', "Sans limite"), ('date', "Date libre")])
+    date_fin = _f.DateField(label="Date de fin (si « Date libre »)", required=False,
+                            widget=_f.DateInput(attrs={'type': 'date'}))
+
+    def clean(self):
+        d = super().clean()
+        if d.get('duree') == 'date' and not d.get('date_fin'):
+            self.add_error('date_fin', "Choisissez la date de fin.")
+        return d
 
     class Meta:
         model = Vendeur
@@ -59,17 +70,47 @@ class _NouveauVendeur(_f.ModelForm):
         return e
 
 
+class EtatVendeurFiltre(admin.SimpleListFilter):
+    title, parameter_name = "Accès", 'acces'
+
+    def lookups(self, request, model_admin):
+        return [('actif', "Actif"), ('bientot', "Expire bientôt"), ('expire', "Expiré"), ('suspendu', "Suspendu"),
+                ('attente', "En attente")]
+
+    def queryset(self, request, qs):
+        from datetime import timedelta
+        from django.db.models import Q
+        from django.utils import timezone
+        t, val = timezone.localdate(), self.value()
+        ok = Q(statut='valide') & (Q(fin_acces__isnull=True) | Q(fin_acces__gte=t))
+        if val == 'actif':
+            return qs.filter(ok)
+        if val == 'bientot':
+            return qs.filter(ok, fin_acces__lte=t + timedelta(days=7))
+        if val == 'expire':
+            return qs.filter(Q(statut='expire') | Q(statut='valide', fin_acces__lt=t))
+        if val == 'suspendu':
+            return qs.filter(statut='suspendu')
+        if val == 'attente':
+            return qs.filter(statut='en_attente')
+        return qs
+
+
 @admin.register(Vendeur)
 class VendeurAdmin(RetourMixin, admin.ModelAdmin):
-    list_display = ['fiche', 'user', 'ville', 'statut', 'lien', 'ventes', 'du_f', 'reste_f']
-    actions = ['envoyer_les_acces', 'regenerer_lien']
-    list_filter = ['statut', 'ville']
+    list_display = ['fiche', 'etat_pilule', 'fin_acces', 'ville', 'ventes', 'du_f', 'reste_f']
+    actions = ['suspendre', 'reactiver_1', 'reactiver_3', 'reactiver_6', 'reactiver_12', 'reactiver_illimite',
+               'envoyer_les_acces', 'regenerer_lien']
+    list_filter = [EtatVendeurFiltre, 'ville']
     search_fields = ['boutique', 'user__email', 'ville']
     autocomplete_fields = ['user']
     inlines = [ReversementInline]
     readonly_fields = ['chiffres', 'lien']
     fieldsets = (
         (None, {'fields': ('user', 'boutique', 'whatsapp', 'statut', 'lien')}),
+        ("Période d'accès", {'fields': ('debut_acces', 'fin_acces'),
+                             'description': "Fin vide = sans limite. À la date de fin, le compte passe en « Expiré » "
+                                            "(rien n'est effacé)."}),
         ('Point de retrait', {'fields': ('ville', 'adresse_retrait', 'latitude', 'longitude'),
                               'description': "Position GPS : dans Google Maps, appui long sur le lieu, puis copier les deux nombres."}),
         ('Argent', {'fields': ('commission_pct', 'numero_reversement', 'chiffres')}),
@@ -83,7 +124,7 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
         if request.user.is_superuser:
             return self.readonly_fields
         return ['user', 'boutique', 'whatsapp', 'statut', 'ville', 'adresse_retrait', 'latitude', 'longitude',
-                'commission_pct', 'numero_reversement', 'chiffres']
+                'commission_pct', 'numero_reversement', 'chiffres', 'debut_acces', 'fin_acces']
 
     def has_add_permission(self, request):
         return request.user.is_superuser
@@ -98,7 +139,7 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         if obj is None:
-            return ((None, {'fields': ('boutique', 'email', 'whatsapp', 'ville', 'commission_pct'),
+            return ((None, {'fields': ('boutique', 'email', 'whatsapp', 'ville', 'commission_pct', 'duree', 'date_fin'),
                             'description': "Le vendeur reçoit par e-mail son lien d'espace et crée son mot de passe."}),)
         return super().get_fieldsets(request, obj)
 
@@ -117,6 +158,10 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
                 u.set_unusable_password()
                 u.save()
             obj.user, obj.statut = u, 'valide'
+            from django.utils import timezone
+            from .acces_vendeur import fin_pour
+            obj.debut_acces = timezone.localdate()
+            obj.fin_acces = fin_pour(form.cleaned_data.get('duree') or 'illimite', form.cleaned_data.get('date_fin'))
             super().save_model(request, obj, form, change)
             envoyer_acces(obj)
             self.message_user(request, "Espace créé : le lien a été envoyé au vendeur par e-mail.", messages.SUCCESS)
@@ -160,6 +205,48 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
     def retour_defaut(self, v):
         from django.urls import reverse
         return reverse('admin_fiche', args=['vendeurs', v.pk])
+
+    @admin.display(description="Accès")
+    def etat_pilule(self, v):
+        from django.utils.html import format_html
+        code, txt = v.etat
+        c = {'actif': ('#E8F3EC', '#0F6B3E'), 'bientot': ('#FBF4DF', '#8A6A0E'), 'attente': ('#F0F1EF', '#6B746E')}.get(
+            code, ('#FBE9E7', '#C0392B'))
+        return format_html('<span style="background:{};color:{};padding:3px 10px;border-radius:999px;font-weight:700;'
+                           'font-size:12px;white-space:nowrap">{}</span>', c[0], c[1], txt)
+
+    @admin.action(description="Suspendre (rien n'est effacé)")
+    def suspendre(self, request, queryset):
+        from .acces_vendeur import suspendre
+        for v in queryset:
+            suspendre(v)
+        self.message_user(request, f"{queryset.count()} vendeur(s) suspendu(s).", messages.SUCCESS)
+
+    def _reactiver(self, request, queryset, duree):
+        from .acces_vendeur import fin_pour, reactiver
+        for v in queryset:
+            reactiver(v, fin_pour(duree))
+        self.message_user(request, f"{queryset.count()} vendeur(s) réactivé(s).", messages.SUCCESS)
+
+    @admin.action(description="Réactiver pour 1 mois")
+    def reactiver_1(self, request, queryset):
+        self._reactiver(request, queryset, '1')
+
+    @admin.action(description="Réactiver pour 3 mois")
+    def reactiver_3(self, request, queryset):
+        self._reactiver(request, queryset, '3')
+
+    @admin.action(description="Réactiver pour 6 mois")
+    def reactiver_6(self, request, queryset):
+        self._reactiver(request, queryset, '6')
+
+    @admin.action(description="Réactiver pour 1 an")
+    def reactiver_12(self, request, queryset):
+        self._reactiver(request, queryset, '12')
+
+    @admin.action(description="Réactiver sans limite")
+    def reactiver_illimite(self, request, queryset):
+        self._reactiver(request, queryset, 'illimite')
 
     @admin.display(description="Ventes")
     def ventes(self, v):

@@ -1,5 +1,14 @@
 {% extends "admin/hotel.html" %}
 {% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item"><a href="{% url 'admin_section' f.rubrique.0 %}">{{ f.rubrique.1 }}</a></li><li class="breadcrumb-item">{{ f.titre|truncatechars:40 }}</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  .acc { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:12px 0 2px; padding:12px; background:#F6F7F5; border-radius:12px; }
+  .acc form { display:flex; gap:6px; align-items:center; margin:0; }
+  .acc select, .acc input { height:38px; border:1px solid var(--lt-bord); border-radius:10px; padding:0 10px; font:inherit; font-size:.88rem; background:#fff; }
+  .acc button { height:38px; border-radius:10px; padding:0 14px; font-weight:700; font-size:.88rem; cursor:pointer; border:0; background:var(--lt-vert); color:#fff; }
+  .acc .acc-s { background:#fff; color:#C0392B; border:1px solid #F0CFCB; }
+</style>
+{% endblock %}
 {% block content %}
 <div class="ho">
   <div class="ho-tete">
@@ -10,6 +19,22 @@
       {% if f.sous_titre %}<div class="m">{{ f.sous_titre }}</div>{% endif %}
       {% if f.description %}<div style="line-height:1.6">{{ f.description|truncatewords:60 }}</div>{% endif %}
       {% if f.pastilles %}<div class="eq">{% for p in f.pastilles %}<span>{{ p }}</span>{% endfor %}</div>{% endif %}
+      {% if f.acces %}
+      <div class="acc">
+        {% if f.acces.etat.0 == 'actif' or f.acces.etat.0 == 'bientot' %}
+        <form method="post" action="{{ f.acces.url }}" onsubmit="return confirm('Suspendre ce vendeur ? Ses produits seront masqués (rien n’est effacé).')">{% csrf_token %}
+          <button class="acc-s" name="action" value="suspendre">Suspendre</button></form>
+        {% endif %}
+        <form method="post" action="{{ f.acces.url }}" class="acc-r">{% csrf_token %}
+          <input type="hidden" name="action" value="reactiver">
+          <select name="duree" onchange="this.form.date_fin.style.display=this.value==='date'?'':'none'">
+            <option value="1">1 mois</option><option value="3" selected>3 mois</option><option value="6">6 mois</option>
+            <option value="12">1 an</option><option value="illimite">Sans limite</option><option value="date">Date libre</option></select>
+          <input type="date" name="date_fin" style="display:none">
+          <button>{% if f.acces.etat.0 == 'actif' or f.acces.etat.0 == 'bientot' %}Prolonger{% else %}Réactiver{% endif %}</button>
+        </form>
+      </div>
+      {% endif %}
       {% if f.actions %}<div class="ho-actions">{% for label, url, icone, principal in f.actions %}<a {% if principal %}class="p" {% endif %}href="{{ url }}"><i class="fas {{ icone }}"></i> {{ label }}</a>{% endfor %}</div>{% endif %}
     </div>
   </div>
