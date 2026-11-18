@@ -215,21 +215,37 @@ class DemandeVendeur(models.Model):
         return reverse('vendre:suivi', args=[self.jeton])
 
 
+def nom_piece_contact(instance, filename):
+    """Nom de fichier aléatoire (rien ne révèle la personne ni le fichier d'origine)."""
+    import os
+    import secrets
+    ext = os.path.splitext(filename)[1].lower()[:6] or '.bin'
+    return f"vendeurs/pieces-contact/{secrets.token_hex(16)}{ext}"
+
+
 class ContactVendeur(models.Model):
     """« Vendre sur Lantante » : court formulaire de prise de contact (sans pièce d'identité).
     L'équipe rappelle le vendeur puis crée son espace."""
     STATUTS = [('nouvelle', "Nouvelle"), ('contactee', "Contactée"), ('compte_cree', "Compte créé"), ('refusee', "Refusée")]
+    PIECES = [('cni', "Carte d'identité"), ('electeur', "Carte d'électeur"), ('passeport', "Passeport"),
+              ('permis', "Permis de conduire")]
     CATEGORIES = [('vetements', "Vêtements"), ('chaussures', "Chaussures"), ('accessoires', "Accessoires"),
                   ('electronique', "Électronique"), ('livres', "Livres"), ('alimentation', "Alimentation"),
                   ('beaute', "Beauté"), ('autre', "Autre")]
     statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='nouvelle', db_index=True)
     boutique = models.CharField("Nom de la boutique", max_length=120)
-    nom = models.CharField("Votre nom", max_length=120)
+    nom = models.CharField("Nom", max_length=120)
+    prenom = models.CharField("Prénom", max_length=120, blank=True)
     telephone = models.CharField("Téléphone / WhatsApp", max_length=20)
     email = models.EmailField("E-mail")
     ville = models.CharField("Ville", max_length=80)
-    categorie = models.CharField("Ce que vous vendez", max_length=20, choices=CATEGORIES)
+    categorie = models.CharField("Ce que vous vendez", max_length=20, choices=CATEGORIES, blank=True)
     message = models.TextField("Message", blank=True)
+    # Pièce d'identité : stockage privé, visible par l'équipe seulement, jamais supprimée automatiquement
+    piece_type = models.CharField("Type de pièce", max_length=10, choices=PIECES, blank=True)
+    piece = models.FileField("Pièce d'identité", upload_to=nom_piece_contact, storage=_prive, blank=True)
+    piece_verifiee = models.BooleanField("Pièce vérifiée", default=False)
+    consentement = models.BooleanField("Accord pour la vérification de la pièce", default=False)
     vendeur = models.ForeignKey(Vendeur, on_delete=models.SET_NULL, null=True, blank=True, related_name='contacts',
                                 verbose_name="Vendeur créé")
     note = models.TextField("Note de l'équipe", blank=True)
@@ -241,12 +257,16 @@ class ContactVendeur(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.boutique} — {self.nom}"
+        return f"{self.boutique} — {self.nom_complet}"
+
+    @property
+    def nom_complet(self):
+        return f"{self.prenom} {self.nom}".strip()
 
     def lien_whatsapp(self):
         from urllib.parse import quote
         n = ''.join(c for c in self.telephone if c.isdigit())
-        return f"https://wa.me/{n}?text={quote(f'Bonjour {self.nom}, ici Lantante. Merci pour votre demande pour « {self.boutique} ».')}"
+        return f"https://wa.me/{n}?text={quote(f'Bonjour {self.prenom or self.nom}, ici Lantante. Merci pour votre demande pour « {self.boutique} ».')}"
 
 
 class SectionSite(models.Model):

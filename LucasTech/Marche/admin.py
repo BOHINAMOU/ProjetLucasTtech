@@ -112,9 +112,10 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
     search_fields = ['boutique', 'user__email', 'ville']
     autocomplete_fields = ['user']
     inlines = [ReversementInline, SectionSiteInline]
-    readonly_fields = ['chiffres', 'lien']
+    readonly_fields = ['chiffres', 'lien', 'piece_identite']
     fieldsets = (
         (None, {'fields': ('user', 'boutique', 'whatsapp', 'statut', 'lien')}),
+        ("Pièce d'identité (privée)", {'fields': ('piece_identite',)}),
         ("Période d'accès", {'fields': ('debut_acces', 'fin_acces'),
                              'description': "Fin vide = sans limite. À la date de fin, le compte passe en « Expiré » "
                                             "(rien n'est effacé)."}),
@@ -218,6 +219,17 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
     def retour_defaut(self, v):
         from django.urls import reverse
         return reverse('admin_fiche', args=['vendeurs', v.pk])
+
+    @admin.display(description="Pièce d'identité")
+    def piece_identite(self, v):
+        from django.urls import reverse
+        from django.utils.html import format_html_join
+        cs = [c for c in v.contacts.all() if c.piece] if v.pk else []
+        if not cs:
+            return "— (aucune pièce reliée)"
+        return format_html_join(' ', '<a class="button" target="_blank" rel="noopener" href="{}">Voir la pièce ({})</a>',
+                                ((reverse('vendre:piece_contact', args=[c.pk]), "vérifiée" if c.piece_verifiee else "à vérifier")
+                                 for c in cs))
 
     @admin.display(description="Accès")
     def etat_pilule(self, v):
@@ -421,13 +433,15 @@ from .models import ContactVendeur  # noqa: E402
 
 @admin.register(ContactVendeur)
 class ContactVendeurAdmin(admin.ModelAdmin):
-    list_display = ['boutique', 'nom', 'statut_pilule', 'categorie', 'ville', 'tel', 'created_at', 'actions_rapides']
-    list_filter = ['statut', 'categorie', 'ville']
-    search_fields = ['boutique', 'nom', 'telephone', 'email', 'ville']
-    readonly_fields = ['created_at', 'boutons']
+    list_display = ['boutique', 'nom_complet', 'statut_pilule', 'piece_ok', 'ville', 'tel', 'created_at', 'actions_rapides']
+    list_filter = ['statut', 'piece_verifiee', 'ville']
+    search_fields = ['boutique', 'nom', 'prenom', 'telephone', 'email', 'ville']
+    readonly_fields = ['created_at', 'boutons', 'apercu_piece', 'consentement']
     actions = ['marquer_contactee', 'marquer_refusee']
     fieldsets = (
-        (None, {'fields': ('boutons', 'statut', 'boutique', 'nom', 'telephone', 'email', 'ville', 'categorie', 'message')}),
+        (None, {'fields': ('boutons', 'statut', 'boutique', 'nom', 'prenom', 'telephone', 'email', 'ville', 'message')}),
+        ("Pièce d'identité (privée)", {'fields': ('piece_type', 'apercu_piece', 'piece_verifiee', 'consentement'),
+                                       'description': "Visible par l'équipe seulement. Jamais supprimée automatiquement."}),
         ("Suivi", {'fields': ('vendeur', 'note', 'created_at')}),
     )
 
@@ -441,6 +455,27 @@ class ContactVendeurAdmin(admin.ModelAdmin):
                 'compte_cree': ('#E8F3EC', '#0F6B3E'), 'refusee': ('#FBE9E7', '#C0392B')}[c.statut]
         return format_html('<span style="background:{};color:{};padding:3px 10px;border-radius:999px;font-weight:700;'
                            'font-size:12px;white-space:nowrap">{}</span>', coul[0], coul[1], c.get_statut_display())
+
+    @admin.display(description="Nom", ordering='nom')
+    def nom_complet(self, c):
+        return c.nom_complet
+
+    @admin.display(description="Pièce", boolean=True, ordering='piece_verifiee')
+    def piece_ok(self, c):
+        return c.piece_verifiee
+
+    @admin.display(description="Pièce d'identité")
+    def apercu_piece(self, c):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        if not c.piece:
+            return "— (aucune pièce)"
+        url = reverse('vendre:piece_contact', args=[c.pk])
+        if c.piece.name.lower().endswith('.pdf'):
+            return format_html('<iframe src="{}" style="width:100%;max-width:640px;height:420px;border:1px solid #E6E8E4;border-radius:10px"></iframe>'
+                               '<br><a href="{}" target="_blank" rel="noopener">Ouvrir le PDF</a>', url, url)
+        return format_html('<a href="{}" target="_blank" rel="noopener"><img src="{}" style="max-width:480px;max-height:360px;'
+                           'border-radius:10px;border:1px solid #E6E8E4"></a>', url, url)
 
     @admin.display(description="Téléphone")
     def tel(self, c):

@@ -58,29 +58,66 @@
     <div class="vc-ou">ou</div>
     {% endif %}
 
-    <form class="vc-c" method="post" action="/vendre/" {% if not envoye %}id="formulaire"{% endif %} novalidate>
+    <form class="vc-c" method="post" action="/vendre/" enctype="multipart/form-data" {% if not envoye %}id="formulaire"{% endif %} novalidate>
       {% csrf_token %}
       <h2>Envoyer une demande</h2>
-      <p class="s">Nous vous rappelons rapidement.</p>
+      <p class="s">Nous vérifions votre demande puis créons votre espace.</p>
       {% if form.non_field_errors %}<div class="vc-err">{{ form.non_field_errors|join:" " }}</div>{% endif %}
       <div class="vc-pot" aria-hidden="true"><label>Site internet<input type="text" name="site_internet" tabindex="-1" autocomplete="off"></label></div>
       <div class="vc-grille">
-        <div class="vc-ch"><label for="id_boutique">Nom de la boutique</label>{{ form.boutique }}{% for e in form.boutique.errors %}<em>{{ e }}</em>{% endfor %}</div>
-        <div class="vc-ch"><label for="id_nom">Votre nom</label>{{ form.nom }}{% for e in form.nom.errors %}<em>{{ e }}</em>{% endfor %}</div>
-        <div class="vc-ch"><label for="id_telephone">Téléphone / WhatsApp</label><div class="vc-tel"><span>+228</span>{{ form.telephone }}</div>{% for e in form.telephone.errors %}<em>{{ e }}</em>{% endfor %}</div>
+        <div class="vc-ch"><label for="id_nom">Nom</label>{{ form.nom }}{% for e in form.nom.errors %}<em>{{ e }}</em>{% endfor %}</div>
+        <div class="vc-ch"><label for="id_prenom">Prénom</label>{{ form.prenom }}{% for e in form.prenom.errors %}<em>{{ e }}</em>{% endfor %}</div>
         <div class="vc-ch"><label for="id_email">E-mail</label>{{ form.email }}{% for e in form.email.errors %}<em>{{ e }}</em>{% endfor %}</div>
+        <div class="vc-ch"><label for="id_telephone">Téléphone / WhatsApp</label><div class="vc-tel"><span>+228</span>{{ form.telephone }}</div>{% for e in form.telephone.errors %}<em>{{ e }}</em>{% endfor %}</div>
         <div class="vc-ch"><label for="id_ville">Ville</label>{{ form.ville }}{% for e in form.ville.errors %}<em>{{ e }}</em>{% endfor %}</div>
-        <div class="vc-ch"><label for="id_categorie">Ce que vous vendez</label>{{ form.categorie }}{% for e in form.categorie.errors %}<em>{{ e }}</em>{% endfor %}</div>
-        <div class="vc-ch l"><label for="id_message">Message (facultatif)</label>{{ form.message }}</div>
+        <div class="vc-ch"><label for="id_boutique">Nom de la boutique</label>{{ form.boutique }}{% for e in form.boutique.errors %}<em>{{ e }}</em>{% endfor %}</div>
+        <div class="vc-ch l"><label for="id_message">Petit message (facultatif)</label>{{ form.message }}</div>
+        <div class="vc-ch l">
+          <label for="id_piece">Pièce d'identité</label>
+          <div class="vc-piece">
+            {{ form.piece_type }}
+            <label class="vc-fic" for="id_piece" id="piece-zone"><span id="piece-texte">Choisir un fichier (photo ou PDF)</span><img id="piece-ap" alt="" hidden></label>
+            {{ form.piece }}
+          </div>
+          <small>Carte d'identité, carte d'électeur, passeport ou permis. JPG, PNG ou PDF, 5 Mo maximum. Recto et verso dans un seul fichier accepté.</small>
+          {% for e in form.piece_type.errors %}<em>{{ e }}</em>{% endfor %}{% for e in form.piece.errors %}<em>{{ e }}</em>{% endfor %}
+        </div>
+        <div class="vc-ch l"><label class="vc-acc"><input type="checkbox" name="accord" value="1" required {% if form.accord.value %}checked{% endif %}>
+          <span>J'accepte que Lantante vérifie ma pièce d'identité. <a href="{% url 'core:privacy_policy' %}" target="_blank" rel="noopener">Confidentialité</a></span></label>
+          {% for e in form.accord.errors %}<em>{{ e }}</em>{% endfor %}</div>
       </div>
       <button class="vc-btn" type="submit">Envoyer ma demande</button>
     </form>
   </div>
 </div>
+<style>
+  .vc-piece { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); gap:10px; }
+  .vc-piece input[type=file] { position:absolute; width:1px; height:1px; opacity:0; }
+  .vc-fic { display:flex; align-items:center; justify-content:center; gap:10px; min-height:48px; padding:8px 12px; border:1.5px dashed #B9D3C3; border-radius:12px;
+            background:#F7FBF8; color:var(--g); font-weight:600; cursor:pointer; text-align:center; font-size:.92rem !important; }
+  .vc-fic img { max-height:64px; border-radius:8px; }
+  .vc-ch small { color:var(--m); font-size:.82rem; }
+  .vc-acc { display:flex !important; gap:10px; align-items:flex-start; font-weight:500 !important; }
+  .vc-acc input { width:20px; height:20px; min-height:0 !important; margin-top:2px; accent-color:var(--g); flex:0 0 auto; }
+  .vc-acc a { color:var(--g); font-weight:600; }
+  @media (max-width:560px) { .vc-piece { grid-template-columns:minmax(0,1fr); } }
+</style>
 <script>
 document.addEventListener('input', function (e) {
   var el = e.target;
   if (el && el.id === 'id_telephone') { var v = el.value.replace(/[^0-9 ]/g, ''); if (v !== el.value) el.value = v; }
 });
+(function () {
+  var i = document.getElementById('id_piece'), t = document.getElementById('piece-texte'), im = document.getElementById('piece-ap');
+  if (!i) return;
+  i.addEventListener('change', function () {
+    var f = i.files && i.files[0];
+    if (!f) return;
+    t.textContent = f.name.length > 34 ? f.name.slice(0, 31) + '…' : f.name;
+    if (f.size > 5 * 1024 * 1024) { t.textContent = 'Fichier trop lourd : 5 Mo maximum.'; i.value = ''; im.hidden = true; return; }
+    if (f.type.indexOf('image/') === 0) { var r = new FileReader(); r.onload = function (e) { im.src = e.target.result; im.hidden = false; }; r.readAsDataURL(f); }
+    else { im.hidden = true; t.textContent = '📄 ' + t.textContent; }
+  });
+})();
 </script>
 {% endblock %}

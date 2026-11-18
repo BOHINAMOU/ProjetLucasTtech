@@ -9,4 +9,5 @@ urlpatterns = [
     path('dossier/<str:jeton>/', v.suivi, name='suivi'),
     path('dossier/<str:jeton>/modifier/', v.vendre, name='modifier'),
     path('piece/<int:pk>/', v.piece, name='piece'),
+    path('piece-contact/<int:pk>/', v.piece_contact, name='piece_contact'),
 ]
