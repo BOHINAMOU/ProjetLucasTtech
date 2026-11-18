@@ -16,7 +16,8 @@ urlpatterns = [
     path('vendre/', include('Marche.urls_vendre')),
     path('emplois/', include('Offres.urls')),
     path('hotels/', include('Hotels.urls')),
-    path('logements/', include('Logements.urls')),
+    path('location/', include('Logements.urls')),
+    re_path(r'^logements/(?P<rest>.*)$', RedirectView.as_view(url='/location/%(rest)s', permanent=True, query_string=True)),
     path('espace/', include('Marche.urls_espace')),
     path(
         'ads.txt',

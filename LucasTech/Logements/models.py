@@ -47,8 +47,8 @@ class Logement(models.Model):
 
     class Meta:
         ordering = ['ordre', '-created_at']
-        verbose_name = "Logement"
-        verbose_name_plural = "Logements"
+        verbose_name = "Annonce de location"
+        verbose_name_plural = "Annonces de location"
         indexes = [models.Index(fields=['loue', 'ville', 'type'])]
 
     def __str__(self):

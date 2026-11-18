@@ -59,11 +59,15 @@ class LogementsTests(TestCase):
         self.assertEqual((self.a.vues, self.a.contacts), (1, 1))
 
     def test_site(self):
-        p = self.client.get('/logements/?q=adidogome')
+        p = self.client.get('/location/?q=adidogome')
         self.assertContains(p, 'Adidogomé')
         self.assertNotContains(p, 'Bè Kpota')
-        fiche = self.client.get(f'/logements/{self.a.pk}/')
+        fiche = self.client.get(f'/location/{self.a.pk}/')
         self.assertContains(fiche, 'wa.me/22892967787')
         self.assertNotContains(fiche, '90 00 00 01')
         Logement.objects.update(loue=True)
-        self.assertContains(self.client.get('/logements/'), 'Bientôt disponible')
+        self.assertContains(self.client.get('/location/'), 'Bientôt disponible')
+
+    def test_ancienne_adresse_redirigee(self):
+        r = self.client.get('/logements/')
+        self.assertEqual((r.status_code, r['Location']), (301, '/location/'))

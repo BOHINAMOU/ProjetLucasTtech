@@ -1,5 +1,5 @@
 {% extends 'core/base.html' %}
-{% block title %}Logements — Lantante Technologie{% endblock %}
+{% block title %}Location de chambres ou appartements — Lantante Technologie{% endblock %}
 {% block meta_description %}Chambres, studios, appartements et maisons à louer au Togo.{% endblock %}
 {% block extra_head %}{% include 'repetiteurs/_style.html' %}
 <style>
@@ -22,17 +22,12 @@
 </style>{% endblock %}
 {% block content %}
 <div class="rp" style="max-width:1100px">
-  <div class="rp-banniere"><div><h1>Logements</h1><p>Chambres, studios, appartements et maisons à louer.</p></div></div>
+  <div class="rp-banniere"><div><h1>Location de chambres ou appartements</h1></div></div>
   <form method="get">
     <div class="lg-recherche"><input name="q" value="{{ q }}" placeholder="Ville, quartier, type…" aria-label="Rechercher"><button>Chercher</button></div>
     <div class="lg-filtres">
       <select name="ville" onchange="this.form.submit()"><option value="">Toutes les villes</option>{% for v in villes %}<option value="{{ v }}" {% if g.ville == v %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
       <select name="type" onchange="this.form.submit()"><option value="">Tous les types</option>{% for c, n in types %}<option value="{{ c }}" {% if g.type == c %}selected{% endif %}>{{ n }}</option>{% endfor %}</select>
-      <select name="prix_max" onchange="this.form.submit()"><option value="">Prix max</option>
-        <option value="25000" {% if g.prix_max == "25000" %}selected{% endif %}>25 000 CFA</option>
-        <option value="50000" {% if g.prix_max == "50000" %}selected{% endif %}>50 000 CFA</option>
-        <option value="100000" {% if g.prix_max == "100000" %}selected{% endif %}>100 000 CFA</option>
-        <option value="200000" {% if g.prix_max == "200000" %}selected{% endif %}>200 000 CFA</option></select>
       <select name="meuble" onchange="this.form.submit()"><option value="">Meublé ou non</option><option value="1" {% if g.meuble == "1" %}selected{% endif %}>Meublé</option><option value="0" {% if g.meuble == "0" %}selected{% endif %}>Non meublé</option></select>
     </div>
   </form>
@@ -52,7 +47,7 @@
     {% endfor %}
   </div>
   {% else %}
-  <div class="lg-vide"><p style="font-size:1.2rem;font-weight:700;color:#0b2e1d">{% if q or g.ville or g.type or g.prix_max or g.meuble %}Aucun logement trouvé.{% else %}Bientôt disponible{% endif %}</p></div>
+  <div class="lg-vide"><p style="font-size:1.2rem;font-weight:700;color:#0b2e1d">{% if q or g.ville or g.type or g.meuble %}Aucune annonce trouvée.{% else %}Bientôt disponible{% endif %}</p></div>
   {% endif %}
 </div>
 {% endblock %}

@@ -260,7 +260,7 @@ SECTIONS = {
                               ('Marche.DemandeVendeur', 'Demandes'), ('Marche.Reversement', 'Reversements')]),
     'emplois': ("Emplois", [('Offres.OffreEmploi', "Offres d'emploi")]),
     'hotels': ("Hôtels", [('Hotels.Hotel', 'Hôtels'), ('Hotels.Chambre', 'Chambres')]),
-    'logements': ("Logements", [('Logements.Logement', 'Logements')]),
+    'logements': ("Location de chambres ou appartements", [('Logements.Logement', 'Annonces de location')]),
     'formations': ("Formations", [('Formations.Formation', 'Formations'), ('Formations.Registration', 'Inscriptions')]),
     'evenements': ("Événements", [('Events.Event', 'Événements'), ('Events.Ticket', 'Tickets')]),
     'ecoles': ("Écoles", [('Ecoles.Ecole', 'Écoles'), ('Ecoles.Filiere', 'Filières')]),
