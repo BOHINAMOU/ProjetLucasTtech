@@ -14,14 +14,33 @@ def _recent(e):
     return bool(d and d >= timezone.localdate() - timedelta(days=30))
 
 
+def _couverture(request, e, petite=True):
+    """Photo principale ; à défaut, l'image du domaine de sa 1re filière (jamais de zone vide)."""
+    if e.couverture:
+        return vignette(request, e.couverture) if petite else grande(request, e.couverture)
+    from Ecoles.images import image_domaine
+    f = e.filieres.order_by('ordre').first()
+    if f and f.image:
+        return vignette(request, f.image) if petite else grande(request, f.image)
+    return image_domaine(request, f.nom if f else 'campus')
+
+
+def image_filiere(request, f):
+    if f.image:
+        return grande(request, f.image)
+    from Ecoles.images import image_domaine
+    return image_domaine(request, f.nom)
+
+
 def ecole_item(request, e):
     from Ecoles.models import CYCLES, lien_inscription
     libelles = dict(CYCLES)
     return {'nouveau': _recent(e), 'cycles': [{'code': c, 'nom': libelles.get(c, c)} for c in (e.cycles or [])],
             'id': e.pk, 'slug': e.slug, 'nom': e.nom, 'titre': e.nom, 'type': e.type, 'type_libelle': e.get_type_display(),
             'ville': e.ville, 'logo': media(request, e.logo),
-            'couverture': vignette(request, e.couverture) if e.couverture else None,
-            'image': media(request, e.couverture or e.logo), 'image_vignette': vignette(request, e.couverture or e.logo),
+            'couverture': _couverture(request, e),
+            'image': media(request, e.couverture) if e.couverture else _couverture(request, e),
+            'image_vignette': _couverture(request, e),
             'resume': short(e.description), 'lien_inscription': lien_inscription(e)}
 
 
@@ -60,13 +79,13 @@ def ecole(request, slug):
     d.update({
         'description': text(e.description), 'telephone': e.telephone, 'whatsapp': e.whatsapp, 'email': e.email,
         'site_web': e.site_web, 'adresse': e.adresse,
-        'couverture_grande': grande(request, e.couverture) if e.couverture else None,
+        'couverture_grande': _couverture(request, e, petite=False),
         'photos': [{'image': grande(request, p.image), 'legende': p.legende} for p in e.photos.all()],
         'nouveautes': [{'id': n.pk, 'titre': n.titre, 'texte': n.texte, 'date': n.date.isoformat(),
                         'image': grande(request, n.image) if n.image else None}
                        for n in e.nouveautes.all() if n.publie],
         'filieres': [{'id': f.pk, 'cycle': f.cycle, 'nom': f.nom, 'niveau': f.niveau, 'duree': f.duree, 'frais': f.frais,
-                      'image': grande(request, f.image) if f.image else None, 'resume': f.resume or short(f.description),
+                      'image': image_filiere(request, f), 'resume': f.resume or short(f.description),
                       'description': text(f.description), 'debouches': text(f.debouches),
                       'conditions': text(f.conditions)} for f in e.filieres.all()],
     })
