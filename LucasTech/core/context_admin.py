@@ -5,5 +5,6 @@ def rubriques(request):
     if not request.path.startswith('/lantanteAdminTech/') or not getattr(request, 'user', None) \
             or not request.user.is_authenticated or not request.user.is_staff:
         return {}
-    from .rubriques import rubrique_du_chemin, visibles
-    return {'lt_rubriques': visibles(request.user), 'lt_actif': rubrique_du_chemin(request.path)}
+    from .rubriques import groupes, rubrique_du_chemin, visibles
+    rubs = visibles(request.user)
+    return {'lt_rubriques': rubs, 'lt_groupes': groupes(rubs), 'lt_actif': rubrique_du_chemin(request.path)}

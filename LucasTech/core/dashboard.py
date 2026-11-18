@@ -165,6 +165,11 @@ def build(request):
             j['h'] = max(3, round(100 * j['v'] / pic)) if j['v'] else 3
             j['txt'] = f(j['v'])
         argent['jours'] = jours
+        argent['total30'] = f(sum(j['v'] for j in jours))
+        argent['n30'] = ok.filter(paid_at__gte=d30).count()
+        argent['en_attente'] = P.objects.filter(status='pending').count()
+        argent['n_ok'] = ok.count()
+        argent['total'] = f(somme(ok))
 
     MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
     WEEK = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
@@ -195,8 +200,10 @@ def build(request):
                'services': 'fa-wrench', 'notifications': 'fa-bell', 'utilisateurs': 'fa-users'}
     rubriques = [{'titre': t, 'icon': icones.get(c, 'fa-folder'), 'url': f'/lantanteAdminTech/section/{c}/'}
                  for c, (t, _) in SECTIONS.items()]
+    principales = [a for a in actions if a['label'] in ('Publier une actualité', 'Ajouter un produit', 'Créer un événement')]
     return {
-        'rubriques': rubriques,
+        'rubriques': rubriques, 'principales': principales,
+        'todo_actifs': sorted([t for t in todo if t['n']], key=lambda t: -t['n']),
         'todo': todo, 'todo_total': total_todo, 'comments': comments, 'latest_comments': latest[:6], 'messages_latest': messages_latest,
         'argent': argent, 'stats': stats, 'days': days, 'app_days': app_days, 'actions': actions, 'today': today, 'hero_kpis': hero_kpis,
         'mail_from': getattr(settings, 'DEFAULT_FROM_EMAIL', '') or getattr(settings, 'EMAIL_HOST_USER', ''),

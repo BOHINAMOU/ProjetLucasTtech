@@ -83,6 +83,28 @@ def modeles(code):
     return out
 
 
+GROUPES = [
+    ("Ventes", ['paiements', 'boutique', 'vendeurs']),
+    ("Contenus", ['concours', 'formations', 'evenements', 'publications']),
+    ("Services", ['ecoles', 'repetiteurs', 'emplois', 'hotels', 'logements', 'services']),
+    ("Gestion", ['notifications', 'utilisateurs', 'reglages']),
+]
+
+
+def groupes(rubs):
+    """Rubriques visibles rangées par groupe (les rubriques sans groupe vont dans « Gestion »)."""
+    par_code = {r['code']: r for r in rubs}
+    places = {c for _, codes in GROUPES for c in codes}
+    res = []
+    for titre, codes in GROUPES:
+        items = [par_code[c] for c in codes if c in par_code]
+        if titre == "Gestion":
+            items += [r for r in rubs if r['code'] not in places]
+        if items:
+            res.append((titre, items))
+    return res
+
+
 def visibles(user):
     """Rubriques que l'utilisateur peut ouvrir (au moins un élément visible)."""
     res = []

@@ -31,267 +31,151 @@
 </div>
 {% else %}
 <style>
-.ltd { --g:#0f7a45; --g2:#0b6137; --gd:#0b2e1d; --gold:#c9a84c; --navy:#0d3b7a; --ink:#0f172a; --muted:#64748b; --line:#e6eaee; max-width:1280px; font-family:inherit; }
-.ltd * { box-sizing:border-box; }
-.ltd a { text-decoration:none !important; }
-
-/* ── Bandeau d'accueil ── */
-.ltd-hero { background:var(--gd); color:#fff; border-radius:16px; padding:26px 30px; display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; border-bottom:5px solid var(--gold); box-shadow:0 10px 30px rgba(11,46,29,.18); }
-.ltd-date { font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:700; }
-.ltd-hero h2 { margin:6px 0 4px; font-size:2rem; font-weight:800; color:#fff; letter-spacing:0; }
-.ltd-hero p { margin:0 0 14px; color:rgba(255,255,255,.78); }
-.ltd-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.12); color:#fff; font-weight:700; padding:8px 16px; border-radius:999px; font-size:.9rem; }
-.ltd-pill.warn { background:var(--gold); color:#2a2205; }
-.ltd-kpis { display:flex; gap:0; }
-.ltd-kpi { padding:4px 26px; text-align:center; border-left:1px solid rgba(255,255,255,.18); }
-.ltd-kpi:first-child { border-left:0; }
-.ltd-kpi strong { display:block; font-size:2rem; font-weight:800; line-height:1.1; }
-.ltd-kpi span { font-size:.76rem; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.08em; }
-.ltd-kpi.hot strong { color:#f1d27a; }
-
-/* ── Titres de section ── */
-.ltd-h { display:flex; justify-content:space-between; align-items:center; margin:30px 0 14px; }
-.ltd-h h3 { margin:0; font-size:1.05rem; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:10px; }
-.ltd-h h3::before { content:''; width:5px; height:20px; background:var(--g); border-radius:3px; box-shadow:5px 0 0 var(--gold); margin-right:5px; }
-.ltd-h a { font-size:.85rem; font-weight:700; color:var(--g2); }
-
-/* ── Actions rapides ── */
-.ltd-actions { display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:12px; }
-.ltd-act { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 12px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:9px; color:var(--ink) !important; font-weight:700; font-size:.88rem; line-height:1.25; transition:transform .15s, box-shadow .15s, border-color .15s; }
-.ltd-act i { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:#eef7f1; color:var(--g); transition:background .15s, color .15s; }
-.ltd-act:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(15,23,42,.10); border-color:var(--g); }
-.ltd-act:hover i { background:var(--g); color:#fff; }
-.ltd-act.navy i { background:#e6eefb; color:var(--navy); } .ltd-act.navy:hover i { background:var(--navy); color:#fff; }
-.ltd-act.gold i { background:#fbf3dc; color:#8a6d1d; } .ltd-act.gold:hover i { background:var(--gold); color:#2a2205; }
-.ltd-act.grey i { background:#eef1f5; color:#475569; } .ltd-act.grey:hover i { background:#475569; color:#fff; }
-
-/* ── Cartes (à traiter, chiffres) ── */
-.ltd-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(228px,1fr)); gap:12px; }
-.ltd-card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; display:flex; gap:14px; align-items:center; color:var(--ink) !important; position:relative; overflow:hidden; transition:box-shadow .15s, transform .15s; }
-.ltd-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--g); }
-.ltd-card:hover { box-shadow:0 10px 24px rgba(15,23,42,.10); transform:translateY(-2px); }
-.ltd-ico { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:#eef7f1; color:var(--g); font-size:1.05rem; flex:0 0 auto; }
-.ltd-n { font-size:1.75rem; font-weight:800; line-height:1; display:block; }
-.ltd-l { font-size:.82rem; color:var(--muted); margin-top:4px; line-height:1.25; display:block; }
-.ltd-sub { font-size:.72rem; color:var(--g); font-weight:700; margin-top:3px; display:block; }
-.ltd-todo.red::before { background:#dc2626; } .ltd-todo.red .ltd-ico { background:#fee2e2; color:#b91c1c; }
-.ltd-todo.orange::before { background:#f59e0b; } .ltd-todo.orange .ltd-ico { background:#fff4e5; color:#b45309; }
-.ltd-todo.blue::before { background:var(--navy); } .ltd-todo.blue .ltd-ico { background:#e6eefb; color:var(--navy); }
-.ltd-todo.has .ltd-n { color:#b91c1c; }
-.ltd-todo.orange.has .ltd-n { color:#b45309; } .ltd-todo.blue.has .ltd-n { color:var(--navy); }
-.ltd-todo:not(.has) { opacity:.55; }
-.ltd-todo:not(.has)::before { background:#cbd5e1; }
-
-/* ── Panneaux ── */
-.ltd-two { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:22px; align-items:start; }
-@media (max-width:1050px) { .ltd-two { grid-template-columns:minmax(0,1fr); } }
-.ltd-panel { background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
-.ltd-cnt { display:grid; grid-template-columns:repeat(3,1fr); background:#f8fafc; border-bottom:1px solid var(--line); }
-.ltd-cnt div { padding:16px; text-align:center; border-right:1px solid var(--line); }
-.ltd-cnt div:last-child { border-right:0; }
-.ltd-cnt strong { display:block; font-size:1.9rem; font-weight:800; line-height:1.1; }
-.ltd-cnt span { font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
-.ltd-cnt .u strong { color:#dc2626; } .ltd-cnt .r strong { color:var(--g); }
-.ltd-links { padding:10px 16px; display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--line); }
-.ltd-links a { font-size:.8rem; font-weight:700; color:var(--g2); background:#eef7f1; padding:6px 12px; border-radius:99px; }
-.ltd-links a:hover { background:var(--g); color:#fff; }
-.ltd-row { display:flex; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); color:var(--ink) !important; align-items:flex-start; transition:background .12s; }
-.ltd-row:last-child { border-bottom:0; }
-.ltd-row:hover { background:#f8fafc; }
-.ltd-row.unread { background:#f3fbf6; }
-.ltd-avatar { width:36px; height:36px; border-radius:50%; background:var(--g); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; flex:0 0 auto; position:relative; }
-.ltd-row.unread .ltd-avatar::after { content:''; position:absolute; top:-1px; right:-1px; width:11px; height:11px; border-radius:50%; background:#dc2626; border:2px solid #fff; }
-.ltd-row b { font-weight:700; }
-.ltd-row p { margin:2px 0 0; color:#334155; font-size:.9rem; overflow-wrap:anywhere; }
-.ltd-meta { font-size:.76rem; color:var(--muted); margin-top:3px; }
-.ltd-tag { display:inline-block; font-size:.66rem; font-weight:800; padding:2px 8px; border-radius:99px; background:#e2e8f0; color:#334155; margin-left:6px; text-transform:uppercase; letter-spacing:.04em; }
-.ltd-tag.new { background:#fee2e2; color:#b91c1c; }
-.ltd-empty { padding:26px 16px; color:var(--muted); text-align:center; }
-.ltd-note { font-size:.78rem; color:var(--muted); margin-top:8px; }
-
-/* ── Graphiques ── */
-.ltd-chartbox { padding:14px 16px 12px; }
-.ltd-chart { display:flex; align-items:flex-end; gap:6px; height:120px; border-bottom:1px solid var(--line); }
-.ltd-chart div { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; gap:3px; }
-.ltd-chart i { display:block; width:100%; background:var(--g); border-radius:5px 5px 0 0; min-height:4px; opacity:.88; transition:opacity .15s; }
-.ltd-chart div:hover i { opacity:1; }
-.ltd-chart b { font-size:.7rem; color:var(--ink); }
-.ltd-days { display:flex; gap:6px; padding-top:6px; }
-.ltd-days span { flex:1; text-align:center; font-size:.62rem; color:var(--muted); }
-.ltd-mail { padding:12px 16px; font-size:.84rem; color:#334155; background:#f8fafc; border-top:1px solid var(--line); }
-.ltd-mail i { color:var(--g); margin-right:6px; }
-/* ── Responsive (tablette / mobile) ── */
-.ltd-hero > div:first-child { min-width:0; }
-@media (max-width:991.98px) {
-  .ltd-kpis { width:100%; }
-  .ltd-kpi { flex:1 1 0; padding:4px 10px; }
-}
-@media (max-width:767.98px) {
-  .ltd-hero { padding:20px 18px; border-radius:14px; gap:16px; }
-  .ltd-hero h2 { font-size:1.55rem; }
-  .ltd-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-  .ltd-kpi { border-left:0; background:rgba(255,255,255,.07); border-radius:12px; padding:10px 6px; }
-  .ltd-kpi strong { font-size:1.5rem; }
-  .ltd-kpi span { font-size:.66rem; letter-spacing:.05em; }
-  .ltd-h { margin:24px 0 10px; }
-  .ltd-actions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-  .ltd-act { padding:14px 8px; font-size:.8rem; min-height:96px; }
-  .ltd-act i { width:40px; height:40px; font-size:1rem; }
-  .ltd-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-  .ltd-card { flex-direction:column; align-items:flex-start; gap:8px; padding:14px 14px 14px 16px; }
-  .ltd-ico { width:36px; height:36px; border-radius:10px; font-size:.9rem; }
-  .ltd-n { font-size:1.45rem; }
-  .ltd-l { font-size:.76rem; }
-  .ltd-cnt strong { font-size:1.5rem; }
-  .ltd-cnt div { padding:12px 6px; }
-  .ltd-chart { gap:3px; }
-  .ltd-days { gap:3px; }
-  .ltd-days span { font-size:.55rem; }
-}
-@media (max-width:359.98px) {
-  .ltd-actions, .ltd-grid { grid-template-columns:minmax(0,1fr); }
-}
+.db { max-width:1360px; }
+.db a { text-decoration:none; }
+.db-tete { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:4px 0 22px; }
+.db-tete small { color:var(--lt-gris); font-weight:600; font-size:.82rem; }
+.db-tete h1 { font-size:1.65rem; font-weight:800; letter-spacing:-.02em; margin:2px 0 0; color:var(--lt-texte); }
+.db-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.db-btn { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:10px; font-weight:600; font-size:.88rem;
+          border:1px solid var(--lt-bord); background:#fff; color:var(--lt-texte) !important; }
+.db-btn:hover { border-color:#c9d6cf; background:#fafcfb; }
+.db-btn.p { background:var(--lt-vert); border-color:var(--lt-vert); color:#fff !important; }
+.db-btn.p:hover { filter:brightness(1.07); }
+.db-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:16px; }
+.db-kpi { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; padding:18px 20px; color:var(--lt-texte) !important; display:block; }
+.db-kpi:hover { border-color:#c9d6cf; }
+.db-kpi .l { display:flex; align-items:center; gap:8px; color:var(--lt-gris); font-weight:600; font-size:.84rem; }
+.db-kpi .l i { width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:var(--lt-vert-clair); color:var(--lt-vert); font-size:.8rem; }
+.db-kpi .v { font-size:1.7rem; font-weight:800; letter-spacing:-.02em; margin:10px 0 2px; line-height:1.1; white-space:nowrap; }
+.db-kpi .s { color:var(--lt-gris); font-size:.8rem; }
+.db-kpi.alerte .l i { background:#FFF4D6; color:#9A6700; }
+.db-kpi.alerte .v { color:#9A6700; }
+.db-grille { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:16px; margin-bottom:16px; align-items:start; }
+.db-grille.egal { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+.db-carte { background:#fff; border:1px solid var(--lt-bord); border-radius:14px; overflow:hidden; }
+.db-carte > .h { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--lt-bord); }
+.db-carte > .h b { font-size:.98rem; font-weight:700; }
+.db-carte > .h a { font-size:.82rem; font-weight:600; color:var(--lt-vert); }
+.db-graph { padding:18px 20px 14px; }
+.db-graph .tot { font-size:1.45rem; font-weight:800; letter-spacing:-.02em; }
+.db-graph .tot small { font-size:.82rem; color:var(--lt-gris); font-weight:500; margin-left:6px; letter-spacing:0; }
+.db-barres { display:flex; align-items:flex-end; gap:4px; height:150px; margin-top:16px;
+             background:repeating-linear-gradient(to top, #EEF2F0 0, #EEF2F0 1px, transparent 1px, transparent 50px); }
+.db-barres span { flex:1; border-radius:4px 4px 0 0; background:#E3EBE7; min-height:3px; }
+.db-barres span.v { background:var(--lt-vert); }
+.db-axe { display:flex; justify-content:space-between; color:var(--lt-gris); font-size:.75rem; margin-top:6px; }
+.db-liste a, .db-liste > div { display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid #F0F3F1; color:var(--lt-texte) !important; }
+.db-liste a:last-child, .db-liste > div:last-child { border-bottom:0; }
+.db-liste a:hover { background:#FAFCFB; }
+.db-liste .ic { width:32px; height:32px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; background:var(--lt-vert-clair); color:var(--lt-vert); font-size:.82rem; font-weight:700; flex:0 0 auto; }
+.db-liste .tx { flex:1; min-width:0; font-size:.88rem; font-weight:500; }
+.db-liste .tx small { display:block; color:var(--lt-gris); font-weight:400; font-size:.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.db-liste .n { font-weight:700; font-size:.82rem; background:#FFF4D6; color:#9A6700; border-radius:999px; padding:2px 10px; }
+.db-liste .m { font-weight:700; font-size:.88rem; white-space:nowrap; }
+.db-liste .q { color:var(--lt-gris); white-space:nowrap; font-size:.78rem; }
+.db-vide { display:block !important; padding:28px 20px; text-align:center; color:var(--lt-gris); font-size:.9rem; }
+.db-vide i { display:block; font-size:1.4rem; color:var(--lt-vert); margin-bottom:8px; }
+.db-table { width:100%; border-collapse:collapse; font-size:.87rem; }
+.db-table th { text-align:left; color:var(--lt-gris); font-weight:600; font-size:.76rem; padding:10px 20px; background:#FAFCFB; border-bottom:1px solid var(--lt-bord); }
+.db-table td { padding:11px 20px; border-bottom:1px solid #F0F3F1; }
+.db-table tr:last-child td { border-bottom:0; }
+.db-pas { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:.76rem; }
+.db-stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
+.db-stats a { padding:16px 20px; border-right:1px solid #F0F3F1; border-bottom:1px solid #F0F3F1; color:var(--lt-texte) !important; }
+.db-stats a:hover { background:#FAFCFB; }
+.db-stats b { display:block; font-size:1.3rem; font-weight:800; }
+.db-stats span { color:var(--lt-gris); font-size:.82rem; }
+.db-stats small { display:block; color:var(--lt-vert); font-size:.76rem; font-weight:600; margin-top:2px; }
+@media (max-width:1199.98px) { .db-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .db-grille, .db-grille.egal { grid-template-columns:minmax(0,1fr); } }
+@media (max-width:575.98px) { .db-kpis { gap:10px; } .db-kpi { padding:14px; } .db-kpi .v { font-size:1.25rem; } .db-tete h1 { font-size:1.35rem; }
+  .db-btn { padding:8px 12px; font-size:.84rem; }
+  .db-table th:nth-child(3), .db-table td:nth-child(3) { display:none; } .db-table th, .db-table td { padding-left:14px; padding-right:14px; } }
 </style>
 
-<div class="ltd">
-  <div class="ltd-hero">
-    <div>
-      <div class="ltd-date">{{ dash.today }}</div>
-      <h2>Bonjour {{ dash.greeting }}</h2>
-      <p>Voici l'essentiel de votre site aujourd'hui.</p>
-      <span class="ltd-pill {% if dash.todo_total %}warn{% endif %}"><i class="fas {% if dash.todo_total %}fa-bell{% else %}fa-check-circle{% endif %}"></i>
-        {% if dash.todo_total %}{{ dash.todo_total }} élément{{ dash.todo_total|pluralize }} à traiter{% else %}Tout est à jour{% endif %}</span>
-    </div>
-    <div class="ltd-kpis">
-      {% for k in dash.hero_kpis %}<div class="ltd-kpi {% if forloop.last and k.1 %}hot{% endif %}"><strong>{{ k.1 }}</strong><span>{{ k.0 }}</span></div>{% endfor %}
+<div class="db">
+  <div class="db-tete">
+    <div><small>{{ dash.today }}</small><h1>Bonjour {{ dash.greeting|title }}</h1></div>
+    <div class="db-btns">
+      {% for a in dash.principales %}<a class="db-btn{% if forloop.first %} p{% endif %}" href="{{ a.url }}"><i class="fas {% if forloop.first %}fa-plus{% else %}{{ a.icon }}{% endif %}"></i>{{ a.label }}</a>{% endfor %}
+      <a class="db-btn" href="/" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i>Voir le site</a>
     </div>
   </div>
 
-{% if dash.argent %}
-<div class="ltd-h"><h3>Argent encaissé</h3><a href="{{ dash.argent.url }}">Tous les paiements →</a></div>
-<div class="ltd-grid">
-  {% for p in dash.argent.periodes %}
-  <a class="ltd-card" href="{{ dash.argent.url }}?status__exact=approved"><span class="ltd-ico"><i class="fas fa-coins"></i></span>
-    <span><span class="ltd-n">{{ p.montant }}</span><span class="ltd-l">{{ p.label }}</span><span class="ltd-sub">{{ p.n }} paiement{{ p.n|pluralize }}</span></span></a>
-  {% endfor %}
-</div>
-<div class="ltd-grid" style="margin-top:12px">
-  {% for label, n, couleur, url in dash.argent.statuts %}
-  <a class="ltd-card" href="{{ url }}"><span class="ltd-ico" style="color:{{ couleur }}"><i class="fas fa-circle"></i></span>
-    <span><span class="ltd-n" style="color:{{ couleur }}">{{ n }}</span><span class="ltd-l">Paiements {{ label|lower }}</span></span></a>
-  {% endfor %}
-</div>
-<div style="background:#fff;border:1px solid #e6eaee;border-radius:14px;padding:16px 18px;margin-top:12px">
-  <div style="font-weight:800;margin-bottom:10px">Encaissements des 30 derniers jours</div>
-  <div style="display:flex;align-items:flex-end;gap:3px;height:120px">
-    {% for j in dash.argent.jours %}<div title="{{ j.label }} : {{ j.txt }}" style="flex:1;background:{% if j.v %}#0B7A4B{% else %}#e6eaee{% endif %};height:{{ j.h }}%;border-radius:3px 3px 0 0"></div>{% endfor %}
-  </div>
-  <div style="display:flex;justify-content:space-between;color:#64748b;font-size:11px;margin-top:4px"><span>{{ dash.argent.jours.0.label }}</span><span>aujourd'hui</span></div>
-</div>
-<div class="ltd-h"><h3>Par activité (paiements réussis)</h3></div>
-<div class="ltd-grid">
-  {% for label, montant, n, url in dash.argent.par_type %}
-  <a class="ltd-card" href="{{ url }}"><span><span class="ltd-n" style="font-size:1.3rem">{{ montant }}</span><span class="ltd-l">{{ label }}</span><span class="ltd-sub">{{ n }} paiement{{ n|pluralize }}</span></span></a>
-  {% endfor %}
-</div>
-<div class="ltd-h"><h3>10 derniers paiements</h3><a href="{{ dash.argent.url }}">Voir tout →</a></div>
-<div style="background:#fff;border:1px solid #e6eaee;border-radius:14px;overflow:auto">
-  <table style="width:100%;border-collapse:collapse;font-size:.9rem">
-    <thead><tr style="text-align:left;color:#64748b"><th style="padding:10px 14px">Date</th><th>Client</th><th>Objet</th><th>Montant</th><th>Statut</th></tr></thead>
-    <tbody>
-    {% for p in dash.argent.derniers %}
-      <tr style="border-top:1px solid #eef1f5"><td style="padding:9px 14px;white-space:nowrap"><a href="{{ p.url }}">{{ p.quand|date:"d/m/Y H:i" }}</a></td><td>{{ p.qui|default:"—" }}</td><td>{{ p.objet|truncatechars:48 }}</td>
-        <td style="white-space:nowrap;font-weight:700">{{ p.montant }}</td>
-        <td><span style="padding:2px 9px;border-radius:999px;font-weight:700;font-size:12px;{% if p.status == 'approved' %}background:#E3F5EC;color:#0B7A4B{% elif p.status == 'pending' %}background:#FFF4D6;color:#9A6700{% elif p.status == 'refunded' %}background:#EEE7FD;color:#6D28D9{% else %}background:#FDECEA;color:#B42318{% endif %}">{{ p.statut }}</span></td></tr>
-    {% empty %}<tr><td style="padding:14px" colspan="5">Aucun paiement.</td></tr>{% endfor %}
-    </tbody>
-  </table>
-</div>
-{% endif %}
-  <div class="ltd-h"><h3>Rubriques</h3></div>
-  <div class="ltd-actions" style="margin-bottom:18px">
-    {% for r in dash.rubriques %}<a class="ltd-act navy" href="{{ r.url }}"><i class="fas {{ r.icon }}"></i>{{ r.titre }}</a>{% endfor %}
-  </div>
-  <div class="ltd-h"><h3>Actions rapides</h3></div>
-  <div class="ltd-actions">
-    {% for a in dash.actions %}<a class="ltd-act {{ a.tone }}" href="{{ a.url }}"{% if a.url == '/' %} target="_blank"{% endif %}><i class="fas {{ a.icon }}"></i>{{ a.label }}</a>{% endfor %}
+  <div class="db-kpis">
+    {% if dash.argent %}
+    <a class="db-kpi" href="{{ dash.argent.url }}?status__exact=approved"><span class="l"><i class="fas fa-coins"></i>Encaissé · 30 jours</span><div class="v">{{ dash.argent.total30 }}</div><span class="s">{{ dash.argent.n30 }} paiement{{ dash.argent.n30|pluralize }}</span></a>
+    <a class="db-kpi" href="{{ dash.argent.url }}?status__exact=approved"><span class="l"><i class="fas fa-circle-check"></i>Paiements réussis</span><div class="v">{{ dash.argent.n_ok }}</div><span class="s">{{ dash.argent.total }} au total</span></a>
+    <a class="db-kpi{% if dash.argent.en_attente %} alerte{% endif %}" href="{{ dash.argent.url }}?status__exact=pending"><span class="l"><i class="fas fa-hourglass-half"></i>En attente</span><div class="v">{{ dash.argent.en_attente }}</div><span class="s">paiements à suivre</span></a>
+    {% else %}
+    {% for s in dash.stats|slice:":3" %}<a class="db-kpi" href="{{ s.url }}"><span class="l"><i class="fas {{ s.icon }}"></i>{{ s.label }}</span><div class="v">{{ s.n }}</div><span class="s">{{ s.sub }}</span></a>{% endfor %}
+    {% endif %}
+    <a class="db-kpi{% if dash.todo_total %} alerte{% endif %}" href="#a-traiter"><span class="l"><i class="fas fa-bell"></i>À traiter</span><div class="v">{{ dash.todo_total }}</div><span class="s">{% if dash.todo_total %}élément{{ dash.todo_total|pluralize }} en attente{% else %}tout est à jour{% endif %}</span></a>
   </div>
 
-  <div class="ltd-h"><h3>À traiter</h3></div>
-  <div class="ltd-grid">
-    {% for t in dash.todo %}
-    <a class="ltd-card ltd-todo {{ t.tone }}{% if t.n %} has{% endif %}" href="{{ t.url }}">
-      <span class="ltd-ico"><i class="fas {{ t.icon }}"></i></span>
-      <span><span class="ltd-n">{{ t.n }}</span><span class="ltd-l">{{ t.label }}</span></span>
-    </a>
-    {% endfor %}
-  </div>
-
-  <div class="ltd-two" style="margin-top:6px">
-    <div>
-      <div class="ltd-h"><h3>Commentaires</h3><a href="{{ dash.comments.site_url }}">Tout voir →</a></div>
-      <div class="ltd-panel">
-        <div class="ltd-cnt">
-          <div class="u"><strong>{{ dash.comments.unread }}</strong><span>non lus</span></div>
-          <div class="r"><strong>{{ dash.comments.read }}</strong><span>lus</span></div>
-          <div><strong>{{ dash.comments.total }}</strong><span>au total</span></div>
-        </div>
-        <div class="ltd-links">
-          <a href="{{ dash.comments.unread_url }}"><i class="fas fa-envelope"></i> Non lus</a>
-          <a href="{{ dash.comments.site_url }}">Actualités du site</a>
-        </div>
-        {% for c in dash.latest_comments %}
-        <a class="ltd-row {% if not c.read %}unread{% endif %}" href="{{ c.url }}">
-          <span class="ltd-avatar">{{ c.who|slice:":1"|upper }}</span>
-          <span style="min-width:0"><b>{{ c.who }}</b>{% if not c.read %}<span class="ltd-tag new">Non lu</span>{% else %}<span class="ltd-tag">Lu</span>{% endif %}<span class="ltd-tag">{{ c.src }}</span>
-            <p>{{ c.text|truncatechars:140 }}</p>
-            <div class="ltd-meta">sur « {{ c.on|truncatechars:60 }} » · {{ c.when|timesince }}</div></span>
-        </a>
-        {% empty %}<div class="ltd-empty">Aucun commentaire pour le moment.</div>{% endfor %}
+  <div class="db-grille">
+    {% if dash.argent %}
+    <div class="db-carte">
+      <div class="h"><b>Encaissements · 30 jours</b><a href="{{ dash.argent.url }}">Tous les paiements</a></div>
+      <div class="db-graph">
+        <div class="tot">{{ dash.argent.total30 }}<small>sur 30 jours</small></div>
+        <div class="db-barres">{% for j in dash.argent.jours %}<span class="{% if j.v %}v{% endif %}" style="height:{{ j.h }}%" title="{{ j.label }} : {{ j.txt }}"></span>{% endfor %}</div>
+        <div class="db-axe"><span>{{ dash.argent.jours.0.label }}</span><span>Aujourd'hui</span></div>
       </div>
-      <div class="ltd-note">Ouvrir un commentaire le marque automatiquement comme lu. Les commentaires ne sont jamais visibles du public.</div>
     </div>
-
-    <div>
-      <div class="ltd-h"><h3>Messages rapides</h3><a href="{% url 'admin:Publications_quickmessage_changelist' %}">Tout voir →</a></div>
-      <div class="ltd-panel">
-        {% for m in dash.messages_latest %}
-        <a class="ltd-row {% if not m.read %}unread{% endif %}" href="{{ m.url }}">
-          <span class="ltd-avatar" style="background:var(--navy)">{{ m.who|slice:":1"|upper }}</span>
-          <span style="min-width:0"><b>{{ m.who }}</b>{% if not m.read %}<span class="ltd-tag new">Non lu</span>{% endif %}
-            <p>{{ m.text|truncatechars:120 }}</p>
-            <div class="ltd-meta">{{ m.contact }} · {{ m.when|timesince }}</div></span>
-        </a>
-        {% empty %}<div class="ltd-empty">Aucun message rapide.</div>{% endfor %}
-      </div>
-
-      <div class="ltd-h"><h3>Nouveaux comptes · 14 jours</h3></div>
-      <div class="ltd-panel">
-        <div class="ltd-chartbox">
-          <div class="ltd-chart">{% for d in dash.days %}<div title="{{ d.label }} : {{ d.n }}">{% if d.n %}<b>{{ d.n }}</b>{% endif %}<i style="height:{{ d.h }}%"></i></div>{% endfor %}</div>
-          <div class="ltd-days">{% for d in dash.days %}<span>{{ d.label|slice:":2" }}</span>{% endfor %}</div>
-        </div>
-      </div>
-
-      <div class="ltd-h"><h3>Paiements en ligne · 14 jours</h3></div>
-      <div class="ltd-panel">
-        <div class="ltd-chartbox">
-          <div class="ltd-chart">{% for d in dash.app_days %}<div title="{{ d.label }} : {{ d.n }}">{% if d.n %}<b>{{ d.n }}</b>{% endif %}<i style="height:{{ d.h }}%;background:var(--navy)"></i></div>{% endfor %}</div>
-          <div class="ltd-days">{% for d in dash.app_days %}<span>{{ d.label|slice:":2" }}</span>{% endfor %}</div>
-        </div>
-        <div class="ltd-mail"><i class="fas fa-lock"></i> Les e-mails du site partent toujours de <b>{{ dash.mail_from }}</b> : cette adresse d'envoi est fixe et ne se modifie pas depuis l'administration.</div>
+    {% endif %}
+    <div class="db-carte" id="a-traiter">
+      <div class="h"><b>À traiter</b>{% if dash.todo_total %}<span class="db-pas" style="background:#FFF4D6;color:#9A6700">{{ dash.todo_total }}</span>{% endif %}</div>
+      <div class="db-liste">
+        {% for t in dash.todo_actifs %}<a href="{{ t.url }}"><span class="ic"><i class="fas {{ t.icon }}"></i></span><span class="tx">{{ t.label }}</span><span class="n">{{ t.n }}</span></a>
+        {% empty %}<div class="db-vide"><i class="fas fa-circle-check"></i>Tout est à jour.</div>{% endfor %}
       </div>
     </div>
   </div>
 
-  <div class="ltd-h"><h3>Chiffres clés</h3></div>
-  <div class="ltd-grid">
-    {% for s in dash.stats %}
-    <a class="ltd-card" href="{{ s.url }}">
-      <span class="ltd-ico"><i class="fas {{ s.icon }}"></i></span>
-      <span><span class="ltd-n">{{ s.n }}</span><span class="ltd-l">{{ s.label }}</span>{% if s.sub %}<span class="ltd-sub">{{ s.sub }}</span>{% endif %}</span>
-    </a>
-    {% endfor %}
+  {% if dash.argent %}
+  <div class="db-grille">
+    <div class="db-carte">
+      <div class="h"><b>Derniers paiements</b><a href="{{ dash.argent.url }}">Voir tout</a></div>
+      <div style="overflow-x:auto"><table class="db-table">
+        <thead><tr><th>Date</th><th>Client</th><th>Objet</th><th>Montant</th><th>Statut</th></tr></thead>
+        <tbody>{% for p in dash.argent.derniers|slice:":8" %}
+          <tr><td style="white-space:nowrap"><a href="{{ p.url }}">{{ p.quand|date:"d/m H:i" }}</a></td><td>{{ p.qui|default:"—"|truncatechars:22 }}</td><td style="color:var(--lt-gris)">{{ p.objet|truncatechars:36 }}</td>
+            <td style="white-space:nowrap;font-weight:700">{{ p.montant }}</td>
+            <td><span class="db-pas" style="{% if p.status == 'approved' %}background:#E3F5EC;color:#0B7A4B{% elif p.status == 'pending' %}background:#FFF4D6;color:#9A6700{% elif p.status == 'refunded' %}background:#EEE7FD;color:#6D28D9{% else %}background:#FDECEA;color:#B42318{% endif %}">{{ p.statut }}</span></td></tr>
+        {% empty %}<tr><td colspan="5" class="db-vide">Aucun paiement.</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    <div class="db-carte">
+      <div class="h"><b>Par activité</b><small style="color:var(--lt-gris)">paiements réussis</small></div>
+      <div class="db-liste">
+        {% for label, montant, n, url in dash.argent.par_type %}{% if n %}<a href="{{ url }}"><span class="tx">{{ label }}<small>{{ n }} paiement{{ n|pluralize }}</small></span><span class="m">{{ montant }}</span></a>{% endif %}{% endfor %}
+        {% if not dash.argent.n_ok %}<div class="db-vide">Aucun paiement réussi.</div>{% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="db-grille egal">
+    <div class="db-carte">
+      <div class="h"><b>Commentaires récents</b><a href="{{ dash.comments.site_url }}">Tout voir</a></div>
+      <div class="db-liste">
+        {% for c in dash.latest_comments|slice:":5" %}<a href="{{ c.url }}"><span class="ic"{% if not c.read %} style="background:#FDECEA;color:#B42318"{% endif %}>{{ c.who|slice:":1"|upper }}</span><span class="tx">{{ c.who }}<small>{{ c.text|truncatechars:90 }}</small></span><span class="q">{{ c.when|date:"d/m" }}</span></a>
+        {% empty %}<div class="db-vide">Aucun commentaire.</div>{% endfor %}
+      </div>
+    </div>
+    <div class="db-carte">
+      <div class="h"><b>Messages rapides</b><a href="{% url 'admin:Publications_quickmessage_changelist' %}">Tout voir</a></div>
+      <div class="db-liste">
+        {% for m in dash.messages_latest %}<a href="{{ m.url }}"><span class="ic"{% if not m.read %} style="background:#FDECEA;color:#B42318"{% endif %}>{{ m.who|slice:":1"|upper }}</span><span class="tx">{{ m.who }}<small>{{ m.text|truncatechars:90 }}</small></span><span class="q">{{ m.when|date:"d/m" }}</span></a>
+        {% empty %}<div class="db-vide">Aucun message.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="db-carte">
+    <div class="h"><b>Chiffres clés</b></div>
+    <div class="db-stats">{% for s in dash.stats %}<a href="{{ s.url }}"><b>{{ s.n }}</b><span>{{ s.label }}</span>{% if s.sub %}<small>{{ s.sub }}</small>{% endif %}</a>{% endfor %}</div>
   </div>
 </div>
 {% endif %}

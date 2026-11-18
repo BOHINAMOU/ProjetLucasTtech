@@ -366,13 +366,7 @@ JAZZMIN_SETTINGS = {
         },
     ],
 
-    "topmenu_links": [
-        {"name": "Accueil", "url": "/", "new_window": True},
-        {"name": "Boutique", "url": "/shop/", "new_window": True},
-        {"name": "Formations", "url": "/formations/", "new_window": True},
-        {"name": "Services", "url": "/services/", "new_window": True},
-        {"name": "Actualités", "url": "/actualites/", "new_window": True},
-    ],
+    "topmenu_links": [],
 
     "hide_apps": [],
     # Modèles techniques inutiles au quotidien (toujours accessibles par leur adresse).
