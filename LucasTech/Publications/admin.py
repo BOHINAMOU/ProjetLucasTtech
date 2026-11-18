@@ -1,6 +1,8 @@
 import re
 
 from django.contrib import admin
+
+from core.alerte_frais import AlerteFraisMixin
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse
 from django.urls import path, reverse
@@ -107,7 +109,8 @@ def export_registrations_excel(modeladmin, request, queryset):
 # Publication
 # ─────────────────────────────
 @admin.register(Publication)
-class PublicationAdmin(admin.ModelAdmin):
+class PublicationAdmin(AlerteFraisMixin, admin.ModelAdmin):
+    champs_alerte = ('title', 'content', 'excerpt')
     list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'show_on_site', 'show_in_app', 'is_featured', 'views_count', 'nb_jaime', 'registrations_link', 'created_at']
 
     def get_queryset(self, request):

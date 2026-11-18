@@ -1,5 +1,5 @@
 from django.urls import path
-from . import app_page, history, views
+from . import app_page, conformite, history, views
 
 app_name = 'core'
 
@@ -19,5 +19,7 @@ urlpatterns = [
     path('application/', app_page.application, name='application'),
     path('application/telecharger/', app_page.telecharger, name='application_download'),
     path('confidentialite/', views.privacy_policy, name='privacy_policy'),
+    path('suppression-compte/', conformite.suppression_compte, name='suppression_compte'),
+    path('signaler/', conformite.signaler, name='signaler'),
     path('conditions-utilisation/', views.terms_of_service, name='terms_of_service'),
 ]

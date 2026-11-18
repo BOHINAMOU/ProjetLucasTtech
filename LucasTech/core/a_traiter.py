@@ -68,6 +68,10 @@ def _sources(user):
            lambda o: str(o), lambda o: getattr(o, 'created_at', None), "Traiter")
     ajoute('core.PartnerApplication', "Partenariat", 'bleu', Q(status='pending'),
            lambda o: str(o), lambda o: getattr(o, 'created_at', None), "Examiner")
+    ajoute('core.Signalement', "Signalement", 'rouge', Q(statut='nouveau'),
+           lambda o: str(o), lambda o: o.created_at, "Examiner")
+    ajoute('core.DemandeSuppressionCompte', "Suppression de compte", 'rouge', Q(statut='nouvelle'),
+           lambda o: o.email, lambda o: o.created_at, "Traiter")
     ajoute('Portfolio.ContactMessage', "Portfolio", 'vert', Q(is_read=False),
            lambda o: str(o), lambda o: getattr(o, 'created_at', None), "Lire")
     return s

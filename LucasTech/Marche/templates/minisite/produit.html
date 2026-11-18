@@ -39,6 +39,7 @@
       {% if p.stock > 0 %}<span class="etat ok">En stock</span>{% else %}<span class="etat ko">Sur commande</span>{% endif %}
       {% if commande %}<a class="btn wa" href="{{ commande }}" target="_blank" rel="noopener">Commander sur WhatsApp</a>{% endif %}
       {% if p.description or p.short_description %}<p class="desc">{{ p.description|default:p.short_description|striptags }}</p>{% endif %}
+      {% include 'core/_signaler.html' with type='produit' objet_id=p.pk titre=p.name libelle="Signaler ce produit" %}
     </div>
   </div>
   {% if autres %}

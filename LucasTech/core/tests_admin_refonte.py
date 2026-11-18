@@ -189,3 +189,38 @@ class AncienLantanteJobTests(TestCase):
         self.assertEqual((r.status_code, r['Location']), (301, '/emplois/'))
         self.assertEqual(self.client.get('/app/x').status_code, 301)
         self.assertEqual(self.client.get('/api/v1/feed/').status_code, 404)
+
+
+@override_settings(STORAGES=STORAGES)
+class ConformiteTests(TestCase):
+    def test_signalement_site_et_api(self):
+        from core.models import Signalement
+        r = self.client.post('/signaler/', {'type': 'offre', 'objet_id': '2', 'titre': 'Offre', 'motif': 'arnaque', 'url': '/emplois/2/'})
+        self.assertEqual((r.status_code, r['Location']), (302, '/emplois/2/'))
+        r = self.client.post('/api/mobile/v1/signaler/', {'type': 'produit', 'objet_id': 5, 'motif': 'faux'}, content_type='application/json')
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(Signalement.objects.count(), 2)
+        self.assertEqual(self.client.post('/api/mobile/v1/signaler/', {'type': 'x', 'motif': 'faux'}, content_type='application/json').status_code, 400)
+
+    def test_suppression_compte_page_et_api(self):
+        from core.models import DemandeSuppressionCompte
+        self.assertContains(self.client.get('/suppression-compte/'), 'Supprimer mon compte')
+        r = self.client.post('/suppression-compte/', {'email': 'a@x.tg', 'motif': ''})
+        self.assertContains(r, 'Demande reçue')
+        self.assertEqual(self.client.post('/api/mobile/v1/me/supprimer/', {}, content_type='application/json').status_code in (401, 403), True)
+        u = get_user_model().objects.create_user(email='b@x.tg', password='Motdepasse-1')
+        from rest_framework.authtoken.models import Token
+        t = Token.objects.create(user=u)
+        r = self.client.post('/api/mobile/v1/me/supprimer/', {'motif': 'test'}, content_type='application/json',
+                             HTTP_AUTHORIZATION=f'Token {t.key}')
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(DemandeSuppressionCompte.objects.filter(user=u, origine='appli').count(), 1)
+        self.assertTrue(get_user_model().objects.filter(pk=u.pk).exists())  # rien n'est supprimé automatiquement
+
+
+class AlerteFraisTests(TestCase):
+    def test_detection(self):
+        from core.alerte_frais import texte_suspect
+        self.assertTrue(texte_suspect("Recrutement Dubaï", "Frais du service\n• 1 000 000 FCFA"))
+        self.assertFalse(texte_suspect("Recrutement Dubaï", "Salaire : 300 000 FCFA / mois"))
+        self.assertFalse(texte_suspect("Concert", "Entrée gratuite"))

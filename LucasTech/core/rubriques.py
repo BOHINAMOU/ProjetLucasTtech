@@ -49,7 +49,8 @@ RUBRIQUES = {
         ('core.HeroSlide', "Carrousel du site"), ('core.NewsTickerItem', "Bandeau d'actualités"),
         ('api_mobile.Appareil', "Téléphones inscrits")]),
     'utilisateurs': ("Utilisateurs", 'fa-users', [
-        ('Users.User', "Utilisateurs"), ('core.Delegation', "Rôles délégués"), ('auth.Group', "Groupes"),
+        ('Users.User', "Utilisateurs"), ('core.DemandeSuppressionCompte', "Demandes de suppression"),
+        ('core.Signalement', "Signalements"), ('core.Delegation', "Rôles délégués"), ('auth.Group', "Groupes"),
         ('authtoken.TokenProxy', "Jetons de l'appli"), ('social_django.UserSocialAuth', "Connexions Google")]),
     'reglages': ("Réglages", 'fa-sliders', [
         ('core.SiteSettings', "Réglages du site"), ('core.Partner', "Partenaires"), ('core.PartnerCategory', "Catégories de partenaires"),

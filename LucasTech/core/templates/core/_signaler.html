@@ -1,0 +1,21 @@
+{# Bouton « Signaler » discret : type, objet_id, titre à passer avec include … with #}
+<details class="sg" style="margin:18px 0 0;font-family:Inter,system-ui,sans-serif">
+  <summary style="cursor:pointer;color:#6B746E;font-size:.88rem;font-weight:600;list-style:none;display:inline-flex;align-items:center;gap:6px">
+    <span aria-hidden="true">⚑</span> {{ libelle|default:"Signaler" }}</summary>
+  <form method="post" action="{% url 'core:signaler' %}" style="margin-top:10px;padding:14px;border:1px solid #E6E8E4;border-radius:12px;background:#FAFBF9;display:grid;gap:10px;max-width:460px">
+    {% csrf_token %}
+    <input type="hidden" name="type" value="{{ type }}"><input type="hidden" name="objet_id" value="{{ objet_id }}">
+    <input type="hidden" name="titre" value="{{ titre|truncatechars:190 }}"><input type="hidden" name="url" value="{{ request.get_full_path }}">
+    <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" name="site_internet" tabindex="-1" autocomplete="off"></div>
+    <select name="motif" required style="height:44px;border:1px solid #D5DBD6;border-radius:10px;padding:0 10px;font:inherit">
+      <option value="">Pourquoi signalez-vous ?</option>
+      <option value="arnaque">Arnaque ou tromperie</option>
+      <option value="interdit">Produit interdit ou dangereux</option>
+      <option value="inapproprie">Contenu choquant ou inapproprié</option>
+      <option value="faux">Informations fausses</option>
+      <option value="autre">Autre</option>
+    </select>
+    <textarea name="details" rows="2" maxlength="2000" placeholder="Précisions (facultatif)" style="border:1px solid #D5DBD6;border-radius:10px;padding:10px;font:inherit"></textarea>
+    <button type="submit" style="height:42px;border:0;border-radius:10px;background:#C0392B;color:#fff;font-weight:700;cursor:pointer">Envoyer le signalement</button>
+  </form>
+</details>

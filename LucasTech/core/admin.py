@@ -242,3 +242,45 @@ def _has_permission(request):
 
 
 admin.site.has_permission = _has_permission
+
+
+
+from .models import DemandeSuppressionCompte, Signalement  # noqa: E402
+
+
+@admin.register(Signalement)
+class SignalementAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'type', 'titre', 'motif', 'statut', 'lien']
+    list_filter = ['statut', 'type', 'motif']
+    search_fields = ['titre', 'details', 'email']
+    readonly_fields = ['type', 'objet_id', 'titre', 'url', 'motif', 'details', 'user', 'email', 'created_at', 'lien']
+    fields = ['statut', 'note', 'lien', 'type', 'objet_id', 'titre', 'motif', 'details', 'user', 'email', 'created_at']
+    actions = ['marquer_traite', 'marquer_sans_suite']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="Voir")
+    def lien(self, s):
+        from django.utils.html import format_html
+        return format_html('<a href="{}" target="_blank" rel="noopener">Ouvrir l\'élément</a>', s.url) if s.url else '—'
+
+    @admin.action(description="Marquer « Traité »")
+    def marquer_traite(self, request, qs):
+        qs.update(statut='traite')
+
+    @admin.action(description="Marquer « Sans suite »")
+    def marquer_sans_suite(self, request, qs):
+        qs.update(statut='rejete')
+
+
+@admin.register(DemandeSuppressionCompte)
+class DemandeSuppressionCompteAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'email', 'origine', 'statut']
+    list_filter = ['statut', 'origine']
+    search_fields = ['email']
+    readonly_fields = ['user', 'email', 'motif', 'origine', 'created_at']
+    fields = ['statut', 'user', 'email', 'motif', 'origine', 'created_at']
+
+    def has_add_permission(self, request):
+        return False

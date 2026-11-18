@@ -387,3 +387,51 @@ class Exemption2FA(models.Model):
     class Meta:
         verbose_name = "Dispense de code de connexion"
         verbose_name_plural = "Dispenses de code de connexion"
+
+
+
+class Signalement(models.Model):
+    """Contenu signalé par un utilisateur (produit d'un vendeur, offre d'emploi, boutique…) : modéré dans l'admin."""
+    TYPES = [('produit', "Produit"), ('offre', "Offre d'emploi"), ('vendeur', "Boutique"), ('actualite', "Actualité"),
+             ('autre', "Autre")]
+    MOTIFS = [('arnaque', "Arnaque ou tromperie"), ('interdit', "Produit interdit ou dangereux"),
+              ('inapproprie', "Contenu choquant ou inapproprié"), ('faux', "Informations fausses"), ('autre', "Autre")]
+    STATUTS = [('nouveau', "Nouveau"), ('traite', "Traité"), ('rejete', "Sans suite")]
+    type = models.CharField("Type", max_length=10, choices=TYPES)
+    objet_id = models.PositiveIntegerField("Numéro de l'élément", null=True, blank=True)
+    titre = models.CharField("Élément", max_length=200, blank=True)
+    url = models.CharField("Adresse", max_length=300, blank=True)
+    motif = models.CharField("Motif", max_length=12, choices=MOTIFS)
+    details = models.TextField("Précisions", blank=True)
+    user = models.ForeignKey("Users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name="Compte")
+    email = models.EmailField("E-mail", blank=True)
+    statut = models.CharField("Statut", max_length=8, choices=STATUTS, default='nouveau', db_index=True)
+    note = models.TextField("Note de l'équipe", blank=True)
+    created_at = models.DateTimeField("Reçu le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Signalement"
+        verbose_name_plural = "Signalements"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_type_display()} : {self.titre or self.objet_id} ({self.get_motif_display()})"
+
+
+class DemandeSuppressionCompte(models.Model):
+    """Demande de suppression de compte (appli ou page web). L'équipe la traite ; rien n'est supprimé automatiquement."""
+    STATUTS = [('nouvelle', "Nouvelle"), ('traitee', "Compte supprimé"), ('annulee', "Annulée")]
+    user = models.ForeignKey("Users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name="Compte")
+    email = models.EmailField("E-mail du compte")
+    motif = models.TextField("Motif (facultatif)", blank=True)
+    origine = models.CharField("Envoyée depuis", max_length=10, default='site')
+    statut = models.CharField("Statut", max_length=10, choices=STATUTS, default='nouvelle', db_index=True)
+    created_at = models.DateTimeField("Reçue le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Demande de suppression de compte"
+        verbose_name_plural = "Demandes de suppression de compte"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.email} ({self.get_statut_display()})"

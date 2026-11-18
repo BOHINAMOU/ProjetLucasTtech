@@ -326,6 +326,7 @@ class SiteForm(forms.ModelForm):
         labels = {'boutique': "Nom de la boutique", 'adresse_retrait': "Adresse", 'description': "Présentation"}
         help_texts = {'whatsapp': "+228 suivi de 8 chiffres.", 'couleur': '', 'banniere': "Grande image en haut de votre site."}
         widgets = {'couleur': forms.TextInput(attrs={'type': 'color'}),
+                   'logo': forms.FileInput(attrs={'accept': 'image/*'}), 'banniere': forms.FileInput(attrs={'accept': 'image/*'}),
                    'whatsapp': forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel'}),
                    'telephone': forms.TextInput(attrs={'type': 'tel', 'inputmode': 'tel'}),
                    'description': forms.Textarea(attrs={'rows': 3})}

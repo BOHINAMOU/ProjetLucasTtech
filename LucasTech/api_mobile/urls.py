@@ -6,6 +6,7 @@ from Hotels import api as hotels
 from Logements import api as logements
 from .cache_listes import cache_liste
 
+from . import conformite_api  # noqa: E402
 from . import ecoles, lieux, notifs, catalog, repetiteurs, shop, views
 
 app_name = 'api_mobile'
@@ -22,6 +23,8 @@ urlpatterns = [
     path('auth/password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
     path('me/', views.me, name='me'),
     path('me/profil/', shop.profil, name='profil'),
+    path('me/supprimer/', conformite_api.supprimer_compte, name='supprimer_compte'),
+    path('signaler/', conformite_api.signaler, name='signaler'),
     path('contact/', shop.contact, name='contact'),
     path('pages/<slug:slug>/', shop.page, name='page'),
     path('paiements/moyens/', shop.moyens, name='moyens'),

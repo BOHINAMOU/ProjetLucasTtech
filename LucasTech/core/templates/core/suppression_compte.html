@@ -1,0 +1,55 @@
+{% extends 'core/base.html' %}
+{% block title %}Supprimer mon compte — Lantante Technologie{% endblock %}
+{% block meta_description %}Comment supprimer votre compte Lantante et les données associées.{% endblock %}
+{% block content %}
+<style>
+.sc { max-width:760px; margin:40px auto 96px; padding:0 20px; font-family:Inter,system-ui,sans-serif; color:#16201A; }
+.sc h1 { font-size:clamp(1.8rem,4vw,2.3rem); font-weight:800; letter-spacing:-.02em; margin:0 0 8px; }
+.sc .s { color:#6B746E; margin:0 0 24px; }
+.sc h2 { font-size:1.15rem; font-weight:800; margin:28px 0 10px; }
+.sc p, .sc li { line-height:1.7; color:#3A443E; }
+.sc ol, .sc ul { padding-left:20px; }
+.sc .carte { background:#fff; border:1px solid #E6E8E4; border-radius:16px; padding:22px; margin-top:12px; }
+.sc label { display:block; font-weight:700; font-size:.92rem; margin:0 0 6px; }
+.sc input[type=email], .sc textarea { width:100%; min-height:48px; padding:10px 14px; border:1px solid #D5DBD6; border-radius:12px; font:inherit; font-size:1rem; margin-bottom:14px; }
+.sc button { width:100%; height:52px; border:0; border-radius:12px; background:#C0392B; color:#fff; font:inherit; font-weight:800; font-size:1rem; cursor:pointer; }
+.sc .ok { background:#E8F3EC; color:#0B5531; border-radius:12px; padding:16px; font-weight:700; }
+.sc .err { background:#FBE9E7; color:#C0392B; border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.sc .pot { position:absolute; left:-9999px; }
+</style>
+<div class="sc">
+  <h1>Supprimer mon compte</h1>
+  <p class="s">Lantante Express (application) et lantantetechnologie.com (site) utilisent le même compte.</p>
+
+  <h2>Depuis l'application</h2>
+  <ol><li>Ouvrez <b>Profil</b>.</li><li>Touchez <b>Supprimer mon compte</b>, puis confirmez.</li></ol>
+
+  <h2>Depuis cette page</h2>
+  <div class="carte">
+    {% if envoye %}
+      <div class="ok">Demande reçue. Votre compte sera supprimé sous 30 jours ; nous vous confirmons par e-mail.</div>
+    {% else %}
+      {% if form.non_field_errors %}<div class="err">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      <form method="post">{% csrf_token %}
+        <div class="pot" aria-hidden="true"><input type="text" name="site_internet" tabindex="-1" autocomplete="off"></div>
+        {% if user.is_authenticated %}<p>Compte : <b>{{ user.email }}</b></p><input type="hidden" name="email" value="{{ user.email }}">
+        {% else %}<label for="id_email">E-mail du compte</label>{{ form.email }}{% for e in form.email.errors %}<div class="err">{{ e }}</div>{% endfor %}{% endif %}
+        <label for="id_motif">Motif (facultatif)</label>{{ form.motif }}
+        <button type="submit">Demander la suppression</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <h2>Ce qui est supprimé</h2>
+  <ul>
+    <li>Votre compte, votre profil, votre panier, vos favoris et vos notifications.</li>
+    <li>Vos accès aux épreuves et aux formations.</li>
+  </ul>
+  <h2>Ce qui est gardé</h2>
+  <ul>
+    <li>Les traces de paiement (référence, montant, date), le temps exigé par la loi comptable.</li>
+    <li>Les dossiers de répétiteur ou de vendeur (dont la pièce d'identité) : supprimés sur demande, après vérification par l'équipe.</li>
+  </ul>
+  <p>Une question ? <a href="{% url 'core:privacy_policy' %}">Politique de confidentialité</a>.</p>
+</div>
+{% endblock %}

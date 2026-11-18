@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+
+from core.alerte_frais import AlerteFraisMixin
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.html import format_html
@@ -23,7 +25,8 @@ class ContactOffreInline(admin.TabularInline):
 
 
 @admin.register(OffreEmploi)
-class OffreEmploiAdmin(admin.ModelAdmin):
+class OffreEmploiAdmin(AlerteFraisMixin, admin.ModelAdmin):
+    champs_alerte = ('titre', 'description')
     inlines = [ContactOffreInline]
     list_display = ['titre', 'entreprise', 'ville', 'type_contrat', 'date_limite', 'statut', 'vues', 'clics', 'est_exemple']
     list_filter = ['publie', 'type_contrat', 'ville', 'est_exemple']

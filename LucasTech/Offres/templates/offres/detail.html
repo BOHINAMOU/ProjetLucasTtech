@@ -57,5 +57,7 @@
     {% if wa %}<a class="of-wa" href="https://wa.me/{{ wa }}?text={{ 'Bonjour, je suis intéressé(e) par votre offre : '|add:o.titre|add:'.'|urlencode }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
     {% if o.lien %}<a class="rp-btn" href="{{ o.lien }}" target="_blank" rel="noopener">Postuler</a>{% endif %}
   </div>
+  <p style="color:#6B746E;font-size:.85rem;margin:16px 0 0">Annonce publiée pour {{ o.entreprise|default:"l'employeur" }}. Lantante ne demande jamais d'argent pour postuler.</p>
+  {% include 'core/_signaler.html' with type='offre' objet_id=o.pk titre=o.titre libelle="Signaler l'offre" %}
 </div>
 {% endblock %}
