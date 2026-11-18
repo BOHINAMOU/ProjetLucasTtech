@@ -24,3 +24,17 @@ class CoursLantanteTests(TestCase):
         d = self.client.get(f'/api/mobile/v1/repetiteurs/{c.pk}/').json()
         self.assertEqual(d['telephone'], '+22890117787')
         self.assertEqual(r[0]['whatsapp'], '22890000001')
+
+
+@override_settings(STORAGES={'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+                             'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
+class RechercheGlobaleHotelsTests(TestCase):
+    def test_hotels_seulement_pour_la_nouvelle_appli(self):
+        from Hotels.models import Chambre, Hotel
+        h = Hotel.objects.create(nom='Hôtel Sarakawa', ville='Lomé')
+        Chambre.objects.create(hotel=h, nom='Sarakawa Deluxe')
+        vieux = self.client.get('/api/mobile/v1/recherche/', {'q': 'sarakawa'}).json()
+        self.assertNotIn('hotel', [g['type'] for g in vieux['groupes']])  # les anciennes appli l'ouvriraient mal
+        r = self.client.get('/api/mobile/v1/recherche/', {'q': 'sarakawa', 'v': '2'}).json()
+        g = next(g for g in r['groupes'] if g['type'] == 'hotel')
+        self.assertEqual([x['slug'] for x in g['resultats']], [h.slug])  # l'hôtel, jamais une chambre seule

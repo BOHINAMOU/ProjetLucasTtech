@@ -753,6 +753,17 @@ def recherche(request):
     from .recherche import filtrer
     groupe('ecole', 'Écoles', [ecole_item(request, e) for e in filtrer(
         _ecoles(), q, 'nom', 'ville', 'filieres__nom', alias='alias')[:n]])
+    if (request.GET.get('v') or '') >= '2':  # appli 1.6.2+ : sait ouvrir les hôtels et les locations
+        from Hotels.api import actifs as hotels_actifs
+        from Logements.api import disponibles, recherche as recherche_logements
+        groupe('hotel', 'Hôtels', [{'id': h.pk, 'slug': h.slug, 'titre': h.nom, 'nom': h.nom,
+                                     'image_vignette': vignette(request, h.photo) if h.photo else None}
+                                    for h in filtrer(hotels_actifs(), q, 'nom', 'ville', 'quartier', alias='alias')[:n]])
+        logs = list(recherche_logements(disponibles(), q)[:n])
+        groupe('logement', 'Location de chambres ou appartements',
+               [{'id': l.pk, 'titre': l.nom, 'nom': l.nom,
+                 'image_vignette': (lambda ph: vignette(request, ph[0].image) if ph else None)(l.photos.all()[:1])}
+                for l in logs])
     # le groupe dont le premier résultat correspond le mieux passe devant (« UL » : Écoles avant Boutique)
     from .recherche import score
     groupes.sort(key=lambda g: -max(score(q, f"{r.get('nom') or r.get('titre') or ''}") for r in g['resultats']))
