@@ -5,6 +5,9 @@
 <style>
   .of-texte{margin-top:16px;line-height:1.65;font-size:1rem}
   .of-texte p{margin:0 0 12px}
+  .of-texte h3{font-size:1.02rem;margin:16px 0 6px;color:#0B5A38;font-weight:800}
+  .of-texte ul{margin:0 0 6px;padding-left:20px}
+  .of-texte li{margin:3px 0}
   .of-contacts{background:#fff;border:1px solid #e6ece8;border-radius:22px;padding:6px 18px;margin:18px 0}
   .of-contacts h2{font-size:1.15rem;margin:14px 0 6px}
   .of-ligne{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #eef2ef}
@@ -26,7 +29,7 @@
     <p style="margin:0"><span class="rp-statut">{{ o.get_type_contrat_display }}</span>{% if o.est_exemple %} <span class="rp-statut a_corriger">Exemple</span>{% endif %}</p>
     <h1 style="margin:10px 0 4px;font-size:clamp(1.5rem,4vw,2rem)">{{ o.titre }}</h1>
     <p class="rp-note" style="font-size:1rem">{{ o.entreprise }} · {{ o.ville }}{% if o.date_limite %} · jusqu'au {{ o.date_limite|date:"d/m/Y" }}{% endif %}</p>
-    <div class="of-texte">{{ o.description|linebreaks }}</div>
+    <div class="of-texte">{{ texte }}</div>
   </div>
   {% if contacts or o.email_contact %}
   <div class="of-contacts">
