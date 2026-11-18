@@ -297,7 +297,7 @@ WHITENOISE_MANIFEST_STRICT = False
 # ══════════════════════════════════════
 # EMAIL (GMAIL SMTP)
 # ══════════════════════════════════════
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'core.emails.JoliBackend'  # SMTP + version HTML soignée de chaque e-mail
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
