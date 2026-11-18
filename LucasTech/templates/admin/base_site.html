@@ -26,6 +26,7 @@
     .app-wrapper { grid-template-columns:0 1fr !important; }
   }
   .app-wrapper, .app-main { min-height:100vh; }
+  .app-main { overflow:visible !important; }  /* la page défile, la barre du haut reste collée */
   @media (max-width: 991.98px) { .app-main { margin-left:0 !important; } }
   .lt-side .sidebar-brand { height:68px; border-bottom:1px solid var(--lt-bord) !important; padding:0 18px; display:flex; align-items:center; flex:0 0 auto; }
   .lt-marque { display:flex; align-items:center; gap:11px; text-decoration:none !important; }
