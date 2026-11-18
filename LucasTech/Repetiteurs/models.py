@@ -45,6 +45,10 @@ class Repetiteur(models.Model):
     rappel_fin_envoye = models.DateField("Rappel de fin envoyé pour", null=True, blank=True, editable=False)
     est_exemple = models.BooleanField("Exemple", default=False,
                                       help_text="Profil de démonstration (supprimable en un clic : action « Supprimer tous les exemples »).")
+    est_service_lantante = models.BooleanField(
+        "Cours Lantante", default=False,
+        help_text="Fiche de cours proposée par Lantante (pas une personne) : contact = WhatsApp principal du site. "
+                  "Affichée après les vrais répétiteurs.")
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
     created_at = models.DateTimeField("Ajouté le", auto_now_add=True)
 
@@ -63,7 +67,7 @@ class Repetiteur(models.Model):
 
     def clean(self):
         # un vrai répétiteur doit toujours être joignable sur WhatsApp
-        if not self.est_exemple:
+        if not self.est_exemple and not self.est_service_lantante:
             try:
                 self.whatsapp = whatsapp_togo(self.whatsapp)
             except ValidationError as e:

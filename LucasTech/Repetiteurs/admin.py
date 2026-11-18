@@ -10,10 +10,10 @@ class RepetiteurAdmin(admin.ModelAdmin):
         css = {'all': ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',)}
         js = ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'admin/carte_produit.js')
 
-    list_display = ['apercu', 'nom', 'matieres', 'ville', 'affichage', 'est_exemple', 'actif', 'ordre']
+    list_display = ['apercu', 'nom', 'matieres', 'ville', 'affichage', 'est_service_lantante', 'est_exemple', 'actif', 'ordre']
     list_display_links = ['apercu', 'nom']
     list_editable = ['actif', 'ordre']
-    list_filter = ['actif', 'est_exemple', 'ville', 'fin_affichage']
+    list_filter = ['actif', 'est_service_lantante', 'est_exemple', 'ville', 'fin_affichage']
     actions = ['reactiver_1', 'reactiver_3', 'reactiver_6', 'reactiver_12', 'supprimer_exemples']
     search_fields = ['nom', 'matieres', 'ville', 'quartier', 'niveaux']
     fieldsets = (
@@ -21,7 +21,7 @@ class RepetiteurAdmin(admin.ModelAdmin):
         ('Lieu', {'fields': ('ville', 'quartier', 'latitude', 'longitude'),
                   'description': "Facultatif : choisissez le lieu sur la carte (recherche, clic ou « Ma position »)."}),
         ('Contact', {'fields': ('whatsapp', 'email', 'telephone')}),
-        ('Publication', {'fields': ('actif', 'fin_affichage', 'est_exemple', 'ordre')}),
+        ('Publication', {'fields': ('actif', 'fin_affichage', 'est_service_lantante', 'est_exemple', 'ordre')}),
     )
 
     readonly_fields = ['photo_apercu']

@@ -8,18 +8,36 @@ from .catalog import grande, public_cache, text, vignette
 from .utils import error
 
 
+def _whatsapp(r):
+    """Cours Lantante : notre WhatsApp principal ; sinon celui du répétiteur."""
+    if r.est_service_lantante:
+        from .catalog import _wa_valide, _whatsapp_lantante
+        return _wa_valide(_whatsapp_lantante())
+    return ''.join(c for c in r.whatsapp if c.isdigit())
+
+
+def _message(r):
+    if r.est_service_lantante:
+        return f"Bonjour, je cherche un répétiteur : {r.nom}."
+    return "Bonjour, je vous contacte via Lantante au sujet de vos cours."
+
+
 def item(request, r):
     return {'id': r.pk, 'nom': r.nom, 'photo': vignette(request, r.photo) if r.photo else None,
             'matieres': r.liste_matieres, 'ville': r.ville, 'quartier': r.quartier, 'exemple': r.est_exemple,
-            'whatsapp': ''.join(c for c in r.whatsapp if c.isdigit())}
+            'service_lantante': r.est_service_lantante,
+            'intervenant': 'Lantante Répétiteurs' if r.est_service_lantante else '',
+            'message_whatsapp': _message(r), 'whatsapp': _whatsapp(r)}
 
 
 def _actifs():
     from Repetiteurs.models import Repetiteur
     from django.utils import timezone
     # fin d'affichage passée : le profil disparaît tout seul (sans tâche planifiée)
+    # les vrais répétiteurs d'abord, puis les cours Lantante, puis les exemples
     return Repetiteur.objects.filter(actif=True).filter(
-        Q(fin_affichage__isnull=True) | Q(fin_affichage__gte=timezone.localdate()))
+        Q(fin_affichage__isnull=True) | Q(fin_affichage__gte=timezone.localdate())
+    ).order_by('est_exemple', 'est_service_lantante', 'ordre', 'nom')
 
 
 @api_view(['GET'])
@@ -51,7 +69,8 @@ def detail(request, pk):
     d = item(request, r)
     d.update({'photo_grande': grande(request, r.photo) if r.photo else None, 'niveaux': r.niveaux,
               'description': text(r.description), 'experience': r.experience, 'tarif': r.tarif,
-              'whatsapp': ''.join(c for c in r.whatsapp if c.isdigit()), 'email': r.email, 'telephone': r.telephone,
+              'whatsapp': _whatsapp(r), 'email': r.email,
+              'telephone': ('+' + _whatsapp(r)) if r.est_service_lantante and _whatsapp(r) else r.telephone,
               'latitude': float(r.latitude) if r.latitude is not None else None,
               'longitude': float(r.longitude) if r.longitude is not None else None})
     return Response(d)
