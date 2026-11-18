@@ -346,8 +346,11 @@ def me(request):
         if user.is_staff or user.is_superuser:
             return error("Un compte d'administration ne peut pas être supprimé depuis l'application.", 403,
                          code='interdit')
-        if not user.check_password(request.data.get('password') or ''):
-            return error("Mot de passe incorrect.", 400, code='mot_de_passe_incorrect')
+        if user.has_usable_password():
+            if not user.check_password(request.data.get('password') or ''):
+                return error("Mot de passe incorrect.", 400, code='mot_de_passe_incorrect')
+        elif (request.data.get('confirmation') or request.data.get('password') or '').strip().upper() != 'SUPPRIMER':
+            return error("Tapez SUPPRIMER pour confirmer.", 400, code='confirmation_requise')
         result = _delete_account(user)
         return Response({'detail': "Votre compte a été supprimé.", 'resultat': result})
     rights = Rights(user)

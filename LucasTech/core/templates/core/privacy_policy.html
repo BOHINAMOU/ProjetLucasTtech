@@ -34,8 +34,20 @@
     <li><b>Achats et soutiens</b> : ce que vous payez, le montant, la date et le numéro Mobile Money utilisé. Le code secret reste sur votre téléphone : nous ne le voyons jamais.</li>
     <li><b>Inscriptions</b> : informations données dans les formulaires (formations, événements, services).</li>
     <li><b>Appli</b> : documents gardés hors connexion, actualités lues, notifications lues.</li>
+    <li><b>Position</b> (seulement si vous l'autorisez, au moment de commander) : pour calculer la livraison. Elle n'est pas suivie en arrière-plan ni gardée.</li>
+    <li><b>Notifications</b> : un identifiant d'appareil (Firebase Cloud Messaging de Google) pour vous envoyer les notifications que vous acceptez.</li>
+    <li><b>Répétiteurs et vendeurs</b> : informations du dossier et pièce d'identité (voir plus bas).</li>
+    <li><b>Signalements</b> : le contenu signalé, le motif et, si vous êtes connecté, votre compte.</li>
     <li><b>Technique</b> : adresse IP et journaux de connexion, pour la sécurité.</li>
   </ul>
+
+  <h2>Services utilisés</h2>
+  <ul>
+    <li><b>Google</b> : connexion avec un compte Google (si vous la choisissez) et notifications (Firebase Cloud Messaging).</li>
+    <li><b>Prestataire de paiement Mobile Money</b> : traitement des paiements.</li>
+    <li><b>Hébergement</b> : nos serveurs, accès limité à l'équipe.</li>
+  </ul>
+  <p>Nous ne vendons jamais vos données et ne les utilisons pas pour de la publicité ciblée.</p>
 
   <h2>Pourquoi</h2>
   <p>Pour gérer votre compte, livrer ce que vous achetez, confirmer vos paiements et inscriptions, vous envoyer des notifications utiles, et protéger le service. Nous ne vendons jamais vos données.</p>
@@ -53,7 +65,9 @@
   <h2>Durée et sécurité</h2>
   <p>Vos données sont gardées tant que votre compte existe, et les traces de paiement le temps exigé par la loi. Connexion chiffrée (HTTPS), accès limité à l'équipe.</p>
 
-  <h2>Vos droits</h2>
-  <p>Vous pouvez consulter, corriger ou supprimer vos données, et supprimer votre compte depuis l'appli (Compte). Une question : <a href="mailto:{{ site_settings.email|default:'contact@lantantetechnologie.com' }}">{{ site_settings.email|default:'contact@lantantetechnologie.com' }}</a>.</p>
+  <h2>Vos droits et suppression du compte</h2>
+  <p>Vous pouvez consulter, corriger ou supprimer vos données. Pour supprimer votre compte : dans l'appli, <b>Profil › Supprimer mon compte</b>,
+  ou sur la page <a href="{% url 'core:suppression_compte' %}">Supprimer mon compte</a>. Les traces de paiement sont gardées le temps exigé par la loi, sans les données du compte.</p>
+  <p>Public : nos services s'adressent aux personnes de 13 ans et plus. Une question : <a href="mailto:{{ site_settings.email|default:'contact@lantantetechnologie.com' }}">{{ site_settings.email|default:'contact@lantantetechnologie.com' }}</a>.</p>
 </div>
 {% endblock %}
