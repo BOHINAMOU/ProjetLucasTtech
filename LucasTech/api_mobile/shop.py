@@ -85,6 +85,8 @@ def _cible(user, d):
         if p.vendeur_id:
             fields.update(vendeur=p.vendeur, commission=int(round(articles * float(p.vendeur.commission_pct) / 100)))
         return fields, articles + liv['frais'], desc, None
+    if kind == 'panier':
+        return _panier(user, d)
     if kind == 'abonnement':
         raise ValidationError("Les formules ne sont plus vendues : débloquez chaque concours à l'unité.")
     if kind == 'abonnement_ancien':  # gardé pour mémoire, inaccessible
@@ -151,6 +153,92 @@ def _cible(user, d):
         return ({'kind': 'ticket', 'event': e, 'items': items}, amount,
                 f"{count} ticket{'s' if count > 1 else ''} — {e.title}", None)
     raise ValidationError("Type d'achat inconnu.")
+
+
+MAX_ARTICLES = 200
+
+
+def _lire_panier(d):
+    """Articles du panier (type, id, quantité) ; prix, stock et disponibilité relus en base."""
+    from Formations.models import Formation
+    from Shop.models import Product
+    arts = d.get('articles')
+    if not isinstance(arts, list) or not arts:
+        raise ValidationError("Votre panier est vide.")
+    items, articles, vendeurs, livrables = [], 0, set(), []
+    for a in arts[:MAX_ARTICLES]:
+        if not isinstance(a, dict):
+            continue
+        t = str(a.get('type') or '')
+        try:
+            pk, qty = int(a.get('id') or 0), int(a.get('quantite') or 1)
+        except (TypeError, ValueError):
+            raise ValidationError("Panier invalide.")
+        if t == 'produit':
+            p = Product.objects.select_related('vendeur').filter(pk=pk).first()
+            if not p or not p.is_available or p.stock <= 0 or (p.vendeur_id and not p.vendeur.actif):
+                raise ValidationError(f"« {p.name if p else 'Un produit'} » n'est plus disponible.")
+            if any(i.get('product') == p.pk for i in items):
+                continue
+            qty = max(1, min(qty, p.stock))
+            unit = int(p.bulk_price if (p.bulk_price and qty >= p.bulk_min_qty) else p.price)
+            items.append({'product': p.pk, 'name': p.name, 'quantity': qty, 'price': unit})
+            articles += unit * qty
+            vendeurs.add(p.vendeur_id)
+            if p.livrable:
+                livrables.append(p)
+        elif t == 'formation':
+            f = Formation.objects.filter(pk=pk, is_published=True, formation_type__in=('cours', 'numerique')).first()
+            if not f or not f.price:
+                raise ValidationError(f"« {f.title if f else 'Une formation'} » ne s'achète plus en ligne.")
+            if any(i.get('formation') == f.pk for i in items):
+                continue
+            items.append({'formation': f.pk, 'name': f.title, 'quantity': 1, 'price': int(f.price)})
+            articles += int(f.price)
+            vendeurs.add(None)
+        else:
+            raise ValidationError("Panier invalide.")
+    if not items:
+        raise ValidationError("Votre panier est vide.")
+    return items, articles, vendeurs, livrables
+
+
+def _panier(user, d):
+    """Une seule commande pour tout le panier. Les articles d'un vendeur partenaire se paient à part
+    (son argent lui est reversé : il ne doit pas être mêlé à d'autres articles)."""
+    items, articles, vendeurs, livrables = _lire_panier(d)
+    partenaires = {v for v in vendeurs if v}
+    if partenaires and len(vendeurs) > 1:
+        raise ValidationError("Les articles d'un vendeur partenaire se commandent à part.")
+    fields = {'kind': 'shop', 'items': items}
+    if livrables:
+        from Marche.livraison import calculer
+        frais, detail = 0, ''
+        for p in livrables:
+            c = calculer(p, str(d.get('ville') or ''), d.get('lat'), d.get('lng'))
+            if c['frais'] > frais:
+                frais, detail = c['frais'], c['detail']
+        if frais:
+            fields.update(livraison=frais, livraison_detail=detail)
+    if partenaires:
+        from Marche.models import Vendeur
+        v = Vendeur.objects.get(pk=next(iter(partenaires)))
+        fields.update(vendeur=v, commission=int(round(articles * float(v.commission_pct) / 100)))
+    n = sum(i['quantity'] for i in items)
+    desc = items[0]['name'] if n == 1 else f"Panier : {n} articles"
+
+    def commande(payment):
+        from Shop.models import ShopOrder, ShopOrderItem
+        o = ShopOrder.objects.create(
+            user=user, total_price=payment.amount, status='pending', payment_method='fedapay',
+            cash_delivery_name=payment.full_name, cash_delivery_phone=payment.whatsapp or payment.phone,
+            cash_delivery_message=payment.address)
+        for it in items:
+            ShopOrderItem.objects.create(order=o, product_id=it.get('product'), formation_id=it.get('formation'),
+                                         quantity=it['quantity'], price=it['price'])
+        payment.shop_order = o
+        payment.save(update_fields=['shop_order'])
+    return fields, articles + int(fields.get('livraison') or 0), desc, commande
 
 
 def payment_payload(p):
@@ -262,7 +350,7 @@ def _creer_paiement_mm(user, d, fields, amount, description, before, phone, oper
 
 
 def _adresse(d, fields):
-    if fields['kind'] != 'product':
+    if fields['kind'] not in ('product', 'shop'):
         return ''
     a = str(d.get('adresse') or d.get('ville') or '').strip()
     if d.get('lat') not in (None, '') and d.get('lng') not in (None, ''):
@@ -283,6 +371,13 @@ def devis(request):
     rep = {'articles': amount - livraison, 'livraison': livraison, 'livraison_detail': fields.get('livraison_detail', ''),
            'remise': 0, 'total': amount, 'code_promo': '', 'message_promo': ''}
     p = fields.get('product')
+    if p is None and fields.get('kind') == 'shop':
+        from Shop.models import Product
+        ids = [i['product'] for i in fields['items'] if i.get('product')]
+        p = Product.objects.filter(pk__in=ids, livrable=True).first()
+        rep['lignes'] = [{'type': 'produit' if i.get('product') else 'formation',
+                          'id': i.get('product') or i.get('formation'), 'nom': i['name'],
+                          'quantite': i['quantity'], 'prix': i['price']} for i in fields['items']]
     if p is not None and p.livrable:
         from Marche.livraison import depart
         lat, lng, ville = depart(p)
@@ -476,3 +571,24 @@ def abonnement(request):
     r = ReglageAcces.load()
     fin = fin_acces(request.user)
     return Response({'prix': r.prix, 'duree_jours': r.duree_jours, 'actif': fin is not None, 'fin': dt(fin) if fin else None})
+
+
+
+@api_view(['GET', 'PUT'])
+def panier(request):
+    """Panier gardé sur le compte : [{type, id, quantite}] (les prix ne sont jamais stockés)."""
+    from Shop.models import PanierAppli
+    pa, _ = PanierAppli.objects.get_or_create(user=request.user)
+    if request.method == 'PUT':
+        arts = request.data.get('articles') if isinstance(request.data, dict) else request.data
+        propre = []
+        for a in (arts if isinstance(arts, list) else [])[:MAX_ARTICLES]:
+            try:
+                t, pk, q = str(a.get('type')), int(a.get('id')), int(a.get('quantite') or 1)
+            except (AttributeError, TypeError, ValueError):
+                continue
+            if t in ('produit', 'formation') and pk > 0:
+                propre.append({'type': t, 'id': pk, 'quantite': 1 if t == 'formation' else max(1, min(q, 999))})
+        pa.contenu = propre
+        pa.save(update_fields=['contenu', 'updated_at'])
+    return Response({'articles': pa.contenu})

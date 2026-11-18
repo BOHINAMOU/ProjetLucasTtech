@@ -14,7 +14,7 @@ class ProductImageInline(admin.TabularInline):
 class ShopOrderItemInline(admin.TabularInline):
     model = ShopOrderItem
     extra = 0
-    readonly_fields = ('product', 'quantity', 'price') # Non-éditable ici
+    readonly_fields = ('product', 'formation', 'quantity', 'price') # Non-éditable ici
 
 @admin.register(ShopOrder)
 class ShopOrderAdmin(admin.ModelAdmin):

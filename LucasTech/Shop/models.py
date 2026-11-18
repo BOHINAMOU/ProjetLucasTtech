@@ -269,7 +269,9 @@ class ShopOrder(models.Model):
 # Le modèle ShopOrderItem reste le même
 class ShopOrderItem(models.Model):
     order    = models.ForeignKey(ShopOrder, on_delete=models.CASCADE, related_name='items', verbose_name="Commande")
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produit")
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Produit")
+    formation = models.ForeignKey('Formations.Formation', on_delete=models.SET_NULL, null=True, blank=True,
+                                  verbose_name="Formation")
     quantity = models.PositiveIntegerField(verbose_name="Quantité")
     price    = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix")
 
@@ -340,3 +342,14 @@ class Review(models.Model):
     def __str__(self):
         return f"Avis de {self.first_name} sur {self.product.name}"
     
+
+
+class PanierAppli(models.Model):
+    """Panier de l'application, gardé sur le compte (retrouvé sur un autre téléphone)."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='panier_appli')
+    contenu = models.JSONField(default=list, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Panier (appli)"
+        verbose_name_plural = "Paniers (appli)"

@@ -249,7 +249,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
             {% endif %}
           </div>
           <div class="oh-item-info">
-            <div class="oh-item-name">{{ item.product.name }}</div>
+            <div class="oh-item-name">{% if item.product %}{{ item.product.name }}{% else %}Formation : {{ item.formation.title }}{% endif %}</div>
             <div class="oh-item-qty">{{ item.quantity }} × {{ item.price }} CFA</div>
           </div>
           <div class="oh-item-price">{{ item.total_price }}<small> FCFA</small></div>

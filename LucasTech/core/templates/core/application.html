@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block title %}Application mobile — Lantante Technologie{% endblock %}
-{% block meta_description %}Téléchargez l'application Lantante pour Android : concours, épreuves et corrigés, boutique, formations et événements dans votre poche.{% endblock %}
+{% block meta_description %}Téléchargez l'application Lantante Express pour Android : concours, épreuves et corrigés, boutique, formations et événements dans votre poche.{% endblock %}
 {% block og_title %}Application mobile Lantante{% endblock %}
 {% block extra_head %}{% include 'core/_catalog_head.html' %}
 <style>
@@ -34,7 +34,7 @@
     <div class="bq-wrap">
       <div>
         <img class="app-hero__logo" src="{% static 'images/logo.png' %}" alt="Lantante Technologie">
-        <h1>Téléchargez l'application <em>Lantante</em> pour Android.</h1>
+        <h1>Téléchargez l'application <em>Lantante Express</em> pour Android.</h1>
         <p>Concours, épreuves et corrigés, boutique, formations et événements : tout Lantante Technologie dans votre téléphone, avec le même compte que sur le site.</p>
         <a class="app-dl" href="{% url 'core:application_download' %}?v={{ apk_version }}"><i class="fab fa-android"></i> Télécharger <small>({{ apk_size }} Mo)</small></a>
         <div class="app-ios"><i class="fab fa-apple"></i> iPhone : bientôt disponible</div>

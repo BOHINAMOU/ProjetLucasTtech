@@ -233,6 +233,9 @@ def formation(request, pk):
         'url_paiement': paiement(request, reverse('payments:checkout', args=['formation', f.pk])) if f.can_pay_online else None,
         'url_inscription': absolute(request, reverse('formations:formation_register', args=[f.pk]))
         if f.formation_type == 'inscription' else None,
+        # « WhatsApp » : notre numéro principal, message avec le lien de la formation
+        'whatsapp_commande': _wa_valide(_whatsapp_lantante()),
+        'lien': absolute(request, f.get_absolute_url()) if hasattr(f, 'get_absolute_url') else '',
     })
     return Response(data)
 

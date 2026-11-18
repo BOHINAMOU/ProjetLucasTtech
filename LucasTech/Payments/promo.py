@@ -28,6 +28,13 @@ def _cible_ok(c, fields):
     if kind == 'product' and p is not None:
         return listes['produits'].filter(pk=p.pk).exists() or \
             (p.vendeur_id is not None and listes['vendeurs'].filter(pk=p.vendeur_id).exists())
+    if kind == 'shop':
+        its = fields.get('items') or []
+        pids = [i['product'] for i in its if i.get('product')]
+        fids = [i['formation'] for i in its if i.get('formation')]
+        v = fields.get('vendeur')
+        return listes['produits'].filter(pk__in=pids).exists() or listes['formations'].filter(pk__in=fids).exists() or \
+            (v is not None and listes['vendeurs'].filter(pk=v.pk).exists())
     if kind == 'concours' and fields.get('contest') is not None:
         return listes['concours'].filter(pk=fields['contest'].pk).exists()
     if kind == 'formation' and fields.get('formation') is not None:

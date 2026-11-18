@@ -83,8 +83,15 @@ def _fulfill(p):
             OrderItem.objects.create(order=order, formation_id=p.formation_id, quantity=1, price=p.amount)
         Formation.objects.filter(pk=p.formation_id).update(students_count=F('students_count') + 1)
     elif p.kind == 'shop' and p.shop_order_id:
-        from Shop.models import ShopOrder
+        from Shop.models import Product, ShopOrder
         ShopOrder.objects.filter(pk=p.shop_order_id).update(status='paid', payment_method='fedapay')
+        # panier de l'appli : le détail est dans p.items (le panier du site n'en a pas)
+        for it in p.items or []:
+            q = int(it.get('quantity') or 1)
+            if it.get('product'):
+                Product.objects.filter(pk=it['product'], stock__gte=q).update(stock=F('stock') - q)
+            elif it.get('formation') and p.user_id:
+                debloquer_formation(p.user_id, it['formation'], int(it.get('price') or 0))
     elif p.kind == 'product' and p.product_id:
         from Shop.models import Product, ShopOrder, ShopOrderItem
         qty = sum(int(i.get('quantity') or 0) for i in p.items) or 1
@@ -146,3 +153,15 @@ def _send_confirmation(p):
                   fail_silently=True)
     except Exception:
         logger.exception('Confirmation email failed for %s', p.reference)
+
+
+
+def debloquer_formation(user_id, formation_id, prix):
+    """Donne l'accès à une formation (commande payée). Sans effet si l'accès existe déjà."""
+    from Formations.models import Formation, Order, OrderItem
+    if OrderItem.objects.filter(order__user_id=user_id, order__status='paid', formation_id=formation_id).exists():
+        return False
+    order = Order.objects.create(user_id=user_id, total_price=prix, status='paid')
+    OrderItem.objects.create(order=order, formation_id=formation_id, quantity=1, price=prix)
+    Formation.objects.filter(pk=formation_id).update(students_count=F('students_count') + 1)
+    return True

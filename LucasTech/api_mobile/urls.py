@@ -29,6 +29,7 @@ urlpatterns = [
     path('lieux/inverse/', lieux.lieu_inverse, name='lieu_inverse'),
     path('abonnement/', shop.abonnement, name='abonnement'),
     path('paiements/devis/', shop.devis, name='devis'),
+    path('panier/', shop.panier, name='panier'),
     path('paiements/', shop.payer, name='payer'),
     path('paiements/<str:reference>/', shop.paiement, name='paiement'),
     path('telechargements/', catalog.telechargements, name='telechargements'),
