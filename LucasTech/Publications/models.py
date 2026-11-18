@@ -218,6 +218,13 @@ class PublicationComment(models.Model):
     is_hidden   = models.BooleanField(default=False, verbose_name="Masqué (modération)")
     is_read     = models.BooleanField(default=False, verbose_name="Lu")
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Posté le")
+    email       = models.EmailField(blank=True, verbose_name="E-mail de l'auteur")
+    reponse     = models.TextField(blank=True, verbose_name="Votre réponse",
+                                   help_text="Envoyée par e-mail à l'auteur à l'enregistrement.")
+    repondu_le  = models.DateTimeField(null=True, blank=True, verbose_name="Réponse envoyée le")
+
+    def email_auteur(self):
+        return self.email or (self.user.email if self.user_id and self.user else '')
 
     class Meta:
         ordering = ['created_at']

@@ -257,12 +257,50 @@ class MarkReadOnOpenMixin:
         queryset.update(is_read=False)
 @admin.register(PublicationComment)
 class PublicationCommentAdmin(MarkReadOnOpenMixin, admin.ModelAdmin):
-    list_display = ('lu', 'name', 'short_text', 'publication', 'etat', 'created_at')
+    list_display = ('lu', 'name', 'short_text', 'publication', 'etat', 'repondu', 'created_at')
     list_display_links = ('name', 'short_text')
-    list_filter = ('is_read', 'is_hidden', 'publication')
+    list_filter = ('is_read', 'is_hidden', ('repondu_le', admin.EmptyFieldListFilter), 'publication')
     ordering = ('-created_at',)
-    search_fields = ('name', 'text', 'publication__title')
+    search_fields = ('name', 'text', 'email', 'publication__title')
     actions = ['mark_read', 'mark_unread', 'show', 'hide']
+    readonly_fields = ('publication', 'name', 'contact_auteur', 'text', 'created_at', 'repondu_le')
+    fieldsets = (
+        ("Commentaire", {'fields': ('publication', 'name', 'contact_auteur', 'text', 'created_at')}),
+        ("Modération", {'fields': ('is_hidden', 'is_read')}),
+        ("Répondre", {'fields': ('reponse', 'repondu_le')}),
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="E-mail")
+    def contact_auteur(self, obj):
+        return obj.email_auteur() or "— (pas d'e-mail : réponse non envoyable)"
+
+    @admin.display(description="Réponse", boolean=True)
+    def repondu(self, obj):
+        return bool(obj.repondu_le)
+
+    def save_model(self, request, obj, form, change):
+        envoyer = 'reponse' in form.changed_data and obj.reponse.strip()
+        if envoyer:
+            from django.utils import timezone
+            obj.repondu_le = timezone.now()
+        super().save_model(request, obj, form, change)
+        if not envoyer:
+            return
+        dest = obj.email_auteur()
+        if not dest:
+            self.message_user(request, "Réponse enregistrée. Pas d'e-mail : rien n'a été envoyé.", level='warning')
+            return
+        from django.core.mail import send_mail
+        try:
+            send_mail(f"Réponse à votre commentaire — {obj.publication.title[:60]}",
+                      f"Bonjour {obj.name},\n\nVotre commentaire :\n« {obj.text} »\n\nNotre réponse :\n{obj.reponse}\n\n"
+                      f"L'équipe Lantante Technologie", None, [dest])
+            self.message_user(request, f"Réponse envoyée à {dest}.")
+        except Exception:
+            self.message_user(request, "Réponse enregistrée, mais l'e-mail n'a pas pu partir.", level='error')
 
     @admin.display(description="", ordering='is_read')
     def lu(self, obj):

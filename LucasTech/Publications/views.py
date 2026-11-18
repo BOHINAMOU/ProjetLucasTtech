@@ -204,7 +204,14 @@ def publication_comment(request, slug):
         messages.error(request, "Trop de commentaires en peu de temps. Réessayez dans un moment.")
         return back
     # Les commentaires ne sont jamais publics : ils sont lus uniquement par l'équipe, dans l'administration.
-    comment = PublicationComment.objects.create(publication=publication, user=user, name=name, text=text, is_hidden=True)
+    email = (user.email if user else request.POST.get('email', '').strip())[:254]
+    try:
+        from django.core.validators import validate_email
+        validate_email(email)
+    except Exception:
+        email = ''
+    comment = PublicationComment.objects.create(publication=publication, user=user, name=name, text=text, is_hidden=True,
+                                                email=email)
     messages.success(request, "✓ Merci, votre commentaire a bien été envoyé à notre équipe.")
     try:
         from Emploi.services import notify_staff

@@ -208,6 +208,10 @@
   </table>
 </div>
 {% endif %}
+  <div class="ltd-h"><h3>Rubriques</h3></div>
+  <div class="ltd-actions" style="margin-bottom:18px">
+    {% for r in dash.rubriques %}<a class="ltd-act navy" href="{{ r.url }}"><i class="fas {{ r.icon }}"></i>{{ r.titre }}</a>{% endfor %}
+  </div>
   <div class="ltd-h"><h3>Actions rapides</h3></div>
   <div class="ltd-actions">
     {% for a in dash.actions %}<a class="ltd-act {{ a.tone }}" href="{{ a.url }}"{% if a.url == '/' %} target="_blank"{% endif %}><i class="fas {{ a.icon }}"></i>{{ a.label }}</a>{% endfor %}

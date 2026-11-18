@@ -57,6 +57,8 @@ def build(request):
         ('Demandes de monétisation à traiter', _count('core.MonetizationRequest', status='new'), 'fa-sack-dollar', _url('core.MonetizationRequest', '?status__exact=new'), 'orange'),
         ('Messages du portfolio non lus', _count('Portfolio.ContactMessage', is_read=False), 'fa-id-card', _url('Portfolio.ContactMessage', '?is_read__exact=0'), 'red'),
         ('Demandes de partenariat', _count('core.PartnerApplication', status='pending'), 'fa-ribbon', _url('core.PartnerApplication', '?status__exact=pending'), 'blue'),
+        ('Dossiers de répétiteurs à vérifier', _count('Repetiteurs.Candidature', statut='a_verifier'), 'fa-chalkboard-teacher', _url('Repetiteurs.Candidature', '?statut__exact=a_verifier'), 'orange'),
+        ('Demandes de vendeurs', _count('Marche.DemandeVendeur', statut='en_attente'), 'fa-user-tag', _url('Marche.DemandeVendeur', '?statut__exact=en_attente'), 'blue'),
     ]
     todo = [dict(label=a, n=b, icon=c, url=d, tone=e) for a, b, c, d, e in todo]
     total_todo = sum(t['n'] for t in todo)
@@ -187,7 +189,14 @@ def build(request):
     ]
     actions = [dict(label=a, icon=b, url=c, tone=d) for a, b, c, d in actions if c]
 
+    icones = {'paiements': 'fa-credit-card', 'concours': 'fa-file-alt', 'boutique': 'fa-store', 'vendeurs': 'fa-user-tag',
+               'emplois': 'fa-briefcase', 'formations': 'fa-graduation-cap', 'evenements': 'fa-calendar-days',
+               'ecoles': 'fa-school', 'repetiteurs': 'fa-chalkboard-teacher', 'publications': 'fa-newspaper',
+               'services': 'fa-wrench', 'notifications': 'fa-bell', 'utilisateurs': 'fa-users'}
+    rubriques = [{'titre': t, 'icon': icones.get(c, 'fa-folder'), 'url': f'/lantanteAdminTech/section/{c}/'}
+                 for c, (t, _) in SECTIONS.items()]
     return {
+        'rubriques': rubriques,
         'todo': todo, 'todo_total': total_todo, 'comments': comments, 'latest_comments': latest[:6], 'messages_latest': messages_latest,
         'argent': argent, 'stats': stats, 'days': days, 'app_days': app_days, 'actions': actions, 'today': today, 'hero_kpis': hero_kpis,
         'mail_from': getattr(settings, 'DEFAULT_FROM_EMAIL', '') or getattr(settings, 'EMAIL_HOST_USER', ''),
@@ -245,11 +254,16 @@ SECTIONS = {
     'concours': ("Concours", [('concours.Contest', 'Concours'), ('concours.ContestSession', 'Années'),
                               ('concours.ExamPaper', 'Épreuves'), ('concours.Correction', 'Corrigés'),
                               ('abonnements.UserSubscription', 'Abonnements (anciens)')]),
-    'boutique': ("Boutique", [('Shop.Product', 'Produits'), ('Shop.Category', 'Catégories'), ('Shop.ShopOrder', 'Commandes')]),
+    'boutique': ("Boutique", [('Shop.Product', 'Produits'), ('Shop.Category', 'Catégories'), ('Shop.ShopOrder', 'Commandes'),
+                              ('Marche.ReglageLivraison', 'Livraisons'), ('Payments.CodePromo', 'Codes promo')]),
+    'vendeurs': ("Vendeurs", [('Marche.Vendeur', 'Vendeurs'), ('Marche.CategorieVendeur', 'Catégories des vendeurs'),
+                              ('Marche.DemandeVendeur', 'Demandes'), ('Marche.Reversement', 'Reversements')]),
+    'emplois': ("Emplois", [('Offres.OffreEmploi', "Offres d'emploi")]),
     'formations': ("Formations", [('Formations.Formation', 'Formations'), ('Formations.Registration', 'Inscriptions')]),
     'evenements': ("Événements", [('Events.Event', 'Événements'), ('Events.Ticket', 'Tickets')]),
     'ecoles': ("Écoles", [('Ecoles.Ecole', 'Écoles'), ('Ecoles.Filiere', 'Filières')]),
-    'repetiteurs': ("Répétiteur - École", [('Repetiteurs.Repetiteur', 'Répétiteurs')]),
+    'repetiteurs': ("Répétiteurs", [('Repetiteurs.Repetiteur', 'Répétiteurs'), ('Repetiteurs.Candidature', 'Candidatures'),
+                                    ('Repetiteurs.ReglageCandidature', 'Réglages des candidatures')]),
     'publications': ("Actualités", [('Publications.Publication', 'Articles'), ('Publications.PublicationCategory', 'Catégories'),
                                     ('Publications.PublicationComment', 'Commentaires')]),
     'services': ("Services", [('Services.Service', 'Services'), ('Services.InscriptionService', 'Inscriptions'),
@@ -264,12 +278,26 @@ def build_section(request, code):
     """Page d'un grand titre : chiffres de chaque élément + liens « Gérer » / « Ajouter »."""
     titre, modeles = SECTIONS[code]
     lignes = []
+    if code == 'paiements' and not request.user.is_superuser:
+        return {'titre': titre, 'lignes': [], 'extra': []}
     for label, nom in modeles:
         m = _model(label)
         if not m:
             continue
-        lignes.append({'nom': nom, 'n': m.objects.count(), 'url': _url(label), 'ajout': _url(label, add=True)})
+        u, o = request.user, m._meta
+        if not (u.has_perm(f'{o.app_label}.view_{o.model_name}') or u.has_perm(f'{o.app_label}.change_{o.model_name}')):
+            continue
+        ajout = _url(label, add=True) if u.has_perm(f'{o.app_label}.add_{o.model_name}') else ''
+        from django.contrib import admin as _admin
+        ma = _admin.site._registry.get(m)
+        try:
+            n = ma.get_queryset(request).count() if ma and not u.is_superuser else m.objects.count()
+        except Exception:
+            n = 0
+        lignes.append({'nom': nom, 'n': n, 'url': _url(label), 'ajout': ajout})
     extra = []
+    if not request.user.is_superuser:  # chiffres d'argent : super-admins seulement
+        return {'titre': titre, 'lignes': lignes, 'extra': _chiffres(code) if lignes else []}
     P = _model('Payments.Payment')
     kinds = {'paiements': None, 'concours': ('concours', 'abonnement'), 'boutique': ('product', 'shop'),
              'formations': ('formation',), 'evenements': ('ticket', 'soutien'), 'services': ('service',)}
@@ -278,4 +306,35 @@ def build_section(request, code):
         if kinds[code]:
             ok = ok.filter(kind__in=kinds[code])
         extra = [('Encaissé', _f(ok.aggregate(s=Sum('amount'))['s'])), ('Paiements réussis', ok.count())]
+    extra += _chiffres(code)
     return {'titre': titre, 'lignes': lignes, 'extra': extra}
+
+
+def _chiffres(code):
+    """Chiffres propres à chaque rubrique (en plus des paiements)."""
+    from django.db.models import F
+    try:
+        if code == 'emplois':
+            O = _model('Offres.OffreEmploi')
+            a = O.objects.aggregate(v=Sum('vues'), t=Sum('clics_appel'), w=Sum('clics_whatsapp'), l=Sum('clics_lien'), e=Sum('clics_email'))
+            actives = sum(1 for o in O.objects.filter(publie=True) if o.active)
+            return [('Offres en ligne', actives), ('Vues', a['v'] or 0),
+                    ('Contacts (appel, WhatsApp, lien, e-mail)', sum((a[k] or 0) for k in 'twle'))]
+        if code == 'publications':
+            return [('Lectures', _model('Publications.Publication').objects.aggregate(v=Sum('views_count'))['v'] or 0),
+                    ('Commentaires non lus', _count('Publications.PublicationComment', is_read=False)),
+                    ('Sans réponse', _count('Publications.PublicationComment', repondu_le__isnull=True))]
+        if code == 'repetiteurs':
+            return [('Dossiers à vérifier', _count('Repetiteurs.Candidature', statut='a_verifier')),
+                    ('Répétiteurs en ligne', _count('Repetiteurs.Repetiteur', actif=True))]
+        if code == 'vendeurs':
+            return [('Vendeurs validés', _count('Marche.Vendeur', statut='valide')),
+                    ('Produits des vendeurs', _count('Shop.Product', vendeur__isnull=False))]
+        if code == 'boutique':
+            P = _model('Shop.Product')
+            a = P.objects.aggregate(v=Sum('vues'), w=Sum('clics_whatsapp'))
+            return [('Commandes en attente', _count('Shop.ShopOrder', status='pending')),
+                    ('Vues des produits', a['v'] or 0), ('Clics WhatsApp', a['w'] or 0)]
+    except Exception:
+        return []
+    return []

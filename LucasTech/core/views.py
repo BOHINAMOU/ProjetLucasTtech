@@ -276,7 +276,10 @@ def admin_section(request, code):
     from django.contrib import admin as _admin
     from django.http import Http404
     from .dashboard import SECTIONS, build_section
-    if code not in SECTIONS or not request.user.is_superuser:
+    if code not in SECTIONS or not request.user.is_staff:
         raise Http404
-    ctx = dict(_admin.site.each_context(request), section=build_section(request, code), title=SECTIONS[code][0])
+    section = build_section(request, code)
+    if not section['lignes']:
+        raise Http404
+    ctx = dict(_admin.site.each_context(request), section=section, title=SECTIONS[code][0])
     return render(request, 'admin/section.html', ctx)

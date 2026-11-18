@@ -550,11 +550,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     <div>
       <h2>{% if user.is_staff %}Commentaires reçus ({{ comments|length }}) — visibles par l'équipe seulement{% else %}Laisser un commentaire{% endif %}</h2>
       {% for c in comments %}
-      <div class="nd-comment"><b>{{ c.name }}</b><small>{{ c.created_at|date:"d M Y H:i" }}{% if c.is_hidden %} · privé{% endif %}</small><p>{{ c.text }}</p></div>
+      <div class="nd-comment"><b>{{ c.name }}</b><small>{{ c.created_at|date:"d M Y H:i" }}{% if c.is_hidden %} · privé{% endif %}</small><p>{{ c.text }}</p>{% if c.reponse %}<p style="margin-top:6px;padding-left:10px;border-left:3px solid #0B7A4B"><b>Réponse :</b> {{ c.reponse }}</p>{% endif %}</div>
       {% endfor %}
       <form class="nd-form" method="post" action="{% url 'publications:publication_comment' publication.slug %}">{% csrf_token %}
         <div class="nd-hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-        {% if not user.is_authenticated %}<input type="text" name="name" maxlength="80" placeholder="Votre nom" required>{% endif %}
+        {% if not user.is_authenticated %}<input type="text" name="name" maxlength="80" placeholder="Votre nom" required>
+        <input type="email" name="email" maxlength="254" placeholder="Votre e-mail (pour la réponse)">{% endif %}
         <textarea name="text" maxlength="1000" placeholder="Votre commentaire…" required></textarea>
         <button type="submit"><i class="fas fa-comment"></i> Commenter</button>
       </form>
