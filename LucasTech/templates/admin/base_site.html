@@ -192,12 +192,77 @@
     });
   });
 </script>
+<style>
+  /* ═══ Thème « vert foncé » (style admin pro) : remplace l'habillage clair, même structure ═══ */
+  :root { --lt-fond:#F4F6F3; --lt-ombre:0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04); --lt-rayon:14px; }
+  body { --lte-sidebar-width:260px; }
+  body, .app-main { background:var(--lt-fond) !important; }
+  /* Barre latérale */
+  #jazzy-sidebar.lt-side { background:linear-gradient(180deg,#0B3D2A 0%,#0F5236 100%) !important; border-right:0 !important; }
+  .lt-side .sidebar-brand { background:rgba(255,255,255,.06); border-bottom:1px solid rgba(255,255,255,.08) !important; height:68px; }
+  .lt-logo { background:#fff !important; color:#0B3D2A !important; box-shadow:none !important; padding:3px; overflow:hidden; }
+  .lt-logo img { width:100%; height:100%; object-fit:contain; }
+  .lt-marque b { color:#fff !important; }
+  .lt-marque small { color:rgba(255,255,255,.6) !important; }
+  .lt-nav .lt-groupe { color:rgba(233,213,138,.7) !important; }
+  .lt-nav li a { color:rgba(255,255,255,.85) !important; position:relative; font-weight:500; }
+  .lt-nav li a .ms { color:rgba(255,255,255,.75) !important; }
+  @media (hover: hover) { .lt-nav li a:hover:not(.actif) { background:rgba(255,255,255,.08) !important; color:#fff !important; } }
+  .lt-nav li a.actif { background:rgba(255,255,255,.12) !important; color:#fff !important; font-weight:700; }
+  .lt-nav li a.actif::before { content:''; position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:#C9A227; }
+  .lt-nav li a.actif .ms { color:#C9A227 !important; font-variation-settings:'FILL' 1; }
+  .lt-nav li a:focus-visible { outline:2px solid #E9D58A; }
+  .lt-nb { background:#C9A227 !important; color:#0B3D2A !important; }
+  .lt-side .sidebar-wrapper { scrollbar-color:rgba(255,255,255,.2) transparent; }
+  .lt-moi { background:rgba(0,0,0,.18) !important; border-top:1px solid rgba(255,255,255,.08) !important; }
+  .lt-av { background:#C9A227 !important; color:#0B3D2A !important; }
+  .lt-moi .q b { color:#fff !important; }
+  .lt-moi .q small { color:rgba(255,255,255,.6) !important; }
+  .lt-moi button { color:rgba(255,255,255,.7) !important; }
+  .lt-moi button:hover { background:rgba(255,255,255,.1) !important; color:#fff !important; }
+  /* Barre du haut : blanche, ombre très légère, titre à gauche */
+  .lt-haut { background:#fff !important; border-bottom:0 !important; box-shadow:0 1px 0 rgba(0,0,0,.05), 0 2px 10px rgba(0,0,0,.03); }
+  .lt-titre { font-weight:800; font-size:1.05rem; color:var(--lt-texte); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
+  .lt-recherche { margin:0 auto !important; }
+  .lt-haut .esp { display:none; }
+  .app-content-header h3 { display:none; }
+  .app-content-header .col-sm-6:last-child { justify-content:flex-start !important; }
+  .app-content-header .col-sm-6:first-child { display:none; }
+  .app-content-header .col-sm-6:last-child { flex:0 0 100%; max-width:100%; }
+  @media (max-width: 991.98px) { .lt-titre { display:none; } }
+  /* Contenu : cartes blanches, ombre douce, plus d'espace */
+  .card, .db-carte, .db-kpi, .rb-kpi, .cc, .rb-gerer, .hf-tete, .hf-c, .hf-kp > div, .at-t, .bx-liste, .bx-fil, .bx-rep, .bx-pub, .rc-g,
+  .ho-info, .kp div, .ch, #changelist .card {
+      border:0 !important; border-radius:var(--lt-rayon) !important; box-shadow:var(--lt-ombre) !important; }
+  .db-kpis, .db-grille, .rb-kpis, .cg { gap:24px !important; }
+  .db-grille, .db-kpis { margin-bottom:24px !important; }
+  .db-tete h1, .rb-tete h1 { font-size:24px !important; }
+  .db-kpi .v, .rb-kpi b { font-size:28px !important; }
+  .db-kpi .l .ms { border-radius:50% !important; width:40px !important; height:40px !important; }
+  /* Boutons */
+  .btn-success, .btn-primary, .lt-btn-p, .db-btn, .rb-b:not(.g), .at-b { border-radius:10px !important; }
+  /* Tableaux : lignes aérées, en-têtes en petites majuscules grises */
+  #result_list tbody td, #result_list tbody th { height:56px; }
+  #result_list thead th { font-size:.7rem !important; letter-spacing:.06em !important; }
+  /* Formulaires : champs 44 px, rayon 10 px, libellés gras 13 px, sections en cartes, actions collées en bas */
+  .change-form input.form-control, .change-form select.form-control, .change-form .vTextField, .change-form .vIntegerField,
+  .change-form input[type=text], .change-form input[type=email], .change-form input[type=number], .change-form input[type=url], .change-form select {
+      min-height:44px !important; border-radius:10px !important; }
+  .change-form .card-body .form-group.row > label { font-size:13px !important; font-weight:700 !important; }
+  .change-form fieldset.card, .change-form .card { margin-bottom:24px !important; }
+  .change-form .card-header { font-size:1rem; font-weight:800 !important; padding:16px 20px !important; border-bottom:1px solid #EEF1EE !important; }
+  @media (max-width: 991.98px) {
+    #jazzy-actions { position:sticky; bottom:0; z-index:20; background:#fff; padding:12px; box-shadow:0 -4px 16px rgba(0,0,0,.06); margin:0 -16px; }
+    #jazzy-actions .lt-actions { flex-direction:row !important; }
+    #jazzy-actions .lt-actions .lt-btn-p { flex:1; }
+  }
+</style>
 {% endblock %}
 
 {% block sidebar %}
 <aside class="app-sidebar lt-side" id="jazzy-sidebar">
   <div class="sidebar-brand">
-    <a href="{% url 'admin:index' %}" class="lt-marque" id="jazzy-logo"><span class="lt-logo">LT</span><span><b>Lantante</b><small>Administration</small></span></a>
+    <a href="{% url 'admin:index' %}" class="lt-marque" id="jazzy-logo"><span class="lt-logo"><img src="{% static jazzmin_settings.site_logo %}" alt=""></span><span><b>Lantante</b><small>Administration</small></span></a>
   </div>
   <div class="sidebar-wrapper">
     <nav>
@@ -222,6 +287,7 @@
 {% block page_content %}
 <div class="lt-haut">
   <button class="lt-menu" type="button" data-lte-toggle="sidebar" aria-label="Menu"><span class="ms">menu</span></button>
+  <span class="lt-titre">{% if request.path == '/lantanteAdminTech/' %}Tableau de bord{% elif opts %}{{ opts.verbose_name_plural|capfirst }}{% else %}{{ title|default:"" }}{% endif %}</span>
   <form class="lt-recherche" method="get" action="{% url 'admin_recherche' %}" role="search"><span class="ms">search</span><input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Rechercher un hôtel, un produit, un utilisateur…" aria-label="Rechercher"></form>
   <span class="esp"></span>
   <a class="voir" href="/" target="_blank" rel="noopener"><span class="ms">open_in_new</span><span class="t">Voir le site</span></a>
