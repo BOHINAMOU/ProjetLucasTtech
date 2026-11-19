@@ -285,7 +285,9 @@ def webhook(request):
     entity = data.get('entity') or data.get('data') or {}
     tx_id = str(entity.get('id') or '')
     if tx_id:
-        for p in Payment.objects.filter(fedapay_id=tx_id, status='pending'):
+        from django.db.models import Q
+        for p in Payment.objects.filter(Q(status='pending') | Q(status='canceled', failure_reason=services.EXPIRE),
+                                        fedapay_id=tx_id):
             services.refresh(p)
     return HttpResponse('ok')
 

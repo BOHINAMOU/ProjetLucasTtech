@@ -89,6 +89,7 @@ class PaymentAdmin(admin.ModelAdmin):
         return badge_statut(p)
 
     def changelist_view(self, request, extra_context=None):
+        services.expirer_si_besoin()
         r = super().changelist_view(request, extra_context=extra_context)
         try:
             qs = r.context_data['cl'].queryset

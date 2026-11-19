@@ -9,6 +9,11 @@ def _compteurs(user):
     if c is not None:
         return c
     from .dashboard import _count, _vendeurs_bientot, _vendeurs_expires
+    try:
+        from Payments.services import expirer_si_besoin
+        expirer_si_besoin()
+    except Exception:
+        pass
     c = {
         'commentaires': _count('Publications.PublicationComment', is_hidden=False, reponse='')
                         + _count('Publications.QuickMessage', is_read=False),

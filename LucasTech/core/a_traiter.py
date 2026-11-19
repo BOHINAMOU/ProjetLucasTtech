@@ -123,6 +123,11 @@ def lignes(user):
 
 @staff_member_required
 def page(request):
+    try:
+        from Payments.services import expirer_si_besoin
+        expirer_si_besoin()
+    except Exception:
+        pass
     rows = lignes(request.user)
     types = sorted({r['type'] for r in rows})
     filtre = request.GET.get('type', '')

@@ -28,9 +28,23 @@ def start(request, payment):
     return url or payment.get_absolute_url()
 
 
+EXPIRE = "Délai dépassé : paiement non finalisé. Rien n'a été débité."
+DELAI_EXPIRATION_MIN = 30
+
+
+def _expire_relisible(payment):
+    """Annulé par délai dépassé : on accepte encore une validation tardive chez l'opérateur."""
+    return payment.status == 'canceled' and payment.failure_reason == EXPIRE
+
+
 def refresh(payment):
     """Relit le statut chez FedaPay et livre si payé. Renvoie le paiement à jour."""
-    if payment.status != 'pending' or not payment.fedapay_id or payment.mode in ('demo', 'solde', 'free'):
+    if not (payment.status == 'pending' or _expire_relisible(payment)) or not payment.fedapay_id             or payment.mode in ('demo', 'solde', 'free'):
+        return payment
+    if payment.status != 'pending':
+        if fedapay.transaction_status(payment) in fedapay.PAID_STATUSES:
+            mark_paid(payment)
+        payment.refresh_from_db()
         return payment
     status = fedapay.transaction_status(payment)
     if status in fedapay.PAID_STATUSES:
@@ -165,3 +179,35 @@ def debloquer_formation(user_id, formation_id, prix):
     OrderItem.objects.create(order=order, formation_id=formation_id, quantity=1, price=prix)
     Formation.objects.filter(pk=formation_id).update(students_count=F('students_count') + 1)
     return True
+
+
+def expirer_anciens(minutes=DELAI_EXPIRATION_MIN, limite=50):
+    """Paiements restés « en attente » plus de [minutes] : on relit d'abord chez FedaPay (payé → livré,
+    refusé → refusé). Toujours en attente → « Annulé » (délai dépassé). Opérateur injoignable → on réessaie plus tard."""
+    from datetime import timedelta
+    avant = timezone.now() - timedelta(minutes=minutes)
+    n = 0
+    for p in Payment.objects.filter(status='pending', created_at__lt=avant).order_by('created_at')[:limite]:
+        if p.mode in ('solde', 'free'):
+            continue
+        if p.fedapay_id and p.mode != 'demo':
+            statut = fedapay.transaction_status(p)
+            if statut == '':
+                continue  # FedaPay injoignable : on ne touche à rien
+            if statut in fedapay.PAID_STATUSES or statut in fedapay.FAILED_STATUSES:
+                refresh(p)
+                continue
+        n += Payment.objects.filter(pk=p.pk, status='pending').update(status='canceled', failure_reason=EXPIRE)
+        _release(p)
+    return n
+
+
+def expirer_si_besoin():
+    """Appelé à la lecture des listes (admin, « À traiter », historique) : au plus une fois toutes les 5 minutes."""
+    from django.core.cache import cache
+    if cache.add('paiements:expiration', 1, 300):
+        try:
+            return expirer_anciens()
+        except Exception:
+            logger.exception("Expiration des paiements impossible")
+    return 0
