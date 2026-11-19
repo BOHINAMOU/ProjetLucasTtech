@@ -22,6 +22,7 @@
 .rd-infos b{display:block;color:var(--t);margin-bottom:2px}
 .rd-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
 .rd-actions a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 16px;border-radius:14px;font-weight:700;text-decoration:none!important;border:2px solid var(--v);color:var(--v)!important;background:#fff}
+.rd-mention{color:var(--m);font-size:.85rem;margin:-6px 0 12px}
 .rd-titre{font-size:1.3rem;font-weight:800;color:var(--t);margin:6px 0 12px}
 .rd-cat{font-weight:800;color:var(--m);text-transform:uppercase;font-size:.78rem;letter-spacing:.08em;margin:18px 0 8px}
 .rd-plats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
@@ -90,6 +91,7 @@
   </div>
 
   <h2 class="rd-titre">Le menu</h2>
+  {% if d.plats %}<p class="rd-mention">Prix de la carte publique, confirmés à la commande sur WhatsApp.</p>{% endif %}
   <div id="rd-menu"></div>
 </div>
 

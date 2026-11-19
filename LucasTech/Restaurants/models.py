@@ -23,6 +23,8 @@ class Restaurant(models.Model):
                                 help_text="Vide : les commandes arrivent sur le WhatsApp de Lantante.")
     livraison = models.CharField("Livraison", max_length=160, blank=True, help_text="Ex. Livraison à Lomé, ou « Sur place et à emporter »")
     visible = models.BooleanField("Visible", default=True, db_index=True)
+    source = models.URLField("Source de la carte (interne)", blank=True,
+                             help_text="Page publique d'où viennent les plats et les prix. Jamais affichée.")
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
     vues = models.PositiveIntegerField("Vues", default=0, editable=False)
     clics_commander = models.PositiveIntegerField("Clics « Commander »", default=0, editable=False)

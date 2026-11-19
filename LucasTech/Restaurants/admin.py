@@ -79,7 +79,7 @@ class RestaurantAdmin(admin.ModelAdmin):
         (None, {'fields': ('nom', ('logo', 'couverture'), 'description', 'visible')}),
         ("Lieu", {'fields': (('quartier', 'ville'), 'adresse', ('latitude', 'longitude'))}),
         ("Contact et horaires", {'fields': (('telephone', 'whatsapp'), 'horaires', 'livraison')}),
-        ("Statistiques", {'classes': ('collapse',), 'fields': (('vues', 'clics_commander'), 'ordre')}),
+        ("Interne", {'classes': ('collapse',), 'fields': ('source', ('vues', 'clics_commander'), 'ordre')}),
     )
 
     @admin.display(description="")
