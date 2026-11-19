@@ -82,7 +82,9 @@
   function ok(mot, mots) {
     return mots.some(function (x) {
       if (x.indexOf(mot) === 0 || (mot.length > 2 && x.indexOf(mot) >= 0)) return true;
-      return mot.length >= 4 && d(mot, x.slice(0, mot.length)) <= 1;
+      if (mot.length < 4) return false;
+      var tol = mot.length >= 8 ? 2 : 1;
+      return d(mot, x.slice(0, mot.length)) <= tol || d(mot, x) <= tol;
     });
   }
   cartes.forEach(function (c) { c._m = n(c.dataset.t).split(' '); });
