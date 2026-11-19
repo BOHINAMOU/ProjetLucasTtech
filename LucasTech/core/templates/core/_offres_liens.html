@@ -1,0 +1,1 @@
+{% for code, url, nom in offres_menu %}{% if code != sauf %}{% if pastilles %}<a class="as-pastille" href="{{ url }}">{{ nom }}</a>{% else %}<li><a href="{{ url }}">{{ nom }}</a></li>{% endif %}{% endif %}{% endfor %}

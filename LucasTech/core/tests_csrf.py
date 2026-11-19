@@ -71,7 +71,7 @@ class ApplicationPageTests(TestCase):
     def test_page_application(self):
         r = self.client.get('/application/')
         self.assertContains(r, 'href="/application/telecharger/')
-        self.assertContains(r, 'iPhone : bientôt disponible')
+        self.assertContains(r, 'Lantante Express')
         self.assertContains(self.client.get('/'), 'href="/application/"')
 
     def test_type_apk(self):

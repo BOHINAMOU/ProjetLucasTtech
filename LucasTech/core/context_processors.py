@@ -39,3 +39,18 @@ def cache_bust(request):
     return {
         'cache_bust': int(time.time()) if settings.DEBUG else ''
     }
+
+def offres_menu(request):
+    """Menu « Offres » et pastilles « Autres services » : (code de l'appli, lien, nom)."""
+    from django.urls import reverse
+    return {'offres_menu': [
+        ('services', reverse('services:services'), "Services numériques"),
+        ('formations', reverse('formations:formations'), "Formations"),
+        ('restaurants', reverse('restaurants:liste'), "Restaurants"),
+        ('hotels', reverse('hotels:liste'), "Hôtels"),
+        ('logements', reverse('logements:liste'), "Location"),
+        ('repetiteurs', reverse('repetiteurs:liste'), "Répétiteurs"),
+        ('offres', reverse('offres:liste'), "Emplois"),
+        ('events', reverse('events:list'), "Événements"),
+    ]}
+

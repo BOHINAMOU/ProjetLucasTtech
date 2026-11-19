@@ -82,10 +82,7 @@
       <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
       <li class="nav-dd">
         <button type="button" class="nav-dd__btn" aria-haspopup="true" aria-expanded="false">Offres <i class="fa fa-chevron-down" aria-hidden="true"></i></button>
-        <ul class="nav-dd__menu">
-          <li><a href="{% url 'services:services' %}">Services</a></li>
-          <li><a href="{% url 'formations:formations' %}">Formations</a></li>
-        </ul>
+        <ul class="nav-dd__menu nav-dd__menu--2col">{% include 'core/_offres_liens.html' %}</ul>
       </li>
       <li><a href="{% url 'concours:index' %}">Concours</a></li>
       <li><a href="{% url 'events:list' %}">Événements</a></li>
@@ -123,10 +120,7 @@
       <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
       <li class="dr-dd">
         <button type="button" class="dr-dd__btn" aria-expanded="false">Offres <i class="fa fa-chevron-down" aria-hidden="true"></i></button>
-        <ul class="dr-dd__menu">
-          <li><a href="{% url 'services:services' %}">Services</a></li>
-          <li><a href="{% url 'formations:formations' %}">Formations</a></li>
-        </ul>
+        <ul class="dr-dd__menu">{% include 'core/_offres_liens.html' %}</ul>
       </li>
       <li><a href="{% url 'concours:index' %}">Concours</a></li>
       <li><a href="{% url 'events:list' %}">Événements</a></li>
@@ -374,6 +368,9 @@
 </section>
 
 {% endblock %}
+{% with app=request.resolver_match.app_name %}{% if app in 'restaurants hotels logements repetiteurs offres services formations events' %}
+<nav class="autres-services" aria-label="Autres services"><div class="autres-services__in">{% include 'core/_offres_liens.html' with pastilles=1 sauf=app %}</div></nav>
+{% endif %}{% endwith %}
 </main>
 
 <div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>

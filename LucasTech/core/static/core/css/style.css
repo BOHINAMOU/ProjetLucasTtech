@@ -1024,3 +1024,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .nav-backdrop { display: block; position: fixed; inset: 0; background: rgba(6,20,13,.38); backdrop-filter: blur(2px); z-index: 380; opacity: 0; pointer-events: none; transition: opacity .3s; }
   .nav-backdrop.open { opacity: 1; pointer-events: auto; }
 }
+
+/* Menu « Offres » : tous les services, sur deux colonnes */
+.nav-dd__menu--2col { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); min-width: 380px; }
+/* « Autres services » en bas des pages de service */
+.autres-services { padding: 8px 16px 28px; }
+.autres-services__in { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.as-pastille { padding: 8px 14px; border-radius: 999px; background: #fff; border: 1px solid #dfe6e2; color: #0b2e1d !important;
+  font-weight: 600; font-size: .9rem; text-decoration: none !important; }
+.as-pastille:hover { border-color: #0f7a45; color: #0f7a45 !important; }
