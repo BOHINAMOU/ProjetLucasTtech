@@ -29,9 +29,9 @@
 .rl-btns{margin-top:auto;display:flex;gap:8px}
 .rl-det{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 14px;border-radius:12px;border:2px solid var(--v);color:var(--v)!important;font-weight:700;text-decoration:none!important;font-size:.92rem}
 .rl-wa{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;background:#1FA855;color:#fff!important;font-weight:800;text-decoration:none!important}
-.rl-devenir{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0b5531,#17a35f);color:#fff;border-radius:22px;padding:20px 22px;margin-top:22px}
+.rl-devenir{display:flex;justify-content:center;margin-top:22px}
 .rl-devenir b{font-size:1.15rem}
-.rl-devenir a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;background:#fff;color:#0b5531!important;font-weight:800;text-decoration:none!important}
+.rl-devenir a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;background:#0B7A4B;color:#fff!important;font-weight:800;text-decoration:none!important}
 @media (max-width:700px){.rl-etapes{grid-template-columns:1fr}}
 </style>{% endblock %}
 {% block content %}
@@ -68,7 +68,6 @@
   <p class="rl-rien" id="rl-rien" hidden>Aucun résultat. Écrivez-nous sur WhatsApp.</p>
 
   <div class="rl-devenir">
-    <b>Vous êtes enseignant ?</b>
     <a href="{% url 'repetiteurs:devenir' %}"><i class="fas fa-chalkboard-user"></i> Devenir répétiteur de maison</a>
   </div>
 </div>

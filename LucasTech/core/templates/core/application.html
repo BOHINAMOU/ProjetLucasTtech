@@ -72,27 +72,5 @@
     </div>
   </section>
 
-  <section class="ax-in ax-etapes" id="ax-etapes">
-    <h2>Encore 2 touches</h2>
-    <div class="ax-3">
-      <div><b><i class="fas fa-download"></i></b><span>Télécharger</span></div>
-      <div><b><i class="fas fa-folder-open"></i></b><span>Ouvrir le fichier</span></div>
-      <div><b><i class="fas fa-circle-check"></i></b><span>Installer</span></div>
-    </div>
-    <details class="ax-aide">
-      <summary>Le téléphone bloque l'installation ?</summary>
-      <p>Touchez « Paramètres », activez « Autoriser cette source », puis revenez et touchez « Installer ».</p>
-    </details>
-  </section>
 </div>
-<script>
-  (function () {
-    var b = document.getElementById('ax-dl'), e = document.getElementById('ax-etapes');
-    if (!b || !e) return;
-    b.addEventListener('click', function () {
-      e.classList.add('ouvert');
-      setTimeout(function () { e.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 300);
-    });
-  })();
-</script>
 {% endblock %}

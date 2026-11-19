@@ -1,11 +1,13 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
-from . import formulaires, views
+from . import views
 
 app_name = "logements"
 urlpatterns = [
     path("", views.liste, name="liste"),
-    path("je-cherche/", formulaires.je_cherche, name="je_cherche"),
-    path("publier/", formulaires.publier, name="publier"),
+    # « Je cherche » et « Publier mon logement » : retirés de l'interface (les demandes déjà reçues restent dans l'admin)
+    path("je-cherche/", RedirectView.as_view(pattern_name='logements:liste'), name="je_cherche"),
+    path("publier/", RedirectView.as_view(pattern_name='logements:liste'), name="publier"),
     path("<int:pk>/", views.detail, name="detail"),
 ]

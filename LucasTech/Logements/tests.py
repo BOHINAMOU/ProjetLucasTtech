@@ -66,7 +66,7 @@ class LogementsTests(TestCase):
         self.assertContains(fiche, 'wa.me/22892967787')
         self.assertNotContains(fiche, '90 00 00 01')
         Logement.objects.update(loue=True)
-        self.assertContains(self.client.get('/location/'), 'De nouveaux logements arrivent')
+        self.assertContains(self.client.get('/location/'), 'Bientôt disponible')
 
     def test_ancienne_adresse_redirigee(self):
         r = self.client.get('/logements/')

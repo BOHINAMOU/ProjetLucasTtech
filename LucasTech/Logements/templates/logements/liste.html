@@ -32,10 +32,6 @@
 {% block content %}
 <div class="rp" style="max-width:1100px">
   <div class="rp-banniere"><div><h1>Location de chambres ou appartements</h1></div></div>
-  {% if logements %}<div class="lg-haut">
-    <a class="lg-btn p" href="{% url 'logements:je_cherche' %}"><i class="fas fa-magnifying-glass-location"></i> Je cherche un logement</a>
-    <a class="lg-btn s" href="{% url 'logements:publier' %}"><i class="fas fa-house-circle-check"></i> Publier mon logement</a>
-  </div>{% endif %}
   <form method="get">
     <div class="lg-recherche"><input name="q" value="{{ q }}" placeholder="Ville, quartier, type…" aria-label="Rechercher"><button>Chercher</button></div>
     <div class="lg-filtres">
@@ -62,12 +58,7 @@
   {% else %}
   <div class="lg-vide">
     <div class="ic"><i class="fas fa-house-chimney"></i></div>
-    <h2>{% if q or g.ville or g.type or g.meuble %}Pas encore de logement ici{% else %}De nouveaux logements arrivent{% endif %}</h2>
-    <p>Dites-nous ce que vous cherchez, on vous trouve une offre.</p>
-    <div class="lg-actions">
-      <a class="lg-btn p" href="{% url 'logements:je_cherche' %}"><i class="fas fa-magnifying-glass-location"></i> Je cherche un logement</a>
-      <a class="lg-btn s" href="{% url 'logements:publier' %}"><i class="fas fa-house-circle-check"></i> Publier mon logement</a>
-    </div>
+    <h2>{% if q or g.ville or g.type or g.meuble %}Aucun logement trouvé{% else %}Bientôt disponible{% endif %}</h2>
   </div>
   {% endif %}
 </div>
