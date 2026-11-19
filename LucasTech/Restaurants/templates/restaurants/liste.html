@@ -7,14 +7,16 @@
 .rs-recherche input{flex:1;min-width:0;padding:12px 14px;border:1px solid #dfe6e2;border-radius:14px;font-size:1rem}
 .rs-recherche button{border:0;background:#0B7A4B;color:#fff;border-radius:14px;padding:0 18px;font-weight:700}
 .rs-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
-.rs-carte{background:#fff;border:1px solid #e3e8e5;border-radius:20px;overflow:hidden;text-decoration:none!important;color:inherit;display:flex;flex-direction:column}
+.rs-carte{background:#fff;border:1px solid #e3e8e5;border-radius:20px;overflow:hidden;text-decoration:none!important;color:inherit;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.rs-carte:hover,.rs-carte:active{transform:translateY(-2px);box-shadow:0 12px 26px rgba(11,46,29,.12)}
+.rs-voir{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:12px;background:#0B7A4B;color:#fff;font-weight:800;font-size:.95rem}
 .rs-im{position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,#b4461b,#f29a3b)}
 .rs-im img.c{width:100%;height:100%;object-fit:cover;display:block}
 .rs-im .logo{position:absolute;left:12px;bottom:-22px;width:56px;height:56px;border-radius:16px;background:#fff;object-fit:contain;padding:4px;box-shadow:0 6px 16px rgba(0,0,0,.15)}
 .rs-im .ic{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:2.6rem}
-.rs-corps{padding:30px 14px 16px}
+.rs-corps{padding:30px 14px 14px;display:flex;flex-direction:column;flex:1;gap:4px}
 .rs-corps h2{font-size:1.08rem;font-weight:800;margin:0 0 4px;color:#0b2e1d}
-.rs-corps p{color:#6e6e73;font-size:.9rem;margin:0 0 8px;line-height:1.45}
+.rs-corps p{color:#6e6e73;font-size:.9rem;margin:0;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rs-lieu{color:#0B7A4B;font-weight:700;font-size:.88rem}
 .rs-vide{text-align:center;padding:44px 16px 48px;background:#fff;border:1px solid #e3e8e5;border-radius:22px}
 .rs-vide .ic{width:76px;height:76px;margin:0 auto 14px;border-radius:50%;background:#FFF1E6;color:#C2410C;display:grid;place-items:center;font-size:1.9rem}
@@ -38,6 +40,7 @@
         <h2>{{ r.nom }}</h2>
         {% if r.description %}<p>{{ r.description|truncatechars:90 }}</p>{% endif %}
         {% if r.lieu %}<span class="rs-lieu"><i class="fas fa-location-dot"></i> {{ r.lieu }}</span>{% endif %}
+        <span class="rs-voir" style="margin-top:12px">Voir les plats <i class="fas fa-chevron-right"></i></span>
       </div>
     </a>
     {% endfor %}
