@@ -245,6 +245,7 @@ def result(request, reference):
 
 
 def status(request, reference):
+    services.expirer_si_besoin()
     p = _get_visible(request, reference)
     if p.status == 'pending':
         services.refresh(p)

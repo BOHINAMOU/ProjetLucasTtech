@@ -30,6 +30,8 @@ def _payment_image(request, p):
 
 
 def entries(request, user):
+    from Payments.services import expirer_si_besoin
+    expirer_si_besoin()
     from Formations.models import Registration
     from Payments.models import Payment
     from Shop.models import ShopOrder

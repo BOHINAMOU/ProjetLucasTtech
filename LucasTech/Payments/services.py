@@ -29,7 +29,7 @@ def start(request, payment):
 
 
 EXPIRE = "Délai dépassé : paiement non finalisé. Rien n'a été débité."
-DELAI_EXPIRATION_MIN = 30
+DELAI_EXPIRATION_MIN = 10
 
 
 def _expire_relisible(payment):
@@ -203,9 +203,9 @@ def expirer_anciens(minutes=DELAI_EXPIRATION_MIN, limite=50):
 
 
 def expirer_si_besoin():
-    """Appelé à la lecture des listes (admin, « À traiter », historique) : au plus une fois toutes les 5 minutes."""
+    """Appelé à la lecture des listes (admin, « À traiter », historique) : au plus une fois par minute."""
     from django.core.cache import cache
-    if cache.add('paiements:expiration', 1, 300):
+    if cache.add('paiements:expiration', 1, 60):
         try:
             return expirer_anciens()
         except Exception:
