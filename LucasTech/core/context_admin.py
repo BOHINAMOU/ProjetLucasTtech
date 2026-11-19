@@ -18,6 +18,7 @@ def _compteurs(user):
                     + _vendeurs_bientot() + _vendeurs_expires(),
         'repetiteurs': _count('Repetiteurs.Candidature', statut='a_verifier'),
         'services': _count('Services.ServiceContact', is_read=False),
+        'logements': _count('Logements.Logement', statut='attente') + _count('Logements.DemandeLogement', statut='nouvelle'),
     }
     try:
         from .a_traiter import total

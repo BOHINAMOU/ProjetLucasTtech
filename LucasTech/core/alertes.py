@@ -17,9 +17,7 @@ def prevenir_equipe(texte, url=''):
         if not emails:
             return
         lien = url if url.startswith('http') else f"{SITE}{url or '/lantanteAdminTech/'}"
-        send_mail("Lantante — nouvelle demande", f"{texte}
-
-Ouvrir : {lien}", settings.DEFAULT_FROM_EMAIL,
+        send_mail("Lantante — nouvelle demande", f"{texte}\n\nOuvrir : {lien}", settings.DEFAULT_FROM_EMAIL,
                   emails, fail_silently=True)
     except Exception:
         logger.warning("Alerte équipe impossible", exc_info=True)

@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+{% block title %}Je cherche un logement — Lantante Technologie{% endblock %}
+{% block meta_description %}Dites-nous ce que vous cherchez : chambre, chambre salon, appartement ou maison. Nous vous trouvons un logement.{% endblock %}
+{% block extra_head %}{% include 'logements/_form_style.html' %}{% endblock %}
+{% block content %}
+<div class="rp vc">
+  <div class="rp-banniere"><div><h1>Je cherche un logement</h1><p>Dites-nous ce qu'il vous faut, on vous rappelle sur WhatsApp.</p></div></div>
+  {% if envoye %}
+  <div class="vc-ok"><b>✓</b>Demande envoyée. Nous vous écrivons vite sur WhatsApp.</div>
+  <p style="text-align:center;margin-top:18px"><a href="{% url 'logements:liste' %}" style="color:#0F6B3E;font-weight:700">Voir les logements</a></p>
+  {% else %}
+  <form class="vc-c" method="post" novalidate>
+    {% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="vc-err">{{ e }}</div>{% endfor %}
+    <div class="vc-pot" aria-hidden="true">{{ form.site_internet }}</div>
+    <div class="vc-grille">
+      {% include 'logements/_champ.html' with f=form.nom %}
+      {% include 'logements/_champ.html' with f=form.telephone tel=1 %}
+      {% include 'logements/_champ.html' with f=form.type %}
+      {% include 'logements/_champ.html' with f=form.lieu %}
+      {% include 'logements/_champ.html' with f=form.budget %}
+      {% include 'logements/_champ.html' with f=form.date_souhaitee %}
+      {% include 'logements/_champ.html' with f=form.message large=1 %}
+    </div>
+    <button class="vc-btn" type="submit">Envoyer ma demande</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

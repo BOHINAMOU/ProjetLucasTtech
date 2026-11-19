@@ -62,6 +62,10 @@ def _sources(user):
            Q(statut='expire') | Q(statut='valide', fin_acces__lte=t + timedelta(days=7)),
            lambda o: f"{o.boutique} : {o.etat[1].lower()}" + (f" (fin {o.fin_acces:%d/%m/%Y})" if o.fin_acces else ''),
            lambda o: o.fin_acces, "Prolonger")
+    ajoute('Logements.Logement', "Logement", 'bleu', Q(statut='attente'),
+           lambda o: f"À valider : {o.nom}, {o.loyer:,} CFA".replace(',', ' '), lambda o: o.propose_le or o.created_at, "Valider")
+    ajoute('Logements.DemandeLogement', "Cherche logement", 'vert', Q(statut='nouvelle'),
+           lambda o: f"{o.nom} : {o.get_type_display()} à {o.lieu}, {o.budget:,} CFA".replace(',', ' '), lambda o: o.created_at, "Répondre")
     ajoute('Services.ServiceContact', "Contact service", 'vert', Q(is_read=False),
            lambda o: f"{o.name} · {o.service}", lambda o: o.created_at, "Rappeler")
     ajoute('core.MonetizationRequest', "Monétisation", 'or', Q(status='new'),

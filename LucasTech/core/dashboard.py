@@ -371,7 +371,7 @@ def _chiffres(code):
         if code == 'logements':
             L = _model('Logements.Logement')
             a = L.objects.aggregate(v=Sum('vues'), c=Sum('contacts'))
-            return [('À louer', L.objects.filter(loue=False).count()), ('Loués', L.objects.filter(loue=True).count()),
+            return [('À louer', L.objects.visibles().count()), ('En attente', L.objects.filter(statut='attente').count()), ('Loués', L.objects.filter(loue=True).count()),
                     ('Vues', a['v'] or 0), ('Contacts', a['c'] or 0)]
         if code == 'hotels':
             a = _model('Hotels.Hotel').objects.aggregate(v=Sum('vues'), r=Sum('clics_reserver'), t=Sum('clics_appel'))

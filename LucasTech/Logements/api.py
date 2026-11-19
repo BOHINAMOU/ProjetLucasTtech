@@ -18,7 +18,7 @@ def notre_whatsapp():
 
 
 def disponibles():
-    return Logement.objects.filter(loue=False).prefetch_related('photos')
+    return Logement.objects.visibles().prefetch_related('photos')
 
 
 def recherche(qs, q):
@@ -73,7 +73,7 @@ def liste(request):
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = recherche(qs, q)
-    tous = Logement.objects.filter(loue=False)
+    tous = Logement.objects.visibles()
     villes = sorted(set(tous.values_list('ville', flat=True)), key=str.lower)
     types_presents = set(tous.values_list('type', flat=True))
     return Response({'resultats': [item(request, l) for l in qs[:200]], 'villes': villes,
@@ -110,3 +110,58 @@ def detail(request, pk):
 def clic(request, pk):
     Logement.objects.filter(pk=pk).update(contacts=F('contacts') + 1)
     return Response({'ok': True})
+
+
+def _erreurs(form):
+    e = form.errors.get_json_data()
+    premier = next((v[0]['message'] for v in e.values() if v), "Vérifiez le formulaire.")
+    return error(premier, 400, code='formulaire', errors={k: [x['message'] for x in v] for k, v in e.items()})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def demande(request):
+    """Appli : « Je cherche un logement »."""
+    from django.urls import reverse
+    from .formulaires import DemandeForm, _compter, _prevenir, _trop
+    if _trop(request, 'demande'):
+        return error("Trop d'envois. Réessayez dans une heure.", 429, code='trop')
+    form = DemandeForm(request.data)
+    if not form.is_valid():
+        return _erreurs(form)
+    d = form.save()
+    _compter(request, 'demande')
+    _prevenir(f"Je cherche un logement (appli) : {d.nom} (+{d.telephone})\n{d.get_type_display()} à {d.lieu}, "
+              f"budget {d.budget:,} CFA / mois".replace(',', ' '),
+              reverse('admin:Logements_demandelogement_change', args=[d.pk]))
+    return Response({'ok': True, 'message': "Demande envoyée. Nous vous écrivons vite sur WhatsApp."}, status=201)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def proposer(request):
+    """Appli : « Publier mon logement » (photos en multipart, champ « photos » répété). Validé par l'équipe."""
+    from django.urls import reverse
+    from .formulaires import PublierForm, _compter, _prevenir, _trop
+    if _trop(request, 'publier'):
+        return error("Trop d'envois. Réessayez dans une heure.", 429, code='trop')
+    form = PublierForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return _erreurs(form)
+    l = form.save()
+    _compter(request, 'publier')
+    _prevenir(f"Nouveau logement à valider (appli) : {l.nom}, {l.loyer:,} CFA / mois".replace(',', ' ')
+              + f"\nProposé par {l.proprietaire_nom} (+{l.proprietaire_telephone})",
+              reverse('admin:Logements_logement_change', args=[l.pk]))
+    return Response({'ok': True, 'message': "Logement reçu. Il sera en ligne après vérification."}, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@public_cache(600)
+def options(request):
+    """Listes pour les formulaires de l'appli."""
+    from .models import EQUIPEMENTS, ROLES
+    return Response({'types': [{'code': c, 'nom': n} for c, n in TYPES if c != 'bureau'][:5],
+                     'equipements': [{'code': c, 'nom': n} for c, n in EQUIPEMENTS],
+                     'roles': [{'code': c, 'nom': n} for c, n in ROLES], 'max_photos': 8})

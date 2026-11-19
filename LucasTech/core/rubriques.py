@@ -35,7 +35,7 @@ RUBRIQUES = {
         ('Repetiteurs.ReglageCandidature', "Frais de candidature")]),
     'emplois': ("Emplois", 'fa-briefcase', [('Offres.OffreEmploi', "Offres d'emploi")]),
     'hotels': ("Hôtels", 'fa-hotel', [('Hotels.Hotel', "Hôtels"), ('Hotels.Chambre', "Chambres")]),
-    'logements': ("Location", 'fa-house', [('Logements.Logement', "Chambres et appartements")]),
+    'logements': ("Location", 'fa-house', [('Logements.Logement', "Chambres et appartements"), ('Logements.DemandeLogement', "Demandes")]),
     'publications': ("Actualités", 'fa-newspaper', [
         ('Publications.Publication', "Articles"), ('Publications.PublicationLike', "J'aime"),
         ('Publications.PublicationCategory', "Catégories")]),

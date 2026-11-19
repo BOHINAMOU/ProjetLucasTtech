@@ -1,0 +1,6 @@
+<div class="vc-ch{% if large %} l{% endif %}">
+  <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+  {% if tel %}<div class="vc-tel"><span>+228</span>{{ f }}</div>{% else %}{{ f }}{% endif %}
+  {% if f.help_text %}<span class="vc-aide">{{ f.help_text }}</span>{% endif %}
+  {% for e in f.errors %}<em>{{ e }}</em>{% endfor %}
+</div>

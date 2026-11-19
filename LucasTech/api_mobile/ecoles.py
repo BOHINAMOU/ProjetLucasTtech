@@ -38,6 +38,7 @@ def ecole_item(request, e):
     return {'nouveau': _recent(e), 'cycles': [{'code': c, 'nom': libelles.get(c, c)} for c in (e.cycles or [])],
             'id': e.pk, 'slug': e.slug, 'nom': e.nom, 'titre': e.nom, 'type': e.type, 'type_libelle': e.get_type_display(),
             'ville': e.ville, 'logo': media(request, e.logo),
+            'nb_filieres': getattr(e, 'nb_filieres', None) if getattr(e, 'nb_filieres', None) is not None else e.filieres.count(),
             'couverture': _couverture(request, e),
             'image': media(request, e.couverture) if e.couverture else _couverture(request, e),
             'image_vignette': _couverture(request, e),
@@ -45,11 +46,12 @@ def ecole_item(request, e):
 
 
 def _ecoles():
-    from django.db.models import F, Max, Q as Q_
+    from django.db.models import Count, F, Max, Q as Q_
     from Ecoles.models import Ecole
     # les écoles avec une nouveauté récente remontent
     return Ecole.objects.filter(publie=True).annotate(
-        derniere_nouveaute=Max('nouveautes__date', filter=Q_(nouveautes__publie=True))
+        derniere_nouveaute=Max('nouveautes__date', filter=Q_(nouveautes__publie=True)),
+        nb_filieres=Count('filieres', distinct=True),
     ).order_by(F('derniere_nouveaute').desc(nulls_last=True), 'ordre', 'nom')
 
 

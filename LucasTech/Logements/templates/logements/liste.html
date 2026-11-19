@@ -18,11 +18,24 @@
 .lg-prix{color:#0B7A4B;font-weight:800;margin-top:6px}
 .lt-details{display:flex;justify-content:flex-end;margin-top:8px}
 .lt-details span{background:#E3F5EC;color:#0B7A4B;border-radius:999px;padding:5px 12px;font-weight:800;font-size:.85rem}
-.lg-vide{text-align:center;padding:48px 16px}
+.lg-vide{text-align:center;padding:40px 16px 48px;background:#fff;border:1px solid #e3e8e5;border-radius:22px}
+.lg-vide .ic{width:72px;height:72px;margin:0 auto 14px;border-radius:50%;background:#E3F5EC;color:#0B7A4B;display:flex;align-items:center;justify-content:center;font-size:1.8rem}
+.lg-vide h2{font-size:1.3rem;font-weight:800;color:#0b2e1d;margin:0 0 6px}
+.lg-vide p{color:#6e6e73;margin:0 0 20px}
+.lg-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.lg-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 20px;border-radius:14px;font-weight:800;text-decoration:none!important;flex:1 1 220px;max-width:320px}
+.lg-btn.p{background:#0B7A4B;color:#fff!important}
+.lg-btn.s{background:#fff;color:#0B7A4B!important;border:2px solid #0B7A4B}
+.lg-haut{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.lg-haut .lg-btn{min-height:46px;flex:1 1 200px;max-width:none;font-size:.95rem}
 </style>{% endblock %}
 {% block content %}
 <div class="rp" style="max-width:1100px">
   <div class="rp-banniere"><div><h1>Location de chambres ou appartements</h1></div></div>
+  {% if logements %}<div class="lg-haut">
+    <a class="lg-btn p" href="{% url 'logements:je_cherche' %}"><i class="fas fa-magnifying-glass-location"></i> Je cherche un logement</a>
+    <a class="lg-btn s" href="{% url 'logements:publier' %}"><i class="fas fa-house-circle-check"></i> Publier mon logement</a>
+  </div>{% endif %}
   <form method="get">
     <div class="lg-recherche"><input name="q" value="{{ q }}" placeholder="Ville, quartier, type…" aria-label="Rechercher"><button>Chercher</button></div>
     <div class="lg-filtres">
@@ -47,7 +60,15 @@
     {% endfor %}
   </div>
   {% else %}
-  <div class="lg-vide"><p style="font-size:1.2rem;font-weight:700;color:#0b2e1d">{% if q or g.ville or g.type or g.meuble %}Aucune annonce trouvée.{% else %}Bientôt disponible{% endif %}</p></div>
+  <div class="lg-vide">
+    <div class="ic"><i class="fas fa-house-chimney"></i></div>
+    <h2>{% if q or g.ville or g.type or g.meuble %}Pas encore de logement ici{% else %}De nouveaux logements arrivent{% endif %}</h2>
+    <p>Dites-nous ce que vous cherchez, on vous trouve une offre.</p>
+    <div class="lg-actions">
+      <a class="lg-btn p" href="{% url 'logements:je_cherche' %}"><i class="fas fa-magnifying-glass-location"></i> Je cherche un logement</a>
+      <a class="lg-btn s" href="{% url 'logements:publier' %}"><i class="fas fa-house-circle-check"></i> Publier mon logement</a>
+    </div>
+  </div>
   {% endif %}
 </div>
 {% endblock %}

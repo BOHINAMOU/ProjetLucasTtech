@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% block title %}Publier mon logement — Lantante Technologie{% endblock %}
+{% block meta_description %}Propriétaire ou démarcheur : proposez votre chambre, appartement ou maison à louer. Publication après vérification.{% endblock %}
+{% block extra_head %}{% include 'logements/_form_style.html' %}{% endblock %}
+{% block content %}
+<div class="rp vc">
+  <div class="rp-banniere"><div><h1>Publier mon logement</h1><p>Propriétaire ou démarcheur : publié après vérification.</p></div></div>
+  {% if envoye %}
+  <div class="vc-ok"><b>✓</b>Logement reçu. Nous le vérifions puis il sera en ligne.</div>
+  <p style="text-align:center;margin-top:18px"><a href="{% url 'logements:publier' %}" style="color:#0F6B3E;font-weight:700">Publier un autre logement</a></p>
+  {% else %}
+  <form class="vc-c" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="vc-err">{{ e }}</div>{% endfor %}
+    <div class="vc-pot" aria-hidden="true">{{ form.site_internet }}</div>
+    <div class="vc-grille">
+      {% include 'logements/_champ.html' with f=form.type %}
+      {% include 'logements/_champ.html' with f=form.loyer %}
+      {% include 'logements/_champ.html' with f=form.quartier %}
+      {% include 'logements/_champ.html' with f=form.ville %}
+      {% include 'logements/_champ.html' with f=form.caution %}
+      {% include 'logements/_champ.html' with f=form.pieces %}
+      <div class="vc-ch l">
+        <label for="{{ form.photos.id_for_label }}">{{ form.photos.label }}</label>
+        {{ form.photos }}
+        <span class="vc-aide">JPG, PNG ou WebP · {{ max_photos }} photos maximum</span>
+        {% for e in form.photos.errors %}<em>{{ e }}</em>{% endfor %}
+        <div class="vc-apercu" id="apercu"></div>
+      </div>
+      {% include 'logements/_champ.html' with f=form.description large=1 %}
+      <div class="vc-ch l">
+        <label>{{ form.equipements.label }}</label>
+        <div class="vc-cases">{{ form.equipements }}</div>
+        <label style="display:flex;gap:8px;align-items:center;font-weight:500;margin-top:6px">{{ form.meuble }} Meublé</label>
+      </div>
+      {% include 'logements/_champ.html' with f=form.proprietaire_nom %}
+      {% include 'logements/_champ.html' with f=form.proprietaire_telephone tel=1 %}
+      {% include 'logements/_champ.html' with f=form.propose_par_role %}
+    </div>
+    <label class="vc-accord">{{ form.accord }}<span>Ce logement existe et est vraiment à louer. Les photos sont réelles.</span></label>
+    {% for e in form.accord.errors %}<em style="color:#C0392B;font-size:.85rem">{{ e }}</em>{% endfor %}
+    <button class="vc-btn" type="submit">Envoyer pour vérification</button>
+  </form>
+  <script>
+    (function () {
+      var i = document.getElementById('{{ form.photos.id_for_label }}'), z = document.getElementById('apercu');
+      if (!i || !z) return;
+      i.addEventListener('change', function () {
+        z.innerHTML = '';
+        Array.prototype.slice.call(i.files, 0, {{ max_photos }}).forEach(function (f) {
+          var im = document.createElement('img'); im.alt = ''; im.src = URL.createObjectURL(f); z.appendChild(im);
+        });
+      });
+    })();
+  </script>
+  {% endif %}
+</div>
+{% endblock %}

@@ -577,7 +577,7 @@ def version(request):
                                + (f"app/Lantante-{data.get('version')}.apk" if data.get('version') else 'app/Lantante.apk')),
            'taille': int(data.get('taille') or 0), 'notes': str(data.get('notes') or ''),
            'sha256': str(data.get('sha256') or ''),
-           'obligatoire': bool(data.get('obligatoire'))}
+           'obligatoire': bool(data.get('obligatoire')), 'build_min': int(data.get('build_min') or 0)}
     resp = Response(out)
     resp['Cache-Control'] = 'no-cache'
     return resp

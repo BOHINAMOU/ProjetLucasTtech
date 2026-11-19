@@ -12,6 +12,14 @@ EQUIPEMENTS = [
     ('balcon', 'Balcon'), ('tv', 'Télévision'), ('eau_chaude', 'Eau chaude'), ('groupe', 'Groupe électrogène'),
 ]
 CODES = dict(EQUIPEMENTS)
+STATUTS = [('publie', 'Publiée'), ('attente', 'En attente'), ('refuse', 'Refusée')]
+ROLES = [('proprietaire', 'Propriétaire'), ('demarcheur', 'Démarcheur / agent')]
+
+
+class LogementQuerySet(models.QuerySet):
+    def visibles(self):
+        """Annonces visibles par le public : validées et pas encore louées."""
+        return self.filter(statut='publie', loue=False)
 
 
 class Logement(models.Model):
@@ -34,6 +42,10 @@ class Logement(models.Model):
     description = models.TextField("Description", blank=True)
     disponible_le = models.DateField("Disponible à partir du", null=True, blank=True)
     loue = models.BooleanField("Loué (masqué)", default=False, db_index=True)
+    statut = models.CharField("Statut", max_length=8, choices=STATUTS, default='publie', db_index=True,
+                              help_text="« En attente » et « Refusée » : jamais visible sur le site ni dans l'appli.")
+    propose_par_role = models.CharField("Proposé par", max_length=12, choices=ROLES, blank=True)
+    propose_le = models.DateTimeField("Proposé le", null=True, blank=True, editable=False)
     alias = models.CharField("Mots-clés", max_length=200, blank=True,
                              help_text="Autres noms du quartier, sigles… séparés par des virgules (recherche).")
     proprietaire_nom = models.CharField("Propriétaire (privé)", max_length=120, blank=True)
@@ -44,6 +56,8 @@ class Logement(models.Model):
     vues = models.PositiveIntegerField("Vues", default=0, editable=False)
     contacts = models.PositiveIntegerField("Contacts (WhatsApp + appel)", default=0, editable=False)
     created_at = models.DateTimeField("Ajouté le", auto_now_add=True)
+
+    objects = LogementQuerySet.as_manager()
 
     class Meta:
         ordering = ['ordre', '-created_at']
@@ -78,3 +92,26 @@ class PhotoLogement(models.Model):
         ordering = ['ordre', 'pk']
         verbose_name = "Photo"
         verbose_name_plural = "Photos"
+
+
+class DemandeLogement(models.Model):
+    """« Je cherche un logement » : la demande arrive dans l'admin et dans « À traiter »."""
+    STATUTS = [('nouvelle', 'Nouvelle'), ('traitee', 'Traitée')]
+    nom = models.CharField("Nom", max_length=120)
+    telephone = models.CharField("WhatsApp", max_length=20, help_text="228XXXXXXXX")
+    type = models.CharField("Type", max_length=20, choices=TYPES)
+    lieu = models.CharField("Quartier ou ville", max_length=120)
+    budget = models.PositiveIntegerField("Budget par mois (CFA)")
+    date_souhaitee = models.DateField("Pour quand", null=True, blank=True)
+    message = models.TextField("Message", blank=True)
+    statut = models.CharField("Statut", max_length=10, choices=STATUTS, default='nouvelle', db_index=True)
+    note = models.TextField("Note interne", blank=True)
+    created_at = models.DateTimeField("Reçue le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Demande de logement"
+        verbose_name_plural = "Demandes de logement"
+
+    def __str__(self):
+        return f"{self.nom} · {self.get_type_display()} à {self.lieu}"

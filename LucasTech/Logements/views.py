@@ -15,7 +15,7 @@ def liste(request):
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = recherche(qs, q)
-    tous = Logement.objects.filter(loue=False)
+    tous = Logement.objects.visibles()
     return render(request, 'logements/liste.html', {
         'logements': qs[:200], 'q': q, 'g': request.GET,
         'villes': sorted(set(tous.values_list('ville', flat=True)), key=str.lower),

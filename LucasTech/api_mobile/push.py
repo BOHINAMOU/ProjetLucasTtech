@@ -118,3 +118,30 @@ def apres_creation(notification):
         threading.Thread(target=tache, daemon=True).start()
 
     transaction.on_commit(lancer)
+
+
+SUJET_MAJ = 'maj-site'
+
+
+def envoyer_sujet(sujet, titre, message, data=None):
+    """Envoie une notification à tous les téléphones abonnés au sujet (ex. « maj-site »). Retourne True si accepté."""
+    cle = _cle()
+    if not cle:
+        return False
+    try:
+        token = _access_token(cle)
+    except Exception:
+        logger.exception("Jeton Firebase impossible")
+        return False
+    url = f"https://fcm.googleapis.com/v1/projects/{cle['project_id']}/messages:send"
+    msg = {'message': {'topic': sujet, 'notification': {'title': titre, 'body': message[:240]},
+                       'data': {k: str(v) for k, v in (data or {}).items()},
+                       'android': {'priority': 'high', 'notification': {'sound': 'default'}}}}
+    try:
+        r = requests.post(url, json=msg, headers={'Authorization': f'Bearer {token}'}, timeout=15)
+    except requests.RequestException:
+        logger.warning("FCM injoignable")
+        return False
+    if r.status_code != 200:
+        logger.warning("FCM sujet %s : %s %s", sujet, r.status_code, r.text[:200])
+    return r.status_code == 200
