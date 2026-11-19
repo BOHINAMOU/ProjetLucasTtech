@@ -1026,7 +1026,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* Menu « Offres » : tous les services, sur deux colonnes */
-.nav-dd__menu--2col { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); min-width: 380px; }
+.nav-dd__menu--2col { display: grid; grid-template-columns: repeat(2, max-content); gap: 2px 6px; width: max-content; max-width: calc(100vw - 32px); min-width: 0; padding: .5rem; border-radius: 0 0 12px 12px; box-sizing: border-box; }
+.nav-dd__menu--2col > li { min-width: 0; }
+.navbar__links .nav-dd__menu--2col a { padding: .5rem .75rem; font-size: .93rem; line-height: 1.25; border-radius: 8px; white-space: nowrap; gap: .6rem; min-width: 190px; box-sizing: border-box; }
 /* « Autres services » en bas des pages de service */
 .autres-services { padding: 8px 16px 28px; }
 .autres-services__in { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
