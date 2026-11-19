@@ -102,7 +102,8 @@ class GroupePlatInline(admin.StackedInline):
     form = GroupeForm
     fk_name = 'plat'
     extra = 1
-    fields = [('nom', 'choix'), ('obligatoire', 'avec_quantite'), 'options_texte', 'ordre']
+    fields = [('nom', 'choix'), ('obligatoire', 'avec_quantite'), 'options_texte', 'options_carte', 'ordre']
+    readonly_fields = ['options_carte']
     verbose_name = "Groupe d'options (ex. Accompagnements)"
     verbose_name_plural = "Options du plat (accompagnements, boissons, fruits…)"
 
@@ -114,7 +115,8 @@ class PlatAdmin(admin.ModelAdmin):
     list_editable = ['disponible', 'ordre']
     list_filter = ['restaurant', 'disponible']
     search_fields = ['nom', 'restaurant__nom']
-    fields = ['restaurant', 'categorie', 'nom', 'prix', 'image', 'description', 'disponible', 'ordre']
+    fields = ['restaurant', 'categorie', 'nom', 'prix', 'prix_carte', 'image', 'description', 'disponible', 'ordre']
+    readonly_fields = ['prix_carte']
     inlines = [PhotoPlatInline, GroupePlatInline]
 
     @admin.display(description="")

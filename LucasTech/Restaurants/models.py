@@ -88,6 +88,7 @@ class Plat(models.Model):
     nom = models.CharField("Nom du plat", max_length=120)
     description = models.TextField("Description", blank=True)
     prix = models.PositiveIntegerField("Prix (CFA)")
+    prix_carte = models.PositiveIntegerField("Ancien prix de la carte (interne)", null=True, blank=True)
     image = models.ImageField("Photo", upload_to='restaurants/plats/', blank=True)
     disponible = models.BooleanField("Disponible", default=True, db_index=True)
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
@@ -145,6 +146,7 @@ class GroupeOptions(models.Model):
     obligatoire = models.BooleanField("Obligatoire", default=False)
     avec_quantite = models.BooleanField("Quantité par option", default=False)
     options_texte = models.TextField("Options et prix", help_text="Une option par ligne : « Alloco | 500 ». Prix 0 possible.")
+    options_carte = models.TextField("Anciens prix de la carte (interne)", blank=True)
     ordre = models.PositiveSmallIntegerField("Ordre", default=0)
 
     class Meta:
