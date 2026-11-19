@@ -29,3 +29,17 @@ def detail(request, slug):
 def clic(request, slug):
     Restaurant.objects.filter(slug=slug).update(clics_commander=F('clics_commander') + 1)
     return JsonResponse({'ok': True})
+
+
+def credits_photos(request):
+    """Auteurs et licences des photos libres utilisées (obligatoire pour les licences CC BY / BY-SA)."""
+    import json
+    import os
+
+    from django.conf import settings
+    try:
+        with open(os.path.join(settings.MEDIA_ROOT, 'restaurants', 'photos-libres', 'credits.json'), encoding='utf-8') as f:
+            credits = sorted(json.load(f).values(), key=lambda c: c.get('fichier', ''))
+    except (OSError, ValueError):
+        credits = []
+    return render(request, 'restaurants/credits.html', {'credits': credits})

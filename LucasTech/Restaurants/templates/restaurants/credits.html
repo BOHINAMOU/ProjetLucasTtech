@@ -1,0 +1,11 @@
+{% extends 'core/base.html' %}
+{% block title %}Crédits photos — Restaurants — Lantante Technologie{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:820px;padding:24px 16px">
+  <h1 style="font-size:1.4rem;font-weight:800">Crédits photos</h1>
+  <p style="color:#6e6e73">Photos d'illustration des plats, sous licence libre (Wikimedia Commons).</p>
+  <ul style="padding-left:18px;line-height:1.7">
+    {% for c in credits %}<li><a href="{{ c.page }}" target="_blank" rel="noopener">{{ c.fichier }}</a> — {{ c.auteur|default:"auteur inconnu" }} — {{ c.licence }}</li>{% endfor %}
+  </ul>
+</div>
+{% endblock %}
