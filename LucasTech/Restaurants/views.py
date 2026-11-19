@@ -21,7 +21,7 @@ def liste(request):
     q = (request.GET.get('q') or '').strip()
     if q:
         from api_mobile.recherche import filtrer
-        qs = filtrer(qs, q, 'nom', 'quartier', 'ville', 'plats__nom').distinct()
+        qs = filtrer(qs, q, 'nom', 'quartier', 'ville', 'adresse', 'plats__nom').distinct()
     return render(request, 'restaurants/liste.html', {'restaurants': qs[:200], 'q': q, 'inscription': _wa_inscription()})
 
 

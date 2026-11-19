@@ -24,10 +24,8 @@
 </style>{% endblock %}
 {% block content %}
 <div class="rp" style="max-width:1100px">
-  <div class="rp-banniere"><div><h1>Restaurants</h1><p>Menus, plats et commande sur WhatsApp.</p></div></div>
-  {% if restaurants or q %}
-  <form method="get" class="rs-recherche"><input name="q" value="{{ q }}" placeholder="Restaurant, plat, quartier…" aria-label="Rechercher"><button>Chercher</button></form>
-  {% endif %}
+  <div class="rp-banniere"><div><h1>Restaurants</h1></div></div>
+  <form method="get" class="rs-recherche"><input name="q" value="{{ q }}" placeholder="Restaurant, plat, ville, quartier…" aria-label="Rechercher"><button>Chercher</button></form>
   {% if restaurants %}
   <div class="rs-grille">
     {% for r in restaurants %}

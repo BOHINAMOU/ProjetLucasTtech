@@ -70,7 +70,9 @@ def liste(request):
     if q:
         from api_mobile.recherche import filtrer
         qs = filtrer(qs, q, 'nom', 'quartier', 'ville', 'plats__nom')
-    return Response({'resultats': [item(request, r) for r in qs.distinct()[:200]]})
+    from api_mobile.catalog import _wa_valide, _whatsapp_lantante
+    return Response({'resultats': [item(request, r) for r in qs.distinct()[:200]],
+                     'whatsapp_lantante': _wa_valide(_whatsapp_lantante())})
 
 
 @api_view(['GET'])
