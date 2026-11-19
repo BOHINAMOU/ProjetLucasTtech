@@ -19,6 +19,7 @@ class ListePubliqueTests(TestCase):
         self.assertContains(r, 'Mathématiques — Terminale C/D')
         self.assertNotContains(r, 'Caché')
         self.assertContains(r, 'wa.me/22892967787')
-        self.assertContains(r, 'On vous propose un répétiteur')
+        self.assertContains(r, 'id="rl-q"')
+        self.assertNotContains(r, 'On vous propose un répétiteur')
         self.assertContains(r, 'Devenir répétiteur de maison')
         self.assertNotContains(self.client.get('/repetiteurs/?matiere=SVT'), 'Terminale C/D')

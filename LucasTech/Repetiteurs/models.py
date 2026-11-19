@@ -74,6 +74,11 @@ class Repetiteur(models.Model):
                 raise ValidationError({'whatsapp': e.messages})
 
     @property
+    def liste_niveaux(self):
+        import re
+        return [n.strip() for n in re.split(r'[,;/]', self.niveaux or '') if n.strip()][:4]
+
+    @property
     def liste_matieres(self):
         return [m.strip() for m in self.matieres.split(',') if m.strip()]
 

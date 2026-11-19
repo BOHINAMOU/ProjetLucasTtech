@@ -8,6 +8,11 @@
 .rl-etapes div{background:#fff;border:1px solid #e3e8e5;border-radius:18px;padding:14px;display:flex;gap:12px;align-items:center}
 .rl-etapes b{flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:#E3F5EC;color:var(--v);display:grid;place-items:center;font-size:1.05rem}
 .rl-etapes span{font-weight:700;color:var(--t);line-height:1.3}
+.rl-cherche{position:relative;margin:0 0 12px}
+.rl-cherche i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#6e6e73}
+.rl-cherche input{width:100%;min-height:54px;padding:0 16px 0 44px;border:2px solid #dfe6e2;border-radius:16px;font-size:1.05rem;background:#fff}
+.rl-cherche input:focus{outline:none;border-color:var(--v)}
+.rl-rien{color:#6e6e73;text-align:center;padding:20px 0}
 .rl-puces{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none}
 .rl-puces a{flex:0 0 auto;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #dfe6e2;color:var(--t)!important;font-weight:600;text-decoration:none!important;font-size:.9rem}
 .rl-puces a.on{background:var(--v);border-color:var(--v);color:#fff!important}
@@ -29,13 +34,9 @@
 </style>{% endblock %}
 {% block content %}
 <div class="rp rl">
-  <div class="rp-banniere"><div><h1>Répétiteurs à domicile</h1><p>Primaire, collège, lycée, BAC et concours · Lomé et environs</p></div></div>
+  <div class="rp-banniere"><div><h1>Répétiteurs à domicile</h1></div></div>
 
-  <div class="rl-etapes">
-    <div><b>1</b><span>Écrivez-nous sur WhatsApp</span></div>
-    <div><b>2</b><span>On vous propose un répétiteur</span></div>
-    <div><b>3</b><span>Les cours commencent chez vous</span></div>
-  </div>
+  <div class="rl-cherche"><i class="fas fa-magnifying-glass"></i><input id="rl-q" type="search" placeholder="Matière, niveau, ville, quartier…" aria-label="Rechercher" autocomplete="off"></div>
 
   {% if matieres %}
   <nav class="rl-puces" aria-label="Matières">
@@ -46,27 +47,50 @@
 
   <div class="rl-grille">
     {% for f in fiches %}{% with r=f.r %}
-    <article class="rl-carte">
+    <article class="rl-carte" data-t="{{ r.nom }} {{ r.matieres }} {{ r.niveaux }} {{ r.ville }} {{ r.quartier }}">
       <div class="im">{% if r.photo %}<img src="{{ r.photo.url }}" alt="" loading="lazy">{% endif %}</div>
       <div class="c">
         <h2>{{ r.nom }}</h2>
-        <div class="rl-tags">{% for m in r.liste_matieres|slice:":4" %}<span>{{ m }}</span>{% endfor %}</div>
-        <div class="rl-meta">
-          {% if r.niveaux %}<div><i class="fas fa-graduation-cap"></i> {{ r.niveaux }}</div>{% endif %}
-          <div><i class="fas fa-house"></i> {% if r.est_service_lantante %}À domicile ou en ligne · {{ r.ville }}{% else %}{{ r.quartier|default:r.ville }}{% endif %}</div>
-          {% if r.est_service_lantante %}<div><i class="fas fa-shield-halved"></i> Lantante Répétiteurs</div>{% endif %}
-        </div>
-        {% if f.wa %}<a class="rl-wa" href="{{ f.wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Écrire sur WhatsApp</a>{% endif %}
+        {% if r.niveaux %}<div class="rl-tags">{% for n in r.liste_niveaux %}<span>{{ n }}</span>{% endfor %}</div>{% endif %}
+        {% if f.wa %}<a class="rl-wa" href="{{ f.wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
       </div>
     </article>
     {% endwith %}{% empty %}
-    <p style="color:#6e6e73">Aucun cours pour cette matière pour l'instant.</p>
+    <p style="color:#6e6e73">Aucun cours pour l'instant.</p>
     {% endfor %}
   </div>
 
+  <p class="rl-rien" id="rl-rien" hidden>Aucun résultat. Écrivez-nous sur WhatsApp.</p>
+
   <div class="rl-devenir">
-    <div><b>Vous êtes enseignant ?</b><br><span style="opacity:.9">Donnez des cours à domicile avec Lantante.</span></div>
+    <b>Vous êtes enseignant ?</b>
     <a href="{% url 'repetiteurs:devenir' %}"><i class="fas fa-chalkboard-user"></i> Devenir répétiteur de maison</a>
   </div>
 </div>
+<script>
+(function () {
+  var q = document.getElementById('rl-q'), cartes = [].slice.call(document.querySelectorAll('.rl-carte')), rien = document.getElementById('rl-rien');
+  if (!q) return;
+  function n(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function d(a, b) { // distance d'édition (fautes de frappe)
+    var m = [], i, j; for (i = 0; i <= a.length; i++) m[i] = [i];
+    for (j = 0; j <= b.length; j++) m[0][j] = j;
+    for (i = 1; i <= a.length; i++) for (j = 1; j <= b.length; j++)
+      m[i][j] = Math.min(m[i-1][j] + 1, m[i][j-1] + 1, m[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    return m[a.length][b.length];
+  }
+  function ok(mot, mots) {
+    return mots.some(function (x) {
+      if (x.indexOf(mot) === 0 || (mot.length > 2 && x.indexOf(mot) >= 0)) return true;
+      return mot.length >= 4 && d(mot, x.slice(0, mot.length)) <= 1;
+    });
+  }
+  cartes.forEach(function (c) { c._m = n(c.dataset.t).split(' '); });
+  q.addEventListener('input', function () {
+    var mots = n(q.value).split(' ').filter(Boolean), vus = 0;
+    cartes.forEach(function (c) { var v = mots.every(function (m) { return ok(m, c._m); }); c.hidden = !v; if (v) vus++; });
+    rien.hidden = vus > 0;
+  });
+})();
+</script>
 {% endblock %}
