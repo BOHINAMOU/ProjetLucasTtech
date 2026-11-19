@@ -3,7 +3,8 @@
 {% block meta_description %}{{ r.nom }}{% if r.lieu %}, {{ r.lieu }}{% endif %} : menu, plats et commande sur WhatsApp.{% endblock %}
 {% block extra_head %}{% include 'repetiteurs/_style.html' %}
 <style>
-.rd{--v:#0B7A4B;--vf:#0B5531;--t:#0b2e1d;--m:#6e6e73;max-width:1100px}
+.rd{max-width:1100px}
+.rd,.rd-voile,.rd-barre{--v:#0B7A4B;--vf:#0B5531;--t:#0b2e1d;--m:#6e6e73}
 .rd-car{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:16/8;background:linear-gradient(135deg,#b4461b,#f29a3b);margin-bottom:18px}
 .rd-car .pistes{display:flex;height:100%;transition:transform .6s ease}
 .rd-car .pistes figure{flex:0 0 100%;margin:0;position:relative}
@@ -54,7 +55,15 @@
 .rd-qte button{width:40px;height:40px;border:0;background:#F6FAF7;font-size:1.2rem;font-weight:800;color:var(--v);cursor:pointer}
 .rd-qte span{min-width:34px;text-align:center;font-weight:800}
 .rd-qte.p button{width:30px;height:30px;font-size:1rem}.rd-qte.p span{min-width:24px}
-.rd-bas{display:flex;gap:10px;align-items:center;padding:14px 18px 0}
+.rd-feuille.plat{display:flex;flex-direction:column;overflow:hidden;padding:0;max-height:92vh;max-height:92dvh;position:relative}
+.rd-feuille.plat .defile{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:12px}
+.rd-haut{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #e3e8e5;background:#fff}
+.rd-haut button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 12px;border:0;border-radius:12px;background:#F6FAF7;color:#0b2e1d;font-weight:800;font-size:.95rem;cursor:pointer}
+.rd-haut .x{width:40px;padding:0;justify-content:center;font-size:1.1rem}
+.rd-bas{flex:0 0 auto;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e3e8e5;background:#fff;box-shadow:0 -6px 18px rgba(8,35,26,.06)}
+.rd-bas .tot{text-align:right;font-weight:800;font-size:1.1rem;color:#0b2e1d}
+.rd-bas .btns{grid-column:1/-1;display:flex;gap:8px}
+.rd-bas .aj{flex:0 0 auto;min-height:52px;padding:0 14px;border:2px solid var(--v);border-radius:14px;background:#fff;color:var(--v);font-weight:800;font-size:.95rem;cursor:pointer}
 .rd-bas .go{flex:1;min-height:52px;border:0;border-radius:14px;background:var(--v);color:#fff;font-weight:800;font-size:1rem;cursor:pointer}
 .rd-bas .go:disabled{opacity:.5}
 .rd-err{color:#C0392B;font-size:.88rem;padding:6px 18px 0}
@@ -94,7 +103,7 @@
   <div id="rd-menu"></div>
 </div>
 
-<div class="rd-voile" id="rd-voile-plat"><div class="rd-feuille" id="rd-plat"></div></div>
+<div class="rd-voile" id="rd-voile-plat"><div class="rd-feuille plat" id="rd-plat" role="dialog" aria-modal="true"></div></div>
 <div class="rd-voile" id="rd-voile-panier"><div class="rd-feuille"><div class="in" id="rd-panier"></div></div></div>
 <div class="rd-barre" id="rd-barre"><button type="button" id="rd-barre-btn"><span id="rd-barre-n"></span><span id="rd-barre-t"></span></button></div>
 
@@ -139,7 +148,15 @@
 
   // Fenêtre d'un plat : quantité, options, total en direct
   var vPlat = document.getElementById('rd-voile-plat'), fPlat = document.getElementById('rd-plat');
-  vPlat.addEventListener('click', function (e) { if (e.target === vPlat) vPlat.classList.remove('on'); });
+  // Fermer : bouton Retour, croix, clic dehors, Échap, retour du téléphone (sans quitter la page)
+  function fermerPlat(depuisHist) {
+    if (!vPlat.classList.contains('on')) return;
+    vPlat.classList.remove('on');
+    if (!depuisHist && history.state && history.state.rdPlat) history.back();
+  }
+  vPlat.addEventListener('click', function (e) { if (e.target === vPlat) fermerPlat(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { fermerPlat(); if (typeof vPan !== 'undefined') vPan.classList.remove('on'); } });
+  window.addEventListener('popstate', function () { fermerPlat(true); });
   function ouvrirPlat(p) {
     var qte = 1, choix = {};
     function total() {
@@ -148,7 +165,9 @@
       return s * qte;
     }
     function rendu() {
-      var h = (p.photos.length ? '<div class="ph">' + p.photos.map(function (u) { return '<img src="' + u + '" alt="">'; }).join('') + '</div>' : '') +
+      var ancien = fPlat.querySelector('.defile'), haut = ancien ? ancien.scrollTop : 0;
+      var h = '<div class="rd-haut"><button type="button" class="ret" id="rd-ret">← Retour</button><button type="button" class="x" id="rd-x" aria-label="Fermer">✕</button></div>' +
+        '<div class="defile">' + (p.photos.length ? '<div class="ph">' + p.photos.map(function (u) { return '<img src="' + u + '" alt="">'; }).join('') + '</div>' : '') +
         '<div class="in"><h3>' + esc(p.nom) + '</h3><div class="px">' + cfa(p.prix) + '</div>' +
         (p.description ? '<p class="d">' + esc(p.description) + '</p>' : '');
       p.groupes.forEach(function (g) {
@@ -161,9 +180,13 @@
         });
         h += '</div>';
       });
-      h += '</div><div class="rd-err" id="rd-err"></div><div class="rd-bas"><span class="rd-qte" id="rd-q"><button type="button" data-d="-1">−</button><span>' + qte + '</span><button type="button" data-d="1">+</button></span>' +
-        '<button type="button" class="go" id="rd-ajout">Ajouter · ' + cfa(total()) + '</button></div>';
+      h += '</div><div class="rd-err" id="rd-err"></div></div><div class="rd-bas"><span class="rd-qte" id="rd-q"><button type="button" data-d="-1">−</button><span>' + qte + '</span><button type="button" data-d="1">+</button></span>' +
+        '<span class="tot">' + cfa(total()) + '</span><div class="btns"><button type="button" class="aj" id="rd-ajout">Ajouter au panier</button>' +
+        '<button type="button" class="go" id="rd-cmd"><i class="fab fa-whatsapp"></i> Commander</button></div></div>';
       fPlat.innerHTML = h;
+      fPlat.querySelector('.defile').scrollTop = haut;
+      document.getElementById('rd-ret').addEventListener('click', function () { fermerPlat(); });
+      document.getElementById('rd-x').addEventListener('click', function () { fermerPlat(); });
       fPlat.querySelectorAll('input[data-g]').forEach(function (inp) {
         inp.addEventListener('change', function () {
           var g = +inp.dataset.g, o = +inp.dataset.o, gr = p.groupes.filter(function (x) { return x.id === g; })[0];
@@ -182,16 +205,22 @@
       fPlat.querySelectorAll('#rd-q button').forEach(function (b) {
         b.addEventListener('click', function () { qte = Math.max(1, qte + (+b.dataset.d)); rendu(); });
       });
-      document.getElementById('rd-ajout').addEventListener('click', function () {
+      function ajouter() {
         var manque = p.groupes.filter(function (g) { return g.obligatoire && !(choix[g.id] || []).length; });
-        if (manque.length) { document.getElementById('rd-err').textContent = 'Choisissez : ' + manque.map(function (g) { return g.nom; }).join(', '); return; }
+        if (manque.length) {
+          var e = document.getElementById('rd-err'); e.textContent = 'Choisissez : ' + manque.map(function (g) { return g.nom; }).join(', ');
+          e.scrollIntoView({block: 'nearest'}); return false;
+        }
         var opts = [];
         p.groupes.forEach(function (g) { (choix[g.id] || []).forEach(function (x) { opts.push({nom: g.options[x.i].nom, prix: g.options[x.i].prix, q: x.q}); }); });
         panier.push({nom: p.nom, prix: p.prix, qte: qte, options: opts, total: total()});
-        sauver(); vPlat.classList.remove('on');
-      });
+        sauver(); fermerPlat(); return true;
+      }
+      document.getElementById('rd-ajout').addEventListener('click', ajouter);
+      document.getElementById('rd-cmd').addEventListener('click', function () { if (ajouter()) envoyer('', ''); });
     }
-    rendu(); vPlat.classList.add('on'); fPlat.scrollTop = 0;
+    fPlat.innerHTML = ''; rendu(); vPlat.classList.add('on');
+    try { history.pushState({rdPlat: 1}, ''); } catch (e) {}
   }
 
   // Panier du restaurant
@@ -222,16 +251,18 @@
       b.addEventListener('click', function () { panier.splice(+b.dataset.k, 1); sauver(); if (panier.length) ouvrirPanier(); else vPan.classList.remove('on'); });
     });
     document.getElementById('rd-commander').addEventListener('click', function () {
+      envoyer(document.getElementById('rd-nom').value.trim(), document.getElementById('rd-adr').value.trim());
+    });
+    vPan.classList.add('on');
+  }
+  function envoyer(nom, adr) {
       var l = ['Bonjour ' + NOM + ', je veux :'];
       panier.forEach(function (x) { l.push('• ' + x.qte + ' × ' + x.nom + (x.options.length ? ' (+ ' + texteOptions(x) + ')' : '') + ' : ' + cfa(x.total)); });
       l.push('Montant : ' + cfa(somme()));
-      var nom = document.getElementById('rd-nom').value.trim(), adr = document.getElementById('rd-adr').value.trim();
       if (nom) l.push('Nom : ' + nom);
       if (adr) l.push('Livraison : ' + adr);
       try { navigator.sendBeacon('{% url "restaurants:clic" r.slug %}', new Blob([], {type: 'text/plain'})); } catch (e) {}
       window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(l.join('\n')), '_blank');
-    });
-    vPan.classList.add('on');
   }
   document.getElementById('rd-barre-btn').addEventListener('click', ouvrirPanier);
   barre();
