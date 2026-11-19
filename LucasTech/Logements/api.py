@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from api_mobile.catalog import grande, public_cache, text, vignette
 from api_mobile.utils import error
 
-from .models import CODES, TYPES, Logement
+from .models import CODES, TYPES, FicheLogement, Logement
 
 
 def notre_whatsapp():
@@ -77,7 +77,27 @@ def liste(request):
     villes = sorted(set(tous.values_list('ville', flat=True)), key=str.lower)
     types_presents = set(tous.values_list('type', flat=True))
     return Response({'resultats': [item(request, l) for l in qs[:200]], 'villes': villes,
-                     'types': [{'code': c, 'nom': n} for c, n in TYPES if c in types_presents]})
+                     'types': [{'code': c, 'nom': n} for c, n in TYPES if c in types_presents],
+                     'fiches': [fiche_item(request, f) for f in fiches(request.GET)]})
+
+
+def fiches(g):
+    qs = FicheLogement.objects.filter(visible=True)
+    if g.get('fiche_type'):
+        qs = qs.filter(type_libelle=g['fiche_type'])
+    if g.get('quartier'):
+        qs = qs.filter(quartier=g['quartier'])
+    return qs
+
+
+def lien_fiche(f):
+    wa = notre_whatsapp()
+    return f"https://wa.me/{wa}?text={quote(f.message)}" if wa else ''
+
+
+def fiche_item(request, f):
+    return {'id': f.pk, 'type': f.type_libelle, 'quartier': f.quartier, 'ville': f.ville, 'prix_min': f.prix_min,
+            'photo': vignette(request, f.image) if f.image else None, 'message': f.message, 'whatsapp': lien_fiche(f)}
 
 
 @api_view(['GET'])

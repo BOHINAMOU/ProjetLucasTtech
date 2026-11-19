@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'core/base.html' %}{% load montants %}
 {% block title %}Location de chambres ou appartements — Lantante Technologie{% endblock %}
 {% block meta_description %}Chambres, studios, appartements et maisons à louer au Togo.{% endblock %}
 {% block extra_head %}{% include 'repetiteurs/_style.html' %}
@@ -28,10 +28,16 @@
 .lg-btn.s{background:#fff;color:#0B7A4B!important;border:2px solid #0B7A4B}
 .lg-haut{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
 .lg-haut .lg-btn{min-height:46px;flex:1 1 200px;max-width:none;font-size:.95rem}
+.lg-fiche{display:flex;flex-direction:column}
+.lg-fiche .lg-corps{display:flex;flex-direction:column;flex:1}
+.lg-contact{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:12px;background:#0B7A4B;color:#fff!important;font-weight:800;text-decoration:none!important}
+.lg-fiche .lg-prix{margin:6px 0 12px}
+.lg-fiche .lg-type{align-self:flex-start}
 </style>{% endblock %}
 {% block content %}
 <div class="rp" style="max-width:1100px">
   <div class="rp-banniere"><div><h1>Location de chambres ou appartements</h1></div></div>
+  {% if annonces %}
   <form method="get">
     <div class="lg-recherche"><input name="q" value="{{ q }}" placeholder="Ville, quartier, type…" aria-label="Rechercher"><button>Chercher</button></div>
     <div class="lg-filtres">
@@ -55,11 +61,35 @@
     </a>
     {% endfor %}
   </div>
-  {% else %}
-  <div class="lg-vide">
-    <div class="ic"><i class="fas fa-house-chimney"></i></div>
-    <h2>{% if q or g.ville or g.type or g.meuble %}Aucun logement trouvé{% else %}Bientôt disponible{% endif %}</h2>
+  {% elif q or g.ville or g.type or g.meuble %}
+  <div class="lg-vide"><div class="ic"><i class="fas fa-house-chimney"></i></div><h2>Aucun logement trouvé</h2></div>
+  {% endif %}
+  {% endif %}
+  {% if fiches or g.fiche_type or g.quartier %}
+  <form method="get" class="lg-filtres" {% if annonces %}style="margin-top:24px"{% endif %}>
+    <select name="fiche_type" onchange="this.form.submit()" aria-label="Type"><option value="">Tous les types</option>{% for t in fiche_types %}<option value="{{ t }}" {% if g.fiche_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+    <select name="quartier" onchange="this.form.submit()" aria-label="Quartier"><option value="">Tous les quartiers</option>{% for qr in quartiers %}<option value="{{ qr }}" {% if g.quartier == qr %}selected{% endif %}>{{ qr }}</option>{% endfor %}</select>
+  </form>
+  {% if fiches %}
+  <div class="lg-grille">
+    {% for f in fiches %}
+    <div class="lg-carte lg-fiche">
+      <img src="{{ f.image.url }}" alt="{{ f.type_libelle }}" loading="lazy">
+      <div class="lg-corps">
+        <span class="lg-type">{{ f.type_libelle }}</span>
+        <h2>{{ f.quartier }}, {{ f.ville }}</h2>
+        <div class="lg-prix">À partir de {{ f.prix_min|cfa }} / mois</div>
+        {% if f.lien %}<a class="lg-contact" href="{{ f.lien }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Contacter</a>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
   </div>
+  <p style="text-align:center;margin-top:22px"><a href="{% url 'logements:credits' %}" style="color:#9aa29d;font-size:.8rem">Crédits photos</a></p>
+  {% else %}
+  <div class="lg-vide"><div class="ic"><i class="fas fa-house-chimney"></i></div><h2>Aucun résultat</h2></div>
+  {% endif %}
+  {% elif not annonces %}
+  <div class="lg-vide"><div class="ic"><i class="fas fa-house-chimney"></i></div><h2>Bientôt disponible</h2></div>
   {% endif %}
 </div>
 {% endblock %}

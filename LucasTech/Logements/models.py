@@ -115,3 +115,29 @@ class DemandeLogement(models.Model):
 
     def __str__(self):
         return f"{self.nom} · {self.get_type_display()} à {self.lieu}"
+
+
+class FicheLogement(models.Model):
+    """Fiche par type de logement et quartier : « à partir de » un loyer relevé dans les annonces publiques ;
+    le client écrit sur WhatsApp et Lantante cherche pour lui."""
+    type_libelle = models.CharField("Type", max_length=60, help_text="Ex. Chambre salon, Studio meublé, Villa")
+    quartier = models.CharField("Quartier", max_length=80)
+    ville = models.CharField("Ville", max_length=60, default='Lomé')
+    prix_min = models.PositiveIntegerField("À partir de (CFA / mois)")
+    image = models.ImageField("Photo", upload_to='logements/fiches/')
+    visible = models.BooleanField("Visible", default=True, db_index=True)
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+    sources = models.TextField("Sources des prix (interne)", blank=True)
+    credit_photo = models.TextField("Crédit de la photo (interne)", blank=True)
+
+    class Meta:
+        ordering = ['ordre', 'prix_min']
+        verbose_name = "Fiche de recherche"
+        verbose_name_plural = "Fiches de recherche"
+
+    def __str__(self):
+        return f"{self.type_libelle} à {self.quartier}"
+
+    @property
+    def message(self):
+        return f"Bonjour, je cherche : {self.type_libelle} à {self.quartier}"

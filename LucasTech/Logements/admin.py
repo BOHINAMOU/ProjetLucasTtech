@@ -126,3 +126,20 @@ class DemandeLogementAdmin(admin.ModelAdmin):
     @admin.action(description="Marquer comme traitée")
     def marquer_traitee(self, request, qs):
         qs.update(statut='traitee')
+
+
+from .models import FicheLogement  # noqa: E402
+
+
+@admin.register(FicheLogement)
+class FicheLogementAdmin(admin.ModelAdmin):
+    list_display = ['apercu', 'type_libelle', 'quartier', 'prix_min', 'visible', 'ordre']
+    list_display_links = ['apercu', 'type_libelle']
+    list_editable = ['visible', 'ordre']
+    list_filter = ['visible', 'type_libelle']
+    search_fields = ['type_libelle', 'quartier']
+    fields = ['type_libelle', ('quartier', 'ville'), 'prix_min', 'image', ('visible', 'ordre'), 'sources', 'credit_photo']
+
+    @admin.display(description="Photo")
+    def apercu(self, f):
+        return format_html('<img src="{}" style="width:72px;height:48px;object-fit:cover;border-radius:6px">', f.image.url) if f.image else '—'
