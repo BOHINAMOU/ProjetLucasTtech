@@ -134,7 +134,8 @@ def envoyer_sujet(sujet, titre, message, data=None):
         logger.exception("Jeton Firebase impossible")
         return False
     url = f"https://fcm.googleapis.com/v1/projects/{cle['project_id']}/messages:send"
-    msg = {'message': {'topic': sujet, 'notification': {'title': titre, 'body': message[:240]},
+    notif = {'title': titre, **({'body': message[:240]} if message else {})}
+    msg = {'message': {'topic': sujet, 'notification': notif,
                        'data': {k: str(v) for k, v in (data or {}).items()},
                        'android': {'priority': 'high', 'notification': {'sound': 'default'}}}}
     try:
