@@ -23,3 +23,11 @@ class ListePubliqueTests(TestCase):
         self.assertNotContains(r, 'On vous propose un répétiteur')
         self.assertContains(r, 'Devenir répétiteur de maison')
         self.assertNotContains(self.client.get('/repetiteurs/?matiere=SVT'), 'Terminale C/D')
+
+    def test_fiche_details(self):
+        r = Repetiteur.objects.create(nom='Philosophie — Terminale', matieres='Philosophie', niveaux='Tle',
+                                      ville='Lomé et environs', est_service_lantante=True, description='Dissertation.')
+        self.assertContains(self.client.get('/repetiteurs/'), f'/repetiteurs/{r.pk}/')
+        p = self.client.get(f'/repetiteurs/{r.pk}/')
+        self.assertContains(p, 'Dissertation.')
+        self.assertContains(p, 'À domicile ou en ligne')

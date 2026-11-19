@@ -139,3 +139,14 @@ def liste(request):
     return render(request, 'repetiteurs/liste.html', {
         'fiches': fiches, 'matiere': matiere,
         'matieres': sorted({m for r in tous for m in r.liste_matieres}, key=str.lower)[:16]})
+
+
+def fiche(request, pk):
+    """Fiche d'un cours ou d'un répétiteur : image, matières, niveaux, programme, format, WhatsApp."""
+    from urllib.parse import quote
+
+    from api_mobile.repetiteurs import _actifs, _message, _whatsapp
+    r = get_object_or_404(_actifs(), pk=pk)
+    wa = _whatsapp(r)
+    return render(request, 'repetiteurs/fiche.html', {
+        'r': r, 'wa': f"https://wa.me/{wa}?text={quote(_message(r))}" if wa else ''})

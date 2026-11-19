@@ -26,7 +26,9 @@
 .rl-tags span{background:#E3F5EC;color:#0B5A38;border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:700}
 .rl-meta{color:var(--m);font-size:.88rem;margin-bottom:12px}
 .rl-meta i{color:var(--v);width:16px}
-.rl-wa{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;background:#1FA855;color:#fff!important;font-weight:800;text-decoration:none!important}
+.rl-btns{margin-top:auto;display:flex;gap:8px}
+.rl-det{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 14px;border-radius:12px;border:2px solid var(--v);color:var(--v)!important;font-weight:700;text-decoration:none!important;font-size:.92rem}
+.rl-wa{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;background:#1FA855;color:#fff!important;font-weight:800;text-decoration:none!important}
 .rl-devenir{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0b5531,#17a35f);color:#fff;border-radius:22px;padding:20px 22px;margin-top:22px}
 .rl-devenir b{font-size:1.15rem}
 .rl-devenir a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;background:#fff;color:#0b5531!important;font-weight:800;text-decoration:none!important}
@@ -52,7 +54,10 @@
       <div class="c">
         <h2>{{ r.nom }}</h2>
         {% if r.niveaux %}<div class="rl-tags">{% for n in r.liste_niveaux %}<span>{{ n }}</span>{% endfor %}</div>{% endif %}
-        {% if f.wa %}<a class="rl-wa" href="{{ f.wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+        <div class="rl-btns">
+          <a class="rl-det" href="{% url 'repetiteurs:fiche' r.pk %}">Détails</a>
+          {% if f.wa %}<a class="rl-wa" href="{{ f.wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+        </div>
       </div>
     </article>
     {% endwith %}{% empty %}

@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ r.nom }} — Répétiteurs — Lantante Technologie{% endblock %}
+{% block meta_description %}{{ r.nom }} : cours à domicile ou en ligne, {{ r.ville }}.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.rf{--v:#0B7A4B;--t:#0b2e1d;--m:#6e6e73;max-width:760px}
+.rf-im{border-radius:22px;overflow:hidden;aspect-ratio:16/9;background:linear-gradient(135deg,#0b6137,#17a35f);margin-bottom:16px}
+.rf-im img{width:100%;height:100%;object-fit:cover;display:block}
+.rf h1{font-size:clamp(1.4rem,4.5vw,1.9rem);font-weight:800;color:var(--t);margin:0 0 10px}
+.rf-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.rf-tags span{background:#E3F5EC;color:#0B5A38;border-radius:999px;padding:5px 12px;font-size:.85rem;font-weight:700}
+.rf-tags span.m{background:#0B7A4B;color:#fff}
+.rf-info{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.rf-info div{background:#F6FAF7;border-radius:14px;padding:12px 14px;font-size:.92rem}
+.rf-info b{display:block;color:var(--t);margin-bottom:2px}
+.rf-prog{background:#fff;border:1px solid #e3e8e5;border-radius:18px;padding:16px;line-height:1.6;color:#3e4842;white-space:pre-line;margin-bottom:18px}
+.rf-wa{display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:14px;background:#1FA855;color:#fff!important;font-weight:800;font-size:1.05rem;text-decoration:none!important}
+.rf-retour{display:inline-block;margin-top:14px;color:var(--v)!important;font-weight:700}
+</style>{% endblock %}
+{% block content %}
+<div class="rp rf">
+  <div class="rf-im">{% if r.photo %}<img src="{{ r.photo.url }}" alt="">{% endif %}</div>
+  <h1>{{ r.nom }}</h1>
+  <div class="rf-tags">
+    {% for m in r.liste_matieres %}<span class="m">{{ m }}</span>{% endfor %}
+    {% for n in r.liste_niveaux %}<span>{{ n }}</span>{% endfor %}
+  </div>
+  <div class="rf-info">
+    <div><b><i class="fas fa-house"></i> Format</b>{% if r.est_service_lantante %}À domicile ou en ligne{% else %}{{ r.quartier|default:"À domicile" }}{% endif %}</div>
+    <div><b><i class="fas fa-location-dot"></i> Zone</b>{{ r.ville }}</div>
+    {% if r.experience %}<div><b><i class="fas fa-award"></i> Expérience</b>{{ r.experience }}</div>{% endif %}
+  </div>
+  {% if r.description %}<div class="rf-prog">{{ r.description }}</div>{% endif %}
+  {% if wa %}<a class="rf-wa" href="{{ wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Écrire sur WhatsApp</a>{% endif %}
+  <a class="rf-retour" href="{% url 'repetiteurs:liste' %}">← Tous les répétiteurs</a>
+</div>
+{% endblock %}

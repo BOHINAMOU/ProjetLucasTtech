@@ -6,6 +6,7 @@ app_name = 'repetiteurs'
 
 urlpatterns = [
     path('', views.liste, name='liste'),
+    path('<int:pk>/', views.fiche, name='fiche'),
     path('devenir/', views.devenir, name='devenir'),
     path('ma-candidature/', views.ma_candidature, name='ma_candidature'),
     path('dossier/<str:jeton>/', views.suivi, name='suivi'),
