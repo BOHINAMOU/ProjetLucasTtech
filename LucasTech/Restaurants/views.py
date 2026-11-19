@@ -1,5 +1,3 @@
-from urllib.parse import quote
-
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -10,19 +8,13 @@ from .api import fiche, itineraire, visibles, whatsapp
 from .models import Restaurant
 
 
-def _wa_inscription():
-    from api_mobile.catalog import _wa_valide, _whatsapp_lantante
-    wa = _wa_valide(_whatsapp_lantante())
-    return f"https://wa.me/{wa}?text={quote('Bonjour, je veux inscrire mon restaurant sur Lantante.')}" if wa else ''
-
-
 def liste(request):
     qs = visibles()
     q = (request.GET.get('q') or '').strip()
     if q:
         from api_mobile.recherche import filtrer
         qs = filtrer(qs, q, 'nom', 'quartier', 'ville', 'adresse', 'plats__nom').distinct()
-    return render(request, 'restaurants/liste.html', {'restaurants': qs[:200], 'q': q, 'inscription': _wa_inscription()})
+    return render(request, 'restaurants/liste.html', {'restaurants': qs[:200], 'q': q})
 
 
 def detail(request, slug):
