@@ -14,7 +14,10 @@ class StaticViewSitemap(Sitemap):
     def items(self):
         return ['core:home', 'core:projects', 'core:team', 'core:partners', 'core:monetization',
                 'shop:shop', 'formations:formations', 'services:services',
-                'publications:publications', 'events:list', 'portfolio:home']
+                'publications:publications', 'events:list', 'portfolio:home',
+                'restaurants:liste', 'hotels:liste', 'logements:liste', 'repetiteurs:liste', 'ecoles:liste',
+                'offres:liste', 'boutiques', 'concours:index', 'core:application', 'core:privacy_policy',
+                'core:terms_of_service']
 
     def location(self, item):
         return reverse(item)
@@ -124,6 +127,69 @@ class PortfolioProjectSitemap(Sitemap):
         return reverse('portfolio:project_detail', args=[obj.slug])
 
 
+class _Liste(Sitemap):
+    """Fiches publiques d'une rubrique (même filtre que la page du site)."""
+    changefreq = 'weekly'
+    priority = 0.6
+
+    def location(self, obj):
+        return obj.get_absolute_url()
+
+
+class RestaurantSitemap(_Liste):
+    def items(self):
+        from Restaurants.api import visibles
+        return visibles()
+
+
+class HotelSitemap(_Liste):
+    def items(self):
+        from Hotels.models import Hotel
+        return Hotel.objects.filter(actif=True)
+
+
+class RepetiteurSitemap(_Liste):
+    def items(self):
+        from api_mobile.repetiteurs import _actifs
+        return _actifs()
+
+    def location(self, obj):
+        return reverse('repetiteurs:fiche', args=[obj.pk])
+
+
+class EcoleSitemap(_Liste):
+    def items(self):
+        from Ecoles.models import Ecole
+        return Ecole.objects.filter(publie=True)
+
+    def location(self, obj):
+        return reverse('ecoles:fiche', args=[obj.slug])
+
+
+class OffreSitemap(_Liste):
+    def items(self):
+        from Offres.api import actives
+        return actives()
+
+    def location(self, obj):
+        return reverse('offres:detail', args=[obj.pk])
+
+
+class EventSitemap(_Liste):
+    def items(self):
+        from Events.models import Event
+        return Event.objects.filter(is_published=True)
+
+
+class BoutiqueSitemap(_Liste):
+    def items(self):
+        from Marche.models import Vendeur
+        return [v for v in Vendeur.objects.filter(statut='valide').exclude(slug='').order_by('boutique') if v.actif]
+
+    def location(self, obj):
+        return reverse('minisite:accueil', args=[obj.slug])
+
+
 sitemaps = {
     'static': StaticViewSitemap,
     'products': ProductSitemap,
@@ -134,4 +200,11 @@ sitemaps = {
     'partners': PartnerSitemap,
     'team': TeamMemberSitemap,
     'portfolio_projects': PortfolioProjectSitemap,
+    'restaurants': RestaurantSitemap,
+    'hotels': HotelSitemap,
+    'repetiteurs': RepetiteurSitemap,
+    'ecoles': EcoleSitemap,
+    'emplois': OffreSitemap,
+    'evenements': EventSitemap,
+    'boutiques': BoutiqueSitemap,
 }
