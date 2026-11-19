@@ -1,0 +1,239 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ r.nom }} — Restaurants — Lantante Technologie{% endblock %}
+{% block meta_description %}{{ r.nom }}{% if r.lieu %}, {{ r.lieu }}{% endif %} : menu, plats et commande sur WhatsApp.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.rd{--v:#0B7A4B;--vf:#0B5531;--t:#0b2e1d;--m:#6e6e73;max-width:1100px}
+.rd-car{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:16/8;background:linear-gradient(135deg,#b4461b,#f29a3b);margin-bottom:18px}
+.rd-car .pistes{display:flex;height:100%;transition:transform .6s ease}
+.rd-car .pistes figure{flex:0 0 100%;margin:0;position:relative}
+.rd-car img{width:100%;height:100%;object-fit:cover;display:block}
+.rd-car figcaption{position:absolute;left:14px;bottom:14px;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:6px 12px;font-weight:600;font-size:.88rem}
+.rd-car .points{position:absolute;right:14px;bottom:16px;display:flex;gap:6px}
+.rd-car .points i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.5)}
+.rd-car .points i.on{background:#fff;width:20px;border-radius:6px}
+.rd-car .vide{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.6);font-size:3rem}
+.rd-tete{display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.rd-tete img{width:64px;height:64px;border-radius:18px;object-fit:contain;background:#fff;border:1px solid #e3e8e5;padding:4px}
+.rd-tete h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;margin:0;color:var(--t)}
+.rd-desc{color:#3e4842;line-height:1.6;white-space:pre-line;margin:6px 0 14px}
+.rd-infos{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:12px}
+.rd-infos div{background:#F6FAF7;border-radius:14px;padding:12px 14px;font-size:.92rem;white-space:pre-line}
+.rd-infos b{display:block;color:var(--t);margin-bottom:2px}
+.rd-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+.rd-actions a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 16px;border-radius:14px;font-weight:700;text-decoration:none!important;border:2px solid var(--v);color:var(--v)!important;background:#fff}
+.rd-titre{font-size:1.3rem;font-weight:800;color:var(--t);margin:6px 0 12px}
+.rd-cat{font-weight:800;color:var(--m);text-transform:uppercase;font-size:.78rem;letter-spacing:.08em;margin:18px 0 8px}
+.rd-plats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.rd-plat{background:#fff;border:1px solid #e3e8e5;border-radius:18px;overflow:hidden;text-align:left;padding:0;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column}
+.rd-plat .im{aspect-ratio:4/3;background:#FFF1E6;display:grid;place-items:center;color:#f29a3b;font-size:2rem}
+.rd-plat .im img{width:100%;height:100%;object-fit:cover}
+.rd-plat .c{padding:10px 12px 12px}
+.rd-plat .n{font-weight:700;color:var(--t);line-height:1.3}
+.rd-plat .p{color:var(--v);font-weight:800;margin-top:4px}
+.rd-vide{background:#fff;border:1px solid #e3e8e5;border-radius:18px;padding:26px;text-align:center;color:var(--m)}
+/* fenêtre d'un plat et panier */
+.rd-voile{position:fixed;inset:0;background:rgba(8,35,26,.5);z-index:2000;display:none;align-items:flex-end;justify-content:center}
+.rd-voile.on{display:flex}
+.rd-feuille{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:0 0 16px}
+@media (min-width:700px){.rd-voile{align-items:center}.rd-feuille{border-radius:24px}}
+.rd-feuille .ph{display:flex;overflow-x:auto;scroll-snap-type:x mandatory}
+.rd-feuille .ph img{flex:0 0 100%;width:100%;aspect-ratio:16/10;object-fit:cover;scroll-snap-align:start}
+.rd-feuille .in{padding:14px 18px 0}
+.rd-feuille h3{font-size:1.25rem;font-weight:800;margin:0 0 4px;color:var(--t)}
+.rd-feuille .px{color:var(--v);font-weight:800;font-size:1.1rem}
+.rd-feuille .d{color:#3e4842;line-height:1.55;margin:8px 0;white-space:pre-line}
+.rd-grp{margin-top:14px}
+.rd-grp h4{font-size:1rem;font-weight:800;margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.rd-grp h4 small{font-weight:600;color:var(--m);font-size:.78rem}
+.rd-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e3e8e5;border-radius:12px;margin-bottom:6px}
+.rd-opt input[type=checkbox],.rd-opt input[type=radio]{width:20px;height:20px;accent-color:var(--v)}
+.rd-opt .on{flex:1}.rd-opt .pr{color:var(--m);font-weight:700;font-size:.9rem}
+.rd-qte{display:inline-flex;align-items:center;border:1px solid #d5dbd6;border-radius:12px;overflow:hidden}
+.rd-qte button{width:40px;height:40px;border:0;background:#F6FAF7;font-size:1.2rem;font-weight:800;color:var(--v);cursor:pointer}
+.rd-qte span{min-width:34px;text-align:center;font-weight:800}
+.rd-qte.p button{width:30px;height:30px;font-size:1rem}.rd-qte.p span{min-width:24px}
+.rd-bas{display:flex;gap:10px;align-items:center;padding:14px 18px 0}
+.rd-bas .go{flex:1;min-height:52px;border:0;border-radius:14px;background:var(--v);color:#fff;font-weight:800;font-size:1rem;cursor:pointer}
+.rd-bas .go:disabled{opacity:.5}
+.rd-err{color:#C0392B;font-size:.88rem;padding:6px 18px 0}
+.rd-barre{position:fixed;left:12px;right:12px;bottom:12px;z-index:1500;display:none;max-width:560px;margin:0 auto}
+.rd-barre.on{display:block}
+.rd-barre button{width:100%;min-height:56px;border:0;border-radius:16px;background:var(--v);color:#fff;font-weight:800;font-size:1rem;display:flex;align-items:center;justify-content:space-between;padding:0 18px;box-shadow:0 14px 30px rgba(11,122,75,.35);cursor:pointer}
+.rd-ligne{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #eef1ee}
+.rd-ligne .t{flex:1}.rd-ligne small{color:var(--m)}
+.rd-ligne .x{border:0;background:#FBE9E7;color:#C0392B;border-radius:10px;width:34px;height:34px;cursor:pointer}
+.rd-champ{width:100%;min-height:46px;border:1px solid #d5dbd6;border-radius:12px;padding:10px 12px;font:inherit;margin-top:8px}
+.rd-total{display:flex;justify-content:space-between;font-weight:800;font-size:1.1rem;padding:12px 0}
+.rd-wa{width:100%;min-height:54px;border:0;border-radius:14px;background:#1FA855;color:#fff;font-weight:800;font-size:1.05rem;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;margin-top:10px}
+</style>{% endblock %}
+{% block content %}
+<div class="rp rd">
+  <div class="rd-car" id="rd-car">
+    {% if d.carrousel %}
+    <div class="pistes">{% for c in d.carrousel %}<figure><img src="{{ c.image }}" alt="{{ c.legende }}" {% if not forloop.first %}loading="lazy"{% endif %}>{% if c.legende %}<figcaption>{{ c.legende }}</figcaption>{% endif %}</figure>{% endfor %}</div>
+    {% if d.carrousel|length > 1 %}<div class="points">{% for c in d.carrousel %}<i{% if forloop.first %} class="on"{% endif %}></i>{% endfor %}</div>{% endif %}
+    {% else %}<span class="vide"><i class="fas fa-utensils"></i></span>{% endif %}
+  </div>
+
+  <div class="rd-tete">{% if r.logo %}<img src="{{ r.logo.url }}" alt="">{% endif %}<h1>{{ r.nom }}</h1></div>
+  {% if r.description %}<p class="rd-desc">{{ r.description }}</p>{% endif %}
+  <div class="rd-infos">
+    {% if r.lieu or r.adresse %}<div><b><i class="fas fa-location-dot"></i> Adresse</b>{{ r.adresse|default:r.lieu }}{% if r.adresse and r.lieu %}<br>{{ r.lieu }}{% endif %}</div>{% endif %}
+    {% if r.horaires %}<div><b><i class="fas fa-clock"></i> Horaires</b>{{ r.horaires }}</div>{% endif %}
+    {% if r.livraison %}<div><b><i class="fas fa-motorcycle"></i> Livraison</b>{{ r.livraison }}</div>{% endif %}
+  </div>
+  <div class="rd-actions">
+    <a href="{{ itineraire }}" target="_blank" rel="noopener"><i class="fas fa-diamond-turn-right"></i> Itinéraire</a>
+    {% if r.telephone %}<a href="tel:{{ r.telephone }}"><i class="fas fa-phone"></i> Appeler</a>{% endif %}
+    {% if wa %}<a href="https://wa.me/{{ wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+  </div>
+
+  <h2 class="rd-titre">Le menu</h2>
+  <div id="rd-menu"></div>
+</div>
+
+<div class="rd-voile" id="rd-voile-plat"><div class="rd-feuille" id="rd-plat"></div></div>
+<div class="rd-voile" id="rd-voile-panier"><div class="rd-feuille"><div class="in" id="rd-panier"></div></div></div>
+<div class="rd-barre" id="rd-barre"><button type="button" id="rd-barre-btn"><span id="rd-barre-n"></span><span id="rd-barre-t"></span></button></div>
+
+{{ d.plats|json_script:"rd-plats" }}
+<script>
+(function () {
+  var PLATS = JSON.parse(document.getElementById('rd-plats').textContent);
+  var WA = '{{ wa|escapejs }}', NOM = '{{ r.nom|escapejs }}', SLUG = '{{ r.slug|escapejs }}';
+  var CLE = 'resto-panier-' + SLUG, panier = [];
+  try { panier = JSON.parse(localStorage.getItem(CLE) || '[]'); } catch (e) { panier = []; }
+  function cfa(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' CFA'; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+  function sauver() { try { localStorage.setItem(CLE, JSON.stringify(panier)); } catch (e) {} barre(); }
+
+  // Carrousel automatique
+  var car = document.getElementById('rd-car'), pistes = car.querySelector('.pistes'), pts = car.querySelectorAll('.points i'), i = 0;
+  if (pistes && pts.length > 1) setInterval(function () {
+    i = (i + 1) % pts.length; pistes.style.transform = 'translateX(-' + (i * 100) + '%)';
+    pts.forEach(function (p, k) { p.classList.toggle('on', k === i); });
+  }, 4000);
+
+  // Menu
+  var menu = document.getElementById('rd-menu');
+  if (!PLATS.length) { menu.innerHTML = '<div class="rd-vide">Le menu arrive bientôt.</div>'; }
+  else {
+    var cats = [], html = '';
+    PLATS.forEach(function (p) { if (cats.indexOf(p.categorie) < 0) cats.push(p.categorie); });
+    cats.forEach(function (c) {
+      if (cats.length > 1 || c) html += '<div class="rd-cat">' + esc(c || 'Autres plats') + '</div>';
+      html += '<div class="rd-plats">';
+      PLATS.forEach(function (p, k) {
+        if (p.categorie !== c) return;
+        html += '<button type="button" class="rd-plat" data-k="' + k + '"><div class="im">' +
+          (p.image ? '<img src="' + p.image + '" alt="" loading="lazy">' : '<i class="fas fa-bowl-food"></i>') +
+          '</div><div class="c"><div class="n">' + esc(p.nom) + '</div><div class="p">' + cfa(p.prix) + '</div></div></button>';
+      });
+      html += '</div>';
+    });
+    menu.innerHTML = html;
+    menu.querySelectorAll('.rd-plat').forEach(function (b) { b.addEventListener('click', function () { ouvrirPlat(PLATS[+b.dataset.k]); }); });
+  }
+
+  // Fenêtre d'un plat : quantité, options, total en direct
+  var vPlat = document.getElementById('rd-voile-plat'), fPlat = document.getElementById('rd-plat');
+  vPlat.addEventListener('click', function (e) { if (e.target === vPlat) vPlat.classList.remove('on'); });
+  function ouvrirPlat(p) {
+    var qte = 1, choix = {};
+    function total() {
+      var s = p.prix;
+      p.groupes.forEach(function (g) { (choix[g.id] || []).forEach(function (o) { s += g.options[o.i].prix * o.q; }); });
+      return s * qte;
+    }
+    function rendu() {
+      var h = (p.photos.length ? '<div class="ph">' + p.photos.map(function (u) { return '<img src="' + u + '" alt="">'; }).join('') + '</div>' : '') +
+        '<div class="in"><h3>' + esc(p.nom) + '</h3><div class="px">' + cfa(p.prix) + '</div>' +
+        (p.description ? '<p class="d">' + esc(p.description) + '</p>' : '');
+      p.groupes.forEach(function (g) {
+        h += '<div class="rd-grp"><h4>' + esc(g.nom) + ' <small>' + (g.choix === 'unique' ? '1 choix' : 'plusieurs choix') + (g.obligatoire ? ' · obligatoire' : '') + '</small></h4>';
+        g.options.forEach(function (o, k) {
+          var pris = (choix[g.id] || []).filter(function (x) { return x.i === k; })[0];
+          h += '<label class="rd-opt"><input type="' + (g.choix === 'unique' ? 'radio' : 'checkbox') + '" name="g' + g.id + '" data-g="' + g.id + '" data-o="' + k + '"' + (pris ? ' checked' : '') + '>' +
+            '<span class="on">' + esc(o.nom) + '</span><span class="pr">' + (o.prix ? '+ ' + cfa(o.prix) : 'inclus') + '</span>' +
+            (g.avec_quantite && pris ? '<span class="rd-qte p" data-g="' + g.id + '" data-o="' + k + '"><button type="button" data-d="-1">−</button><span>' + pris.q + '</span><button type="button" data-d="1">+</button></span>' : '') + '</label>';
+        });
+        h += '</div>';
+      });
+      h += '</div><div class="rd-err" id="rd-err"></div><div class="rd-bas"><span class="rd-qte" id="rd-q"><button type="button" data-d="-1">−</button><span>' + qte + '</span><button type="button" data-d="1">+</button></span>' +
+        '<button type="button" class="go" id="rd-ajout">Ajouter · ' + cfa(total()) + '</button></div>';
+      fPlat.innerHTML = h;
+      fPlat.querySelectorAll('input[data-g]').forEach(function (inp) {
+        inp.addEventListener('change', function () {
+          var g = +inp.dataset.g, o = +inp.dataset.o, gr = p.groupes.filter(function (x) { return x.id === g; })[0];
+          if (gr.choix === 'unique') choix[g] = inp.checked ? [{i: o, q: 1}] : [];
+          else { choix[g] = (choix[g] || []).filter(function (x) { return x.i !== o; }); if (inp.checked) choix[g].push({i: o, q: 1}); }
+          rendu();
+        });
+      });
+      fPlat.querySelectorAll('.rd-qte.p button').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault(); var w = b.parentNode, g = +w.dataset.g, o = +w.dataset.o;
+          (choix[g] || []).forEach(function (x) { if (x.i === o) x.q = Math.max(1, x.q + (+b.dataset.d)); });
+          rendu();
+        });
+      });
+      fPlat.querySelectorAll('#rd-q button').forEach(function (b) {
+        b.addEventListener('click', function () { qte = Math.max(1, qte + (+b.dataset.d)); rendu(); });
+      });
+      document.getElementById('rd-ajout').addEventListener('click', function () {
+        var manque = p.groupes.filter(function (g) { return g.obligatoire && !(choix[g.id] || []).length; });
+        if (manque.length) { document.getElementById('rd-err').textContent = 'Choisissez : ' + manque.map(function (g) { return g.nom; }).join(', '); return; }
+        var opts = [];
+        p.groupes.forEach(function (g) { (choix[g.id] || []).forEach(function (x) { opts.push({nom: g.options[x.i].nom, prix: g.options[x.i].prix, q: x.q}); }); });
+        panier.push({nom: p.nom, prix: p.prix, qte: qte, options: opts, total: total()});
+        sauver(); vPlat.classList.remove('on');
+      });
+    }
+    rendu(); vPlat.classList.add('on'); fPlat.scrollTop = 0;
+  }
+
+  // Panier du restaurant
+  var vPan = document.getElementById('rd-voile-panier'), fPan = document.getElementById('rd-panier');
+  vPan.addEventListener('click', function (e) { if (e.target === vPan) vPan.classList.remove('on'); });
+  function somme() { return panier.reduce(function (s, x) { return s + x.total; }, 0); }
+  function barre() {
+    var b = document.getElementById('rd-barre'), n = panier.reduce(function (s, x) { return s + x.qte; }, 0);
+    b.classList.toggle('on', panier.length > 0);
+    document.getElementById('rd-barre-n').textContent = 'Voir ma commande (' + n + ')';
+    document.getElementById('rd-barre-t').textContent = cfa(somme());
+  }
+  function texteOptions(x) {
+    return x.options.map(function (o) { return (o.q > 1 ? o.q + ' × ' : '') + o.nom + (o.prix ? ' ' + cfa(o.prix * o.q) : ''); }).join(', ');
+  }
+  function ouvrirPanier() {
+    var h = '<h3 style="margin:16px 0 4px">Ma commande</h3>';
+    panier.forEach(function (x, k) {
+      h += '<div class="rd-ligne"><div class="t"><b>' + x.qte + ' × ' + esc(x.nom) + '</b>' + (x.options.length ? '<br><small>+ ' + esc(texteOptions(x)) + '</small>' : '') +
+        '<br><small>' + cfa(x.total) + '</small></div><button type="button" class="x" data-k="' + k + '" aria-label="Retirer">✕</button></div>';
+    });
+    h += '<div class="rd-total"><span>Total estimé</span><span>' + cfa(somme()) + '</span></div>' +
+      '<input class="rd-champ" id="rd-nom" placeholder="Votre nom (facultatif)" autocomplete="name">' +
+      '<input class="rd-champ" id="rd-adr" placeholder="Adresse de livraison (facultatif)">' +
+      '<button type="button" class="rd-wa" id="rd-commander"><i class="fab fa-whatsapp"></i> Commander sur WhatsApp</button>';
+    fPan.innerHTML = h;
+    fPan.querySelectorAll('.x').forEach(function (b) {
+      b.addEventListener('click', function () { panier.splice(+b.dataset.k, 1); sauver(); if (panier.length) ouvrirPanier(); else vPan.classList.remove('on'); });
+    });
+    document.getElementById('rd-commander').addEventListener('click', function () {
+      var l = ['Bonjour ' + NOM + ', je veux :'];
+      panier.forEach(function (x) { l.push('• ' + x.qte + ' × ' + x.nom + (x.options.length ? ' (+ ' + texteOptions(x) + ')' : '') + ' : ' + cfa(x.total)); });
+      l.push('Montant : ' + cfa(somme()));
+      var nom = document.getElementById('rd-nom').value.trim(), adr = document.getElementById('rd-adr').value.trim();
+      if (nom) l.push('Nom : ' + nom);
+      if (adr) l.push('Livraison : ' + adr);
+      try { navigator.sendBeacon('{% url "restaurants:clic" r.slug %}', new Blob([], {type: 'text/plain'})); } catch (e) {}
+      window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(l.join('\n')), '_blank');
+    });
+    vPan.classList.add('on');
+  }
+  document.getElementById('rd-barre-btn').addEventListener('click', ouvrirPanier);
+  barre();
+})();
+</script>
+{% endblock %}

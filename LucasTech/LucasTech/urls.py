@@ -18,6 +18,7 @@ urlpatterns = [
     path('emplois/', include('Offres.urls')),
     path('hotels/', include('Hotels.urls')),
     path('location/', include('Logements.urls')),
+    path('restaurants/', include('Restaurants.urls')),
     re_path(r'^logements/(?P<rest>.*)$', RedirectView.as_view(url='/location/%(rest)s', permanent=True, query_string=True)),
     path('espace/', include('Marche.urls_espace')),
     path(

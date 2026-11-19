@@ -35,6 +35,7 @@ RUBRIQUES = {
         ('Repetiteurs.ReglageCandidature', "Frais de candidature")]),
     'emplois': ("Emplois", 'fa-briefcase', [('Offres.OffreEmploi', "Offres d'emploi")]),
     'hotels': ("Hôtels", 'fa-hotel', [('Hotels.Hotel', "Hôtels"), ('Hotels.Chambre', "Chambres")]),
+    'restaurants': ("Restaurants", 'fa-utensils', [('Restaurants.Restaurant', "Restaurants"), ('Restaurants.Plat', "Plats")]),
     'logements': ("Location", 'fa-house', [('Logements.Logement', "Chambres et appartements"), ('Logements.DemandeLogement', "Demandes")]),
     'publications': ("Actualités", 'fa-newspaper', [
         ('Publications.Publication', "Articles"), ('Publications.PublicationLike', "J'aime"),
@@ -88,14 +89,14 @@ def modeles(code):
 GROUPES = [
     ("Ventes", ['paiements', 'boutique', 'vendeurs', 'formations', 'concours']),
     ("Contenus", ['publications', 'commentaires', 'evenements', 'emplois']),
-    ("Services", ['services', 'hotels', 'logements', 'ecoles', 'repetiteurs']),
+    ("Services", ['services', 'hotels', 'restaurants', 'logements', 'ecoles', 'repetiteurs']),
     ("Gestion", ['utilisateurs', 'notifications', 'reglages']),
 ]
 
 # Icônes Material Symbols de la barre latérale
 ICONES = {'paiements': 'payments', 'boutique': 'storefront', 'vendeurs': 'store', 'formations': 'school',
           'concours': 'quiz', 'publications': 'newspaper', 'commentaires': 'forum', 'evenements': 'event',
-          'emplois': 'work', 'services': 'design_services', 'hotels': 'hotel', 'logements': 'house',
+          'emplois': 'work', 'services': 'design_services', 'hotels': 'hotel', 'restaurants': 'restaurant', 'logements': 'house',
           'ecoles': 'account_balance', 'repetiteurs': 'person_book', 'utilisateurs': 'group',
           'notifications': 'notifications', 'reglages': 'tune'}
 

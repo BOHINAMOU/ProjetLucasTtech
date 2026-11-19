@@ -4,6 +4,7 @@ from django.urls import path
 from Offres import api as emplois
 from Hotels import api as hotels
 from Logements import api as logements
+from Restaurants import api as restaurants
 from .cache_listes import cache_liste
 
 from . import conformite_api  # noqa: E402
@@ -57,6 +58,9 @@ urlpatterns = [
     path('emplois/', cache_liste(anonymes_seulement=True)(emplois.liste), name='emplois'),
     path('hotels/', cache_liste()(hotels.liste), name='hotels'),
     path('logements/', cache_liste()(logements.liste), name='logements'),
+    path('restaurants/', cache_liste()(restaurants.liste), name='restaurants'),
+    path('restaurants/<slug:slug>/', restaurants.detail, name='restaurant'),
+    path('restaurants/<slug:slug>/clic/', restaurants.clic, name='restaurant_clic'),
     path('logements/demande/', logements.demande, name='logement_demande'),
     path('logements/proposer/', logements.proposer, name='logement_proposer'),
     path('logements/options/', logements.options, name='logement_options'),

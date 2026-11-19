@@ -235,7 +235,7 @@ def build(request):
     actions = [dict(label=a, icon=b, url=c, tone=d) for a, b, c, d in actions if c]
 
     icones = {'paiements': 'fa-credit-card', 'concours': 'fa-file-alt', 'boutique': 'fa-store', 'vendeurs': 'fa-user-tag',
-               'emplois': 'fa-briefcase', 'hotels': 'fa-hotel', 'logements': 'fa-house', 'formations': 'fa-graduation-cap', 'evenements': 'fa-calendar-days',
+               'emplois': 'fa-briefcase', 'hotels': 'fa-hotel', 'restaurants': 'fa-utensils', 'logements': 'fa-house', 'formations': 'fa-graduation-cap', 'evenements': 'fa-calendar-days',
                'ecoles': 'fa-school', 'repetiteurs': 'fa-chalkboard-teacher', 'publications': 'fa-newspaper',
                'services': 'fa-wrench', 'notifications': 'fa-bell', 'utilisateurs': 'fa-users'}
     rubriques = [{'titre': t, 'icon': icones.get(c, 'fa-folder'), 'url': f'/lantanteAdminTech/section/{c}/'}
@@ -373,6 +373,10 @@ def _chiffres(code):
             a = L.objects.aggregate(v=Sum('vues'), c=Sum('contacts'))
             return [('À louer', L.objects.visibles().count()), ('En attente', L.objects.filter(statut='attente').count()), ('Loués', L.objects.filter(loue=True).count()),
                     ('Vues', a['v'] or 0), ('Contacts', a['c'] or 0)]
+        if code == 'restaurants':
+            a = _model('Restaurants.Restaurant').objects.aggregate(v=Sum('vues'), c=Sum('clics_commander'))
+            return [('Restaurants', _count('Restaurants.Restaurant', visible=True)), ('Plats', _count('Restaurants.Plat', disponible=True)),
+                    ('Vues', a['v'] or 0), ('Clics Commander', a['c'] or 0)]
         if code == 'hotels':
             a = _model('Hotels.Hotel').objects.aggregate(v=Sum('vues'), r=Sum('clics_reserver'), t=Sum('clics_appel'))
             return [('Vues', a['v'] or 0), ('Clics Réserver', a['r'] or 0), ('Clics Appeler', a['t'] or 0)]

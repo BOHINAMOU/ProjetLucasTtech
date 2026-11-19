@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% block title %}Restaurants — Lantante Technologie{% endblock %}
+{% block meta_description %}Restaurants au Togo : menus, plats et commande sur WhatsApp.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.rs-recherche{display:flex;gap:8px;margin:0 0 16px}
+.rs-recherche input{flex:1;min-width:0;padding:12px 14px;border:1px solid #dfe6e2;border-radius:14px;font-size:1rem}
+.rs-recherche button{border:0;background:#0B7A4B;color:#fff;border-radius:14px;padding:0 18px;font-weight:700}
+.rs-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.rs-carte{background:#fff;border:1px solid #e3e8e5;border-radius:20px;overflow:hidden;text-decoration:none!important;color:inherit;display:flex;flex-direction:column}
+.rs-im{position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,#b4461b,#f29a3b)}
+.rs-im img.c{width:100%;height:100%;object-fit:cover;display:block}
+.rs-im .logo{position:absolute;left:12px;bottom:-22px;width:56px;height:56px;border-radius:16px;background:#fff;object-fit:contain;padding:4px;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.rs-im .ic{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:2.6rem}
+.rs-corps{padding:30px 14px 16px}
+.rs-corps h2{font-size:1.08rem;font-weight:800;margin:0 0 4px;color:#0b2e1d}
+.rs-corps p{color:#6e6e73;font-size:.9rem;margin:0 0 8px;line-height:1.45}
+.rs-lieu{color:#0B7A4B;font-weight:700;font-size:.88rem}
+.rs-vide{text-align:center;padding:44px 16px 48px;background:#fff;border:1px solid #e3e8e5;border-radius:22px}
+.rs-vide .ic{width:76px;height:76px;margin:0 auto 14px;border-radius:50%;background:#FFF1E6;color:#C2410C;display:grid;place-items:center;font-size:1.9rem}
+.rs-vide h2{font-size:1.3rem;font-weight:800;color:#0b2e1d;margin:0 0 6px}
+.rs-vide p{color:#6e6e73;margin:0 0 20px}
+.rs-btn{display:inline-flex;align-items:center;gap:8px;min-height:50px;padding:0 22px;border-radius:14px;background:#0B7A4B;color:#fff!important;font-weight:800;text-decoration:none!important}
+</style>{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:1100px">
+  <div class="rp-banniere"><div><h1>Restaurants</h1><p>Menus, plats et commande sur WhatsApp.</p></div></div>
+  {% if restaurants or q %}
+  <form method="get" class="rs-recherche"><input name="q" value="{{ q }}" placeholder="Restaurant, plat, quartier…" aria-label="Rechercher"><button>Chercher</button></form>
+  {% endif %}
+  {% if restaurants %}
+  <div class="rs-grille">
+    {% for r in restaurants %}
+    <a class="rs-carte" href="{{ r.get_absolute_url }}">
+      <div class="rs-im">
+        {% if r.couverture %}<img class="c" src="{{ r.couverture.url }}" alt="" loading="lazy">{% else %}<span class="ic"><i class="fas fa-utensils"></i></span>{% endif %}
+        {% if r.logo %}<img class="logo" src="{{ r.logo.url }}" alt="">{% endif %}
+      </div>
+      <div class="rs-corps">
+        <h2>{{ r.nom }}</h2>
+        {% if r.description %}<p>{{ r.description|truncatechars:90 }}</p>{% endif %}
+        {% if r.lieu %}<span class="rs-lieu"><i class="fas fa-location-dot"></i> {{ r.lieu }}</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="rs-vide">
+    <div class="ic"><i class="fas fa-utensils"></i></div>
+    <h2>{% if q %}Aucun restaurant trouvé{% else %}Bientôt des restaurants près de chez vous{% endif %}</h2>
+    <p>Vous avez un restaurant ? Inscrivez-le sur Lantante.</p>
+    {% if inscription %}<a class="rs-btn" href="{{ inscription }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Inscrire mon restaurant</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
