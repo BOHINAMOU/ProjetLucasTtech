@@ -1,0 +1,72 @@
+{% extends 'core/base.html' %}
+{% block title %}Répétiteurs à domicile — Lantante Technologie{% endblock %}
+{% block meta_description %}Répétiteurs à domicile à Lomé et environs : primaire, collège, lycée, BAC et concours. Écrivez-nous sur WhatsApp.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.rl{--v:#0B7A4B;--t:#0b2e1d;--m:#6e6e73;max-width:1100px}
+.rl-etapes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px}
+.rl-etapes div{background:#fff;border:1px solid #e3e8e5;border-radius:18px;padding:14px;display:flex;gap:12px;align-items:center}
+.rl-etapes b{flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:#E3F5EC;color:var(--v);display:grid;place-items:center;font-size:1.05rem}
+.rl-etapes span{font-weight:700;color:var(--t);line-height:1.3}
+.rl-puces{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none}
+.rl-puces a{flex:0 0 auto;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #dfe6e2;color:var(--t)!important;font-weight:600;text-decoration:none!important;font-size:.9rem}
+.rl-puces a.on{background:var(--v);border-color:var(--v);color:#fff!important}
+.rl-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.rl-carte{background:#fff;border:1px solid #e3e8e5;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.rl-carte .im{aspect-ratio:16/10;background:linear-gradient(135deg,#0b6137,#17a35f)}
+.rl-carte .im img{width:100%;height:100%;object-fit:cover;display:block}
+.rl-carte .c{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}
+.rl-carte h2{font-size:1.05rem;font-weight:800;color:var(--t);margin:0 0 6px;line-height:1.3}
+.rl-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.rl-tags span{background:#E3F5EC;color:#0B5A38;border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:700}
+.rl-meta{color:var(--m);font-size:.88rem;margin-bottom:12px}
+.rl-meta i{color:var(--v);width:16px}
+.rl-wa{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;background:#1FA855;color:#fff!important;font-weight:800;text-decoration:none!important}
+.rl-devenir{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0b5531,#17a35f);color:#fff;border-radius:22px;padding:20px 22px;margin-top:22px}
+.rl-devenir b{font-size:1.15rem}
+.rl-devenir a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;background:#fff;color:#0b5531!important;font-weight:800;text-decoration:none!important}
+@media (max-width:700px){.rl-etapes{grid-template-columns:1fr}}
+</style>{% endblock %}
+{% block content %}
+<div class="rp rl">
+  <div class="rp-banniere"><div><h1>Répétiteurs à domicile</h1><p>Primaire, collège, lycée, BAC et concours · Lomé et environs</p></div></div>
+
+  <div class="rl-etapes">
+    <div><b>1</b><span>Écrivez-nous sur WhatsApp</span></div>
+    <div><b>2</b><span>On vous propose un répétiteur</span></div>
+    <div><b>3</b><span>Les cours commencent chez vous</span></div>
+  </div>
+
+  {% if matieres %}
+  <nav class="rl-puces" aria-label="Matières">
+    <a href="?" class="{% if not matiere %}on{% endif %}">Toutes</a>
+    {% for m in matieres %}<a href="?matiere={{ m|urlencode }}" class="{% if matiere == m %}on{% endif %}">{{ m }}</a>{% endfor %}
+  </nav>
+  {% endif %}
+
+  <div class="rl-grille">
+    {% for f in fiches %}{% with r=f.r %}
+    <article class="rl-carte">
+      <div class="im">{% if r.photo %}<img src="{{ r.photo.url }}" alt="" loading="lazy">{% endif %}</div>
+      <div class="c">
+        <h2>{{ r.nom }}</h2>
+        <div class="rl-tags">{% for m in r.liste_matieres|slice:":4" %}<span>{{ m }}</span>{% endfor %}</div>
+        <div class="rl-meta">
+          {% if r.niveaux %}<div><i class="fas fa-graduation-cap"></i> {{ r.niveaux }}</div>{% endif %}
+          <div><i class="fas fa-house"></i> {% if r.est_service_lantante %}À domicile ou en ligne · {{ r.ville }}{% else %}{{ r.quartier|default:r.ville }}{% endif %}</div>
+          {% if r.est_service_lantante %}<div><i class="fas fa-shield-halved"></i> Lantante Répétiteurs</div>{% endif %}
+        </div>
+        {% if f.wa %}<a class="rl-wa" href="{{ f.wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Écrire sur WhatsApp</a>{% endif %}
+      </div>
+    </article>
+    {% endwith %}{% empty %}
+    <p style="color:#6e6e73">Aucun cours pour cette matière pour l'instant.</p>
+    {% endfor %}
+  </div>
+
+  <div class="rl-devenir">
+    <div><b>Vous êtes enseignant ?</b><br><span style="opacity:.9">Donnez des cours à domicile avec Lantante.</span></div>
+    <a href="{% url 'repetiteurs:devenir' %}"><i class="fas fa-chalkboard-user"></i> Devenir répétiteur de maison</a>
+  </div>
+</div>
+{% endblock %}

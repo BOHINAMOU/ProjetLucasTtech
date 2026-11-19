@@ -123,3 +123,19 @@ def piece(request, pk, cote):
     rep['Cache-Control'] = 'private, no-store'
     rep['X-Content-Type-Options'] = 'nosniff'
     return rep
+
+
+def liste(request):
+    """Page publique : répétiteurs validés et cours « Lantante Répétiteurs » par matière (jamais de faux profil)."""
+    from urllib.parse import quote
+
+    from api_mobile.repetiteurs import _actifs, _message, _whatsapp
+    qs = _actifs()
+    matiere = (request.GET.get('matiere') or '').strip()
+    tous = list(qs)
+    if matiere:
+        qs = qs.filter(matieres__icontains=matiere)
+    fiches = [{'r': r, 'wa': (f"https://wa.me/{_whatsapp(r)}?text={quote(_message(r))}" if _whatsapp(r) else '')} for r in qs]
+    return render(request, 'repetiteurs/liste.html', {
+        'fiches': fiches, 'matiere': matiere,
+        'matieres': sorted({m for r in tous for m in r.liste_matieres}, key=str.lower)[:16]})
