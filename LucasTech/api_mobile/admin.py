@@ -6,7 +6,13 @@ from .models import CarouselItem, Notification
 
 @admin.register(CarouselItem)
 class CarouselItemAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'cible', 'cible_id', 'ordre', 'actif', 'debut', 'fin']
+    list_display = ['apercu', '__str__', 'cible', 'cible_id', 'ordre', 'actif', 'debut', 'fin']
+    list_display_links = ['apercu', '__str__']
+
+    @admin.display(description="")
+    def apercu(self, c):
+        from django.utils.html import format_html
+        return format_html('<img src="{}" style="width:90px;height:45px;object-fit:cover;border-radius:8px">', c.image.url) if c.image else '—'
     list_editable = ['ordre', 'actif']
     list_filter = ['actif', 'cible']
 

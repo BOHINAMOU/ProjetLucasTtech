@@ -26,6 +26,7 @@ urlpatterns = [
     path('me/profil/', shop.profil, name='profil'),
     path('me/supprimer/', conformite_api.supprimer_compte, name='supprimer_compte'),
     path('signaler/', conformite_api.signaler, name='signaler'),
+    path('guide/', conformite_api.guide, name='guide'),
     path('contact/', shop.contact, name='contact'),
     path('pages/<slug:slug>/', shop.page, name='page'),
     path('paiements/moyens/', shop.moyens, name='moyens'),

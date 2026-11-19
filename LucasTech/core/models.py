@@ -435,3 +435,29 @@ class DemandeSuppressionCompte(models.Model):
 
     def __str__(self):
         return f"{self.email} ({self.get_statut_display()})"
+
+
+class GuideSection(models.Model):
+    """Guide « Comment utiliser l'application » : titres en accordéon, modifiables sans nouvelle version de l'appli."""
+    CANAUX = [('tous', "Toutes les versions"), ('site', "Version du site (APK)"), ('play', "Version Google Play")]
+    titre = models.CharField("Titre", max_length=120)
+    icone = models.CharField("Icône", max_length=40, default='help',
+                             help_text="Nom d'icône Material (ex. storefront, hotel, restaurant, school, payments).")
+    contenu = models.TextField("Étapes", help_text="Une étape par ligne. Les numéros sont ajoutés tout seuls.")
+    canal = models.CharField("Afficher dans", max_length=4, choices=CANAUX, default='tous')
+    publie = models.BooleanField("Publié", default=True)
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+    modifie_le = models.DateTimeField("Modifié le", auto_now=True)
+
+    class Meta:
+        ordering = ['ordre', 'pk']
+        verbose_name = "Section du guide"
+        verbose_name_plural = "Guide de l'application"
+
+    def __str__(self):
+        return self.titre
+
+    @property
+    def etapes(self):
+        import re
+        return [re.sub(r'^\s*(\d+[.)]|[-•])\s*', '', l).strip() for l in self.contenu.splitlines() if l.strip()]

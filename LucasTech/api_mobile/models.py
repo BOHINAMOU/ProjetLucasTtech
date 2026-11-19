@@ -26,9 +26,11 @@ class OfflineDocument(models.Model):
 
 
 class CarouselItem(models.Model):
-    """Bande principale de l'accueil, choisie par l'admin (sinon : sélection automatique)."""
+    """Bande de l'appli : éléments choisis dans l'admin, en premier et dans l'ordre ; le reste de la bande est complété automatiquement."""
     CIBLES = [('publication', 'Actualité'), ('produit', 'Produit'), ('evenement', 'Événement'),
-              ('formation', 'Formation'), ('service', 'Service'), ('concours', 'Concours'), ('lien', 'Lien interne')]
+              ('formation', 'Formation'), ('service', 'Service'), ('concours', 'Concours'), ('partenaire', 'Partenaire'),
+              ('emploi', "Offre d'emploi"), ('hotel', 'Hôtel'), ('restaurant', 'Restaurant'), ('ecole', 'École'),
+              ('vendeur', 'Boutique de vendeur'), ('lien', 'Lien interne')]
     image = models.ImageField("Image", upload_to='carrousel/',
                               help_text="Format large conseillé (1200 × 600). Si vide : l'image de l'élément ciblé.",
                               blank=True)
@@ -45,8 +47,8 @@ class CarouselItem(models.Model):
 
     class Meta:
         ordering = ['ordre', 'id']
-        verbose_name = "Élément du carrousel"
-        verbose_name_plural = "Carrousel de l'accueil"
+        verbose_name = "Élément de la bande"
+        verbose_name_plural = "Bande de l'appli"
 
     def __str__(self):
         return self.titre or f"{self.get_cible_display()} {self.cible_id or self.lien}"

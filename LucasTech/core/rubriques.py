@@ -46,7 +46,7 @@ RUBRIQUES = {
         ('Services.Service', "Services"), ('Services.InscriptionService', "Inscriptions"),
         ('Services.ServiceContact', "Demandes de contact"), ('Services.ServiceCategory', "Catégories")]),
     'notifications': ("Notifications", 'fa-bell', [
-        ('api_mobile.Notification', "Notifications"), ('api_mobile.CarouselItem', "Carrousel de l'appli"),
+        ('api_mobile.Notification', "Notifications"), ('api_mobile.CarouselItem', "Bande de l'appli"),
         ('core.HeroSlide', "Carrousel du site"), ('core.NewsTickerItem', "Bandeau d'actualités"),
         ('api_mobile.Appareil', "Téléphones inscrits")]),
     'utilisateurs': ("Utilisateurs", 'fa-users', [
@@ -54,7 +54,7 @@ RUBRIQUES = {
         ('core.Signalement', "Signalements"), ('core.Delegation', "Rôles délégués"), ('auth.Group', "Groupes"),
         ('authtoken.TokenProxy', "Jetons de l'appli"), ('social_django.UserSocialAuth', "Connexions Google")]),
     'reglages': ("Réglages", 'fa-sliders', [
-        ('core.SiteSettings', "Réglages du site"), ('core.Partner', "Partenaires"), ('core.PartnerCategory', "Catégories de partenaires"),
+        ('core.SiteSettings', "Réglages du site"), ('core.GuideSection', "Guide de l'application"), ('core.Partner', "Partenaires"), ('core.PartnerCategory', "Catégories de partenaires"),
         ('core.PartnerApplication', "Demandes de partenariat"), ('core.MonetizationRequest', "Demandes de monétisation"),
         ('core.Project', "Projets réalisés"), ('core.TeamMember', "Équipe"), ('Portfolio.Profile', "Portfolio : profil"),
         ('Portfolio.ContactMessage', "Portfolio : messages")]),

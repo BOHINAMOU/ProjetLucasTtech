@@ -284,3 +284,23 @@ class DemandeSuppressionCompteAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+from django import forms as _forms  # noqa: E402
+
+from .models import GuideSection  # noqa: E402
+
+
+@admin.register(GuideSection)
+class GuideSectionAdmin(admin.ModelAdmin):
+    list_display = ['titre', 'canal', 'publie', 'ordre', 'modifie_le']
+    list_editable = ['publie', 'ordre']
+    list_filter = ['canal', 'publie']
+    search_fields = ['titre', 'contenu']
+    fields = ['titre', 'icone', 'contenu', 'canal', 'publie', 'ordre']
+    formfield_overrides = {}
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'contenu':
+            kwargs['widget'] = _forms.Textarea(attrs={'rows': 10, 'placeholder': "Ouvrez…\nTouchez…\nC'est fait."})
+        return super().formfield_for_dbfield(db_field, request, **kwargs)

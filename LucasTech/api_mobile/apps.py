@@ -20,3 +20,6 @@ class ApiMobileConfig(AppConfig):
 
         from .cache_listes import brancher
         brancher()
+
+        from .bande_admin import brancher as bande
+        bande()

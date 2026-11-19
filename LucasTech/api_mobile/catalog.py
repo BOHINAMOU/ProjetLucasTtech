@@ -484,7 +484,33 @@ def evenement(request, pk):
 # Carrousel d'accueil
 # ─────────────────────────────
 TYPE_LABELS = {'concours': 'Concours', 'evenement': 'Événement', 'formation': 'Formation', 'produit': 'Boutique',
-               'service': 'Service', 'publication': 'Actualité', 'partenaire': 'Partenaire', 'lien': ''}
+               'service': 'Service', 'publication': 'Actualité', 'partenaire': 'Partenaire', 'lien': '',
+               'emploi': 'Emploi', 'hotel': 'Hôtel', 'restaurant': 'Restaurant', 'ecole': 'École', 'vendeur': 'Boutique'}
+
+
+def _cible_site(cible, pk):
+    """Éléments sans écran dédié dans les anciennes versions de l'appli : (titre, image, lien du site)."""
+    from django.apps import apps
+    conf = {'emploi': ('Offres.OffreEmploi', 'titre', 'image', {'publie': True}),
+            'hotel': ('Hotels.Hotel', 'nom', 'couverture', {'actif': True}),
+            'restaurant': ('Restaurants.Restaurant', 'nom', 'couverture', {'visible': True}),
+            'ecole': ('Ecoles.Ecole', 'nom', 'couverture', {'publie': True}),
+            'vendeur': ('Marche.Vendeur', 'boutique', 'banniere', {'statut': 'valide'})}.get(cible)
+    if not conf:
+        return None
+    try:
+        M = apps.get_model(conf[0])
+        o = M.objects.filter(pk=pk, **{k: v for k, v in conf[3].items() if k in {f.name for f in M._meta.fields}}).first()
+    except LookupError:
+        return None
+    if not o:
+        return None
+    image = getattr(o, conf[2], None) or getattr(o, 'logo', None) or getattr(o, 'image', None)
+    try:
+        lien = o.lien_public() if cible == 'vendeur' else o.get_absolute_url()
+    except Exception:
+        lien = ''
+    return getattr(o, conf[1]), image, lien, getattr(o, 'slug', None)
 
 
 def carousel_items(request, per_type=3):
@@ -536,6 +562,23 @@ def carousel_admin(request):
             if not o:
                 continue
             titre, image, slug = titre or f"{o.acronym} — {o.name}", image or o.cover or o.logo, o.slug
+        elif c.cible == 'partenaire':
+            o = _partners().filter(pk=c.cible_id).first()
+            if not o:
+                continue
+            titre, image = titre or o.name, image or o.logo
+        elif c.cible in ('emploi', 'hotel', 'restaurant', 'ecole', 'vendeur'):
+            r = _cible_site(c.cible, c.cible_id)
+            if not r:
+                continue
+            titre, image = titre or r[0], image or r[1]
+            out_type, lien = 'lien', r[2]
+            if not image:
+                continue
+            out.append({'type': out_type, 'type_libelle': TYPE_LABELS.get(c.cible, ''), 'id': c.cible_id, 'slug': r[3],
+                        'lien': lien, 'cible': c.cible, 'titre': titre, 'sous_titre': '', 'prix': None,
+                        'image': media(request, image), 'image_vignette': absolute(request, thumb_url(image, 800))})
+            continue
         elif c.cible in sources:
             fn, champ_titre, champ_image = sources[c.cible]
             o = fn().filter(pk=c.cible_id).first()
@@ -551,10 +594,18 @@ def carousel_admin(request):
     return out
 
 
+def bande(request, total=12):
+    """Bande de l'appli : les éléments choisis dans l'admin d'abord (dans l'ordre), puis la sélection automatique."""
+    choisis = carousel_admin(request)
+    vus = {(x['type'], x['id']) for x in choisis}
+    auto = [x for x in carousel_items(request) if (x['type'], x['id']) not in vus]
+    return (choisis + auto)[:max(total, len(choisis))]
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def carrousel(request):
-    return Response(carousel_admin(request) or carousel_items(request))
+    return Response(bande(request))
 
 
 # ─────────────────────────────
