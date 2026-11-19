@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         with open(os.path.join(settings.MEDIA_ROOT, 'app', 'version.json'), encoding='utf-8') as fh:
             v = json.load(fh)
-        ok = envoyer_sujet(SUJET_MAJ, f"Nouvelle version {v.get('version', '')} disponible",
-                           "Touchez pour installer la mise à jour de Lantante Express.",
+        ok = envoyer_sujet(SUJET_MAJ, "Nouvelle mise à jour disponible",
+                           "Touchez pour mettre à jour.",
                            {'type': 'maj', 'build': v.get('build', 0)})
         self.stdout.write("Notification envoyée." if ok else "Notification non envoyée (voir les journaux).")
