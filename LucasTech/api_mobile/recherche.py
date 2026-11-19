@@ -24,7 +24,13 @@ def _mots(q):
 
 
 def _proche(mot, jetons):
-    return any(SequenceMatcher(None, mot, j).ratio() >= 0.8 for j in jetons if abs(len(j) - len(mot)) <= 3)
+    """Faute de frappe (« fransais ») ou abréviation (« maths » → mathématiques : début du mot presque identique)."""
+    for j in jetons:
+        if abs(len(j) - len(mot)) <= 3 and SequenceMatcher(None, mot, j).ratio() >= 0.8:
+            return True
+        if len(j) > len(mot) and SequenceMatcher(None, mot, j[:len(mot)]).ratio() >= 0.8:
+            return True
+    return False
 
 
 def score(q, nom, alias='', autres=''):
@@ -54,6 +60,10 @@ def score(q, nom, alias='', autres=''):
     longs = [m for m in mots if len(m) >= 4]
     if longs and all(_proche(m, jetons) for m in longs):
         return 40
+    # matières, quartier, filières… (champs secondaires) : un peu moins pertinent
+    jetons_tout = set(tout.split())
+    if longs and len(longs) == len(mots) and all(_proche(m, jetons_tout) for m in longs):
+        return 30
     return 0
 
 

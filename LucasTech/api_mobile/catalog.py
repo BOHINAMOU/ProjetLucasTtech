@@ -576,7 +576,7 @@ def carousel_admin(request):
             if not image:
                 continue
             out.append({'type': out_type, 'type_libelle': TYPE_LABELS.get(c.cible, ''), 'id': c.cible_id, 'slug': r[3],
-                        'lien': lien, 'cible': c.cible, 'titre': titre, 'sous_titre': '', 'prix': None,
+                        'lien': lien, 'cible': c.cible, 'bande': bool(c.image), 'titre': titre, 'sous_titre': '', 'prix': None,
                         'image': media(request, image), 'image_vignette': absolute(request, thumb_url(image, 800))})
             continue
         elif c.cible in sources:
@@ -589,7 +589,8 @@ def carousel_admin(request):
         if not image:
             continue
         out.append({'type': c.cible, 'type_libelle': TYPE_LABELS.get(c.cible, ''), 'id': c.cible_id, 'slug': slug,
-                    'lien': c.lien, 'titre': titre, 'sous_titre': '', 'prix': prix, 'image': media(request, image),
+                    'lien': c.lien, 'bande': bool(c.image), 'titre': titre, 'sous_titre': '', 'prix': prix,
+                    'image': media(request, image),
                     'image_vignette': absolute(request, thumb_url(image, 800))})
     return out
 
@@ -815,6 +816,34 @@ def recherche(request):
                [{'id': l.pk, 'titre': l.nom, 'nom': l.nom,
                  'image_vignette': (lambda ph: vignette(request, ph[0].image) if ph else None)(l.photos.all()[:1])}
                 for l in logs])
+    if (request.GET.get('v') or '') >= '3':  # appli 1.7.4+ : répétiteurs, restaurants, vendeurs, emplois
+        from .repetiteurs import _actifs as reps
+        groupe('repetiteur', 'Répétiteurs', [
+            {'id': r.pk, 'titre': r.nom, 'nom': r.nom, 'sous_titre': r.niveaux,
+             'image_vignette': vignette(request, r.photo) if r.photo else None}
+            for r in filtrer(reps(), q, 'nom', 'matieres', 'niveaux', 'ville', 'quartier')[:n]])
+        from Restaurants.api import visibles as restos
+        from Restaurants.models import Plat
+        rs = list(filtrer(restos(), q, 'nom', 'quartier', 'ville', 'adresse')[:n])
+        plats = list(filtrer(Plat.objects.filter(disponible=True, restaurant__visible=True).select_related('restaurant'),
+                             q, 'nom', 'description')[:n])
+        groupe('restaurant', 'Restaurants', [
+            {'id': r.pk, 'slug': r.slug, 'titre': r.nom, 'nom': r.nom, 'sous_titre': r.lieu,
+             'image_vignette': vignette(request, r.couverture or r.logo) if (r.couverture or r.logo) else None} for r in rs]
+            + [{'id': p.pk, 'slug': p.restaurant.slug, 'titre': f"{p.nom} · {p.restaurant.nom}", 'nom': p.nom,
+                'sous_titre': money(p.prix), 'image_vignette': vignette(request, p.image) if p.image else None}
+               for p in plats if p.restaurant_id not in {r.pk for r in rs}][:n])
+        from Marche.models import Vendeur
+        groupe('vendeur', 'Boutiques des vendeurs', [
+            {'id': v.pk, 'titre': v.boutique, 'nom': v.boutique, 'sous_titre': v.ville,
+             'url': absolute(request, v.lien_public()), 'image_vignette': vignette(request, v.logo) if v.logo else None}
+            for v in filtrer(Vendeur.objects.filter(statut='valide').exclude(slug=''), q, 'boutique', 'ville',
+                             'description')[:n] if v.actif])
+        from Offres.models import OffreEmploi
+        groupe('emploi', "Offres d'emploi", [
+            {'id': o.pk, 'titre': o.titre, 'nom': o.titre, 'image_vignette': vignette(request, o.image) if o.image else None}
+            for o in filtrer(OffreEmploi.objects.filter(publie=True), q, 'titre', 'entreprise', 'ville', 'description')[:n]
+            if o.active])
     # le groupe dont le premier résultat correspond le mieux passe devant (« UL » : Écoles avant Boutique)
     from .recherche import score
     groupes.sort(key=lambda g: -max(score(q, f"{r.get('nom') or r.get('titre') or ''}") for r in g['resultats']))
