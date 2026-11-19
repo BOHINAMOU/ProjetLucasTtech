@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ e.nom }} — Écoles — Lantante Technologie{% endblock %}
+{% block meta_description %}{{ e.nom }}{% if e.ville %}, {{ e.ville }}{% endif %} : filières, contacts et inscription.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.ef{max-width:860px}
+.ef-tete{display:flex;gap:16px;align-items:center;margin-bottom:12px}
+.ef-tete img{width:88px;height:88px;object-fit:contain;background:#fff;border:1px solid #e3e8e5;border-radius:18px;padding:8px;flex:0 0 auto}
+.ef-tete h1{font-size:clamp(1.3rem,4vw,1.8rem);font-weight:800;color:#0b2e1d;margin:0}
+.ef-tete small{color:#6e6e73}
+.ef-desc{color:#3e4842;line-height:1.6;white-space:pre-line;margin:0 0 16px}
+.ef-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.ef-actions a{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 18px;border-radius:12px;font-weight:800;text-decoration:none!important}
+.ef-actions .p{background:#0B7A4B;color:#fff!important}
+.ef-actions .s{border:2px solid #0B7A4B;color:#0B7A4B!important}
+.ef h2{font-size:1.2rem;font-weight:800;color:#0b2e1d;margin:0 0 10px}
+.ef-fil{background:#fff;border:1px solid #e3e8e5;border-radius:16px;margin-bottom:10px;overflow:hidden}
+.ef-fil summary{cursor:pointer;padding:14px 16px;font-weight:800;color:#0b2e1d;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.ef-fil summary::-webkit-details-marker{display:none}
+.ef-fil summary small{color:#0B7A4B;font-weight:700;white-space:nowrap}
+.ef-fil .in{padding:0 16px 14px;color:#3e4842;line-height:1.55;white-space:pre-line}
+.ef-fil .in b{display:block;color:#0b2e1d;margin-top:10px}
+</style>{% endblock %}
+{% block content %}
+<div class="rp ef">
+  <div class="ef-tete">
+    {% if e.logo %}<img src="{{ e.logo.url }}" alt="">{% endif %}
+    <div><h1>{{ e.nom }}</h1>{% if e.ville %}<small>{{ e.ville }}</small>{% endif %}</div>
+  </div>
+  {% if e.description %}<p class="ef-desc">{{ e.description }}</p>{% endif %}
+  <div class="ef-actions">
+    {% if inscription %}<a class="p" href="{{ inscription }}" target="_blank" rel="noopener">S'inscrire</a>{% endif %}
+    {% if e.site_web %}<a class="s" href="{{ e.site_web }}" target="_blank" rel="noopener">Site de l'école</a>{% endif %}
+    {% if e.telephone %}<a class="s" href="tel:{{ e.telephone }}">Appeler</a>{% endif %}
+  </div>
+  {% if filieres %}
+  <h2>Filières</h2>
+  {% for f in filieres %}
+  <details class="ef-fil">
+    <summary><span>{{ f.nom }}</span>{% if f.duree %}<small>{{ f.duree }}</small>{% endif %}</summary>
+    <div class="in">{% if f.resume %}{{ f.resume }}{% endif %}{% if f.niveau %}<b>Diplôme</b>{{ f.niveau }}{% endif %}{% if f.description %}<b>Le programme</b>{{ f.description }}{% endif %}{% if f.debouches %}<b>Débouchés</b>{{ f.debouches }}{% endif %}{% if f.conditions %}<b>Admission</b>{{ f.conditions }}{% endif %}</div>
+  </details>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

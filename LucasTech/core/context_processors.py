@@ -50,7 +50,9 @@ def offres_menu(request):
         ('hotels', reverse('hotels:liste'), "Hôtels"),
         ('logements', reverse('logements:liste'), "Location"),
         ('repetiteurs', reverse('repetiteurs:liste'), "Répétiteurs"),
+        ('ecoles', reverse('ecoles:liste'), "Écoles"),
         ('offres', reverse('offres:liste'), "Emplois"),
         ('events', reverse('events:list'), "Événements"),
+        ('boutiques', reverse('boutiques'), "Boutiques des vendeurs"),
     ]}
 

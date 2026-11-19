@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% block title %}Écoles — Lantante Technologie{% endblock %}
+{% block meta_description %}Écoles, universités et centres de formation au Togo : filières, contacts et inscription.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.ec-cherche{display:flex;gap:8px;margin:0 0 16px}
+.ec-cherche input{flex:1;min-width:0;padding:12px 14px;border:1px solid #dfe6e2;border-radius:14px;font-size:1rem}
+.ec-cherche button{border:0;background:#0B7A4B;color:#fff;border-radius:14px;padding:0 18px;font-weight:700}
+.ec-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.ec-carte{background:#fff;border:1px solid #e3e8e5;border-radius:20px;overflow:hidden;text-decoration:none!important;color:inherit;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.ec-carte:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(11,46,29,.12)}
+.ec-logo{aspect-ratio:16/10;background:#fff;display:grid;place-items:center;border-bottom:1px solid #eef1ee;padding:18px}
+.ec-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.ec-logo span{width:100%;height:100%;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,#0b5531,#17a35f);color:#fff;font-weight:800;font-size:2rem}
+.ec-c{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1;gap:4px}
+.ec-c h2{font-size:1.02rem;font-weight:800;color:#0b2e1d;margin:0;line-height:1.3}
+.ec-c small{color:#6e6e73}
+.ec-c b{color:#0B7A4B;font-size:.88rem}
+.ec-voir{margin-top:auto;display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:12px;background:#0B7A4B;color:#fff;font-weight:800;font-size:.92rem}
+</style>{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:1100px">
+  <div class="rp-banniere"><div><h1>Écoles</h1></div></div>
+  <form method="get" class="ec-cherche"><input name="q" value="{{ q }}" placeholder="École, filière, ville…" aria-label="Rechercher"><button>Chercher</button></form>
+  {% if ecoles %}
+  <div class="ec-grille">
+    {% for e in ecoles %}
+    <a class="ec-carte" href="{% url 'ecoles:fiche' e.slug %}">
+      <div class="ec-logo">{% if e.logo %}<img src="{{ e.logo.url }}" alt="{{ e.nom }}" loading="lazy">{% else %}<span>{{ e.nom|slice:":2"|upper }}</span>{% endif %}</div>
+      <div class="ec-c">
+        <h2>{{ e.nom }}</h2>
+        {% if e.ville %}<small>{{ e.ville }}</small>{% endif %}
+        {% if e.nb_filieres %}<b>{{ e.nb_filieres }} filière{{ e.nb_filieres|pluralize }}</b>{% endif %}
+        <span class="ec-voir" style="margin-top:10px">Voir l'école</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<p style="color:#6e6e73;text-align:center;padding:30px 0">Aucune école trouvée.</p>{% endif %}
+</div>
+{% endblock %}

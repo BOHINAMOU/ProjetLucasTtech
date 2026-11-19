@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}Boutiques des vendeurs — Lantante Technologie{% endblock %}
+{% block meta_description %}Les boutiques des vendeurs partenaires de Lantante.{% endblock %}
+{% block extra_head %}{% include 'repetiteurs/_style.html' %}
+<style>
+.bv-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.bv-carte{background:#fff;border:1px solid #e3e8e5;border-radius:20px;overflow:hidden;text-decoration:none!important;color:inherit;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.bv-carte:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(11,46,29,.12)}
+.bv-im{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#0b5531,#17a35f)}
+.bv-im img.b{width:100%;height:100%;object-fit:cover;display:block}
+.bv-im .l,.bv-im .i{position:absolute;left:12px;bottom:-22px;width:56px;height:56px;border-radius:16px;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.bv-im .l{object-fit:contain;padding:4px}
+.bv-im .i{display:grid;place-items:center;font-weight:800;color:#0B7A4B;font-size:1.4rem}
+.bv-c{padding:30px 14px 14px;display:flex;flex-direction:column;flex:1;gap:4px}
+.bv-c h2{font-size:1.05rem;font-weight:800;color:#0b2e1d;margin:0}
+.bv-c small{color:#6e6e73}
+.bv-voir{margin-top:auto;display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:12px;background:#0B7A4B;color:#fff;font-weight:800;font-size:.92rem}
+</style>{% endblock %}
+{% block content %}
+<div class="rp" style="max-width:1100px">
+  <div class="rp-banniere"><div><h1>Boutiques des vendeurs</h1></div></div>
+  {% if vendeurs %}
+  <div class="bv-grille">
+    {% for v in vendeurs %}
+    <a class="bv-carte" href="{{ v.lien_public }}">
+      <div class="bv-im">{% if v.banniere %}<img class="b" src="{{ v.banniere.url }}" alt="" loading="lazy">{% endif %}{% if v.logo %}<img class="l" src="{{ v.logo.url }}" alt="">{% else %}<span class="i">{{ v.boutique|slice:":1"|upper }}</span>{% endif %}</div>
+      <div class="bv-c"><h2>{{ v.boutique }}</h2>{% if v.ville %}<small>{{ v.ville }}</small>{% endif %}<span class="bv-voir" style="margin-top:10px">Voir la boutique</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<p style="color:#6e6e73;text-align:center;padding:30px 0">Bientôt disponible</p>{% endif %}
+</div>
+{% endblock %}

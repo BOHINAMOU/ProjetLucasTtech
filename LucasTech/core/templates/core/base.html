@@ -368,8 +368,8 @@
 </section>
 
 {% endblock %}
-{% with app=request.resolver_match.app_name %}{% if app in 'restaurants hotels logements repetiteurs offres services formations events' %}
-<nav class="autres-services" aria-label="Autres services"><div class="autres-services__in">{% include 'core/_offres_liens.html' with pastilles=1 sauf=app %}</div></nav>
+{% with app=request.resolver_match.app_name %}{% if app in 'restaurants hotels logements repetiteurs offres services formations events ecoles' or request.resolver_match.url_name == 'boutiques' %}
+<nav class="autres-services" aria-label="Autres services"><div class="autres-services__in">{% include 'core/_offres_liens.html' with pastilles=1 sauf=app|default:request.resolver_match.url_name %}</div></nav>
 {% endif %}{% endwith %}
 </main>
 
