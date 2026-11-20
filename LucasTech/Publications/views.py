@@ -33,7 +33,7 @@ def publications(request):
 
     from django.db.models import Count
     qs = Publication.objects.filter(is_published=True, show_on_site=True).select_related('author', 'category').annotate(
-        nb_likes=Count('likes', distinct=True))
+        nb_likes=Count('likes', distinct=True)).order_by('-created_at')
 
     active_category = None
     if category_slug:
@@ -49,7 +49,7 @@ def publications(request):
         qs = qs.filter(query)
 
     # À la une (featured) séparés pour le hero
-    featured = qs.filter(is_featured=True).first()
+    featured = qs.filter(is_featured=True).order_by('-created_at').first()
 
     return render(request, 'publications/publications.html', {
         'publications':    qs,
