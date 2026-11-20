@@ -575,6 +575,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--ink); }
     });
   })();
   </script>
+  {% include 'core/_chaine_info.html' %}
   <!-- ══ COMMENTAIRES ET MESSAGE RAPIDE ══ -->
   <section class="nd-feedback" id="commentaires">
     {% for m in messages %}<div class="nd-flash {{ m.tags }}">{{ m }}</div>{% endfor %}
