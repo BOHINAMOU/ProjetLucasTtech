@@ -224,6 +224,7 @@ TEMPLATES = [
                 'core.context_processors.site_settings',
                 'core.context_processors.partner_cta',
                 'core.context_processors.offres_menu',
+                'core.context_processors.services_rapides',
                 'core.context_admin.rubriques',
 
                 'social_django.context_processors.backends',

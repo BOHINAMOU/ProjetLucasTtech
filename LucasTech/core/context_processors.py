@@ -57,3 +57,14 @@ def offres_menu(request):
         ('contact', reverse('core:contact'), "Nous contacter"),
     ]}
 
+
+
+def services_rapides(request):
+    """Pastilles de l'accueil : services demandés le plus souvent (lien WhatsApp avec message prêt)."""
+    if request.resolver_match is None or request.resolver_match.view_name != 'core:home':
+        return {}
+    return {'services_rapides': [
+        ('fa-file-lines', 'Rédaction de CV'), ('fa-flag', 'CV canadien'), ('fa-bullhorn', "Publication d'annonces"),
+        ('fa-address-card', 'Cartes de visite'), ('fa-book-open', 'Press-book'), ('fa-palette', "Création d'affiches"),
+        ('fa-video', 'Vidéos publicitaires'), ('fa-laptop', 'Installation de système'), ('fa-ellipsis', 'Autres services'),
+    ]}
