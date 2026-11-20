@@ -96,7 +96,7 @@
       <h2>Votre entreprise dans leur poche.</h2>
       <p>Applis Android et iPhone, du design jusqu'à la publication.</p>
       <a href="{% url 'services:services' %}" class="lx-link">Parler de mon appli <i class="fa fa-arrow-right"></i></a>
-      <div>{% include 'core/_lien_service.html' with nom="Installation de systèmes d'exploitation" icone='fa-laptop' %}</div>
+      <div>{% include 'core/_lien_service.html' with nom="Installation de systèmes d'exploitation" label="Installez votre système d'exploitation" icone='fa-laptop' %}</div>
     </div>
   </div>
 </section>
@@ -111,7 +111,7 @@
       <h2>Une page qui vit, des clients qui écrivent.</h2>
       <p>On gère vos pages Facebook, Instagram et TikTok chaque semaine.</p>
       <a href="{% url 'services:services' %}" class="lx-link">Confier ma page <i class="fa fa-arrow-right"></i></a>
-      <div>{% include 'core/_lien_service.html' with nom="Création d'affiches" icone='fa-palette' %}</div>
+      <div>{% include 'core/_lien_service.html' with nom="Création d'affiches" label="Créez votre affiche" icone='fa-palette' %}</div>
     </div>
   </div>
 </section>
@@ -128,7 +128,7 @@
       <h2>15 secondes pour donner envie.</h2>
       <p>Tournage et montage de vidéos courtes pour vos réseaux.</p>
       <a href="{% url 'services:services' %}" class="lx-link">Commander une vidéo <i class="fa fa-arrow-right"></i></a>
-      <div>{% include 'core/_lien_service.html' with nom="Création de vidéos publicitaires" icone='fa-video' %}</div>
+      <div>{% include 'core/_lien_service.html' with nom="Création de vidéos publicitaires" label="Créez votre vidéo publicitaire" icone='fa-video' %}</div>
     </div>
   </div>
 </section>
@@ -202,7 +202,7 @@
       <div class="lx-card__txt"><span class="lx-card__tag">E-commerce</span><h3>Boutique en ligne</h3><p>Matériel tech livré au Togo.</p></div>
     </a>
   </div>
-  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Rédaction de CV" icone='fa-file-lines' %}{% include 'core/_lien_service.html' with nom="CV canadien" icone='fa-flag' %}</div>
+  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Rédaction de CV" label="Faites votre CV" icone='fa-file-lines' %}{% include 'core/_lien_service.html' with nom="CV canadien" label="Faites votre CV canadien" icone='fa-flag' %}</div>
 </section>
 
 <!-- ═════════ 6. LA BOUTIQUE (vrais produits) ═════════ -->
@@ -212,7 +212,7 @@
     <h2>La boutique.</h2>
     <a href="{% url 'shop:shop' %}" class="lx-link">Toute la boutique <i class="fa fa-arrow-right"></i></a>
   </header>
-  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Cartes de visite" icone='fa-address-card' %}</div>
+  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Cartes de visite" label="Faites vos cartes de visite" icone='fa-address-card' %}</div>
   <div class="lx-rail" data-rail>
     {% for p in home_products %}
     <a href="{% url 'shop:product_detail' p.pk %}" class="lx-prod">
@@ -245,7 +245,7 @@
     <p class="lx-label">Qui sommes-nous</p>
     <h2>Une équipe d'ici.</h2>
     <p>Développeurs, créateurs et vidéastes basés à Lomé.</p>
-    <div>{% include 'core/_lien_service.html' with nom="Press-book" icone='fa-book-open' %}</div>
+    <div>{% include 'core/_lien_service.html' with nom="Press-book" label="Faites votre press-book" icone='fa-book-open' %}</div>
     <div class="lx-numbers">
       <div><strong data-count="70">0</strong><span>+</span><p>clients accompagnés</p></div>
       <div><strong data-count="50">0</strong><span>+</span><p>projets livrés</p></div>
@@ -290,7 +290,7 @@
     <h2>Actualité tech.</h2>
     <a href="{% url 'publications:publications' %}" class="lx-link">Tous les articles <i class="fa fa-arrow-right"></i></a>
   </header>
-  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Publication d'annonces" icone='fa-bullhorn' %}</div>
+  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Publication d'annonces" label="Publiez votre annonce" icone='fa-bullhorn' %}</div>
   <div class="lx-news__grid">
     {% for post in home_posts %}
     <a href="{% url 'publications:publication_detail' post.slug %}" class="lx-post">
