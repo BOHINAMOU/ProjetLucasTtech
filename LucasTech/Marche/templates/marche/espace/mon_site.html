@@ -64,7 +64,7 @@ main { max-width:1400px; }
     <div class="carte ms-bloc">
       <h2>Contacts</h2>
       <div class="grille">
-        {% for f in form %}{% if f.name in 'whatsapp telephone email_contact ville adresse_retrait facebook instagram tiktok' %}
+        {% for f in form %}{% if f.name in 'whatsapp telephone email_contact ville adresse_retrait chaine_whatsapp texte_chaine facebook instagram tiktok youtube x telegram site_web' %}
         <div class="champ"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% if f.help_text %}<small>{{ f.help_text }}</small>{% endif %}{% for e in f.errors %}<em>{{ e }}</em>{% endfor %}</div>
         {% endif %}{% endfor %}
       </div>

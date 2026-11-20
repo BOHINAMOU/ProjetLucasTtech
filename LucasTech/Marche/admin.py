@@ -123,8 +123,9 @@ class VendeurAdmin(RetourMixin, admin.ModelAdmin):
                               'description': "Position GPS : dans Google Maps, appui long sur le lieu, puis copier les deux nombres."}),
         ('Argent', {'fields': ('commission_pct', 'numero_reversement', 'chiffres')}),
         ("Site du vendeur", {'fields': ('slug', 'logo', 'banniere', 'slogan', 'couleur', 'description', 'telephone',
-                                        'email_contact', 'facebook', 'instagram', 'tiktok'),
-                             'description': "Mini-site public : /s/<adresse>/"}),
+                                        'email_contact', 'chaine_whatsapp', 'texte_chaine', 'facebook', 'instagram',
+                                        'tiktok', 'youtube', 'x', 'telegram', 'site_web'),
+                             'description': "Mini-site public : /vendeur/<adresse>/"}),
     )
 
     def get_queryset(self, request):

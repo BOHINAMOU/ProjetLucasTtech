@@ -62,7 +62,7 @@ class Vendeur(models.Model):
     logo = models.ImageField("Logo", upload_to='vendeurs/logos/', blank=True)
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     description = models.TextField("Description", blank=True)
-    # Mini-site du vendeur (/s/<adresse>/)
+    # Mini-site du vendeur (/vendeur/<adresse>/)
     banniere = models.ImageField("Image de bannière", upload_to='vendeurs/bannieres/', blank=True)
     slogan = models.CharField("Phrase d'accueil", max_length=140, blank=True)
     couleur = models.CharField("Couleur principale", max_length=7, default='#0F6B3E',
@@ -71,6 +71,14 @@ class Vendeur(models.Model):
     facebook = models.URLField("Facebook", blank=True)
     instagram = models.URLField("Instagram", blank=True)
     tiktok = models.URLField("TikTok", blank=True)
+    youtube = models.URLField("YouTube", blank=True)
+    x = models.URLField("X (Twitter)", blank=True)
+    telegram = models.URLField("Telegram", blank=True)
+    site_web = models.URLField("Site web", blank=True)
+    chaine_whatsapp = models.URLField("Lien de ma chaîne WhatsApp", blank=True,
+                                      help_text="Ex. https://whatsapp.com/channel/…")
+    texte_chaine = models.CharField("Texte du bouton de la chaîne", max_length=60, blank=True,
+                                    default="Rejoindre ma chaîne WhatsApp")
     created_at = models.DateTimeField("Créé le", auto_now_add=True)
 
     class Meta:

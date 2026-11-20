@@ -21,14 +21,11 @@
   <p class="sous">Écrivez-nous ou appelez-nous, nous répondons vite.</p>
   <div class="ct">
     <div class="acts">
-      {% if wa %}<a class="btn wa" href="{{ wa }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
-      {% if tel %}<a class="btn" href="tel:+{{ tel }}">Appeler</a>{% endif %}
+      {% if wa %}<a class="btn wa" href="{{ wa }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>{% endif %}
+      {% if tel %}<a class="btn" href="tel:+{{ tel }}"><i class="fas fa-phone"></i> Appeler</a>{% endif %}
       {% if v.email_contact %}<a class="btn cl" href="mailto:{{ v.email_contact }}">Envoyer un e-mail</a>{% endif %}
-      {% if v.facebook or v.instagram or v.tiktok %}<div class="reseaux">
-        {% if v.facebook %}<a href="{{ v.facebook }}" target="_blank" rel="noopener">Facebook</a>{% endif %}
-        {% if v.instagram %}<a href="{{ v.instagram }}" target="_blank" rel="noopener">Instagram</a>{% endif %}
-        {% if v.tiktok %}<a href="{{ v.tiktok }}" target="_blank" rel="noopener">TikTok</a>{% endif %}
-      </div>{% endif %}
+      {% if v.chaine_whatsapp %}<a class="btn wa" href="{{ v.chaine_whatsapp }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> {{ v.texte_chaine|default:"Rejoindre ma chaîne WhatsApp" }}</a>{% endif %}
+      {% include 'minisite/_reseaux.html' %}
     </div>
     <div class="inf">
       {% if v.whatsapp %}<div><span class="ic">W</span><span><b>WhatsApp</b>+{{ v.whatsapp }}</span></div>{% endif %}

@@ -226,7 +226,7 @@ class AccesVendeurTests(TestCase):
     def test_mon_lien(self):
         self.client.login(email='vend@x.tg', password='Motdepasse-1')
         r = self.client.get(f'/espace/{self.v.code}/mon-lien/')
-        self.assertContains(r, '/s/ma-boutique/')
+        self.assertContains(r, '/vendeur/ma-boutique/')
         self.assertContains(r, 'Partager sur WhatsApp')
 
 
@@ -244,19 +244,33 @@ class MiniSiteTests(TestCase):
         self.p = Product.objects.create(name='Robe wax', price=15000, vendeur=self.v, stock=2)
 
     def test_pages_du_mini_site(self):
-        r = self.client.get('/s/mode-ama/')
+        r = self.client.get('/vendeur/mode-ama/')
         self.assertContains(r, 'Le pagne autrement')
         self.assertContains(r, 'Notre histoire')
         self.assertContains(r, '#AA3366')
         self.assertNotContains(r, 'Monétisation')  # aucun menu Lantante
-        self.assertContains(self.client.get('/s/mode-ama/produits/?q=robe'), 'Robe wax')
-        r = self.client.get(f'/s/mode-ama/produits/{self.p.pk}/')
+        self.assertContains(self.client.get('/vendeur/mode-ama/produits/?q=robe'), 'Robe wax')
+        r = self.client.get(f'/vendeur/mode-ama/produits/{self.p.pk}/')
         self.assertContains(r, 'Commander sur WhatsApp')
-        self.assertContains(self.client.get('/s/mode-ama/contact/'), 'wa.me/22890000000')
+        self.assertContains(self.client.get('/vendeur/mode-ama/contact/'), 'wa.me/22890000000')
+
+    def test_chaine_et_reseaux(self):
+        r = self.client.get('/vendeur/mode-ama/')
+        self.assertNotContains(r, 'Rejoindre ma chaîne')  # rien d'affiché si non renseigné
+        self.v.chaine_whatsapp = 'https://whatsapp.com/channel/abc'
+        self.v.instagram = 'https://instagram.com/modeama'
+        self.v.save()
+        r = self.client.get('/vendeur/mode-ama/')
+        self.assertContains(r, 'https://whatsapp.com/channel/abc')
+        self.assertContains(r, 'Rejoindre ma chaîne WhatsApp')
+        self.assertContains(r, 'https://instagram.com/modeama')
+        self.assertNotContains(r, 'aria-label="Facebook"')
 
     def test_ancienne_adresse_et_espace(self):
         r = self.client.get('/shop/vendeur/mode-ama/')
-        self.assertEqual((r.status_code, r['Location']), (301, '/s/mode-ama/'))
+        self.assertEqual((r.status_code, r['Location']), (301, '/vendeur/mode-ama/'))
+        r = self.client.get('/s/mode-ama/produits/?q=robe')
+        self.assertEqual((r.status_code, r['Location']), (301, '/vendeur/mode-ama/produits/?q=robe'))
         self.client.login(email='ms@x.tg', password='Motdepasse-1')
         r = self.client.get(f'/espace/{self.v.code}/mon-site/')
         self.assertContains(r, 'Sections de l')

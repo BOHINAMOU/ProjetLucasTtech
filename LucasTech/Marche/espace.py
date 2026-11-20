@@ -303,7 +303,8 @@ class SiteForm(forms.ModelForm):
     class Meta:
         model = Vendeur
         fields = ['boutique', 'slogan', 'logo', 'banniere', 'couleur', 'description', 'whatsapp', 'telephone',
-                  'email_contact', 'ville', 'adresse_retrait', 'facebook', 'instagram', 'tiktok']
+                  'email_contact', 'ville', 'adresse_retrait', 'chaine_whatsapp', 'texte_chaine',
+                  'facebook', 'instagram', 'tiktok', 'youtube', 'x', 'telegram', 'site_web']
         labels = {'boutique': "Nom de la boutique", 'adresse_retrait': "Adresse", 'description': "Présentation"}
         help_texts = {'whatsapp': "+228 suivi de 8 chiffres.", 'couleur': '', 'banniere': "Grande image en haut de votre site."}
         widgets = {'couleur': forms.TextInput(attrs={'type': 'color'}),
@@ -314,6 +315,15 @@ class SiteForm(forms.ModelForm):
 
     def clean_whatsapp(self):
         return whatsapp_togo(self.cleaned_data.get('whatsapp'))
+
+    def clean_chaine_whatsapp(self):
+        u = (self.cleaned_data.get('chaine_whatsapp') or '').strip()
+        if u and 'whatsapp.com' not in u.lower():
+            raise forms.ValidationError("Collez le lien de votre chaîne (https://whatsapp.com/channel/…).")
+        return u
+
+    def clean_texte_chaine(self):
+        return (self.cleaned_data.get('texte_chaine') or '').strip() or "Rejoindre ma chaîne WhatsApp"
 
     def clean_couleur(self):
         import re

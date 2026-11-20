@@ -1,4 +1,4 @@
-"""Mini-site d'un vendeur (/s/<adresse>/) : Accueil, Produits, Détail, Contact. Aucun habillage Lantante."""
+"""Mini-site d'un vendeur (/vendeur/<adresse>/) : Accueil, Produits, Détail, Contact. Aucun habillage Lantante."""
 import re
 from urllib.parse import quote
 

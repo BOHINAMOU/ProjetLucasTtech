@@ -14,7 +14,8 @@ from .sitemaps import sitemaps
 urlpatterns = [
     path('repetiteurs/', include('Repetiteurs.urls')),
     path('vendre/', include('Marche.urls_vendre')),
-    path('s/', include('Marche.urls_minisite')),
+    path('vendeur/', include('Marche.urls_minisite')),
+    re_path(r'^s/(?P<rest>.*)$', RedirectView.as_view(url='/vendeur/%(rest)s', permanent=True, query_string=True)),
     path('ecoles/', include('Ecoles.urls')),
     path('boutiques/', __import__('Marche.boutiques', fromlist=['liste']).liste, name='boutiques'),
     path('emplois/', include('Offres.urls')),

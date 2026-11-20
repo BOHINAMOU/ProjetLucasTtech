@@ -1,0 +1,9 @@
+{% if v.facebook or v.instagram or v.tiktok or v.youtube or v.x or v.telegram or v.site_web %}<div class="reso{% if clair %} clair{% endif %}">
+  {% if v.facebook %}<a href="{{ v.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>{% endif %}
+  {% if v.instagram %}<a href="{{ v.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+  {% if v.tiktok %}<a href="{{ v.tiktok }}" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
+  {% if v.youtube %}<a href="{{ v.youtube }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>{% endif %}
+  {% if v.x %}<a href="{{ v.x }}" target="_blank" rel="noopener" aria-label="X"><i class="fab fa-x-twitter"></i></a>{% endif %}
+  {% if v.telegram %}<a href="{{ v.telegram }}" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>{% endif %}
+  {% if v.site_web %}<a href="{{ v.site_web }}" target="_blank" rel="noopener" aria-label="Site web"><i class="fas fa-globe"></i></a>{% endif %}
+</div>{% endif %}
