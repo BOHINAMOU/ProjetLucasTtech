@@ -17,14 +17,6 @@
         <input type="search" name="q" value="{{ search_query }}" placeholder="Nom ou sigle (ex. ENS)" aria-label="Rechercher un concours">
         <button type="submit">Rechercher</button>
       </form>
-      <div class="cx-row">
-        <div class="cx-pills">
-          <span><i class="fa fa-file-pen"></i><b>{{ stats.contests }}</b> concours</span>
-          <span><i class="fa fa-file-lines"></i><b>{{ stats.papers }}</b> épreuve{{ stats.papers|pluralize }}</span>
-          <span><i class="fa fa-file-circle-check"></i><b>{{ stats.corrections }}</b> corrigé{{ stats.corrections|pluralize }}</span>
-        </div>
-        <span class="cx-sub"><i class="fa fa-lock-open"></i> Un concours = un paiement, accès à vie</span>
-      </div>
     </div>
   </section>
 
