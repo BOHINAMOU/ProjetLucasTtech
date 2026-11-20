@@ -3,10 +3,18 @@
 
 {% block extra_head %}
 <style>
-.lien-srv{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;margin:12px 8px 0 0;border-radius:999px;background:#fff;border:2px solid #D4A017;color:#0b2e1d!important;font-weight:700;font-size:.92rem;text-decoration:none!important;white-space:nowrap;box-shadow:0 4px 12px rgba(11,46,29,.08)}
-.lien-srv i{color:#0B7A4B}
-.lien-srv:hover{background:#FFF8E6}
-.lien-srv-bloc{padding:0 clamp(1rem,4vw,2rem);max-width:1200px;margin:6px auto 0}
+.lien-srv{display:inline-flex;align-items:center;gap:10px;max-width:100%;box-sizing:border-box;margin:20px 10px 0 0;padding:8px 18px 8px 8px;border-radius:999px;background:#0B7A4B;color:#fff!important;font-weight:700;font-size:.95rem;line-height:1.25;text-decoration:none!important;box-shadow:0 8px 20px rgba(11,122,75,.22);transition:background .2s,transform .2s,box-shadow .2s}
+.lien-srv>i{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.14);color:#F2C94C;display:grid;place-items:center;font-size:.85rem}
+.lien-srv::after{content:"\f232";font-family:"Font Awesome 6 Brands";font-weight:400;font-size:1rem;color:#fff;opacity:.55;transition:opacity .2s,transform .2s}
+.lien-srv:hover,.lien-srv:focus-visible{background:#0d8f57;transform:translateY(-1px);box-shadow:0 12px 26px rgba(11,122,75,.3)}
+.lien-srv:hover::after{opacity:1;transform:translateX(2px)}
+.lien-srv-bloc{max-width:1320px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px}
+.lien-srv-bloc .lien-srv{margin:0}
+.lx-more .lien-srv-bloc{margin-top:1.6rem}
+.lx-shop .lien-srv-bloc{padding:0 clamp(1.25rem,5vw,4rem);margin:-1.4rem 0 2rem;max-width:none}
+.lx-news .lien-srv-bloc{margin:-1.4rem auto 2rem}
+.hx__cta .lien-srv{margin:0}
+@media (max-width:640px){.hx__cta .lien-srv{width:100%;justify-content:center}}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'core/css/home.css' %}{% if cache_bust %}?v={{ cache_bust }}{% endif %}">
@@ -204,7 +212,7 @@
     <h2>La boutique.</h2>
     <a href="{% url 'shop:shop' %}" class="lx-link">Toute la boutique <i class="fa fa-arrow-right"></i></a>
   </header>
-  <div class="lien-srv-bloc" style="margin-bottom:10px">{% include 'core/_lien_service.html' with nom="Cartes de visite" icone='fa-address-card' %}</div>
+  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Cartes de visite" icone='fa-address-card' %}</div>
   <div class="lx-rail" data-rail>
     {% for p in home_products %}
     <a href="{% url 'shop:product_detail' p.pk %}" class="lx-prod">
@@ -282,7 +290,7 @@
     <h2>Actualité tech.</h2>
     <a href="{% url 'publications:publications' %}" class="lx-link">Tous les articles <i class="fa fa-arrow-right"></i></a>
   </header>
-  <div class="lien-srv-bloc" style="margin-bottom:10px">{% include 'core/_lien_service.html' with nom="Publication d'annonces" icone='fa-bullhorn' %}</div>
+  <div class="lien-srv-bloc">{% include 'core/_lien_service.html' with nom="Publication d'annonces" icone='fa-bullhorn' %}</div>
   <div class="lx-news__grid">
     {% for post in home_posts %}
     <a href="{% url 'publications:publication_detail' post.slug %}" class="lx-post">
