@@ -12,7 +12,7 @@
 <div class="bq">
   <div class="bq-wrap">
     <div class="pp-bar">
-      <a href="{% url 'services:services' %}" class="pp-back"><i class="fa fa-arrow-left"></i> Services</a>
+      <a href="{% url 'services:services' %}" class="pp-back" onclick="if(document.referrer.indexOf(location.host)>-1&&history.length>1){history.back();return false}"><i class="fa fa-arrow-left"></i> Retour</a>
       <nav class="pp-crumbs" aria-label="Fil d'Ariane">
         <a href="{% url 'core:home' %}">Accueil</a><span>/</span><a href="{% url 'services:services' %}">Services</a>
         {% if service.category %}<span>/</span><a href="{% url 'services:services' %}?category={{ service.category.slug }}">{{ service.category.name }}</a>{% endif %}
@@ -44,7 +44,7 @@
             <a href="{% url 'payments:checkout' 'service' service.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Payer en ligne</a>
             {% endif %}
             {% if wa %}
-            <a href="https://wa.me/{{ wa }}?text={{ 'Bonjour Lantante Technologie, je suis intéressé par : '|urlencode }}{{ service.title|urlencode }}." target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter</a>
+            <a href="https://wa.me/{{ wa }}?text={{ 'Bonjour Lantante Technologie, je suis intéressé par : '|urlencode }}{{ service.title|urlencode }}." target="_blank" rel="noopener" class="pp-btn pp-btn--wa" style="background:#0B7A4B!important;color:#fff!important;border-color:#0B7A4B!important;min-height:54px;font-size:1.05rem"><i class="fab fa-whatsapp"></i> Contactez-nous</a>
             {% endif %}
             <a href="#contact" class="pp-btn pp-btn--alt"><i class="fa fa-envelope"></i> Être rappelé</a>
           </div>
