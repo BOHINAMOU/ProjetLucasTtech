@@ -20,6 +20,7 @@
 <div class="rp" style="max-width:1100px">
   <div class="rp-banniere"><div><h1>Boutiques des vendeurs</h1></div></div>
   {% if vendeurs %}
+  {% include 'core/_recherche_live.html' with cible='.bv-carte' ph='Boutique, ville…' %}
   <div class="bv-grille">
     {% for v in vendeurs %}
     <a class="bv-carte" href="{{ v.lien_public }}">
@@ -28,6 +29,7 @@
     </a>
     {% endfor %}
   </div>
+  <p class="rch-rien" id="rch-rien" hidden>Aucun résultat</p>
   {% else %}<p style="color:#6e6e73;text-align:center;padding:30px 0">Bientôt disponible</p>{% endif %}
 </div>
 {% endblock %}

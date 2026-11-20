@@ -1,0 +1,8 @@
+<style>
+.rch{position:relative;margin:0 0 14px}
+.rch i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#6e6e73;pointer-events:none}
+.rch input{width:100%;min-height:50px;padding:0 14px 0 44px;border:2px solid #dfe6e2;border-radius:16px;font-size:1rem;background:#fff;box-sizing:border-box}
+.rch input:focus{outline:none;border-color:#0B7A4B;box-shadow:0 0 0 3px rgba(212,160,23,.18)}
+.rch-rien{color:#6e6e73;text-align:center;padding:18px 0}
+</style>
+<div class="rch"><i class="fas fa-magnifying-glass"></i><input type="search" data-live="{{ cible }}" data-rien="{{ rien|default:'rch-rien' }}"{% if groupes %} data-groupes="{{ groupes }}"{% endif %} placeholder="{{ ph|default:'Rechercher' }}" aria-label="Rechercher" autocomplete="off"></div>

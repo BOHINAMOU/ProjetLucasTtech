@@ -37,8 +37,9 @@
     <a href="?type=tickets{% if q %}&q={{ q|urlencode }}{% endif %}" class="evx-f{% if type == 'tickets' %} on{% endif %}">Tickets</a>
     <a href="?type=soutien{% if q %}&q={{ q|urlencode }}{% endif %}" class="evx-f{% if type == 'soutien' %} on{% endif %}">Soutien</a>
     {% if type %}<input type="hidden" name="type" value="{{ type }}">{% endif %}
-    <label class="evx-q"><input type="search" name="q" value="{{ q }}" placeholder="Rechercher" aria-label="Rechercher un événement"></label>
+    <label class="evx-q"><input type="search" name="q" value="{{ q }}" placeholder="Rechercher" aria-label="Rechercher un événement" autocomplete="off" data-live=".evx-card" data-rien="rch-rien" data-groupes=".evx-grid"></label>
   </form>
+  <p class="rch-rien" style="color:#6e6e73;text-align:center;padding:18px 0" id="rch-rien" hidden>Aucun résultat</p>
 
   <div class="evx-grid">
     {% for ev in upcoming %}{% include 'events/_card.html' %}

@@ -29,7 +29,7 @@
       </nav>
       <form class="bq-search" method="get" action="{% url 'formations:formations' %}#liste" role="search">
         <i class="fa fa-magnifying-glass"></i>
-        <input type="search" name="q" value="{{ search_query }}" placeholder="Rechercher une formation" aria-label="Rechercher une formation">
+        <input type="search" name="q" value="{{ search_query }}" placeholder="Rechercher une formation" aria-label="Rechercher une formation" autocomplete="off" data-live=".ct-card" data-rien="rch-rien" data-groupes=".ct-group">
         <button type="submit">Chercher</button>
       </form>
     </div>
@@ -44,6 +44,7 @@
       <div class="bq-empty"><i class="fa fa-graduation-cap"></i><p>Aucune formation ne correspond{% if search_query %} à « {{ search_query }} »{% endif %}.</p><p><a href="{% url 'formations:formations' %}">Voir toutes les formations</a></p></div>
       {% endfor %}
     </div>
+    <p class="rch-rien" style="color:#6e6e73;text-align:center;padding:18px 0" id="rch-rien" hidden>Aucun résultat</p>
 
     <div class="ct-cta">
       <div><h2>Une formation sur mesure ?</h2><p>Pour une équipe ou une école.</p></div>

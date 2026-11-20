@@ -24,12 +24,12 @@
 {% block content %}
 <div class="rp" style="max-width:1100px">
   <div class="rp-banniere"><div><h1>Hôtels</h1><p>Chambres et réservation par WhatsApp.</p></div></div>
-  <form class="ho-recherche" method="get"><input name="q" value="{{ q }}" placeholder="Hôtel, ville ou quartier" aria-label="Rechercher"><button>Chercher</button></form>
+  <form class="ho-recherche" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Hôtel, ville ou quartier" aria-label="Rechercher" autocomplete="off" data-live=".ho-carte" data-rien="rch-rien"><button>Chercher</button></form>
   {% if villes|length > 1 %}<div class="ho-villes"><a href="?" class="{% if not ville %}on{% endif %}">Toutes</a>{% for v in villes %}<a href="?ville={{ v|urlencode }}" class="{% if v == ville %}on{% endif %}">{{ v }}</a>{% endfor %}</div>{% endif %}
   {% if hotels %}
   <div class="ho-grille">
     {% for h in hotels %}
-    <a class="ho-carte" href="{{ h.get_absolute_url }}">
+    <a class="ho-carte" href="{{ h.get_absolute_url }}" data-t="{{ h.nom }} {{ h.quartier }} {{ h.ville }} {{ h.adresse }} {{ h.description|striptags|truncatewords:60 }}">
       <span style="position:relative;display:block">{% if h.photo %}<img src="{{ h.photo.url }}" alt="" loading="lazy">{% else %}<span class="ph"></span>{% endif %}{% if h.legende_photo %}<small style="position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:2px 8px;font-size:.75rem">{{ h.legende_photo }}</small>{% endif %}</span>
       <div class="ho-corps">
         <h2>{{ h.nom }}</h2>
@@ -40,6 +40,7 @@
     </a>
     {% endfor %}
   </div>
+  <p class="rch-rien" id="rch-rien" hidden>Aucun résultat</p>
   {% else %}
   <div class="ho-vide"><p style="font-size:1.2rem;font-weight:700;color:#0b2e1d">{% if q or ville %}Aucun hôtel trouvé.{% else %}Bientôt disponible{% endif %}</p></div>
   {% endif %}

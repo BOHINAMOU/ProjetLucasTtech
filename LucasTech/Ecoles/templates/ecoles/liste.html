@@ -21,11 +21,11 @@
 {% block content %}
 <div class="rp" style="max-width:1100px">
   <div class="rp-banniere"><div><h1>Écoles</h1></div></div>
-  <form method="get" class="ec-cherche"><input name="q" value="{{ q }}" placeholder="École, filière, ville…" aria-label="Rechercher"><button>Chercher</button></form>
+  <form method="get" class="ec-cherche"><input type="search" name="q" value="{{ q }}" placeholder="École, filière, ville…" aria-label="Rechercher" autocomplete="off" data-live=".ec-carte" data-rien="rch-rien"><button>Chercher</button></form>
   {% if ecoles %}
   <div class="ec-grille">
     {% for e in ecoles %}
-    <a class="ec-carte" href="{% url 'ecoles:fiche' e.slug %}">
+    <a class="ec-carte" href="{% url 'ecoles:fiche' e.slug %}" data-t="{{ e.nom }} {{ e.alias }} {{ e.ville }} {{ e.adresse }} {% for f in e.filieres.all %}{{ f.nom }} {% endfor %}{{ e.description|striptags|truncatewords:60 }}">
       <div class="ec-logo">{% if e.logo %}<img src="{{ e.logo.url }}" alt="{{ e.nom }}" loading="lazy">{% else %}<span>{{ e.nom|slice:":2"|upper }}</span>{% endif %}</div>
       <div class="ec-c">
         <h2>{{ e.nom }}</h2>
@@ -36,6 +36,7 @@
     </a>
     {% endfor %}
   </div>
+  <p class="rch-rien" id="rch-rien" hidden>Aucun résultat</p>
   {% else %}<p style="color:#6e6e73;text-align:center;padding:30px 0">Aucune école trouvée.</p>{% endif %}
 </div>
 {% endblock %}
