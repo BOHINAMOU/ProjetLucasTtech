@@ -26,7 +26,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
                            "Il s'applique à tous les tarifs de publication, pour les entreprises et les particuliers.",
         }),
         ('Réseaux sociaux', {
-            'fields': ('facebook_url', 'instagram_url', 'tiktok_url',
+            'fields': ('chaine_whatsapp_url', 'chaine_info_url', 'facebook_url', 'instagram_url', 'tiktok_url',
                        'youtube_url', 'telegram_url', 'twitter_url'),
             'description': "Laissez un champ vide pour masquer ce réseau dans le pied de page.",
         }),

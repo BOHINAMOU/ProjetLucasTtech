@@ -77,6 +77,7 @@ urlpatterns = [
     path('services/rubriques/', catalog.rubriques_services, name='rubriques_services'),
     path('services/espace/', catalog.espace_services, name='espace_services'),
     path('services/', catalog.services, name='services'),
+    path('reseaux/', __import__('api_mobile.reseaux', fromlist=['reseaux']).reseaux, name='reseaux'),
     path('services/categories/', catalog.service_categories, name='service_categories'),
     path('services/<int:pk>/', catalog.service, name='service'),
     path('services/<int:pk>/clic/<str:sorte>/', catalog.service_clic, name='service_clic'),

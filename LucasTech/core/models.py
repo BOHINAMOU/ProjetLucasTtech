@@ -322,6 +322,10 @@ class SiteSettings(models.Model):
     youtube_url    = models.URLField(blank=True, verbose_name="Lien YouTube")
     telegram_url   = models.URLField(blank=True, verbose_name="Lien Telegram")
     twitter_url    = models.URLField(blank=True, verbose_name="Lien X (Twitter)")
+    chaine_whatsapp_url = models.URLField(blank=True, verbose_name="Chaîne WhatsApp Lantante Technologie",
+                                          default='https://whatsapp.com/channel/0029VaojKGJ1dAvz1fveHF0b')
+    chaine_info_url = models.URLField(blank=True, verbose_name="Chaîne WhatsApp Lantante Technologie Info",
+                                      default='https://whatsapp.com/channel/0029VaB6DWdFMqrbdiP6Dh2X')
 
     class Meta:
         verbose_name = "Réglages du site"
