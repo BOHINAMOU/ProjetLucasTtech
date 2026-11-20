@@ -13,4 +13,5 @@ app_name = 'services'
 urlpatterns = [
     path('',           views.services,       name='services'),
     path('<int:pk>/',  views.service_detail, name='service_detail'),
+    path('credits-photos/', views.credits_photos, name='credits'),
 ]

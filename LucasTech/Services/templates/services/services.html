@@ -62,6 +62,8 @@
       {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}" target="_blank" rel="noopener" class="ct-pill ct-pill--green"><i class="fab fa-whatsapp"></i> Nous écrire sur WhatsApp</a>{% endif %}
     </div>
   </div>
+  <p style="text-align:center;margin:22px 0 0"><a href="{% url 'core:contact' %}" class="bq-btn bq-btn--green" style="display:inline-flex"><i class="fab fa-whatsapp"></i> Nous contacter</a></p>
+  <p style="text-align:center;margin-top:14px"><a href="{% url 'services:credits' %}" style="color:#9aa29d;font-size:.8rem">Crédits photos</a></p>
   {% include 'core/_toasts.html' %}
 </div>
 {% endblock %}

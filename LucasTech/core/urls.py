@@ -22,4 +22,5 @@ urlpatterns = [
     path('suppression-compte/', conformite.suppression_compte, name='suppression_compte'),
     path('signaler/', conformite.signaler, name='signaler'),
     path('conditions-utilisation/', views.terms_of_service, name='terms_of_service'),
+    path('contact/', __import__('core.contact', fromlist=['contact']).contact, name='contact'),
 ]

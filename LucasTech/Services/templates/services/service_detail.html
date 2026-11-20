@@ -44,7 +44,7 @@
             <a href="{% url 'payments:checkout' 'service' service.pk %}" class="pp-btn pp-btn--main"><i class="fa fa-lock"></i> Payer en ligne</a>
             {% endif %}
             {% if wa %}
-            <a href="https://wa.me/{{ wa }}?text={{ 'Bonjour, je suis intéressé(e) par le service : '|urlencode }}{{ service.title|urlencode }}" target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>
+            <a href="https://wa.me/{{ wa }}?text={{ 'Bonjour Lantante Technologie, je suis intéressé par : '|urlencode }}{{ service.title|urlencode }}." target="_blank" rel="noopener" class="pp-btn pp-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter</a>
             {% endif %}
             <a href="#contact" class="pp-btn pp-btn--alt"><i class="fa fa-envelope"></i> Être rappelé</a>
           </div>

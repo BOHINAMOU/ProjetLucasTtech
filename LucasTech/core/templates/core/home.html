@@ -292,6 +292,7 @@
     <p>Réponse rapide, devis gratuit.</p>
     <div class="hx__cta">
       {% if site_settings.whatsapp_1 %}<a href="https://wa.me/{{ site_settings.whatsapp_1 }}" class="lx-btn lx-btn--green" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Écrire sur WhatsApp</a>{% endif %}
+      <a href="{% url 'core:contact' %}" class="lx-btn lx-btn--glass"><i class="fas fa-envelope"></i> Nous contacter</a>
       <a href="{% url 'services:services' %}" class="lx-btn lx-btn--glass">Voir les services</a>
     </div>
   </div>

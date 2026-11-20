@@ -54,5 +54,6 @@ def offres_menu(request):
         ('offres', reverse('offres:liste'), "Emplois"),
         ('events', reverse('events:list'), "Événements"),
         ('boutiques', reverse('boutiques'), "Boutiques des vendeurs"),
+        ('contact', reverse('core:contact'), "Nous contacter"),
     ]}
 

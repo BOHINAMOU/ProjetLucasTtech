@@ -96,3 +96,14 @@ def service_detail(request, pk):
         'service': service,
         'related_services': related_services,
     })
+
+def credits_photos(request):
+    import json
+    import os
+    from django.conf import settings
+    try:
+        with open(os.path.join(settings.MEDIA_ROOT, 'services', 'photos-libres', 'credits.json'), encoding='utf-8') as f:
+            credits = sorted(json.load(f).values(), key=lambda c: c.get('fichier', ''))
+    except (OSError, ValueError):
+        credits = []
+    return render(request, 'restaurants/credits.html', {'credits': credits, 'rubrique': 'Services', 'sujet': 'des services'})

@@ -20,7 +20,7 @@
     {% if s.price %}
     <a href="{% url 'payments:checkout' 'service' s.pk %}" class="bq-btn bq-btn--green"><i class="fa fa-lock"></i> Payer</a>
     {% else %}
-    <a href="https://wa.me/{% if s.whatsapp %}{{ s.whatsapp }}{% else %}{{ site_settings.whatsapp_1 }}{% endif %}?text={{ 'Bonjour, je suis intéressé(e) par le service : '|urlencode }}{{ s.title|urlencode }}" target="_blank" rel="noopener" class="bq-btn bq-btn--wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+    <a href="https://wa.me/{% if s.whatsapp %}{{ s.whatsapp }}{% else %}{{ site_settings.whatsapp_1 }}{% endif %}?text={{ 'Bonjour Lantante Technologie, je suis intéressé par : '|urlencode }}{{ s.title|urlencode }}." target="_blank" rel="noopener" class="bq-btn bq-btn--wa"><i class="fab fa-whatsapp"></i> Nous contacter</a>
     {% endif %}
     <a href="{% url 'services:service_detail' s.pk %}" class="bq-btn bq-btn--dark">Voir détails</a>
   </div>
