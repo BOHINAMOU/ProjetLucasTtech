@@ -50,6 +50,8 @@
       <h4>Contact</h4>
       <ul>
         <li><a href="{% url 'core:contact' %}">Nous contacter</a></li>
+        <li><a href="https://whatsapp.com/channel/0029VaojKGJ1dAvz1fveHF0b" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Chaîne Lantante Technologie</a></li>
+        <li><a href="https://whatsapp.com/channel/0029VaB6DWdFMqrbdiP6Dh2X" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Chaîne Lantante Technologie Info</a></li>
         {% if site_settings.whatsapp_1 %}<li><a href="https://wa.me/{{ site_settings.whatsapp_1 }}" target="_blank" rel="noopener">+{{ site_settings.whatsapp_1 }}</a></li>{% endif %}
         {% if site_settings.whatsapp_2 %}<li><a href="https://wa.me/{{ site_settings.whatsapp_2 }}" target="_blank" rel="noopener">+{{ site_settings.whatsapp_2 }}</a></li>{% endif %}
         {% if site_settings.email %}<li><a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a></li>{% endif %}
