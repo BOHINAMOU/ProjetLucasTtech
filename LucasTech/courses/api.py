@@ -21,7 +21,8 @@ from .models import (Categorie, Course, DemandeChangementType, DocumentPartenair
 
 EXTENSIONS = ('.jpg', '.jpeg', '.png', '.webp', '.pdf')
 TAILLE_MAX = 8 * 1024 * 1024
-SERVICES_PAR_TYPE = {'coursier': ('moto', 'voiture'), 'livreur': ('cargo',), 'mixte': ('moto', 'voiture', 'cargo')}
+SERVICES_PAR_TYPE = {'coursier': ('moto', 'tricycle', 'voiture'), 'livreur': ('cargo',),
+                     'mixte': ('moto', 'tricycle', 'voiture', 'cargo')}
 
 
 def _err(e):
@@ -51,7 +52,7 @@ def _user(request):
 # Sérialisation
 # ─────────────────────────────
 def categorie_payload(c):
-    return {'id': c.pk, 'code': c.code, 'nom': c.nom, 'service': c.service.code, 'vehicule': c.vehicule,
+    return {'id': c.pk, 'code': c.code, 'nom': c.nom, 'service': c.service.code, 'vehicule': c.vehicule, 'icone': c.icone,
             'active': c.active and c.service.actif, 'capacite': c.capacite, 'poids_max': c.poids_max,
             'minimum': c.minimum}
 
@@ -144,7 +145,7 @@ def estimation(request):
         return error(p.message_zone, code='hors_zone')
     return Response({'estimations': [
         {**S.estimer(c, dep['lat'], dep['lng'], arr['lat'], arr['lng'], client=user, params=p),
-         'nom': c.nom, 'code': c.code, 'service': c.service.code} for c in qs]})
+         'nom': c.nom, 'code': c.code, 'service': c.service.code, 'icone': c.icone} for c in qs]})
 
 
 @api_view(['GET', 'POST'])

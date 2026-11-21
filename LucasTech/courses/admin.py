@@ -63,8 +63,8 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Categorie)
 class CategorieAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'service', 'active', 'prise_en_charge', 'prix_km', 'prix_min', 'minimum', 'commission_pct',
-                    'capacite', 'ordre')
+    list_display = ('nom', 'service', 'icone', 'active', 'prise_en_charge', 'prix_km', 'prix_min', 'minimum',
+                    'commission_pct', 'ordre')
     list_editable = ('active', 'prise_en_charge', 'prix_km', 'prix_min', 'minimum', 'commission_pct', 'ordre')
     list_filter = ('service', 'active', 'vehicule')
     prepopulated_fields = {'code': ('nom',)}

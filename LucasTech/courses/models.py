@@ -15,7 +15,7 @@ from Payments.models import private_storage
 
 
 class Service(models.Model):
-    CODES = [('moto', 'Moto'), ('voiture', 'Voiture'), ('cargo', 'Cargo')]
+    CODES = [('moto', 'Moto'), ('tricycle', 'Tricycle'), ('voiture', 'Voiture'), ('cargo', 'Cargo')]
     code = models.CharField("Code", max_length=12, choices=CODES, unique=True)
     nom = models.CharField("Nom", max_length=60)
     actif = models.BooleanField("Actif", default=True)
@@ -32,11 +32,16 @@ class Service(models.Model):
 
 class Categorie(models.Model):
     VEHICULES = [('moto', 'Moto'), ('voiture', 'Voiture')]
+    ICONES = [('moto', 'Moto'), ('tricycle', 'Tricycle'), ('voiture', 'Voiture standard'),
+              ('voiture_clim', 'Voiture climatisée'), ('prestige', 'Prestige'), ('camionnette', 'Camionnette'),
+              ('colis', 'Colis')]
     service = models.ForeignKey(Service, on_delete=models.PROTECT, related_name='categories', verbose_name="Service")
     nom = models.CharField("Nom", max_length=60)
     code = models.SlugField("Code", max_length=40, unique=True)
     vehicule = models.CharField("Véhicule", max_length=10, choices=VEHICULES, default='moto',
                                 help_text="Sert aux frais d'annulation et au prix d'attente.")
+    icone = models.CharField("Icône dans l'appli", max_length=12, choices=ICONES, blank=True,
+                             help_text="Petite image affichée dans l'appli. Vide : choisie d'après le service.")
     active = models.BooleanField("Active", default=True, help_text="Inactive : affichée « Bientôt » dans l'appli.")
     capacite = models.PositiveSmallIntegerField("Capacité (passagers)", default=1)
     poids_max = models.PositiveIntegerField("Poids max (kg)", null=True, blank=True)

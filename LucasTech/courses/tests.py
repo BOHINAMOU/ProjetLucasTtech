@@ -317,12 +317,14 @@ class ApiTests(APITestCase):
 
     def test_parcours_client(self):
         d = self.client.get(API + 'categories/').json()
-        self.assertEqual([s['code'] for s in d['services']], ['moto', 'voiture', 'cargo'])
-        voiture = d['services'][1]['categories']
-        self.assertEqual([c['active'] for c in voiture], [True, True, False])  # Prestige : bientôt
+        self.assertEqual([s['code'] for s in d['services']], ['moto', 'tricycle', 'voiture', 'cargo'])
+        voiture = d['services'][2]['categories']
+        self.assertEqual([c['active'] for c in voiture], [True, True, True])  # Prestige activé
+        self.assertTrue(d['services'][1]['categories'][0]['active'])  # Tricycle activé
+        self.assertEqual(d['services'][1]['categories'][0]['icone'], 'tricycle')
         pts = {'depart_lat': DEP['lat'], 'depart_lng': DEP['lng'], 'arrivee_lat': ARR['lat'], 'arrivee_lng': ARR['lng']}
         e = self.client.post(API + 'estimation/', pts, format='json').json()
-        self.assertEqual(len(e['estimations']), 3)  # catégories actives seulement
+        self.assertEqual(len(e['estimations']), 5)  # catégories actives seulement (Cargo : bientôt)
         r = self.client.post(API, {**pts, 'categorie': self.moto.pk, 'moyen_paiement': 'especes', 'repere': 'Pharmacie'},
                              format='json')
         self.assertEqual(r.status_code, 201, r.content)
@@ -345,7 +347,7 @@ class ApiTests(APITestCase):
         r = self.client.post(API + 'partenaire/', {'type': 'coursier', 'plaque': 'TG 1234 AB', 'vehicule': 'Haojue'},
                              format='json')
         self.assertEqual(r.status_code, 201)
-        self.assertEqual({c['service'] for c in r.json()['categories']}, {'moto', 'voiture'})
+        self.assertEqual({c['service'] for c in r.json()['categories']}, {'moto', 'tricycle', 'voiture'})
         pos = {'en_ligne': True, 'lat': DEP['lat'] - 0.005, 'lng': DEP['lng']}
         self.assertEqual(self.client.post(API + 'partenaire/statut/', pos, format='json').json()['code'], 'non_valide')
         Partenaire.objects.filter(user=coursier).update(statut='valide')
@@ -367,7 +369,7 @@ class ApiTests(APITestCase):
         self.assertEqual(self.client.post(base + 'demarrer/', {'code': c['code_depart']}, format='json').status_code, 200)
         self.assertEqual(self.client.post(base + 'terminer/').json()['statut'], 'terminee')
         s = self.client.get(API + 'partenaire/solde/').json()
-        self.assertEqual(s['solde'], -105)
+        self.assertEqual(s['solde'], -int(c['prix_estime'] * 15 / 100))  # commission 15 % (prix selon l'heure)
         # le client voit le reçu et note
         self.client.force_authenticate(self.user)
         rc = self.client.get(f"{API}{c['id']}/recu/").json()
