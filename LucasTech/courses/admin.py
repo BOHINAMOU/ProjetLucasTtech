@@ -8,7 +8,7 @@ from django.utils.html import format_html
 
 from . import services as S
 from .models import (Annulation, Categorie, Course, DemandeChangementType, DemandeVersement, DocumentPartenaire,
-                     MessageCourse, Zone,
+                     MessageCourse, PinSolde, Zone,
                      MouvementSoldePartenaire, Note, OffreCourse, Parametres, Partenaire, PlageHoraire, Remboursement,
                      Service, Signalement)
 
@@ -276,10 +276,10 @@ class MessageInline(LectureSeule, admin.TabularInline):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created_at', 'client', 'categorie', 'statut', 'partenaire', 'total_client',
+    list_display = ('reference', 'created_at', 'client', 'categorie', 'statut', 'partenaire', 'total_client',
                     'moyen_paiement', 'numero_recu')
     list_filter = ('statut', 'categorie', 'moyen_paiement', 'created_at')
-    search_fields = ('id', 'numero_recu', 'client__email', 'client__first_name', 'partenaire__plaque',
+    search_fields = ('reference', 'id', 'numero_recu', 'client__email', 'client__first_name', 'partenaire__plaque',
                      'depart_adresse', 'arrivee_adresse')
     date_hierarchy = 'created_at'
     readonly_fields = [f.name for f in Course._meta.fields if f.name not in ('statut',)] + ['total_client']
@@ -424,3 +424,25 @@ class DemandeVersementAdmin(admin.ModelAdmin):
 class ZoneAdmin(admin.ModelAdmin):
     list_display = ('nom', 'centre_lat', 'centre_lng', 'rayon_km', 'active')
     list_editable = ('rayon_km', 'active')
+
+
+@admin.register(PinSolde)
+class PinSoldeAdmin(admin.ModelAdmin):
+    """On voit seulement si un PIN existe ; on peut le réinitialiser, jamais le lire."""
+    list_display = ('user', 'pin_defini', 'bloque_jusqua', 'updated_at')
+    search_fields = ('user__email',)
+    fields = ('user', 'pin_defini', 'essais', 'bloque_jusqua', 'updated_at')
+    readonly_fields = fields
+    actions = ['reinitialiser']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(boolean=True, description="PIN défini")
+    def pin_defini(self, obj):
+        return obj.defini
+
+    @admin.action(description="Réinitialiser le PIN (l'utilisateur en créera un nouveau)")
+    def reinitialiser(self, request, qs):
+        n = qs.update(pin_hash='', code_hash='', essais=0, bloque_jusqua=None)
+        self.message_user(request, f"{n} PIN réinitialisé(s).")

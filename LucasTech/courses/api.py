@@ -63,7 +63,7 @@ def _note_publique(part, p):
 def course_payload(request, c, pour='client', p=None):
     p = p or Parametres.get()
     d = {
-        'id': c.pk, 'statut': c.statut, 'statut_libelle': c.get_statut_display(),
+        'id': c.pk, 'reference': c.reference, 'statut': c.statut, 'statut_libelle': c.get_statut_display(),
         'categorie': categorie_payload(c.categorie),
         'depart': {'lat': c.depart_lat, 'lng': c.depart_lng, 'adresse': c.depart_adresse},
         'arrivee': {'lat': c.arrivee_lat, 'lng': c.arrivee_lng, 'adresse': c.arrivee_adresse},
@@ -74,6 +74,10 @@ def course_payload(request, c, pour='client', p=None):
         'commandee_le': dt(c.created_at), 'acceptee_le': dt(c.acceptee_le), 'arrivee_prevue_le': dt(c.arrivee_prevue_le),
         'arrive_le': dt(c.arrive_le), 'demarree_le': dt(c.demarree_le), 'terminee_le': dt(c.terminee_le),
         'annulee_le': dt(c.annulee_le),
+        'signalements': [{'motif': s.get_motif_display(), 'statut': s.statut, 'statut_libelle': s.get_statut_display(),
+                          'reponse': s.reponse, 'date': dt(s.created_at)} for s in c.signalements.all()],
+        'annulations': [{'par': a.par, 'par_libelle': a.get_par_display(), 'motif': a.motif, 'frais': a.frais,
+                         'date': dt(a.created_at)} for a in c.annulations.all() if a.par != 'systeme'],
         'discussion': {'ouverte': D.ouverte(c, p=p), 'non_lus': D.non_lus(c, 'client' if pour == 'client' else 'partenaire')},
     }
     if pour == 'client':
@@ -152,6 +156,11 @@ def courses(request):
     cat = Categorie.objects.filter(pk=d.get('categorie')).select_related('service').first()
     if not cat:
         return error("Choisissez une catégorie.", code='categorie')
+    if str(d.get('moyen_paiement') or '') == 'portefeuille':
+        from .pin import exige_pin
+        refus = exige_pin(request)
+        if refus:
+            return refus
     try:
         c = S.commander(request.user, cat, dep, arr, moyen=str(d.get('moyen_paiement') or 'especes'),
                         repere=str(d.get('repere') or ''))
@@ -235,7 +244,9 @@ def _signaler(request, c, par):
     if par == 'client' and motif in Signalement.GRAVES and c.partenaire_id:
         Partenaire.objects.filter(pk=c.partenaire_id, statut='valide').update(
             statut='suspendu', en_ligne=False, motif_statut="Signalement grave : examen en cours.")
-    return Response({'id': s.pk, 'detail': "Signalement envoyé."}, status=201)
+    return Response({'id': s.pk, 'reference': c.reference,
+                     'detail': "Merci beaucoup, votre message a été soumis. Notre équipe vous reviendra dans les "
+                               "plus brefs délais."}, status=201)
 
 
 @api_view(['POST'])
@@ -250,7 +261,7 @@ def recu(request, pk):
         return error("Reçu disponible à la fin de la course.", status=404, code='pas_de_recu')
     part = c.partenaire
     return Response({
-        'numero': c.numero_recu, 'date': dt(c.terminee_le), 'categorie': c.categorie.nom,
+        'numero': c.numero_recu, 'reference': c.reference, 'date': dt(c.terminee_le), 'categorie': c.categorie.nom,
         'depart': c.depart_adresse, 'arrivee': c.arrivee_adresse, 'distance_km': float(c.distance_km),
         'duree_min': c.duree_min, 'partenaire': part.user.first_name if part else '', 'plaque': part.plaque if part else '',
         'detail': c.detail_prix, 'prix_annonce': c.prix_estime, 'supplements': (c.detail_prix or {}).get('supplements', []),
@@ -482,6 +493,10 @@ def partenaire_solde(request):
     part = _partenaire(request)
     if not part:
         return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    from .pin import exige_pin
+    refus = exige_pin(request)
+    if refus:
+        return refus
     p = Parametres.get()
     return Response({
         'solde': part.solde, 'dette': part.dette, 'dette_max_especes': p.dette_max_especes,
@@ -502,6 +517,10 @@ def versement(request):
     part = _partenaire(request)
     if not part:
         return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    from .pin import exige_pin
+    refus = exige_pin(request)
+    if refus:
+        return refus
     try:
         v = S.demander_versement(part, request.data.get('montant'), str(request.data.get('numero') or ''))
     except S.ErreurCourse as e:

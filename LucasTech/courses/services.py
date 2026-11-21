@@ -586,6 +586,8 @@ def annuler_par_client(course_id, client, motif='', frais_acceptes=None, mainten
             raise ErreurCourse("Course introuvable.", 'introuvable')
         if course.statut not in ('recherche', 'acceptee', 'arrive'):
             raise ErreurCourse("Cette course ne peut plus être annulée.", 'etape')
+        if not (motif or '').strip():
+            raise ErreurCourse("Choisissez un motif.", 'motif')
         frais, _raison = frais_annulation_client(course, maintenant)
         if frais_acceptes is not None and int(frais_acceptes) < frais:
             raise ErreurCourse(f"Les frais d'annulation sont maintenant de {frais} FCFA.", 'frais_changes')
@@ -615,6 +617,8 @@ def annuler_par_client(course_id, client, motif='', frais_acceptes=None, mainten
 def annuler_par_partenaire(partenaire, course_id, motif='', maintenant=None):
     """Pas de frais ; la course repart en recherche au même prix, sans ce partenaire."""
     maintenant = maintenant or timezone.now()
+    if not (motif or '').strip():
+        raise ErreurCourse("Choisissez un motif.", 'motif')
     with transaction.atomic():
         course = _course_du_partenaire(partenaire, course_id, ('acceptee', 'arrive'))
         OffreCourse.objects.filter(course=course, partenaire=partenaire, reponse='acceptee').update(reponse='annulee')

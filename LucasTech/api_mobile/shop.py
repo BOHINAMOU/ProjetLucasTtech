@@ -430,7 +430,11 @@ def _payer_avec_solde(request):
 
 @api_view(['GET'])
 def solde(request):
-    """Solde et derniers mouvements (dépôts, paiements)."""
+    """Solde et derniers mouvements (dépôts, paiements). Code PIN exigé s'il a été créé (appli 1.8.4+)."""
+    from courses.pin import exige_pin
+    refus = exige_pin(request)
+    if refus:
+        return refus
     from Payments.solde import MAX_DEPOT, MIN_DEPOT, portefeuille
     pf = portefeuille(request.user)
     return Response({

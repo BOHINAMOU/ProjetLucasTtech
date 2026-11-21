@@ -1,7 +1,7 @@
 """Routes de Lantante Express, incluses sous /api/mobile/v1/courses/."""
 from django.urls import path
 
-from . import api, discussion
+from . import api, discussion, pin
 
 urlpatterns = [
     # Client
@@ -9,6 +9,12 @@ urlpatterns = [
     path('estimation/', api.estimation, name='courses_estimation'),
     path('en-cours/', api.en_cours, name='courses_en_cours'),
     path('zone/', api.zone, name='courses_zone'),
+    # Code PIN du solde (client et partenaire)
+    path('pin/', pin.etat, name='pin_etat'),
+    path('pin/creer/', pin.creer, name='pin_creer'),
+    path('pin/verifier/', pin.verifier, name='pin_verifier'),
+    path('pin/oublie/', pin.oublie, name='pin_oublie'),
+    path('pin/reinitialiser/', pin.reinitialiser, name='pin_reinitialiser'),
     path('proches/', api.proches, name='courses_proches'),
     path('', api.courses, name='courses'),
     path('<int:pk>/', api.course, name='course'),

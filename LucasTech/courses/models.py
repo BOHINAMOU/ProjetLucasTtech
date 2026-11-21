@@ -264,6 +264,13 @@ def code_depart():
     return f"{secrets.randbelow(10000):04d}"
 
 
+ALPHABET_REF = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'  # sans 0/O/1/I
+
+
+def nouvelle_reference():
+    return 'LX-' + ''.join(secrets.choice(ALPHABET_REF) for _ in range(6))
+
+
 class Course(models.Model):
     STATUTS = [('recherche', 'Recherche'), ('acceptee', 'Acceptée'), ('arrive', 'Partenaire arrivé'),
                ('en_cours', 'En cours'), ('terminee', 'Terminée'), ('annulee', 'Annulée'),
@@ -291,6 +298,8 @@ class Course(models.Model):
     montant_reserve = models.PositiveIntegerField("Montant réservé sur le solde (FCFA)", default=0)
     statut = models.CharField("Statut", max_length=16, choices=STATUTS, default='recherche', db_index=True)
     code_depart = models.CharField("Code de départ", max_length=4, default=code_depart)
+    reference = models.CharField("Référence", max_length=12, unique=True, default=nouvelle_reference,
+                                 help_text="Code unique de la course (ex. LX-7K3Q9A).")
     partenaire = models.ForeignKey(Partenaire, on_delete=models.PROTECT, null=True, blank=True, related_name='courses',
                                    verbose_name="Partenaire")
     rayon_km = models.DecimalField("Rayon de recherche (km)", max_digits=5, decimal_places=2, default=0)
@@ -315,7 +324,7 @@ class Course(models.Model):
         verbose_name_plural = "Courses"
 
     def __str__(self):
-        return f"Course n° {self.pk} — {self.categorie.nom} — {self.get_statut_display()}"
+        return f"{self.reference} — {self.categorie.nom} — {self.get_statut_display()}"
 
     @property
     def total_client(self):
@@ -393,9 +402,10 @@ class Note(models.Model):
 
 
 class Signalement(models.Model):
-    MOTIFS = [('comportement', 'Comportement'), ('conduite', 'Conduite dangereuse'), ('surfacturation', 'Surfacturation'),
-              ('objet_oublie', 'Objet oublié'), ('colis', 'Colis abîmé ou perdu'), ('harcelement', 'Harcèlement'),
-              ('agression', 'Agression'), ('autre', 'Autre')]
+    MOTIFS = [('comportement', 'Comportement inapproprié'), ('conduite', 'Conduite dangereuse'),
+              ('surfacturation', 'Prix non respecté'), ('retard', 'Retard important'), ('objet_oublie', 'Objet oublié'),
+              ('colis', 'Colis abîmé ou perdu'), ('harcelement', 'Harcèlement'), ('agression', 'Agression'),
+              ('autre', 'Autre')]
     GRAVES = ('agression', 'harcelement')
     STATUTS = [('nouveau', 'Nouveau'), ('en_cours', 'En cours'), ('resolu', 'Résolu'), ('rejete', 'Rejeté')]
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='signalements')
@@ -542,3 +552,26 @@ class Zone(models.Model):
 
     def __str__(self):
         return f"{self.nom} ({self.rayon_km} km)"
+
+
+class PinSolde(models.Model):
+    """Code PIN du solde : seulement des empreintes (jamais le code), essais et blocage."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pin_solde',
+                                verbose_name="Utilisateur")
+    pin_hash = models.CharField(max_length=128, blank=True, editable=False)
+    essais = models.PositiveSmallIntegerField("Essais faux", default=0)
+    bloque_jusqua = models.DateTimeField("Bloqué jusqu'à", null=True, blank=True)
+    code_hash = models.CharField(max_length=128, blank=True, editable=False)
+    code_envoye_le = models.DateTimeField(null=True, blank=True, editable=False)
+    updated_at = models.DateTimeField("Modifié le", auto_now=True)
+
+    class Meta:
+        verbose_name = "Code PIN du solde"
+        verbose_name_plural = "Codes PIN du solde"
+
+    def __str__(self):
+        return f"PIN de {self.user}"
+
+    @property
+    def defini(self):
+        return bool(self.pin_hash)

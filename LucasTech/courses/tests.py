@@ -1,4 +1,5 @@
 """Lantante Express : prix, affectation (ordre par distance, 10 s, verrou), portefeuille, annulation, API."""
+import re
 from datetime import datetime, timedelta, timezone as tz
 from unittest import mock
 
@@ -233,7 +234,7 @@ class PortefeuilleTests(TestCase):
         with mock.patch('django.utils.timezone.now', return_value=JOUR):
             c = S.commander(self.client_user, self.moto, DEP, ARR, moyen='portefeuille')
         self.assertEqual(portefeuille(self.client_user).solde, 4300)
-        S.annuler_par_client(c.pk, self.client_user, frais_acceptes=0, maintenant=JOUR + timedelta(seconds=5))
+        S.annuler_par_client(c.pk, self.client_user, motif='Test', frais_acceptes=0, maintenant=JOUR + timedelta(seconds=5))
         self.assertEqual(portefeuille(self.client_user).solde, 5000)
 
     def test_annulation_apres_grace_avec_frais(self):
@@ -241,8 +242,8 @@ class PortefeuilleTests(TestCase):
         t = JOUR + timedelta(minutes=3)
         self.assertEqual(S.frais_annulation_client(c, t), (200, 'apres_grace'))
         with self.assertRaises(S.ErreurCourse):
-            S.annuler_par_client(c.pk, self.client_user, frais_acceptes=0, maintenant=t)  # frais pas vus
-        S.annuler_par_client(c.pk, self.client_user, frais_acceptes=200, maintenant=t)
+            S.annuler_par_client(c.pk, self.client_user, motif='Test', frais_acceptes=0, maintenant=t)  # frais pas vus
+        S.annuler_par_client(c.pk, self.client_user, motif='Test', frais_acceptes=200, maintenant=t)
         self.assertEqual(portefeuille(self.client_user).solde, 4800)
         p.refresh_from_db()
         self.assertEqual(p.solde, 200)
@@ -256,7 +257,7 @@ class PortefeuilleTests(TestCase):
     def test_especes_commission_en_dette_et_frais_reportes(self):
         c, p = self._acceptee(moyen='especes')
         t = JOUR + timedelta(minutes=3)
-        S.annuler_par_client(c.pk, self.client_user, frais_acceptes=200, maintenant=t)
+        S.annuler_par_client(c.pk, self.client_user, motif='Test', frais_acceptes=200, maintenant=t)
         self.assertEqual(Annulation.objects.get(course=c).frais_regles, False)
         self.assertEqual(S.frais_reportes(self.client_user), 200)
         # course suivante en espèces : frais ajoutés, commission en dette
@@ -332,6 +333,8 @@ class ApiTests(APITestCase):
         r = self.client.post(API, {**pts, 'categorie': self.moto.pk}, format='json')
         self.assertEqual(r.json()['code'], 'course_en_cours')
         r = self.client.post(f'{API}{cid}/annuler/', {'frais': 0}, format='json')
+        self.assertEqual(r.json()['code'], 'motif')
+        r = self.client.post(f'{API}{cid}/annuler/', {'frais': 0, 'motif': 'Erreur de destination'}, format='json')
         self.assertEqual(r.json()['statut'], 'annulee')
         self.assertEqual(len(self.client.get(API).json()['resultats']), 1)
 
@@ -577,3 +580,61 @@ class RechercheTests(APITestCase):
         d = self.client.get(f'{API}{c.pk}/').json()
         self.assertEqual(d['statut'], 'aucun_partenaire')
         self.assertIn('Aucun coursier disponible', d['message'])
+
+
+@override_settings(STORAGES=STORAGES)
+class PinEtReferenceTests(APITestCase):
+    def setUp(self):
+        self.moto = Categorie.objects.get(code='moto')
+        self.user = compte()
+        ajuster(self.user, 5000, "Test", compte('Admin'))
+        self.client.force_authenticate(self.user)
+        self.pts = {'depart_lat': DEP['lat'], 'depart_lng': DEP['lng'], 'arrivee_lat': ARR['lat'],
+                    'arrivee_lng': ARR['lng'], 'categorie': self.moto.pk, 'moyen_paiement': 'portefeuille'}
+
+    def test_reference_unique_sans_confusion(self):
+        refs = {S.commander(compte(), self.moto, DEP, ARR).reference for _ in range(5)}
+        self.assertEqual(len(refs), 5)
+        for r in refs:
+            self.assertRegex(r, r'^LX-[A-HJ-NP-Z2-9]{6}$')
+
+    def test_pin_creation_verification_blocage(self):
+        self.assertEqual(self.client.get('/api/mobile/v1/solde/').status_code, 200)  # pas encore de PIN
+        r = self.client.post(API + 'pin/creer/', {'pin': '1234', 'confirmation': '1235'}, format='json')
+        self.assertEqual(r.json()['code'], 'confirmation')
+        r = self.client.post(API + 'pin/creer/', {'pin': '1234', 'confirmation': '1234'}, format='json')
+        self.assertEqual(r.status_code, 201)
+        from .models import PinSolde
+        self.assertNotIn('1234', PinSolde.objects.get(user=self.user).pin_hash)
+        self.assertEqual(self.client.get('/api/mobile/v1/solde/').json()['code'], 'pin_requis')
+        self.assertEqual(self.client.post(API, self.pts, format='json').json()['code'], 'pin_requis')
+        jeton = self.client.post(API + 'pin/verifier/', {'pin': '1234'}, format='json').json()['jeton']
+        self.assertEqual(self.client.get('/api/mobile/v1/solde/', HTTP_X_PIN=jeton).status_code, 200)
+        r = self.client.post(API, {**self.pts, 'jeton_pin': jeton}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        for _ in range(4):
+            self.assertEqual(self.client.post(API + 'pin/verifier/', {'pin': '0000'}, format='json').json()['code'], 'pin_faux')
+        self.assertEqual(self.client.post(API + 'pin/verifier/', {'pin': '0000'}, format='json').json()['code'], 'pin_bloque')
+        self.assertEqual(self.client.post(API + 'pin/verifier/', {'pin': '1234'}, format='json').json()['code'], 'pin_bloque')
+
+    def test_pin_oublie(self):
+        from django.core import mail
+        self.client.post(API + 'pin/creer/', {'pin': '1234', 'confirmation': '1234'}, format='json')
+        self.assertEqual(self.client.post(API + 'pin/oublie/', format='json').status_code, 200)
+        code = re.search(r'(\d{6})', mail.outbox[-1].body).group(1)
+        r = self.client.post(API + 'pin/reinitialiser/', {'code': '000000', 'pin': '5678', 'confirmation': '5678'}, format='json')
+        self.assertEqual(r.json()['code'], 'code_invalide')
+        r = self.client.post(API + 'pin/reinitialiser/', {'code': code, 'pin': '5678', 'confirmation': '5678'}, format='json')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('jeton', self.client.post(API + 'pin/verifier/', {'pin': '5678'}, format='json').json())
+
+    def test_annulation_motif_visible_et_signalement(self):
+        c = self.client.post(API, {**self.pts, 'moyen_paiement': 'especes'}, format='json').json()
+        r = self.client.post(f"{API}{c['id']}/annuler/", {'frais': 0, 'motif': 'Trop long'}, format='json').json()
+        self.assertEqual(r['annulations'][0]['motif'], 'Trop long')
+        self.assertEqual(r['annulations'][0]['par'], 'client')
+        s = self.client.post(f"{API}{c['id']}/signaler/", {'motif': 'retard', 'commentaire': 'Long'}, format='json').json()
+        self.assertIn('Merci beaucoup', s['detail'])
+        self.assertEqual(s['reference'], c['reference'])
+        d = self.client.get(f"{API}{c['id']}/").json()
+        self.assertEqual(d['signalements'][0]['motif'], 'Retard important')
