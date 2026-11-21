@@ -452,3 +452,130 @@ class PinSoldeAdmin(admin.ModelAdmin):
 class CoursierFavoriAdmin(LectureSeule, admin.ModelAdmin):
     list_display = ('created_at', 'client', 'partenaire')
     search_fields = ('client__email', 'partenaire__user__email', 'partenaire__plaque')
+
+
+
+# ─────────────────────────────
+# Comptes par catégorie (lecture ; la fiche complète reste dans Utilisateurs)
+# ─────────────────────────────
+from django.db.models import Count, Max  # noqa: E402
+
+from .models import CompteClient, CompteCoursier, CompteSysteme, CompteVendeur  # noqa: E402
+
+
+class _CompteAdmin(admin.ModelAdmin):
+    search_fields = ('email', 'first_name', 'last_name', 'phone')
+    ordering = ('-date_joined',)
+    list_per_page = 50
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Nom")
+    def nom(self, obj):
+        return obj.get_full_name() or '—'
+
+    @admin.display(description="Fiche")
+    def fiche(self, obj):
+        return format_html('<a href="{}">Ouvrir</a>', reverse('admin:Users_user_change', args=[obj.pk]))
+
+
+@admin.register(CompteClient)
+class CompteClientAdmin(_CompteAdmin):
+    list_display = ('email', 'nom', 'phone', 'nb_courses', 'derniere_course', 'solde', 'is_active', 'date_joined', 'courses_du_client', 'fiche')
+    list_filter = ('is_active', 'date_joined')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_n=Count('courses_express', distinct=True),
+                                                      _der=Max('courses_express__created_at'))
+
+    @admin.display(description="Courses", ordering='_n')
+    def nb_courses(self, obj):
+        return obj._n
+
+    @admin.display(description="Dernière course", ordering='_der')
+    def derniere_course(self, obj):
+        return obj._der.strftime('%d/%m/%Y') if obj._der else '—'
+
+    @admin.display(description="Solde (FCFA)")
+    def solde(self, obj):
+        pf = getattr(obj, 'portefeuille', None)
+        return pf.solde if pf else 0
+
+    @admin.display(description="Ses courses")
+    def courses_du_client(self, obj):
+        return format_html('<a href="{}?client__id__exact={}">Voir</a>', reverse('admin:courses_course_changelist'), obj.pk)
+
+
+@admin.register(CompteCoursier)
+class CompteCoursierAdmin(_CompteAdmin):
+    list_display = ('email', 'nom', 'phone', 'vehicule', 'validation', 'en_ligne', 'note', 'dette', 'nb_courses', 'liens', 'fiche')
+    list_filter = ('partenaire_express__statut', 'partenaire_express__en_ligne', 'partenaire_express__categories__service')
+    search_fields = _CompteAdmin.search_fields + ('partenaire_express__plaque',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('partenaire_express').annotate(
+            _n=Count('partenaire_express__courses', distinct=True))
+
+    def _p(self, obj):
+        return obj.partenaire_express
+
+    @admin.display(description="Véhicule")
+    def vehicule(self, obj):
+        p = self._p(obj)
+        services = sorted({c.service.nom for c in p.categories.select_related('service')})
+        return f"{', '.join(services) or '—'} · {p.plaque or ''}"
+
+    @admin.display(description="Validation")
+    def validation(self, obj):
+        return self._p(obj).get_statut_display()
+
+    @admin.display(description="En ligne", boolean=True)
+    def en_ligne(self, obj):
+        return self._p(obj).en_ligne
+
+    @admin.display(description="Note")
+    def note(self, obj):
+        return self._p(obj).note
+
+    @admin.display(description="Dette (FCFA)")
+    def dette(self, obj):
+        return self._p(obj).dette
+
+    @admin.display(description="Courses", ordering='_n')
+    def nb_courses(self, obj):
+        return obj._n
+
+    @admin.display(description="Liens")
+    def liens(self, obj):
+        p = self._p(obj)
+        return format_html('<a href="{}">Coursier</a> · <a href="{}?partenaire__id__exact={}">Courses</a> · '
+                           '<a href="{}?partenaire__id__exact={}">Documents</a>',
+                           reverse('admin:courses_partenaire_change', args=[p.pk]),
+                           reverse('admin:courses_course_changelist'), p.pk,
+                           reverse('admin:courses_documentpartenaire_changelist'), p.pk)
+
+
+@admin.register(CompteSysteme)
+class CompteSystemeAdmin(_CompteAdmin):
+    list_display = ('email', 'nom', 'role', 'groupes', 'last_login', 'is_active', 'fiche')
+    list_filter = ('is_superuser', 'is_active', 'groups')
+
+    @admin.display(description="Rôle")
+    def role(self, obj):
+        return "Super-administrateur" if obj.is_superuser else "Administrateur"
+
+    @admin.display(description="Groupes")
+    def groupes(self, obj):
+        return ', '.join(g.name for g in obj.groups.all()) or '—'
+
+
+@admin.register(CompteVendeur)
+class CompteVendeurAdmin(_CompteAdmin):
+    list_display = ('email', 'nom', 'phone', 'date_joined', 'fiche')

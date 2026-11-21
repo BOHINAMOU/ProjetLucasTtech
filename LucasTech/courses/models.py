@@ -12,6 +12,7 @@ from django.db import models
 from django.utils import timezone
 
 from Payments.models import private_storage
+from Users.models import User
 
 
 class Service(models.Model):
@@ -600,3 +601,67 @@ class CoursierFavori(models.Model):
 
     def __str__(self):
         return f"{self.partenaire} ← {self.client}"
+
+
+
+# ─────────────────────────────
+# Comptes vus par catégorie dans l'admin : UNE seule table de comptes (Users.User), plusieurs vues.
+# Une même personne peut être cliente ET coursier avec le même e-mail.
+# ─────────────────────────────
+class _Comptes(models.Manager):
+    filtre = {}
+
+    def get_queryset(self):
+        return super().get_queryset().filter(**self.filtre).distinct()
+
+
+class _Clients(_Comptes):
+    filtre = {'is_staff': False}
+
+
+class _Coursiers(_Comptes):
+    filtre = {'partenaire_express__isnull': False}
+
+
+class _Systeme(_Comptes):
+    filtre = {'is_staff': True}
+
+
+class _Vendeurs(_Comptes):
+    filtre = {'vendeur__isnull': False}
+
+
+class CompteClient(User):
+    objects = _Clients()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Client"
+        verbose_name_plural = "Clients"
+
+
+class CompteCoursier(User):
+    objects = _Coursiers()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Coursier (compte)"
+        verbose_name_plural = "Coursiers (comptes)"
+
+
+class CompteSysteme(User):
+    objects = _Systeme()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Utilisateur du système"
+        verbose_name_plural = "Utilisateurs du système"
+
+
+class CompteVendeur(User):
+    objects = _Vendeurs()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Vendeur (compte)"
+        verbose_name_plural = "Vendeurs (comptes)"

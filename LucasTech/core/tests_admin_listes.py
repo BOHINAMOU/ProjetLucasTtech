@@ -42,3 +42,21 @@ class ListesAdminTests(TestCase):
         r = self.client.get('/lantanteAdminTech/section/courses/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Gestion des courses')
+
+    def test_comptes_par_categorie(self):
+        from courses.models import Categorie, CompteClient, CompteCoursier, CompteSysteme, Partenaire
+        U = get_user_model()
+        cli = U.objects.create_user(email='client@example.com', password='x-Pass-12345')
+        cou = U.objects.create_user(email='coursier@example.com', password='x-Pass-12345')
+        p = Partenaire.objects.create(user=cou, plaque='TG 1')
+        p.categories.add(Categorie.objects.get(code='moto'))
+        self.assertIn(cli, CompteClient.objects.all())
+        self.assertIn(cou, CompteClient.objects.all())  # un coursier peut aussi être client (même compte)
+        self.assertEqual(list(CompteCoursier.objects.all()), [CompteCoursier.objects.get(pk=cou.pk)])
+        self.assertEqual(list(CompteSysteme.objects.values_list('email', flat=True)), ['adm@example.com'])
+        for nom in ('compteclient', 'comptecoursier', 'comptesysteme', 'comptevendeur'):
+            r = self.client.get(reverse(f'admin:courses_{nom}_changelist'))
+            self.assertEqual(r.status_code, 200, nom)
+        r = self.client.get(reverse('admin:courses_comptecoursier_changelist'))
+        self.assertContains(r, 'coursier@example.com')
+        self.assertContains(r, 'Moto')
