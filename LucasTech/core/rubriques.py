@@ -6,6 +6,17 @@ from django.contrib import admin
 
 # code: (titre, icône Font Awesome, [(modèle, nom affiché)])
 RUBRIQUES = {
+    'courses': ("Gestion des courses", 'fa-motorcycle', [
+        ('courses.Course', "Courses"), ('courses.Partenaire', "Coursiers"),
+        ('courses.DocumentPartenaire', "Documents des coursiers"), ('courses.DemandeChangementType', "Changements de type"),
+        ('courses.Categorie', "Catégories et tarifs"), ('courses.Service', "Services (Moto, Tricycle, Voiture, Cargo)"),
+        ('courses.PlageHoraire', "Plages horaires"), ('courses.Zone', "Zones couvertes"),
+        ('api_mobile.LieuConnu', "Lieux connus"), ('courses.Parametres', "Paramètres"),
+        ('courses.Signalement', "Signalements"), ('courses.Annulation', "Annulations"),
+        ('courses.Remboursement', "Remboursements"), ('courses.DemandeVersement', "Versements aux coursiers"),
+        ('courses.MouvementSoldePartenaire', "Soldes des coursiers"), ('courses.CoursierFavori', "Coursiers favoris"),
+        ('courses.MessageCourse', "Discussions"), ('courses.Note', "Notes"), ('courses.OffreCourse', "Offres envoyées"),
+        ('courses.PinSolde', "Codes PIN du solde"), ('api_mobile.TuileAccueil', "Tuiles de l'accueil (appli)")]),
     'paiements': ("Paiements", 'fa-credit-card', [
         ('Payments.Payment', "Paiements"), ('Payments.CodePromo', "Codes promo"),
         ('Payments.Portefeuille', "Soldes des utilisateurs"), ('Payments.MouvementSolde', "Mouvements des soldes")]),
@@ -87,6 +98,7 @@ def modeles(code):
 
 
 GROUPES = [
+    ("Lantante Express", ['courses']),
     ("Ventes", ['paiements', 'boutique', 'vendeurs', 'formations', 'concours']),
     ("Contenus", ['publications', 'commentaires', 'evenements', 'emplois']),
     ("Services", ['services', 'hotels', 'restaurants', 'logements', 'ecoles', 'repetiteurs']),
@@ -94,7 +106,7 @@ GROUPES = [
 ]
 
 # Icônes Material Symbols de la barre latérale
-ICONES = {'paiements': 'payments', 'boutique': 'storefront', 'vendeurs': 'store', 'formations': 'school',
+ICONES = {'courses': 'two_wheeler', 'paiements': 'payments', 'boutique': 'storefront', 'vendeurs': 'store', 'formations': 'school',
           'concours': 'quiz', 'publications': 'newspaper', 'commentaires': 'forum', 'evenements': 'event',
           'emplois': 'work', 'services': 'design_services', 'hotels': 'hotel', 'restaurants': 'restaurant', 'logements': 'house',
           'ecoles': 'account_balance', 'repetiteurs': 'person_book', 'utilisateurs': 'group',

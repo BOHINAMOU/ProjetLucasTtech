@@ -351,6 +351,13 @@ def _chiffres(code):
     """Chiffres propres à chaque rubrique (en plus des paiements)."""
     from django.db.models import F
     try:
+        if code == 'courses':
+            C = _model('courses.Course')
+            return [('Courses en cours', C.objects.filter(statut__in=('recherche', 'acceptee', 'arrive', 'en_cours')).count()),
+                    ('Courses terminées', C.objects.filter(statut='terminee').count()),
+                    ('Coursiers en ligne', _count('courses.Partenaire', en_ligne=True, statut='valide')),
+                    ('Coursiers à valider', _count('courses.Partenaire', statut='en_attente')),
+                    ('Signalements nouveaux', _count('courses.Signalement', statut='nouveau'))]
         if code == 'emplois':
             O = _model('Offres.OffreEmploi')
             a = O.objects.aggregate(v=Sum('vues'), t=Sum('clics_appel'), w=Sum('clics_whatsapp'), l=Sum('clics_lien'), e=Sum('clics_email'))
