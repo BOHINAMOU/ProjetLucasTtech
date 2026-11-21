@@ -61,3 +61,17 @@ def ajuster(user, montant, motif, par):
     if not motif.strip():
         raise ValueError("Le motif est obligatoire.")
     return _mouvement(user, int(montant), 'ajustement', motif=motif, par=par)
+
+
+def debiter(user, montant, motif):
+    """Débit hors paiement Mobile Money (ex. course Lantante Express). Lève SoldeInsuffisant."""
+    if int(montant) <= 0:
+        return None
+    return _mouvement(user, -int(montant), 'paiement', motif=motif)
+
+
+def rembourser(user, montant, motif, par=None):
+    """Crédit d'un remboursement (course annulée, montant réservé libéré, geste commercial)."""
+    if int(montant) <= 0:
+        return None
+    return _mouvement(user, int(montant), 'remboursement', motif=motif, par=par)

@@ -1,0 +1,389 @@
+"""Administration de Lantante Express : catégories et tarifs, paramètres, partenaires, courses, argent."""
+from django.contrib import admin, messages
+from django.http import FileResponse, Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import path, reverse
+from django.utils import timezone
+from django.utils.html import format_html
+
+from . import services as S
+from .models import (Annulation, Categorie, Course, DemandeChangementType, DocumentPartenaire, MessageCourse,
+                     MouvementSoldePartenaire, Note, OffreCourse, Parametres, Partenaire, PlageHoraire, Remboursement,
+                     Service, Signalement)
+
+
+class LectureSeule:
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+def _fichier_prive(admin_site_view_name, obj_id, champ):
+    return format_html('<a href="{}" target="_blank">Ouvrir</a>',
+                       reverse(f'admin:{admin_site_view_name}', args=[obj_id, champ]))
+
+
+class FichierPriveMixin:
+    """Les pièces (identité, permis…) sont en stockage privé : ouvertes seulement par l'équipe, via l'admin."""
+    nom_vue = ''
+
+    def get_urls(self):
+        return [path('<int:pk>/fichier/<str:champ>/', self.admin_site.admin_view(self.fichier), name=self.nom_vue),
+                *super().get_urls()]
+
+    def fichier(self, request, pk, champ):
+        if not self.has_view_permission(request):
+            raise Http404
+        obj = get_object_or_404(self.model, pk=pk)
+        f = getattr(obj, champ, None) if champ in ('fichier', 'piece_jointe') else None
+        if not f:
+            raise Http404
+        return FileResponse(f.open('rb'), filename=f.name.rsplit('/', 1)[-1])
+
+
+# ─────────────────────────────
+# Catalogue et réglages
+# ─────────────────────────────
+class CategorieInline(admin.TabularInline):
+    model = Categorie
+    extra = 0
+    fields = ('nom', 'code', 'vehicule', 'active', 'capacite', 'poids_max', 'ordre')
+    prepopulated_fields = {'code': ('nom',)}
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'code', 'actif', 'ordre')
+    list_editable = ('actif', 'ordre')
+    inlines = [CategorieInline]
+
+
+@admin.register(Categorie)
+class CategorieAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'service', 'active', 'prise_en_charge', 'prix_km', 'prix_min', 'minimum', 'commission_pct',
+                    'capacite', 'ordre')
+    list_editable = ('active', 'prise_en_charge', 'prix_km', 'prix_min', 'minimum', 'commission_pct', 'ordre')
+    list_filter = ('service', 'active', 'vehicule')
+    prepopulated_fields = {'code': ('nom',)}
+
+
+@admin.register(PlageHoraire)
+class PlageHoraireAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'debut', 'fin', 'coefficient')
+    list_editable = ('debut', 'fin', 'coefficient')
+
+
+@admin.register(Parametres)
+class ParametresAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ("Affectation", {'fields': ('rayon_initial_km', 'palier_1_km', 'palier_2_km', 'delai_reponse_s',
+                                    'delai_accuse_s', 'age_gps_max_s', 'offres_max', 'recherche_max_s',
+                                    'offres_ignorees_max')}),
+        ("Prix et attente", {'fields': ('arrondi', 'coef_route', 'vitesse_moyenne_kmh', 'attente_gratuite_min',
+                                        'prix_attente_moto', 'prix_attente_voiture')}),
+        ("Annulation", {'fields': ('delai_grace_min', 'frais_annulation_moto', 'frais_annulation_voiture',
+                                   'attente_absent_min', 'frais_absent_moto', 'frais_absent_voiture',
+                                   'retard_exonerant_min')}),
+        ("Dette et remboursement", {'fields': ('dette_max_especes', 'dette_max_totale', 'plafond_remboursement')}),
+        ("Fidélité", {'fields': ('fidelite_courses', 'fidelite_pct', 'fidelite_plafond', 'fidelite_validite_jours')}),
+        ("Notes", {'fields': ('note_avertissement', 'note_suspension', 'notes_min_affichage')}),
+        ("Discussion", {'fields': ('chat_ouvert_apres_fin_min', 'audio_duree_max_s', 'fichier_taille_max_ko',
+                                   'modele_message_acceptation', 'modele_message_arrivee')}),
+    )
+
+    def has_add_permission(self, request):
+        return not Parametres.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        obj = Parametres.get()
+        return HttpResponseRedirect(reverse('admin:courses_parametres_change', args=[obj.pk]))
+
+
+# ─────────────────────────────
+# Partenaires
+# ─────────────────────────────
+class DocumentInline(admin.TabularInline):
+    model = DocumentPartenaire
+    extra = 0
+    fields = ('type', 'ouvrir', 'expiration', 'statut', 'motif')
+    readonly_fields = ('ouvrir',)
+
+    @admin.display(description="Fichier")
+    def ouvrir(self, obj):
+        return _fichier_prive('courses_documentpartenaire_fichier', obj.pk, 'fichier') if obj.pk else '—'
+
+
+class MouvementInline(LectureSeule, admin.TabularInline):
+    model = MouvementSoldePartenaire
+    extra = 0
+    fields = ('created_at', 'type', 'montant', 'solde_apres', 'course', 'motif', 'par')
+    readonly_fields = fields
+    max_num = 0
+    can_delete = False
+
+
+@admin.register(Partenaire)
+class PartenaireAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'type', 'statut', 'en_ligne', 'plaque', 'note', 'nb_notes', 'solde', 'avertissements',
+                    'position_le')
+    list_filter = ('statut', 'type', 'en_ligne', 'categories')
+    search_fields = ('user__email', 'user__first_name', 'user__last_name', 'plaque', 'telephone')
+    autocomplete_fields = ('user',)
+    filter_horizontal = ('categories',)
+    readonly_fields = ('solde', 'note', 'nb_notes', 'lat', 'lng', 'position_le', 'offres_ignorees', 'created_at')
+    inlines = [DocumentInline, MouvementInline]
+    actions = ['valider', 'refuser', 'suspendre', 'hors_ligne']
+
+    @admin.action(description="Valider les partenaires choisis")
+    def valider(self, request, qs):
+        n = qs.update(statut='valide', motif_statut='')
+        for p in qs:
+            S._notifier(p.user, "Compte partenaire validé", "Vous pouvez passer en ligne.")
+        self.message_user(request, f"{n} partenaire(s) validé(s).")
+
+    @admin.action(description="Refuser (documents incomplets)")
+    def refuser(self, request, qs):
+        n = qs.update(statut='refuse', en_ligne=False, motif_statut="Documents incomplets ou illisibles.")
+        self.message_user(request, f"{n} partenaire(s) refusé(s).")
+
+    @admin.action(description="Suspendre")
+    def suspendre(self, request, qs):
+        n = qs.update(statut='suspendu', en_ligne=False, motif_statut="Suspendu par l'équipe.")
+        self.message_user(request, f"{n} partenaire(s) suspendu(s).", messages.WARNING)
+
+    @admin.action(description="Mettre hors ligne")
+    def hors_ligne(self, request, qs):
+        n = qs.update(en_ligne=False)
+        self.message_user(request, f"{n} partenaire(s) hors ligne.")
+
+
+@admin.register(DocumentPartenaire)
+class DocumentPartenaireAdmin(FichierPriveMixin, admin.ModelAdmin):
+    nom_vue = 'courses_documentpartenaire_fichier'
+    list_display = ('partenaire', 'type', 'ouvrir', 'expiration', 'statut', 'created_at')
+    list_filter = ('statut', 'type')
+    search_fields = ('partenaire__user__email', 'partenaire__plaque')
+    actions = ['valider', 'refuser']
+
+    @admin.display(description="Fichier")
+    def ouvrir(self, obj):
+        return _fichier_prive(self.nom_vue, obj.pk, 'fichier')
+
+    @admin.action(description="Valider les documents")
+    def valider(self, request, qs):
+        self.message_user(request, f"{qs.update(statut='valide', motif='')} document(s) validé(s).")
+
+    @admin.action(description="Refuser les documents (illisibles)")
+    def refuser(self, request, qs):
+        self.message_user(request, f"{qs.update(statut='refuse', motif='Illisible ou expiré.')} document(s) refusé(s).")
+
+
+@admin.register(DemandeChangementType)
+class DemandeChangementTypeAdmin(admin.ModelAdmin):
+    list_display = ('partenaire', 'type_actuel', 'type_demande', 'statut', 'created_at', 'traite_par')
+    list_filter = ('statut', 'type_demande')
+    readonly_fields = ('traite_par', 'traite_le', 'created_at')
+    actions = ['valider', 'refuser']
+
+    @admin.action(description="Valider le changement de type")
+    def valider(self, request, qs):
+        from .api import SERVICES_PAR_TYPE
+        n = 0
+        for d in qs.filter(statut='en_attente').select_related('partenaire'):
+            p = d.partenaire
+            p.type = d.type_demande
+            p.save(update_fields=['type'])
+            # historique, note, solde et dette conservés ; catégories adaptées au nouveau type
+            p.categories.set(Categorie.objects.filter(service__code__in=SERVICES_PAR_TYPE[p.type]))
+            d.statut, d.traite_par, d.traite_le = 'valide', request.user, timezone.now()
+            d.save(update_fields=['statut', 'traite_par', 'traite_le'])
+            S._notifier(p.user, "Changement de type validé", f"Vous êtes maintenant : {p.get_type_display()}.")
+            n += 1
+        self.message_user(request, f"{n} demande(s) validée(s).")
+
+    @admin.action(description="Refuser la demande")
+    def refuser(self, request, qs):
+        n = qs.filter(statut='en_attente').update(statut='refuse', traite_par=request.user, traite_le=timezone.now())
+        self.message_user(request, f"{n} demande(s) refusée(s).")
+
+
+@admin.register(MouvementSoldePartenaire)
+class MouvementSoldePartenaireAdmin(admin.ModelAdmin):
+    """Ajout possible (versement, règlement de dette, ajustement) : passe toujours par le service, avec trace."""
+    list_display = ('created_at', 'partenaire', 'type', 'montant', 'solde_apres', 'course', 'motif', 'par')
+    list_filter = ('type',)
+    search_fields = ('partenaire__user__email', 'motif')
+    fields = ('partenaire', 'type', 'montant', 'course', 'motif')
+    autocomplete_fields = ('partenaire',)
+    raw_id_fields = ('course',)
+
+    def has_change_permission(self, request, obj=None):
+        return obj is None
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            return
+        if not obj.motif.strip():
+            obj.motif = obj.get_type_display()
+        m = S.mouvement_partenaire(obj.partenaire_id, obj.montant, obj.type, obj.course, obj.motif, par=request.user)
+        obj.pk = m.pk if m else None
+
+
+# ─────────────────────────────
+# Courses
+# ─────────────────────────────
+class OffreInline(LectureSeule, admin.TabularInline):
+    model = OffreCourse
+    extra = 0
+    fields = ('partenaire', 'distance_km', 'envoyee_le', 'recue_le', 'expire_le', 'reponse', 'repondue_le')
+    readonly_fields = fields
+    can_delete = False
+
+
+class AnnulationInline(LectureSeule, admin.TabularInline):
+    model = Annulation
+    extra = 0
+    fields = ('created_at', 'par', 'partenaire', 'motif', 'frais', 'frais_regles')
+    readonly_fields = fields
+    can_delete = False
+
+
+class MessageInline(LectureSeule, admin.TabularInline):
+    model = MessageCourse
+    extra = 0
+    fields = ('created_at', 'par', 'type', 'texte', 'piece', 'duree_audio_s', 'lat', 'lng', 'lu_le')
+    readonly_fields = fields
+    can_delete = False
+    verbose_name_plural = "Discussion"
+
+    @admin.display(description="Fichier")
+    def piece(self, obj):
+        return _fichier_prive('courses_messagecourse_fichier', obj.pk, 'fichier') if obj.fichier else '—'
+
+
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created_at', 'client', 'categorie', 'statut', 'partenaire', 'total_client',
+                    'moyen_paiement', 'numero_recu')
+    list_filter = ('statut', 'categorie', 'moyen_paiement', 'created_at')
+    search_fields = ('id', 'numero_recu', 'client__email', 'client__first_name', 'partenaire__plaque',
+                     'depart_adresse', 'arrivee_adresse')
+    date_hierarchy = 'created_at'
+    readonly_fields = [f.name for f in Course._meta.fields if f.name not in ('statut',)] + ['total_client']
+    inlines = [OffreInline, AnnulationInline, MessageInline]
+    actions = ['annuler', 'rembourser', 'litige']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description="Annuler (sans frais, montant réservé libéré)")
+    def annuler(self, request, qs):
+        n = 0
+        for c in qs.filter(statut__in=Course.ACTIFS):
+            S.annuler_par_admin(c, request.user, "Annulée par l'équipe")
+            n += 1
+        self.message_user(request, f"{n} course(s) annulée(s).")
+
+    @admin.action(description="Rembourser le client…")
+    def rembourser(self, request, qs):
+        c = qs.first()
+        url = reverse('admin:courses_remboursement_add') + f'?course={c.pk}&montant={c.total_client}'
+        return HttpResponseRedirect(url)
+
+    @admin.action(description="Passer en litige")
+    def litige(self, request, qs):
+        self.message_user(request, f"{qs.exclude(statut__in=Course.ACTIFS).update(statut='litige')} course(s) en litige.")
+
+
+@admin.register(Remboursement)
+class RemboursementAdmin(admin.ModelAdmin):
+    """Crédit sur le solde du client ; part retenue sur le partenaire. Au-delà du plafond : second admin."""
+    list_display = ('created_at', 'course', 'montant', 'part_partenaire', 'part_lantante', 'statut', 'demande_par',
+                    'valide_par')
+    list_filter = ('statut',)
+    fields = ('course', 'montant', 'part_partenaire', 'motif')
+    raw_id_fields = ('course',)
+    actions = ['valider']
+
+    def has_change_permission(self, request, obj=None):
+        return obj is None
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            return
+        try:
+            r = S.demander_remboursement(obj.course, obj.montant, obj.part_partenaire, obj.motif, request.user)
+        except S.ErreurCourse as e:
+            self.message_user(request, e.message, messages.ERROR)
+            return
+        obj.pk = r.pk
+        if r.statut != 'valide':
+            self.message_user(request, "Au-delà du plafond : un second admin doit valider.", messages.WARNING)
+
+    @admin.action(description="Valider (second admin)")
+    def valider(self, request, qs):
+        for r in qs.filter(statut='en_attente'):
+            try:
+                S.valider_remboursement(r, request.user)
+                self.message_user(request, f"Remboursement n° {r.pk} validé.")
+            except S.ErreurCourse as e:
+                self.message_user(request, f"N° {r.pk} : {e.message}", messages.ERROR)
+
+
+@admin.register(Signalement)
+class SignalementAdmin(FichierPriveMixin, admin.ModelAdmin):
+    nom_vue = 'courses_signalement_fichier'
+    list_display = ('created_at', 'course', 'par', 'motif', 'statut', 'piece')
+    list_filter = ('statut', 'motif', 'par')
+    search_fields = ('course__id', 'commentaire', 'auteur__email')
+    readonly_fields = ('course', 'auteur', 'par', 'motif', 'commentaire', 'piece', 'created_at')
+    fields = ('course', 'auteur', 'par', 'motif', 'commentaire', 'piece', 'statut', 'reponse', 'created_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="Pièce jointe")
+    def piece(self, obj):
+        return _fichier_prive(self.nom_vue, obj.pk, 'piece_jointe') if obj.piece_jointe else '—'
+
+
+@admin.register(Note)
+class NoteAdmin(LectureSeule, admin.ModelAdmin):
+    list_display = ('created_at', 'course', 'auteur', 'note', 'commentaire')
+    list_filter = ('auteur', 'note')
+
+
+@admin.register(Annulation)
+class AnnulationAdmin(LectureSeule, admin.ModelAdmin):
+    list_display = ('created_at', 'course', 'par', 'partenaire', 'motif', 'frais', 'frais_regles')
+    list_filter = ('par', 'frais_regles')
+
+
+@admin.register(OffreCourse)
+class OffreCourseAdmin(LectureSeule, admin.ModelAdmin):
+    list_display = ('envoyee_le', 'course', 'partenaire', 'distance_km', 'recue_le', 'reponse', 'repondue_le')
+    list_filter = ('reponse',)
+
+
+@admin.register(MessageCourse)
+class MessageCourseAdmin(FichierPriveMixin, LectureSeule, admin.ModelAdmin):
+    """Lecture seule : sert en cas de litige."""
+    nom_vue = 'courses_messagecourse_fichier'
+    list_display = ('created_at', 'course', 'par', 'type', 'texte', 'piece', 'lu_le')
+    list_filter = ('type', 'par')
+    search_fields = ('course__id', 'texte')
+
+    @admin.display(description="Fichier")
+    def piece(self, obj):
+        return _fichier_prive(self.nom_vue, obj.pk, 'fichier') if obj.fichier else '—'

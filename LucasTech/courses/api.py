@@ -1,0 +1,481 @@
+"""API Lantante Express : /api/mobile/v1/courses/...
+
+Client : catégories, estimation, commande, état (polling), annulation (frais affichés avant), note, signalement,
+historique et reçu. Partenaire (application à venir) : inscription, documents, changement de type, en ligne /
+position, offre en cours (polling), accepter / refuser, arrivé / démarrer (code) / terminer / annuler, solde."""
+import os
+from datetime import datetime
+
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from api_mobile.utils import dt, error, media
+
+from . import discussion as D
+from . import services as S
+from .models import (Categorie, Course, DemandeChangementType, DocumentPartenaire, Parametres, Partenaire, Service,
+                     Signalement)
+
+EXTENSIONS = ('.jpg', '.jpeg', '.png', '.webp', '.pdf')
+TAILLE_MAX = 8 * 1024 * 1024
+SERVICES_PAR_TYPE = {'coursier': ('moto', 'voiture'), 'livreur': ('cargo',), 'mixte': ('moto', 'voiture', 'cargo')}
+
+
+def _err(e):
+    return error(e.message, code=e.code)
+
+
+def _float(v):
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if -180 <= f <= 180 else None
+
+
+def _point(d, prefixe):
+    lat, lng = _float(d.get(f'{prefixe}_lat')), _float(d.get(f'{prefixe}_lng'))
+    if lat is None or lng is None or not -90 <= lat <= 90:
+        return None
+    return {'lat': lat, 'lng': lng, 'adresse': str(d.get(f'{prefixe}_adresse') or '')}
+
+
+def _user(request):
+    return request.user if request.user and request.user.is_authenticated else None
+
+
+# ─────────────────────────────
+# Sérialisation
+# ─────────────────────────────
+def categorie_payload(c):
+    return {'id': c.pk, 'code': c.code, 'nom': c.nom, 'service': c.service.code, 'vehicule': c.vehicule,
+            'active': c.active and c.service.actif, 'capacite': c.capacite, 'poids_max': c.poids_max,
+            'minimum': c.minimum}
+
+
+def _note_publique(part, p):
+    return float(part.note) if part.nb_notes >= p.notes_min_affichage else None
+
+
+def course_payload(request, c, pour='client', p=None):
+    p = p or Parametres.get()
+    d = {
+        'id': c.pk, 'statut': c.statut, 'statut_libelle': c.get_statut_display(),
+        'categorie': categorie_payload(c.categorie),
+        'depart': {'lat': c.depart_lat, 'lng': c.depart_lng, 'adresse': c.depart_adresse},
+        'arrivee': {'lat': c.arrivee_lat, 'lng': c.arrivee_lng, 'adresse': c.arrivee_adresse},
+        'repere': c.repere, 'distance_km': float(c.distance_km), 'duree_min': c.duree_min,
+        'prix_estime': c.prix_estime, 'prix_final': c.prix_final, 'reduction': c.reduction,
+        'frais_reportes': c.frais_impayes, 'total': c.total_client, 'moyen_paiement': c.moyen_paiement,
+        'detail_prix': c.detail_prix, 'numero_recu': c.numero_recu,
+        'commandee_le': dt(c.created_at), 'acceptee_le': dt(c.acceptee_le), 'arrivee_prevue_le': dt(c.arrivee_prevue_le),
+        'arrive_le': dt(c.arrive_le), 'demarree_le': dt(c.demarree_le), 'terminee_le': dt(c.terminee_le),
+        'annulee_le': dt(c.annulee_le),
+        'discussion': {'ouverte': D.ouverte(c, p=p), 'non_lus': D.non_lus(c, 'client' if pour == 'client' else 'partenaire')},
+    }
+    if pour == 'client':
+        d['code_depart'] = c.code_depart if c.statut in ('recherche', 'acceptee', 'arrive') else ''
+        part = c.partenaire
+        d['partenaire'] = None if not part else {
+            'prenom': part.user.first_name, 'photo': media(request, part.user.avatar), 'note': _note_publique(part, p),
+            'vehicule': part.vehicule, 'plaque': part.plaque,
+            'telephone': (part.telephone or part.user.phone or '') if c.active else '',
+            'lat': part.lat if c.active else None, 'lng': part.lng if c.active else None,
+        }
+        if c.statut in ('recherche', 'acceptee', 'arrive'):
+            frais, raison = S.frais_annulation_client(c, params=p)
+            d['annulation'] = {'frais': frais, 'raison': raison}
+        d['note_donnee'] = c.notes.filter(auteur='client').values_list('note', flat=True).first()
+        d['peut_noter'] = c.statut == 'terminee' and d['note_donnee'] is None
+    else:
+        d['client'] = {'prenom': c.client.first_name,
+                       'telephone': (c.client.phone or '') if c.active else ''}
+        prix = c.prix_final or c.prix_estime
+        d['gain_estime'] = prix - int(prix * c.categorie.commission_pct / 100)
+        d['note_donnee'] = c.notes.filter(auteur='partenaire').values_list('note', flat=True).first()
+    return d
+
+
+# ─────────────────────────────
+# Client
+# ─────────────────────────────
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def categories(request):
+    """Services (Moto, Voiture, Cargo) et leurs catégories ; inactives = « Bientôt »."""
+    out = []
+    for s in Service.objects.prefetch_related('categories'):
+        out.append({'code': s.code, 'nom': s.nom, 'actif': s.actif,
+                    'categories': [categorie_payload(c) for c in s.categories.all()]})
+    return Response({'services': out})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def estimation(request):
+    d = request.data
+    dep, arr = _point(d, 'depart'), _point(d, 'arrivee')
+    if not dep or not arr:
+        return error("Choisissez le départ et l'arrivée.", code='points')
+    qs = S.categories_actives().select_related('service')
+    if d.get('categorie'):
+        qs = qs.filter(pk=d.get('categorie'))
+    p = Parametres.get()
+    user = _user(request)
+    return Response({'estimations': [
+        {**S.estimer(c, dep['lat'], dep['lng'], arr['lat'], arr['lng'], client=user, params=p),
+         'nom': c.nom, 'service': c.service.code} for c in qs]})
+
+
+@api_view(['GET', 'POST'])
+def courses(request):
+    if request.method == 'GET':
+        qs = Course.objects.filter(client=request.user).select_related('categorie__service', 'partenaire__user')[:50]
+        p = Parametres.get()
+        return Response({'resultats': [course_payload(request, c, p=p) for c in qs]})
+    d = request.data
+    dep, arr = _point(d, 'depart'), _point(d, 'arrivee')
+    if not dep or not arr:
+        return error("Choisissez le départ et l'arrivée.", code='points')
+    cat = Categorie.objects.filter(pk=d.get('categorie')).select_related('service').first()
+    if not cat:
+        return error("Choisissez une catégorie.", code='categorie')
+    try:
+        c = S.commander(request.user, cat, dep, arr, moyen=str(d.get('moyen_paiement') or 'especes'),
+                        repere=str(d.get('repere') or ''))
+    except S.ErreurCourse as e:
+        return _err(e)
+    return Response(course_payload(request, c), status=201)
+
+
+@api_view(['GET'])
+def en_cours(request):
+    c = Course.objects.filter(client=request.user, statut__in=Course.ACTIFS).first()
+    if c and c.statut == 'recherche':
+        S.avancer(c.pk)
+        c.refresh_from_db()
+    return Response({'course': course_payload(request, c) if c else None})
+
+
+def _course_client(request, pk):
+    return get_object_or_404(Course.objects.select_related('categorie__service', 'partenaire__user'),
+                             pk=pk, client=request.user)
+
+
+@api_view(['GET'])
+def course(request, pk):
+    """État de la course : l'appli l'interroge toutes les 2-3 s ; chaque appel fait avancer la recherche."""
+    c = _course_client(request, pk)
+    if c.statut == 'recherche':
+        S.avancer(c.pk)
+        c = _course_client(request, pk)
+    return Response(course_payload(request, c))
+
+
+@api_view(['GET', 'POST'])
+def annuler(request, pk):
+    """GET : frais qui seraient appliqués maintenant. POST {motif, frais} : annule si les frais n'ont pas augmenté."""
+    c = _course_client(request, pk)
+    if request.method == 'GET':
+        frais, raison = S.frais_annulation_client(c)
+        return Response({'frais': frais, 'raison': raison})
+    frais_vus = request.data.get('frais')
+    try:
+        c, frais = S.annuler_par_client(c.pk, request.user, motif=str(request.data.get('motif') or ''),
+                                        frais_acceptes=int(frais_vus) if frais_vus not in (None, '') else None)
+    except (ValueError, TypeError):
+        return error("Frais invalides.", code='frais')
+    except S.ErreurCourse as e:
+        return _err(e)
+    return Response({**course_payload(request, c), 'frais_appliques': frais})
+
+
+@api_view(['POST'])
+def noter(request, pk):
+    c = _course_client(request, pk)
+    try:
+        S.noter(c, 'client', request.data.get('note'), request.data.get('motifs') or [],
+                str(request.data.get('commentaire') or ''))
+    except S.ErreurCourse as e:
+        return _err(e)
+    return Response({'ok': True})
+
+
+def _piece(request):
+    f = request.FILES.get('piece_jointe') or request.FILES.get('fichier')
+    if not f:
+        return None, None
+    if f.size > TAILLE_MAX or os.path.splitext(f.name)[1].lower() not in EXTENSIONS:
+        return None, error("Fichier refusé : photo ou PDF de 8 Mo maximum.", code='fichier')
+    return f, None
+
+
+def _signaler(request, c, par):
+    motif = str(request.data.get('motif') or '')
+    if motif not in dict(Signalement.MOTIFS):
+        return error("Choisissez un motif.", code='motif')
+    f, err = _piece(request)
+    if err:
+        return err
+    s = Signalement.objects.create(course=c, auteur=request.user, par=par, motif=motif,
+                                   commentaire=str(request.data.get('commentaire') or '')[:2000],
+                                   piece_jointe=f or '')
+    if par == 'client' and motif in Signalement.GRAVES and c.partenaire_id:
+        Partenaire.objects.filter(pk=c.partenaire_id, statut='valide').update(
+            statut='suspendu', en_ligne=False, motif_statut="Signalement grave : examen en cours.")
+    return Response({'id': s.pk, 'detail': "Signalement envoyé."}, status=201)
+
+
+@api_view(['POST'])
+def signaler(request, pk):
+    return _signaler(request, _course_client(request, pk), 'client')
+
+
+@api_view(['GET'])
+def recu(request, pk):
+    c = _course_client(request, pk)
+    if c.statut not in ('terminee', 'litige') or not c.numero_recu:
+        return error("Reçu disponible à la fin de la course.", status=404, code='pas_de_recu')
+    part = c.partenaire
+    return Response({
+        'numero': c.numero_recu, 'date': dt(c.terminee_le), 'categorie': c.categorie.nom,
+        'depart': c.depart_adresse, 'arrivee': c.arrivee_adresse, 'distance_km': float(c.distance_km),
+        'duree_min': c.duree_min, 'partenaire': part.user.first_name if part else '', 'plaque': part.plaque if part else '',
+        'detail': c.detail_prix, 'prix': c.prix_final, 'reduction': c.reduction, 'frais_reportes': c.frais_impayes,
+        'total': c.total_client, 'moyen_paiement': c.get_moyen_paiement_display(),
+    })
+
+
+# ─────────────────────────────
+# Partenaire
+# ─────────────────────────────
+def _partenaire(request):
+    return Partenaire.objects.filter(user=request.user).first()
+
+
+def partenaire_payload(request, part):
+    p = Parametres.get()
+    return {
+        'id': part.pk, 'type': part.type, 'type_libelle': part.get_type_display(), 'statut': part.statut,
+        'statut_libelle': part.get_statut_display(), 'motif_statut': part.motif_statut, 'en_ligne': part.en_ligne,
+        'vehicule': part.vehicule, 'plaque': part.plaque, 'telephone': part.telephone, 'mobile_money': part.mobile_money,
+        'categories': [categorie_payload(c) for c in part.categories.select_related('service')],
+        'note': _note_publique(part, p), 'nb_notes': part.nb_notes, 'solde': part.solde, 'dette': part.dette,
+        'avertissements': part.avertissements,
+        'blocage': ('total' if part.solde <= -p.dette_max_totale else
+                    'especes' if part.solde <= -p.dette_max_especes else ''),
+        'documents': [{'id': d.pk, 'type': d.type, 'libelle': d.get_type_display(), 'statut': d.statut,
+                       'motif': d.motif, 'expiration': d.expiration.isoformat() if d.expiration else None}
+                      for d in part.documents.all()],
+        'demandes_type': [{'id': x.pk, 'type_demande': x.type_demande, 'statut': x.statut, 'date': dt(x.created_at)}
+                          for x in part.demandes_type.all()[:5]],
+    }
+
+
+def _categories_pour(type_, ids):
+    qs = Categorie.objects.filter(service__code__in=SERVICES_PAR_TYPE[type_])
+    if ids:
+        qs = qs.filter(pk__in=[i for i in ids if str(i).isdigit()])
+    return qs
+
+
+@api_view(['GET', 'POST'])
+def partenaire(request):
+    """GET : profil partenaire (404 si pas inscrit). POST : inscription ou mise à jour du véhicule."""
+    part = _partenaire(request)
+    if request.method == 'GET':
+        if not part:
+            return error("Pas encore partenaire.", status=404, code='pas_partenaire')
+        return Response(partenaire_payload(request, part))
+    d = request.data
+    ids = d.getlist('categories') if hasattr(d, 'getlist') else (d.get('categories') or [])
+    if not part:
+        type_ = str(d.get('type') or '')
+        if type_ not in SERVICES_PAR_TYPE:
+            return error("Choisissez coursier, livreur ou les deux.", code='type')
+        part = Partenaire.objects.create(user=request.user, type=type_)
+    for champ in ('vehicule', 'plaque', 'telephone', 'mobile_money'):
+        if champ in d:
+            setattr(part, champ, str(d.get(champ) or '')[:Partenaire._meta.get_field(champ).max_length])
+    part.save()
+    if ids or not part.categories.exists():
+        part.categories.set(_categories_pour(part.type, ids))
+    return Response(partenaire_payload(request, part), status=201)
+
+
+@api_view(['POST'])
+def documents(request):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    type_ = str(request.data.get('type') or '')
+    if type_ not in dict(DocumentPartenaire.TYPES):
+        return error("Type de document inconnu.", code='type')
+    f, err = _piece(request)
+    if err:
+        return err
+    if not f:
+        return error("Ajoutez le fichier.", code='fichier')
+    exp = None
+    if request.data.get('expiration'):
+        try:
+            exp = datetime.strptime(str(request.data['expiration'])[:10], '%Y-%m-%d').date()
+        except ValueError:
+            return error("Date d'expiration invalide (AAAA-MM-JJ).", code='expiration')
+    DocumentPartenaire.objects.create(partenaire=part, type=type_, fichier=f, expiration=exp)
+    return Response(partenaire_payload(request, part), status=201)
+
+
+@api_view(['POST'])
+def changement_type(request):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    type_ = str(request.data.get('type') or '')
+    if type_ not in SERVICES_PAR_TYPE or type_ == part.type:
+        return error("Choisissez un autre type.", code='type')
+    if part.demandes_type.filter(statut='en_attente').exists():
+        return error("Une demande est déjà en cours.", code='deja')
+    DemandeChangementType.objects.create(partenaire=part, type_actuel=part.type, type_demande=type_,
+                                         motif=str(request.data.get('motif') or '')[:255])
+    return Response(partenaire_payload(request, part), status=201)
+
+
+def _maj_position(part, d):
+    lat, lng = _float(d.get('lat')), _float(d.get('lng'))
+    if lat is not None and lng is not None and -90 <= lat <= 90:
+        part.lat, part.lng, part.position_le = lat, lng, timezone.now()
+        return True
+    return False
+
+
+@api_view(['POST'])
+def statut(request):
+    """{en_ligne: true/false, lat, lng}"""
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    veut = str(request.data.get('en_ligne')).lower() in ('1', 'true', 'oui')
+    if veut:
+        if part.statut != 'valide':
+            return error("Compte pas encore validé.", code='non_valide')
+        if part.solde <= -Parametres.get().dette_max_totale:
+            return error("Réglez votre dette pour recevoir des courses.", code='dette')
+        if not _maj_position(part, request.data):
+            return error("Position GPS requise.", code='position')
+        part.offres_ignorees = 0
+    part.en_ligne = veut
+    part.save()
+    return Response(partenaire_payload(request, part))
+
+
+@api_view(['POST'])
+def position(request):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    if not _maj_position(part, request.data):
+        return error("Position invalide.", code='position')
+    part.save(update_fields=['lat', 'lng', 'position_le'])
+    return Response({'ok': True})
+
+
+@api_view(['GET', 'POST'])
+def offre(request):
+    """Polling du partenaire (toutes les 2-3 s) : position facultative (POST lat/lng), offre en cours, course en cours.
+    Fait aussi avancer les recherches des clients."""
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    if request.method == 'POST' and _maj_position(part, request.data):
+        part.save(update_fields=['lat', 'lng', 'position_le'])
+    S.avancer_recherches()
+    o = S.offre_en_cours(part)
+    part.refresh_from_db(fields=['en_ligne', 'offres_ignorees', 'avertissements'])
+    actuelle = Course.objects.filter(partenaire=part, statut__in=('acceptee', 'arrive', 'en_cours')).select_related(
+        'categorie__service', 'client').first()
+    p = Parametres.get()
+    return Response({
+        'en_ligne': part.en_ligne, 'offres_ignorees': part.offres_ignorees,
+        'offre': None if not o else {
+            'id': o.pk, 'expire_le': dt(o.expire_le),
+            'secondes_restantes': max(0, int((o.expire_le - timezone.now()).total_seconds())),
+            'distance_depart_km': float(o.distance_km),
+            'course': course_payload(request, o.course, pour='partenaire', p=p),
+        },
+        'course': course_payload(request, actuelle, pour='partenaire', p=p) if actuelle else None,
+    })
+
+
+@api_view(['POST'])
+def offre_reponse(request, pk, action):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    if action not in ('accepter', 'refuser'):
+        return error("Action inconnue.", status=404)
+    try:
+        if action == 'accepter':
+            c = S.accepter(part, pk)
+            return Response(course_payload(request, c, pour='partenaire'))
+        S.refuser(part, pk)
+        return Response({'ok': True})
+    except S.ErreurCourse as e:
+        return _err(e)
+
+
+@api_view(['POST'])
+def course_action(request, pk, action):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    d = request.data
+    try:
+        if action == 'arrive':
+            c = S.signaler_arrivee(part, pk)
+        elif action == 'demarrer':
+            c = S.demarrer(part, pk, d.get('code'))
+        elif action == 'terminer':
+            c = S.terminer(part, pk)
+        elif action == 'annuler':
+            c = S.annuler_par_partenaire(part, pk, motif=str(d.get('motif') or ''))
+            return Response({'ok': True, 'course_id': c.pk})
+        elif action == 'noter':
+            c = get_object_or_404(Course, pk=pk, partenaire=part)
+            S.noter(c, 'partenaire', d.get('note'), d.get('motifs') or [], str(d.get('commentaire') or ''))
+        elif action == 'signaler':
+            return _signaler(request, get_object_or_404(Course, pk=pk, partenaire=part), 'partenaire')
+        else:
+            return error("Action inconnue.", status=404)
+    except S.ErreurCourse as e:
+        return _err(e)
+    return Response(course_payload(request, c, pour='partenaire'))
+
+
+@api_view(['GET'])
+def partenaire_courses(request):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    p = Parametres.get()
+    qs = part.courses.select_related('categorie__service', 'client')[:50]
+    return Response({'resultats': [course_payload(request, c, pour='partenaire', p=p) for c in qs]})
+
+
+@api_view(['GET'])
+def partenaire_solde(request):
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    p = Parametres.get()
+    return Response({
+        'solde': part.solde, 'dette': part.dette, 'dette_max_especes': p.dette_max_especes,
+        'dette_max_totale': p.dette_max_totale,
+        'mouvements': [{'id': m.pk, 'type': m.type, 'libelle': m.get_type_display(), 'montant': m.montant,
+                        'solde_apres': m.solde_apres, 'motif': m.motif, 'course_id': m.course_id, 'date': dt(m.created_at)}
+                       for m in part.mouvements.all()[:100]],
+    })
+

@@ -1,5 +1,5 @@
 """API REST de l'application mobile Flutter : préfixe /api/mobile/v1/."""
-from django.urls import path
+from django.urls import include, path
 
 from Offres import api as emplois
 from Hotels import api as hotels
@@ -101,6 +101,9 @@ urlpatterns = [
     path('notifications/<int:pk>/lue/', notifs.lire, name='notification_lue'),
     path('partenaires/', catalog.partenaires, name='partenaires'),
     path('partenaires/<int:pk>/', catalog.partenaire, name='partenaire'),
+
+    # Lantante Express : commander une course (appli et admin seulement)
+    path('courses/', include('courses.urls')),
 
     # Concours
     path('concours/categories/', views.concours_categories, name='concours_categories'),

@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     'Hotels',
     'Logements',
     'Restaurants',
+    'courses',
 
     'social_django',
 
