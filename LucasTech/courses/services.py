@@ -177,7 +177,7 @@ def dans_zone(lat, lng):
     return not zones or any(haversine_km(z.centre_lat, z.centre_lng, lat, lng) <= float(z.rayon_km) for z in zones)
 
 
-def proches(lat, lng, categorie=None, maintenant=None, limite=20):
+def proches(lat, lng, categorie=None, maintenant=None, limite=20, client=None):
     """Coursiers disponibles autour d'un point, SANS nom ni identifiant : type + position arrondie (~100 m)."""
     import random
     maintenant = maintenant or timezone.now()
@@ -193,10 +193,16 @@ def proches(lat, lng, categorie=None, maintenant=None, limite=20):
     if categorie is not None:
         qs = qs.filter(categories=categorie)
     out = []
+    favoris = set()
+    if client is not None and getattr(client, 'is_authenticated', False):
+        from .models import CoursierFavori
+        favoris = set(CoursierFavori.objects.filter(client=client).values_list('partenaire_id', flat=True))
+    nb_favoris = 0
     for part in qs.prefetch_related('categories__service').distinct():
         d = haversine_km(lat, lng, part.lat, part.lng)
         if d > rayon:
             continue
+        nb_favoris += part.pk in favoris
         services = {c.service.code for c in part.categories.all()}
         type_ = (categorie.service.code if categorie is not None else
                  'moto' if 'moto' in services else 'voiture' if 'voiture' in services else 'cargo')
@@ -207,7 +213,8 @@ def proches(lat, lng, categorie=None, maintenant=None, limite=20):
     if out:
         km = out[0][0] * float(p.coef_route)
         plus_proche = max(1, math.ceil(km / max(1, p.vitesse_moyenne_kmh) * 60))
-    return {'nombre': len(out), 'arrivee_min': plus_proche, 'coursiers': [x[1] for x in out[:limite]]}
+    return {'nombre': len(out), 'favoris': nb_favoris, 'arrivee_min': plus_proche,
+            'coursiers': [x[1] for x in out[:limite]]}
 
 
 def commander(client, categorie, depart, arrivee, moyen='especes', repere=''):
@@ -316,6 +323,19 @@ def avancer(course_id, maintenant=None):
         nb_offres = course.offres.filter(envoyee_le__gte=debut).count()
         if nb_offres >= p.offres_max or maintenant >= debut + timedelta(seconds=p.recherche_max_s):
             return _aucun_partenaire(course, maintenant)
+        # coursiers favoris du client d'abord (par distance), dans leur rayon propre
+        if p.favoris_prioritaires:
+            from .models import CoursierFavori
+            favoris = set(CoursierFavori.objects.filter(client=course.client).values_list('partenaire_id', flat=True))
+            if favoris:
+                liste = [(pa, d) for pa, d in candidats(course, p, float(p.rayon_favoris_km), maintenant) if pa.pk in favoris]
+                if liste:
+                    part, dist = liste[0]
+                    OffreCourse.objects.create(course=course, partenaire=part, distance_km=Decimal(str(round(dist, 2))),
+                                               envoyee_le=maintenant,
+                                               expire_le=maintenant + timedelta(seconds=p.delai_reponse_s))
+                    _notifier(part.user, "Nouvelle course", f"Un client qui vous a mis en favori : {dist:.1f} km.")
+                    return course
         paliers = [r for r in p.paliers() if r >= float(course.rayon_km)] or [float(course.rayon_km)]
         for rayon in paliers:
             liste = candidats(course, p, rayon, maintenant)

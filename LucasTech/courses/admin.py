@@ -8,7 +8,7 @@ from django.utils.html import format_html
 
 from . import services as S
 from .models import (Annulation, Categorie, Course, DemandeChangementType, DemandeVersement, DocumentPartenaire,
-                     MessageCourse, PinSolde, Zone,
+                     CoursierFavori, MessageCourse, PinSolde, Zone,
                      MouvementSoldePartenaire, Note, OffreCourse, Parametres, Partenaire, PlageHoraire, Remboursement,
                      Service, Signalement)
 
@@ -82,7 +82,7 @@ class ParametresAdmin(admin.ModelAdmin):
         ("Affectation", {'fields': ('rayon_initial_km', 'palier_1_km', 'palier_2_km', 'delai_reponse_s',
                                     'delai_accuse_s', 'age_gps_max_s', 'offres_max', 'recherche_max_s',
                                     'offres_ignorees_max')}),
-        ("Zones et carte", {'fields': ('message_zone', 'rayon_proches_km')}),
+        ("Zones et carte", {'fields': ('message_zone', 'rayon_proches_km', 'favoris_prioritaires', 'rayon_favoris_km')}),
         ("Recherche et départ", {'fields': ('message_aucun_partenaire', 'code_depart_obligatoire')}),
         ("Prix et attente", {'fields': ('arrondi', 'coef_route', 'vitesse_moyenne_kmh', 'attente_gratuite_min',
                                         'prix_attente_moto', 'prix_attente_voiture', 'seuil_augmentation_pct',
@@ -446,3 +446,9 @@ class PinSoldeAdmin(admin.ModelAdmin):
     def reinitialiser(self, request, qs):
         n = qs.update(pin_hash='', code_hash='', essais=0, bloque_jusqua=None)
         self.message_user(request, f"{n} PIN réinitialisé(s).")
+
+
+@admin.register(CoursierFavori)
+class CoursierFavoriAdmin(LectureSeule, admin.ModelAdmin):
+    list_display = ('created_at', 'client', 'partenaire')
+    search_fields = ('client__email', 'partenaire__user__email', 'partenaire__plaque')

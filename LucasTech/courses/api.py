@@ -90,6 +90,7 @@ def course_payload(request, c, pour='client', p=None):
                               'secondes_max': p.recherche_max_s}
         part = c.partenaire
         d['partenaire'] = None if not part else {
+            'favori': part.favori_de.filter(client_id=c.client_id).exists(),
             'prenom': part.user.first_name, 'photo': media(request, part.user.avatar), 'note': _note_publique(part, p),
             'vehicule': part.vehicule, 'plaque': part.plaque,
             'telephone': (part.telephone or part.user.phone or '') if c.active else '',
@@ -102,6 +103,9 @@ def course_payload(request, c, pour='client', p=None):
         d['peut_noter'] = c.statut == 'terminee' and d['note_donnee'] is None
     else:
         d['code_requis'] = c.code_requis
+        from .models import CoursierFavori
+        # « Client qui vous a mis en favori » : vu par le partenaire qui interroge (offre ou course)
+        d['favori'] = CoursierFavori.objects.filter(client_id=c.client_id, partenaire__user=request.user).exists()
         d['client'] = {'prenom': c.client.first_name,
                        'telephone': (c.client.phone or '') if c.active else ''}
         prix = c.prix_final or c.prix_estime
@@ -547,4 +551,41 @@ def proches(request):
         return error("Position invalide.", code='position')
     cat = Categorie.objects.filter(pk=request.GET.get('categorie')).select_related('service').first() \
         if (request.GET.get('categorie') or '').isdigit() else None
-    return Response(S.proches(lat, lng, cat))
+    return Response(S.proches(lat, lng, cat, client=request.user))
+
+
+
+def favori_payload(request, f):
+    part, p = f.partenaire, Parametres.get()
+    return {'id': part.pk, 'prenom': part.user.first_name, 'photo': media(request, part.user.avatar),
+            'vehicule': part.vehicule, 'type': part.get_type_display(), 'note': _note_publique(part, p),
+            'ajoute_le': dt(f.created_at)}
+
+
+@api_view(['GET'])
+def favoris(request):
+    """Mes coursiers favoris."""
+    from .models import CoursierFavori
+    qs = CoursierFavori.objects.filter(client=request.user).select_related('partenaire__user')
+    return Response({'resultats': [favori_payload(request, f) for f in qs]})
+
+
+@api_view(['POST', 'DELETE'])
+def favori(request, pk):
+    """Ajoute (POST) ou retire (DELETE) le coursier d'une de MES courses de mes favoris. pk = id de la course."""
+    from .models import CoursierFavori
+    c = get_object_or_404(Course, pk=pk, client=request.user)
+    if not c.partenaire_id:
+        return error("Pas de coursier pour cette course.", code='pas_de_coursier')
+    if request.method == 'DELETE':
+        CoursierFavori.objects.filter(client=request.user, partenaire_id=c.partenaire_id).delete()
+        return Response({'favori': False})
+    CoursierFavori.objects.get_or_create(client=request.user, partenaire_id=c.partenaire_id)
+    return Response({'favori': True})
+
+
+@api_view(['DELETE'])
+def retirer_favori(request, partenaire_id):
+    from .models import CoursierFavori
+    CoursierFavori.objects.filter(client=request.user, partenaire_id=partenaire_id).delete()
+    return Response({'favori': False})

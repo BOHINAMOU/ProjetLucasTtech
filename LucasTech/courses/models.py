@@ -126,6 +126,10 @@ class Parametres(models.Model):
         "Code de départ obligatoire", default=False,
         help_text="Désactivé : le coursier démarre avec un simple bouton et le client ne voit pas de code. "
                   "Peut aussi être exigé pour une seule catégorie (fiche de la catégorie).")
+    favoris_prioritaires = models.BooleanField(
+        "Coursiers favoris servis en premier", default=True,
+        help_text="Les coursiers favoris du client reçoivent l'offre avant les autres (par distance).")
+    rayon_favoris_km = models.DecimalField("Rayon max pour un favori (km)", max_digits=5, decimal_places=2, default=8)
     rayon_proches_km = models.DecimalField("Coursiers affichés sur la carte : rayon (km)", max_digits=5,
                                            decimal_places=2, default=5)
     mention_prix = models.TextField("Mention sous le prix", default=MENTION_PRIX,
@@ -575,3 +579,19 @@ class PinSolde(models.Model):
     @property
     def defini(self):
         return bool(self.pin_hash)
+
+
+class CoursierFavori(models.Model):
+    """Coursier mis en favori par un client : il reçoit l'offre en premier s'il est disponible."""
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='coursiers_favoris')
+    partenaire = models.ForeignKey(Partenaire, on_delete=models.CASCADE, related_name='favori_de')
+    created_at = models.DateTimeField("Ajouté le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Coursier favori"
+        verbose_name_plural = "Coursiers favoris"
+        constraints = [models.UniqueConstraint(fields=['client', 'partenaire'], name='un_favori_par_couple')]
+
+    def __str__(self):
+        return f"{self.partenaire} ← {self.client}"

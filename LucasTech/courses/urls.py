@@ -22,6 +22,9 @@ urlpatterns = [
     path('<int:pk>/noter/', api.noter, name='course_noter'),
     path('<int:pk>/signaler/', api.signaler, name='course_signaler'),
     path('<int:pk>/recu/', api.recu, name='course_recu'),
+    path('<int:pk>/favori/', api.favori, name='course_favori'),
+    path('favoris/', api.favoris, name='courses_favoris'),
+    path('favoris/<int:partenaire_id>/', api.retirer_favori, name='courses_favori_retirer'),
     # Discussion (client et partenaire de la course)
     path('<int:pk>/messages/', discussion.messages, name='course_messages'),
     path('<int:pk>/messages/lus/', discussion.lus, name='course_messages_lus'),

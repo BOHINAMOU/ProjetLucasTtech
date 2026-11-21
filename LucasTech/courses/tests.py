@@ -663,3 +663,37 @@ class PageApplicationPartenaireTests(TestCase):
             self.assertEqual(t.status_code, 200)
             self.assertIn('Lantante-Partenaire.apk', t['Content-Disposition'])
             t.close()
+
+
+
+@override_settings(STORAGES=STORAGES)
+class FavorisTests(APITestCase):
+    def test_favori_servi_en_premier_et_api(self):
+        moto = Categorie.objects.get(code='moto')
+        client = compte()
+        proche = partenaire(moto, 0.3, quand=timezone.now())
+        favori = partenaire(moto, 4, quand=timezone.now())  # plus loin, mais favori
+        # 1re course : le plus proche accepte, le client le met en favori via l'API
+        c1 = S.commander(client, moto, DEP, ARR)
+        S.accepter(proche, S.offre_en_cours(proche).pk)
+        S.annuler_par_admin(Course.objects.get(pk=c1.pk), compte('Admin'))
+        Course.objects.filter(pk=c1.pk).update(partenaire=favori)
+        self.client.force_authenticate(client)
+        self.assertEqual(self.client.post(f'{API}{c1.pk}/favori/').json(), {'favori': True})
+        fav = self.client.get(API + 'favoris/').json()['resultats']
+        self.assertEqual(fav[0]['id'], favori.pk)
+        d = self.client.get(API + 'proches/', {'lat': DEP['lat'], 'lng': DEP['lng'], 'categorie': moto.pk}).json()
+        self.assertEqual((d['nombre'], d['favoris']), (2, 1))
+        # 2e course : l'offre va d'abord au favori
+        c2 = S.commander(client, moto, DEP, ARR)
+        self.assertEqual(c2.offres.get().partenaire, favori)
+        self.client.force_authenticate(favori.user)
+        o = self.client.post(API + 'partenaire/offre/', format='json').json()
+        self.assertTrue(o['offre']['course']['favori'])
+        # désactivé dans les Paramètres : ordre normal
+        Parametres.objects.filter(pk=1).update(favoris_prioritaires=False)
+        S.annuler_par_admin(c2, compte('Admin2'))
+        c3 = S.commander(client, moto, DEP, ARR)
+        self.assertEqual(c3.offres.get().partenaire, proche)
+        self.client.force_authenticate(client)
+        self.assertEqual(self.client.delete(f'{API}favoris/{favori.pk}/').json(), {'favori': False})
