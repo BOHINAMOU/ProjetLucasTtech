@@ -607,11 +607,16 @@ class PinEtReferenceTests(APITestCase):
         from .models import PinSolde
         self.assertNotIn('1234', PinSolde.objects.get(user=self.user).pin_hash)
         self.assertEqual(self.client.get('/api/mobile/v1/solde/').json()['code'], 'pin_requis')
-        self.assertEqual(self.client.post(API, self.pts, format='json').json()['code'], 'pin_requis')
+        # achat payé avec le solde : PIN demandé
+        self.assertEqual(self.client.post('/api/mobile/v1/paiements/', {'moyen': 'solde', 'type': 'produit'},
+                                          format='json').json()['code'], 'pin_requis')
+        # course payée avec le solde : PAS de PIN ; on sait seulement si le solde suffit
+        self.assertTrue(self.client.get(API + 'solde-suffisant/', {'montant': 700}).json()['suffisant'])
+        self.assertFalse(self.client.get(API + 'solde-suffisant/', {'montant': 999999}).json()['suffisant'])
+        r = self.client.post(API, self.pts, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
         jeton = self.client.post(API + 'pin/verifier/', {'pin': '1234'}, format='json').json()['jeton']
         self.assertEqual(self.client.get('/api/mobile/v1/solde/', HTTP_X_PIN=jeton).status_code, 200)
-        r = self.client.post(API, {**self.pts, 'jeton_pin': jeton}, format='json')
-        self.assertEqual(r.status_code, 201, r.content)
         for _ in range(4):
             self.assertEqual(self.client.post(API + 'pin/verifier/', {'pin': '0000'}, format='json').json()['code'], 'pin_faux')
         self.assertEqual(self.client.post(API + 'pin/verifier/', {'pin': '0000'}, format='json').json()['code'], 'pin_bloque')

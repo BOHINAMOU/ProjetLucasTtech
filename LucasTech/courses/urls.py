@@ -9,6 +9,7 @@ urlpatterns = [
     path('estimation/', api.estimation, name='courses_estimation'),
     path('en-cours/', api.en_cours, name='courses_en_cours'),
     path('zone/', api.zone, name='courses_zone'),
+    path('solde-suffisant/', api.solde_suffisant, name='courses_solde_suffisant'),
     # Code PIN du solde (client et partenaire)
     path('pin/', pin.etat, name='pin_etat'),
     path('pin/creer/', pin.creer, name='pin_creer'),

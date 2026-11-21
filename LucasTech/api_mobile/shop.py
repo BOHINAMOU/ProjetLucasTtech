@@ -271,6 +271,10 @@ def payer(request):
     from Payments.models import Payment
     user, d = request.user, request.data
     if str(d.get('moyen') or '') == 'solde':
+        from courses.pin import exige_pin
+        refus = exige_pin(request)
+        if refus:
+            return refus
         return _payer_avec_solde(request)
     if not fedapay.is_enabled():
         return error("Le paiement en ligne est momentanément indisponible.", 503, code='paiement_indisponible')

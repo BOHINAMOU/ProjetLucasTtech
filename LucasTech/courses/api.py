@@ -160,11 +160,6 @@ def courses(request):
     cat = Categorie.objects.filter(pk=d.get('categorie')).select_related('service').first()
     if not cat:
         return error("Choisissez une catégorie.", code='categorie')
-    if str(d.get('moyen_paiement') or '') == 'portefeuille':
-        from .pin import exige_pin
-        refus = exige_pin(request)
-        if refus:
-            return refus
     try:
         c = S.commander(request.user, cat, dep, arr, moyen=str(d.get('moyen_paiement') or 'especes'),
                         repere=str(d.get('repere') or ''))
@@ -589,3 +584,14 @@ def retirer_favori(request, partenaire_id):
     from .models import CoursierFavori
     CoursierFavori.objects.filter(client=request.user, partenaire_id=partenaire_id).delete()
     return Response({'favori': False})
+
+
+@api_view(['GET'])
+def solde_suffisant(request):
+    """?montant=X → {suffisant: bool}. Ne révèle pas le solde (pas de PIN demandé pour commander une course)."""
+    from Payments.solde import portefeuille
+    try:
+        montant = int(request.GET.get('montant') or 0)
+    except ValueError:
+        montant = 0
+    return Response({'suffisant': portefeuille(request.user).solde >= montant > 0})
