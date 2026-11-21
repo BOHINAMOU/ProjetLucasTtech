@@ -144,7 +144,7 @@ def estimation(request):
         return error(p.message_zone, code='hors_zone')
     return Response({'estimations': [
         {**S.estimer(c, dep['lat'], dep['lng'], arr['lat'], arr['lng'], client=user, params=p),
-         'nom': c.nom, 'service': c.service.code} for c in qs]})
+         'nom': c.nom, 'code': c.code, 'service': c.service.code} for c in qs]})
 
 
 @api_view(['GET', 'POST'])
