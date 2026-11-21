@@ -29,4 +29,5 @@ urlpatterns = [
     path('partenaire/courses/', api.partenaire_courses, name='partenaire_courses'),
     path('partenaire/courses/<int:pk>/<str:action>/', api.course_action, name='partenaire_course_action'),
     path('partenaire/solde/', api.partenaire_solde, name='partenaire_solde'),
+    path('partenaire/versement/', api.versement, name='partenaire_versement'),
 ]

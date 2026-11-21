@@ -473,9 +473,25 @@ def partenaire_solde(request):
     p = Parametres.get()
     return Response({
         'solde': part.solde, 'dette': part.dette, 'dette_max_especes': p.dette_max_especes,
-        'dette_max_totale': p.dette_max_totale,
+        'dette_max_totale': p.dette_max_totale, 'versement_min': p.versement_min, 'mobile_money': part.mobile_money,
+        'versements': [{'id': v.pk, 'montant': v.montant, 'numero': v.numero, 'statut': v.statut,
+                        'statut_libelle': v.get_statut_display(), 'date': dt(v.created_at)}
+                       for v in part.versements.all()[:20]],
         'mouvements': [{'id': m.pk, 'type': m.type, 'libelle': m.get_type_display(), 'montant': m.montant,
                         'solde_apres': m.solde_apres, 'motif': m.motif, 'course_id': m.course_id, 'date': dt(m.created_at)}
                        for m in part.mouvements.all()[:100]],
     })
 
+
+
+@api_view(['POST'])
+def versement(request):
+    """Demande de versement du solde positif sur le numéro Mobile Money du partenaire."""
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    try:
+        v = S.demander_versement(part, request.data.get('montant'), str(request.data.get('numero') or ''))
+    except S.ErreurCourse as e:
+        return _err(e)
+    return Response({'id': v.pk, 'montant': v.montant, 'statut': v.statut, 'detail': "Demande envoyée."}, status=201)

@@ -115,6 +115,7 @@ class Parametres(models.Model):
     dette_max_totale = models.PositiveIntegerField("Dette max avant blocage total (FCFA)", default=15000)
     # Remboursement
     plafond_remboursement = models.PositiveIntegerField("Remboursement max sans second admin (FCFA)", default=5000)
+    versement_min = models.PositiveIntegerField("Versement : montant minimum (FCFA)", default=2000)
     # Fidélité
     fidelite_courses = models.PositiveSmallIntegerField("Fidélité : courses requises", default=10)
     fidelite_pct = models.PositiveSmallIntegerField("Fidélité : réduction (%)", default=10)
@@ -473,3 +474,26 @@ class MessageCourse(models.Model):
 
     def __str__(self):
         return f"{self.get_par_display()} — course {self.course_id} — {self.get_type_display()}"
+
+
+class DemandeVersement(models.Model):
+    """Le partenaire demande le versement de son solde positif sur son numéro Mobile Money ;
+    l'équipe paie puis marque la demande « Payée » (le solde est débité à ce moment-là)."""
+    STATUTS = [('en_attente', 'En attente'), ('paye', 'Payée'), ('refuse', 'Refusée')]
+    partenaire = models.ForeignKey(Partenaire, on_delete=models.PROTECT, related_name='versements')
+    montant = models.PositiveIntegerField("Montant (FCFA)")
+    numero = models.CharField("Numéro Mobile Money", max_length=20)
+    statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente')
+    motif = models.CharField("Motif du refus", max_length=255, blank=True)
+    traite_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='+', verbose_name="Traitée par")
+    traite_le = models.DateTimeField("Traitée le", null=True, blank=True)
+    created_at = models.DateTimeField("Demandée le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Demande de versement"
+        verbose_name_plural = "Demandes de versement"
+
+    def __str__(self):
+        return f"{self.montant} FCFA — {self.partenaire}"

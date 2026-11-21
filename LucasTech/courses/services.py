@@ -250,6 +250,8 @@ def avancer(course_id, maintenant=None):
                 OffreCourse.objects.create(course=course, partenaire=part, distance_km=Decimal(str(round(dist, 2))),
                                            envoyee_le=maintenant,
                                            expire_le=maintenant + timedelta(seconds=p.delai_reponse_s))
+                # push (si Firebase est configuré) : réveille l'appli partenaire en arrière-plan
+                _notifier(part.user, "Nouvelle course", f"{course.categorie.nom} à {dist:.1f} km. Répondez vite.")
                 return course
         # personne pour l'instant, même au rayon maximal : on réessaiera au prochain appel (jusqu'à la durée max)
         if float(course.rayon_km) != paliers[-1]:
@@ -639,3 +641,34 @@ def _notifier(user, titre, message):
 
 def categories_actives():
     return Categorie.objects.filter(active=True, service__actif=True)
+
+
+def demander_versement(partenaire, montant, numero=''):
+    p = Parametres.get()
+    try:
+        montant = int(montant)
+    except (TypeError, ValueError):
+        montant = 0
+    numero = (numero or partenaire.mobile_money or '').strip()
+    if montant < p.versement_min:
+        raise ErreurCourse(f"Minimum {p.versement_min} FCFA.", 'montant')
+    en_attente = sum(partenaire.versements.filter(statut='en_attente').values_list('montant', flat=True))
+    if montant + en_attente > partenaire.solde:
+        raise ErreurCourse("Solde insuffisant.", 'solde')
+    if not numero:
+        raise ErreurCourse("Numéro Mobile Money requis.", 'numero')
+    from .models import DemandeVersement
+    return DemandeVersement.objects.create(partenaire=partenaire, montant=montant, numero=numero[:20])
+
+
+def payer_versement(demande, par):
+    from .models import DemandeVersement
+    with transaction.atomic():
+        d = DemandeVersement.objects.select_for_update().get(pk=demande.pk)
+        if d.statut != 'en_attente':
+            return d
+        mouvement_partenaire(d.partenaire_id, -d.montant, 'versement', motif=f"Versement Mobile Money {d.numero}", par=par)
+        d.statut, d.traite_par, d.traite_le = 'paye', par, timezone.now()
+        d.save(update_fields=['statut', 'traite_par', 'traite_le'])
+    _notifier(d.partenaire.user, "Versement effectué", f"{d.montant} FCFA envoyés sur {d.numero}.")
+    return d

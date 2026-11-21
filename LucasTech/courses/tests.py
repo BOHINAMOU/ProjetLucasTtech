@@ -451,3 +451,32 @@ class DiscussionTests(APITestCase):
         dernier = self.c.messages.last()
         self.assertEqual(dernier.par, 'systeme')
         self.assertIn(self.c.code_depart, dernier.texte)
+
+
+@override_settings(STORAGES=STORAGES)
+class VersementTests(APITestCase):
+    def test_demande_et_paiement(self):
+        moto = Categorie.objects.get(code='moto')
+        p = partenaire(moto, mobile_money='+22890000009')
+        S.mouvement_partenaire(p.pk, 3000, 'gain', motif='Test')
+        self.client.force_authenticate(p.user)
+        r = self.client.post(API + 'partenaire/versement/', {'montant': 1000}, format='json')
+        self.assertEqual(r.json()['code'], 'montant')
+        r = self.client.post(API + 'partenaire/versement/', {'montant': 2500}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        r = self.client.post(API + 'partenaire/versement/', {'montant': 2000}, format='json')
+        self.assertEqual(r.json()['code'], 'solde')  # 2 500 déjà demandés sur 3 000
+        from .models import DemandeVersement
+        S.payer_versement(DemandeVersement.objects.get(), compte('Admin'))
+        p.refresh_from_db()
+        self.assertEqual(p.solde, 500)
+        d = self.client.get(API + 'partenaire/solde/').json()
+        self.assertEqual(d['versements'][0]['statut'], 'paye')
+        self.assertEqual(d['versement_min'], 2000)
+
+    def test_alerte_nouvelle_offre(self):
+        from api_mobile.models import Notification
+        moto = Categorie.objects.get(code='moto')
+        p = partenaire(moto, quand=timezone.now())
+        S.commander(compte(), moto, DEP, ARR)
+        self.assertTrue(Notification.objects.filter(utilisateur=p.user, titre='Nouvelle course').exists())

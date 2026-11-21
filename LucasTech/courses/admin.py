@@ -7,7 +7,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from . import services as S
-from .models import (Annulation, Categorie, Course, DemandeChangementType, DocumentPartenaire, MessageCourse,
+from .models import (Annulation, Categorie, Course, DemandeChangementType, DemandeVersement, DocumentPartenaire,
+                     MessageCourse,
                      MouvementSoldePartenaire, Note, OffreCourse, Parametres, Partenaire, PlageHoraire, Remboursement,
                      Service, Signalement)
 
@@ -86,7 +87,8 @@ class ParametresAdmin(admin.ModelAdmin):
         ("Annulation", {'fields': ('delai_grace_min', 'frais_annulation_moto', 'frais_annulation_voiture',
                                    'attente_absent_min', 'frais_absent_moto', 'frais_absent_voiture',
                                    'retard_exonerant_min')}),
-        ("Dette et remboursement", {'fields': ('dette_max_especes', 'dette_max_totale', 'plafond_remboursement')}),
+        ("Dette, remboursement, versement", {'fields': ('dette_max_especes', 'dette_max_totale',
+                                                       'plafond_remboursement', 'versement_min')}),
         ("Fidélité", {'fields': ('fidelite_courses', 'fidelite_pct', 'fidelite_plafond', 'fidelite_validite_jours')}),
         ("Notes", {'fields': ('note_avertissement', 'note_suspension', 'notes_min_affichage')}),
         ("Discussion", {'fields': ('chat_ouvert_apres_fin_min', 'audio_duree_max_s', 'fichier_taille_max_ko',
@@ -387,3 +389,29 @@ class MessageCourseAdmin(FichierPriveMixin, LectureSeule, admin.ModelAdmin):
     @admin.display(description="Fichier")
     def piece(self, obj):
         return _fichier_prive(self.nom_vue, obj.pk, 'fichier') if obj.fichier else '—'
+
+
+@admin.register(DemandeVersement)
+class DemandeVersementAdmin(admin.ModelAdmin):
+    """Payer le partenaire par Mobile Money, puis « Marquer payée » : son solde est alors débité."""
+    list_display = ('created_at', 'partenaire', 'montant', 'numero', 'statut', 'traite_par', 'traite_le')
+    list_filter = ('statut',)
+    search_fields = ('partenaire__user__email', 'numero')
+    readonly_fields = ('partenaire', 'montant', 'numero', 'statut', 'traite_par', 'traite_le', 'created_at')
+    actions = ['payer', 'refuser']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description="Marquer payée (solde débité)")
+    def payer(self, request, qs):
+        n = 0
+        for d in qs.filter(statut='en_attente'):
+            S.payer_versement(d, request.user)
+            n += 1
+        self.message_user(request, f"{n} versement(s) payé(s).")
+
+    @admin.action(description="Refuser")
+    def refuser(self, request, qs):
+        n = qs.filter(statut='en_attente').update(statut='refuse', traite_par=request.user, traite_le=timezone.now())
+        self.message_user(request, f"{n} demande(s) refusée(s).")
