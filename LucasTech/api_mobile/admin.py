@@ -46,3 +46,15 @@ class AppareilAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+
+from .models import TuileAccueil  # noqa: E402
+
+
+@admin.register(TuileAccueil)
+class TuileAccueilAdmin(admin.ModelAdmin):
+    """Ordre, libellé, icône, couleur et destination des tuiles de l'accueil de l'appli."""
+    list_display = ('libelle', 'destination', 'icone', 'couleur', 'ordre', 'active', 'android', 'ios')
+    list_editable = ('ordre', 'active')
+    list_filter = ('active',)

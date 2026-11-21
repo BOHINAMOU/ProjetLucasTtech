@@ -111,3 +111,37 @@ class Appareil(models.Model):
 
     def __str__(self):
         return f"{self.user} ({self.plateforme})"
+
+
+class TuileAccueil(models.Model):
+    """Tuiles « Explorez nos services » de l'accueil de l'appli, réglées dans l'admin (sans mise à jour de l'appli).
+    L'appli garde les dernières reçues ; hors ligne ou serveur ancien, elle affiche ses tuiles par défaut."""
+    ICONES = [('course', 'Moto (course)'), ('concours', 'Concours'), ('emploi', 'Emploi'), ('boutique', 'Boutique'),
+              ('formation', 'Formation'), ('ecole', 'École'), ('actualite', 'Actualités'), ('solde', 'Solde'),
+              ('services', 'Services'), ('hotel', 'Hôtel'), ('logement', 'Logement'), ('restaurant', 'Restaurant'),
+              ('evenement', 'Événement'), ('repetiteur', 'Répétiteur'), ('lien', 'Lien')]
+    COULEURS = [('vert', 'Vert'), ('vert_fonce', 'Vert foncé'), ('brun', 'Brun'), ('orange', 'Orange'),
+                ('bleu', 'Bleu'), ('violet', 'Violet'), ('cyan', 'Cyan'), ('rose', 'Rose'), ('gris', 'Gris'),
+                ('rouge', 'Rouge')]
+    DESTINATIONS = [('course', 'Commander une course'), ('concours', 'Concours'), ('emplois', "Recherche d'emploi"),
+                    ('boutique', 'Boutique'), ('formations', 'Formations'), ('ecoles', 'Écoles'),
+                    ('actualites', 'Actualités'), ('solde', 'Solde'), ('services', 'Services'), ('hotels', 'Hôtels'),
+                    ('logements', 'Location'), ('restaurants', 'Restaurants'), ('evenements', 'Événements'),
+                    ('repetiteurs', 'Répétiteurs'), ('url', 'Lien (URL)')]
+    libelle = models.CharField("Libellé", max_length=40)
+    icone = models.CharField("Icône", max_length=12, choices=ICONES)
+    couleur = models.CharField("Couleur", max_length=12, choices=COULEURS, default='vert')
+    destination = models.CharField("Ouvre", max_length=12, choices=DESTINATIONS)
+    url = models.URLField("Lien (si « Lien »)", blank=True)
+    ordre = models.PositiveSmallIntegerField("Ordre", default=0)
+    active = models.BooleanField("Affichée", default=True)
+    android = models.BooleanField("Android", default=True)
+    ios = models.BooleanField("iPhone", default=True)
+
+    class Meta:
+        ordering = ['ordre', 'id']
+        verbose_name = "Tuile de l'accueil"
+        verbose_name_plural = "Tuiles de l'accueil (appli)"
+
+    def __str__(self):
+        return self.libelle

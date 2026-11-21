@@ -44,6 +44,7 @@ urlpatterns = [
     path('abonnements/<int:pk>/concours/', shop.abonnement_concours, name='abonnement_concours'),
 
     # Accueil et catalogues
+    path('tuiles-accueil/', __import__('api_mobile.tuiles', fromlist=['tuiles']).tuiles_accueil, name='tuiles_accueil'),
     path('home/', cache_liste(anonymes_seulement=True)(views.home), name='home'),
     path('carrousel/', catalog.carrousel, name='carrousel'),
     path('version/', catalog.version, name='version'),

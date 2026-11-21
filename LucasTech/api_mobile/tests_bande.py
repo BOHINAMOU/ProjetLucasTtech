@@ -37,3 +37,17 @@ class BandeTests(TestCase):
         c.refresh_from_db()
         self.assertFalse(c.actif)
         self.assertIn(p2.name, [x['titre'] for x in self.client.get('/api/mobile/v1/carrousel/').json()] + [p2.name])
+
+
+class TuilesAccueilTests(TestCase):
+    def test_tuiles_par_defaut_ordre_et_plateforme(self):
+        from .models import TuileAccueil
+        d = self.client.get('/api/mobile/v1/tuiles-accueil/').json()['tuiles']
+        self.assertEqual(d[0]['libelle'], 'Commander une course')
+        self.assertEqual(len(d), 8)
+        TuileAccueil.objects.filter(destination='solde').update(ios=False)
+        TuileAccueil.objects.filter(destination='concours').update(active=False)
+        android = self.client.get('/api/mobile/v1/tuiles-accueil/', {'plateforme': 'android'}).json()['tuiles']
+        ios = self.client.get('/api/mobile/v1/tuiles-accueil/', {'plateforme': 'ios'}).json()['tuiles']
+        self.assertEqual(len(android), 7)
+        self.assertNotIn('solde', [t['destination'] for t in ios])
