@@ -1,0 +1,95 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item">Gestion des courses</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}{% include "admin/_courses_style.html" %}{% endblock %}
+{% block content %}
+<div class="cx">
+  <div class="cx-tete">
+    <span class="ic"><span class="ms">two_wheeler</span></span>
+    <div class="t"><h1>Gestion des courses</h1><small>Lantante Express : courses, coursiers, plaintes et réglages</small></div>
+    <a class="cx-b g" href="{{ url_courses }}"><span class="ms">list</span>Toutes les courses</a>
+  </div>
+
+  <nav class="cx-ong">
+    {% for code, titre, ic in onglets %}
+    <a href="?vue={{ code }}" class="{% if vue == code %}on{% endif %}"><span class="ms">{{ ic }}</span>{{ titre }}{% if code == 'demandes' and a_traiter %}<i>{{ a_traiter }}</i>{% endif %}</a>
+    {% endfor %}
+  </nav>
+
+  {% if kpis %}<div class="cx-kp">{% for label, v, ic in kpis %}<div><span class="ms">{{ ic }}</span><span><small>{{ label }}</small><b>{{ v }}</b></span></div>{% endfor %}</div>{% endif %}
+
+  {% if vue == 'jour' %}
+  <div class="cx-c">
+    <div class="h"><b>Courses du jour · {{ courses|length }}</b><a href="{{ url_courses }}">Toutes les courses</a></div>
+    {% if courses %}
+    <div class="cx-t"><table>
+      <thead><tr><th>Heure</th><th>N°</th><th>Client</th><th>Coursier</th><th>Véhicule</th><th>Trajet</th><th>Prix</th><th>Statut</th></tr></thead>
+      <tbody>{% for x in courses %}<tr>
+        <td>{{ x.heure }}</td>
+        <td><a href="{{ x.url }}"><b>{{ x.c.reference }}</b></a></td>
+        <td>{{ x.client }}</td>
+        <td>{% if x.coursier_url %}<a href="{{ x.coursier_url }}">{{ x.coursier }}</a>{% else %}—{% endif %}</td>
+        <td>{{ x.c.categorie.nom }}</td>
+        <td class="tr">{{ x.c.depart_adresse|truncatechars:34 }} → {{ x.c.arrivee_adresse|truncatechars:34 }}</td>
+        <td><b>{{ x.prix }}</b></td>
+        <td><span class="pil {{ x.cls }}">{{ x.statut }}</span></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<div class="vide">Aucune course aujourd'hui pour le moment.</div>{% endif %}
+  </div>
+
+  {% elif vue == 'coursiers' %}
+  <div class="cx-c">
+    <div class="h"><b>Coursiers · {{ coursiers|length }}</b><span class="m">Cliquez sur un coursier pour voir ses courses</span></div>
+    {% if coursiers %}
+    <div class="cx-t"><table>
+      <thead><tr><th>Coursier</th><th>Véhicule</th><th>Plaque</th><th>Compte</th><th>En ligne</th><th>Aujourd'hui</th><th>Terminées</th><th>Note</th><th>Dette</th></tr></thead>
+      <tbody>{% for x in coursiers %}<tr class="cl" onclick="location.href='{{ x.url }}'">
+        <td><a href="{{ x.url }}"><b>{{ x.nom }}</b></a><br><small>{{ x.p.telephone|default:x.p.user.email }}</small></td>
+        <td>{{ x.vehicule }}</td><td>{{ x.p.plaque|default:"—" }}</td>
+        <td><span class="pil {{ x.cls }}">{{ x.statut }}</span></td>
+        <td>{% if x.p.en_ligne %}<span class="pil ok">● En ligne</span>{% else %}<span class="pil">Hors ligne</span>{% endif %}</td>
+        <td>{{ x.p.n_jour }}</td><td>{{ x.p.n_total }}</td>
+        <td>{% if x.p.nb_notes %}{{ x.p.note }} ★{% else %}—{% endif %}</td>
+        <td>{% if x.p.solde < 0 %}<b class="rouge">{{ x.p.dette }} F</b>{% else %}—{% endif %}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<div class="vide">Aucun coursier inscrit.</div>{% endif %}
+  </div>
+
+  {% elif vue == 'demandes' %}
+  <div class="cx-g2">
+    {% for b in blocs %}
+    <div class="cx-c">
+      <div class="h"><b><span class="ms">{{ b.icone }}</span>{{ b.titre }}{% if b.n %} <i class="nb">{{ b.n }}</i>{% endif %}</b><a href="{{ b.lien }}">Tout voir</a></div>
+      {% for t, st, u in b.lignes %}<a class="cx-l" href="{{ u }}"><b>{{ t }}</b><small>{{ st }}</small></a>
+      {% empty %}<div class="vide p">Rien à traiter.</div>{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif vue == 'stats' %}
+  <div class="cx-c">
+    <div class="h"><b>Courses par jour · 30 derniers jours</b><span class="m"><i class="lg a"></i> courses commandées{% if moyenne %} · Note moyenne {{ moyenne }} ★{% endif %}</span></div>
+    <div class="cx-bar">{% for s in series %}<div title="{{ s.j }} : {{ s.n }} commandée(s), {{ s.t }} terminée(s)"><span class="v">{% if s.n %}{{ s.n }}{% endif %}</span><span class="barre" style="height:{{ s.h }}%"></span><small>{{ s.j }}</small></div>{% endfor %}</div>
+  </div>
+  <div class="cx-g3">
+    {% for p in periodes %}
+    <div class="cx-c"><div class="h"><b>{{ p.titre }}</b></div>
+      {% for l, v in p.lignes %}<div class="cx-s"><span>{{ l }}</span><b>{{ v }}</b></div>{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="cx-c">
+    <div class="h"><b>Motifs d'annulation · 30 jours</b></div>
+    {% for m in motifs %}<div class="cx-s"><span>{{ m.motif|default:"Sans motif" }} <small>({% if m.par == 'client' %}client{% elif m.par == 'partenaire' %}coursier{% else %}Lantante{% endif %})</small></span><b>{{ m.n }}</b></div>
+    {% empty %}<div class="vide p">Aucune annulation.</div>{% endfor %}
+  </div>
+
+  {% else %}
+  <div class="cx-g2">
+    {% for l in liens %}<a class="cx-r" href="{{ l.url }}"><span class="ms">{{ l.ic }}</span><span><b>{{ l.titre }}</b><small>{{ l.aide }}</small></span></a>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

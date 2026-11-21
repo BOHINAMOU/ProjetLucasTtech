@@ -63,3 +63,24 @@ class ListesAdminTests(TestCase):
         r = self.client.get(reverse('admin:courses_comptecoursier_changelist'))
         self.assertContains(r, 'coursier@example.com')
         self.assertContains(r, 'Moto')
+
+    def test_tableau_courses_et_fiche_coursier(self):
+        from courses.models import Categorie, Course, DocumentPartenaire, Partenaire, Signalement
+        U = get_user_model()
+        cou = U.objects.create_user(email='kodjo@example.com', password='x-Pass-12345', first_name='Kodjo')
+        p = Partenaire.objects.create(user=cou, plaque='TG 1', type_vehicule='moto', statut='valide', en_ligne=True)
+        c = Course.objects.create(client=self.admin, partenaire=p, categorie=Categorie.objects.get(code='moto'),
+                                  depart_lat=6.13, depart_lng=1.22, arrivee_lat=6.16, arrivee_lng=1.22, distance_km=4,
+                                  duree_min=10, prix_estime=700, statut='terminee', depart_adresse='Bè', arrivee_adresse='Tokoin')
+        Signalement.objects.create(course=c, auteur=self.admin, par='client', motif='comportement', commentaire='Impoli')
+        DocumentPartenaire.objects.create(partenaire=p, type='selfie', fichier='x.jpg')
+        attendus = {'jour': "Courses du jour", 'coursiers': 'Kodjo', 'demandes': 'Plaintes à traiter',
+                    'stats': 'Messages envoyés', 'reglages': 'Prix des courses'}
+        for vue, texte in attendus.items():
+            r = self.client.get(f'/lantanteAdminTech/section/courses/?vue={vue}')
+            self.assertEqual(r.status_code, 200, vue)
+            self.assertContains(r, texte)
+        r = self.client.get(f'/lantanteAdminTech/section/courses/coursier/{p.pk}/')
+        self.assertEqual(r.status_code, 200)
+        for texte in ('Kodjo', 'Ses courses', 'Tokoin', 'Photo de profil', 'Impoli', 'Moto'):
+            self.assertContains(r, texte)

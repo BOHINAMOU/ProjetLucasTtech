@@ -268,6 +268,9 @@ def admin_section(request, code):
     if code == 'commentaires':
         from .admin_commentaires import boite
         return boite(request)
+    if code == 'courses':
+        from .admin_courses import tableau
+        return tableau(request)
     section = build_section(request, code)
     if not section['lignes']:
         raise Http404

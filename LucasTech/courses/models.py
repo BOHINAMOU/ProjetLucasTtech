@@ -301,9 +301,9 @@ def nouvelle_reference():
 
 
 class Course(models.Model):
-    STATUTS = [('recherche', 'Recherche'), ('acceptee', 'Acceptée'), ('arrive', 'Partenaire arrivé'),
+    STATUTS = [('recherche', 'Recherche'), ('acceptee', 'Acceptée'), ('arrive', 'Coursier arrivé'),
                ('en_cours', 'En cours'), ('terminee', 'Terminée'), ('annulee', 'Annulée'),
-               ('aucun_partenaire', 'Aucun partenaire'), ('litige', 'Litige')]
+               ('aucun_partenaire', 'Aucun coursier'), ('litige', 'Litige')]
     ACTIFS = ('recherche', 'acceptee', 'arrive', 'en_cours')
     MOYENS = [('especes', 'Espèces'), ('portefeuille', 'Solde Lantante')]
     client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='courses_express',

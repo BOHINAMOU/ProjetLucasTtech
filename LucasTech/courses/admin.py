@@ -142,7 +142,11 @@ def _categories_par_defaut(p):
 @admin.register(Partenaire)
 class PartenaireAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'type_vehicule', 'statut', 'en_ligne', 'plaque', 'note', 'nb_notes', 'solde',
-                    'avertissements', 'position_le')
+                    'avertissements', 'position_le', 'fiche')
+
+    @admin.display(description="Fiche")
+    def fiche(self, obj):
+        return format_html('<a href="{}">Ses courses</a>', reverse('admin_coursier', args=[obj.pk]))
     list_filter = ('statut', 'type_vehicule', 'en_ligne', 'categories')
     search_fields = ('user__email', 'user__first_name', 'user__last_name', 'plaque', 'telephone')
     autocomplete_fields = ('user',)

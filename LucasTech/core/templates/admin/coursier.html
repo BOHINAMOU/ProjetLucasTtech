@@ -1,0 +1,65 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item"><a href="/lantanteAdminTech/section/courses/">Gestion des courses</a></li><li class="breadcrumb-item"><a href="/lantanteAdminTech/section/courses/?vue=coursiers">Coursiers</a></li><li class="breadcrumb-item">{{ nom|truncatechars:40 }}</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}{% include "admin/_courses_style.html" %}{% endblock %}
+{% block content %}
+<div class="cx">
+  <div class="cf-tete">
+    <span class="av"><span class="ms">two_wheeler</span></span>
+    <div class="in">
+      <h1>{{ nom }}</h1>
+      <div class="m">
+        <span class="pil {{ cls }}">{{ p.get_statut_display }}</span>
+        {% if p.en_ligne %}<span class="pil ok">● En ligne</span>{% else %}<span class="pil">Hors ligne</span>{% endif %}
+        <span>{{ p.get_type_vehicule_display|default:"Véhicule non choisi" }}{% if p.marque %} · {{ p.marque }} {{ p.modele }} {{ p.couleur }}{% endif %}{% if p.plaque %} · {{ p.plaque }}{% endif %}</span>
+      </div>
+      <div class="m" style="margin-top:4px">
+        <span>{{ p.user.email }}</span>{% if p.telephone %}<span>· {{ p.telephone }}</span>{% endif %}
+        {% if p.mobile_money %}<span>· Mobile Money {{ p.mobile_money }}</span>{% endif %}
+        <span>· Dernière position : {{ vu }}</span>
+      </div>
+      {% if p.motif_statut %}<div class="m rouge" style="margin-top:4px">{{ p.motif_statut }}</div>{% endif %}
+    </div>
+    <div class="cf-acts">
+      <a class="cx-b" href="{{ modifier }}"><span class="ms">edit</span>Modifier / Valider</a>
+    </div>
+  </div>
+
+  <div class="cx-kp">{% for label, v, ic in kpis %}<div><span class="ms">{{ ic }}</span><span><small>{{ label }}</small><b>{{ v }}</b></span></div>{% endfor %}</div>
+
+  <div class="cx-c">
+    <div class="h"><b><span class="ms">local_taxi</span>Ses courses · {{ courses|length }} dernières</b></div>
+    {% if courses %}
+    <div class="cx-t"><table>
+      <thead><tr><th>Date</th><th>N°</th><th>Client</th><th>Trajet</th><th>Prix</th><th>Statut</th></tr></thead>
+      <tbody>{% for x in courses %}<tr>
+        <td>{{ x.date }}</td><td><a href="{{ x.url }}"><b>{{ x.c.reference }}</b></a></td><td>{{ x.client }}</td>
+        <td class="tr">{{ x.c.depart_adresse|truncatechars:34 }} → {{ x.c.arrivee_adresse|truncatechars:34 }}</td>
+        <td><b>{{ x.prix }}</b></td><td><span class="pil {{ x.cls }}">{{ x.statut }}</span></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<div class="vide">Aucune course pour le moment.</div>{% endif %}
+  </div>
+
+  <div class="cx-g2">
+    <div class="cx-c">
+      <div class="h"><b><span class="ms">badge</span>Ses papiers et photos</b></div>
+      {% for x in docs %}<a class="cx-l" href="{{ x.url }}"><b>{{ x.d.get_type_display }} <span class="pil {% if x.d.statut == 'valide' %}ok{% elif x.d.statut == 'refuse' %}ko{% else %}or{% endif %}">{{ x.d.get_statut_display }}</span></b>
+        <small>Envoyé le {{ x.d.created_at|date:"d/m/Y" }}{% if x.d.expiration %} · expire le {{ x.d.expiration|date:"d/m/Y" }}{% endif %}{% if x.d.motif %} · {{ x.d.motif }}{% endif %}</small></a>
+      {% empty %}<div class="vide p">Aucun papier envoyé.</div>{% endfor %}
+    </div>
+    <div class="cx-c">
+      <div class="h"><b><span class="ms">report</span>Plaintes sur ses courses</b></div>
+      {% for s in plaintes %}<div class="cx-l"><b>{{ s.get_motif_display }} <span class="pil {% if s.statut == 'resolu' %}ok{% elif s.statut == 'nouveau' %}ko{% else %}or{% endif %}">{{ s.get_statut_display }}</span></b>
+        <small>{{ s.created_at|date:"d/m/Y H:i" }} · course {{ s.course.reference }} · par le {% if s.par == 'client' %}client{% else %}coursier{% endif %}{% if s.commentaire %} : {{ s.commentaire|truncatechars:90 }}{% endif %}</small></div>
+      {% empty %}<div class="vide p">Aucune plainte.</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="cx-c">
+    <div class="h"><b><span class="ms">account_balance_wallet</span>Son solde · derniers mouvements</b></div>
+    {% for m in mouvements %}<div class="cx-s"><span>{{ m.created_at|date:"d/m H:i" }} · {{ m.get_type_display }}{% if m.motif %} <small>{{ m.motif }}</small>{% endif %}</span><b class="{% if m.montant < 0 %}rouge{% endif %}">{{ m.montant }} F</b></div>
+    {% empty %}<div class="vide p">Aucun mouvement.</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}
