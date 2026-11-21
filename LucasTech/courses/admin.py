@@ -144,27 +144,27 @@ class PartenaireAdmin(admin.ModelAdmin):
     inlines = [DocumentInline, MouvementInline]
     actions = ['valider', 'refuser', 'suspendre', 'hors_ligne']
 
-    @admin.action(description="Valider les partenaires choisis")
+    @admin.action(description="Valider les coursiers choisis")
     def valider(self, request, qs):
         n = qs.update(statut='valide', motif_statut='')
         for p in qs:
-            S._notifier(p.user, "Compte partenaire validé", "Vous pouvez passer en ligne.")
-        self.message_user(request, f"{n} partenaire(s) validé(s).")
+            S._notifier(p.user, "Compte coursier validé", "Vous pouvez passer en ligne.")
+        self.message_user(request, f"{n} coursier(s) validé(s).")
 
     @admin.action(description="Refuser (documents incomplets)")
     def refuser(self, request, qs):
         n = qs.update(statut='refuse', en_ligne=False, motif_statut="Documents incomplets ou illisibles.")
-        self.message_user(request, f"{n} partenaire(s) refusé(s).")
+        self.message_user(request, f"{n} coursier(s) refusé(s).")
 
     @admin.action(description="Suspendre")
     def suspendre(self, request, qs):
         n = qs.update(statut='suspendu', en_ligne=False, motif_statut="Suspendu par l'équipe.")
-        self.message_user(request, f"{n} partenaire(s) suspendu(s).", messages.WARNING)
+        self.message_user(request, f"{n} coursier(s) suspendu(s).", messages.WARNING)
 
     @admin.action(description="Mettre hors ligne")
     def hors_ligne(self, request, qs):
         n = qs.update(en_ligne=False)
-        self.message_user(request, f"{n} partenaire(s) hors ligne.")
+        self.message_user(request, f"{n} coursier(s) hors ligne.")
 
 
 @admin.register(DocumentPartenaire)

@@ -340,7 +340,7 @@ def partenaire(request):
     part = _partenaire(request)
     if request.method == 'GET':
         if not part:
-            return error("Pas encore partenaire.", status=404, code='pas_partenaire')
+            return error("Pas encore coursier.", status=404, code='pas_partenaire')
         return Response(partenaire_payload(request, part))
     d = request.data
     ids = d.getlist('categories') if hasattr(d, 'getlist') else (d.get('categories') or [])

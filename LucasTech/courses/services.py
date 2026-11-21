@@ -435,8 +435,8 @@ def accepter(partenaire, offre_id, maintenant=None):
         Partenaire.objects.filter(pk=partenaire.pk).update(offres_ignorees=0)
     from .discussion import message_systeme
     message_systeme(course, p.modele_message_acceptation)
-    _notifier(course.client, "Partenaire trouvé",
-              f"{partenaire.user.first_name or 'Votre partenaire'} arrive. Code de départ : {course.code_depart}.")
+    _notifier(course.client, "Coursier trouvé",
+              f"{partenaire.user.first_name or 'Votre coursier'} arrive. Code de départ : {course.code_depart}.")
     return course
 
 
@@ -473,7 +473,7 @@ def signaler_arrivee(partenaire, course_id, maintenant=None):
         course.save()
         from .discussion import message_systeme
         message_systeme(course, Parametres.get().modele_message_arrivee)
-    _notifier(course.client, "Votre partenaire est arrivé", f"Code de départ : {course.code_depart}.")
+    _notifier(course.client, "Votre coursier est arrivé", f"Code de départ : {course.code_depart}.")
     return course
 
 
@@ -650,7 +650,7 @@ def annuler_par_partenaire(partenaire, course_id, motif='', maintenant=None):
         course.recherche_debut = maintenant
         course.rayon_km = Decimal(str(Parametres.get().paliers()[0]))
         course.save()
-    _notifier(course.client, "Nous cherchons un autre partenaire", "Votre course est relancée au même prix.")
+    _notifier(course.client, "Nous cherchons un autre coursier", "Votre course est relancée au même prix.")
     avancer(course.pk, maintenant)
     return course
 
