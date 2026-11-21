@@ -8,7 +8,7 @@ from django.utils.html import format_html
 
 from . import services as S
 from .models import (Annulation, Categorie, Course, DemandeChangementType, DemandeVersement, DocumentPartenaire,
-                     MessageCourse,
+                     MessageCourse, Zone,
                      MouvementSoldePartenaire, Note, OffreCourse, Parametres, Partenaire, PlageHoraire, Remboursement,
                      Service, Signalement)
 
@@ -82,8 +82,11 @@ class ParametresAdmin(admin.ModelAdmin):
         ("Affectation", {'fields': ('rayon_initial_km', 'palier_1_km', 'palier_2_km', 'delai_reponse_s',
                                     'delai_accuse_s', 'age_gps_max_s', 'offres_max', 'recherche_max_s',
                                     'offres_ignorees_max')}),
+        ("Zones et carte", {'fields': ('message_zone', 'rayon_proches_km')}),
+        ("Recherche et départ", {'fields': ('message_aucun_partenaire', 'code_depart_obligatoire')}),
         ("Prix et attente", {'fields': ('arrondi', 'coef_route', 'vitesse_moyenne_kmh', 'attente_gratuite_min',
-                                        'prix_attente_moto', 'prix_attente_voiture')}),
+                                        'prix_attente_moto', 'prix_attente_voiture', 'seuil_augmentation_pct',
+                                        'mention_prix')}),
         ("Annulation", {'fields': ('delai_grace_min', 'frais_annulation_moto', 'frais_annulation_voiture',
                                    'attente_absent_min', 'frais_absent_moto', 'frais_absent_voiture',
                                    'retard_exonerant_min')}),
@@ -415,3 +418,9 @@ class DemandeVersementAdmin(admin.ModelAdmin):
     def refuser(self, request, qs):
         n = qs.filter(statut='en_attente').update(statut='refuse', traite_par=request.user, traite_le=timezone.now())
         self.message_user(request, f"{n} demande(s) refusée(s).")
+
+
+@admin.register(Zone)
+class ZoneAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'centre_lat', 'centre_lng', 'rayon_km', 'active')
+    list_editable = ('rayon_km', 'active')

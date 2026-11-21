@@ -162,6 +162,9 @@ LOGOUT_REDIRECT_URL = '/users/connexion/'
 # ══════════════════════════════════════
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+# Google Maps (itinéraires et recherche de lieux de Lantante Express), utilisée côté serveur uniquement.
+# Vide : estimation de distance + recherche OpenStreetMap (Photon).
+GOOGLE_MAPS_KEY = os.getenv("GOOGLE_MAPS_KEY", "")
 
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/'

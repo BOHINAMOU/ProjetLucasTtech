@@ -77,7 +77,13 @@ def course_payload(request, c, pour='client', p=None):
         'discussion': {'ouverte': D.ouverte(c, p=p), 'non_lus': D.non_lus(c, 'client' if pour == 'client' else 'partenaire')},
     }
     if pour == 'client':
-        d['code_depart'] = c.code_depart if c.statut in ('recherche', 'acceptee', 'arrive') else ''
+        d['code_depart'] = c.code_depart if c.code_requis and c.statut in ('recherche', 'acceptee', 'arrive') else ''
+        if c.statut == 'aucun_partenaire':
+            d['message'] = p.message_aucun_partenaire
+        if c.statut == 'recherche':
+            debut = c.recherche_debut or c.created_at
+            d['recherche'] = {'secondes_ecoulees': int((timezone.now() - debut).total_seconds()),
+                              'secondes_max': p.recherche_max_s}
         part = c.partenaire
         d['partenaire'] = None if not part else {
             'prenom': part.user.first_name, 'photo': media(request, part.user.avatar), 'note': _note_publique(part, p),
@@ -91,6 +97,7 @@ def course_payload(request, c, pour='client', p=None):
         d['note_donnee'] = c.notes.filter(auteur='client').values_list('note', flat=True).first()
         d['peut_noter'] = c.statut == 'terminee' and d['note_donnee'] is None
     else:
+        d['code_requis'] = c.code_requis
         d['client'] = {'prenom': c.client.first_name,
                        'telephone': (c.client.phone or '') if c.active else ''}
         prix = c.prix_final or c.prix_estime
@@ -125,6 +132,8 @@ def estimation(request):
         qs = qs.filter(pk=d.get('categorie'))
     p = Parametres.get()
     user = _user(request)
+    if not S.dans_zone(dep['lat'], dep['lng']) or not S.dans_zone(arr['lat'], arr['lng']):
+        return error(p.message_zone, code='hors_zone')
     return Response({'estimations': [
         {**S.estimer(c, dep['lat'], dep['lng'], arr['lat'], arr['lng'], client=user, params=p),
          'nom': c.nom, 'service': c.service.code} for c in qs]})
@@ -244,7 +253,8 @@ def recu(request, pk):
         'numero': c.numero_recu, 'date': dt(c.terminee_le), 'categorie': c.categorie.nom,
         'depart': c.depart_adresse, 'arrivee': c.arrivee_adresse, 'distance_km': float(c.distance_km),
         'duree_min': c.duree_min, 'partenaire': part.user.first_name if part else '', 'plaque': part.plaque if part else '',
-        'detail': c.detail_prix, 'prix': c.prix_final, 'reduction': c.reduction, 'frais_reportes': c.frais_impayes,
+        'detail': c.detail_prix, 'prix_annonce': c.prix_estime, 'supplements': (c.detail_prix or {}).get('supplements', []),
+        'prix': c.prix_final, 'reduction': c.reduction, 'frais_reportes': c.frais_impayes,
         'total': c.total_client, 'moyen_paiement': c.get_moyen_paiement_display(),
     })
 
@@ -380,6 +390,7 @@ def position(request):
     if not _maj_position(part, request.data):
         return error("Position invalide.", code='position')
     part.save(update_fields=['lat', 'lng', 'position_le'])
+    S.suivre_position(part, part.lat, part.lng)
     return Response({'ok': True})
 
 
@@ -392,6 +403,7 @@ def offre(request):
         return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
     if request.method == 'POST' and _maj_position(part, request.data):
         part.save(update_fields=['lat', 'lng', 'position_le'])
+        S.suivre_position(part, part.lat, part.lng)
     S.avancer_recherches()
     o = S.offre_en_cours(part)
     part.refresh_from_db(fields=['en_ligne', 'offres_ignorees', 'avertissements'])
@@ -495,3 +507,25 @@ def versement(request):
     except S.ErreurCourse as e:
         return _err(e)
     return Response({'id': v.pk, 'montant': v.montant, 'statut': v.statut, 'detail': "Demande envoyée."}, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def zone(request):
+    """?lat&lng → le point est-il dans une zone couverte ?"""
+    lat, lng = _float(request.GET.get('lat')), _float(request.GET.get('lng'))
+    if lat is None or lng is None:
+        return error("Position invalide.", code='position')
+    ok = S.dans_zone(lat, lng)
+    return Response({'couverte': ok, 'message': '' if ok else Parametres.get().message_zone})
+
+
+@api_view(['GET'])
+def proches(request):
+    """?lat&lng[&categorie] → coursiers disponibles autour (type + position approximative, sans identité)."""
+    lat, lng = _float(request.GET.get('lat')), _float(request.GET.get('lng'))
+    if lat is None or lng is None:
+        return error("Position invalide.", code='position')
+    cat = Categorie.objects.filter(pk=request.GET.get('categorie')).select_related('service').first() \
+        if (request.GET.get('categorie') or '').isdigit() else None
+    return Response(S.proches(lat, lng, cat))

@@ -67,6 +67,47 @@ def _photon(chemin, params):
     return out
 
 
+def _google(q, lat=None, lng=None):
+    """Recherche Google Places (Text Search) si GOOGLE_MAPS_KEY est configurée, sinon None."""
+    from courses.carto import cle_google
+    cle = cle_google()
+    if not cle:
+        return None
+    k = 'lieuxg:' + hashlib.sha1(f'{q}|{lat}|{lng}'.encode()).hexdigest()
+    deja = cache.get(k)
+    if deja is not None:
+        return deja
+    corps = {'textQuery': q, 'languageCode': 'fr', 'regionCode': 'TG', 'pageSize': 6}
+    if lat is not None and lng is not None:
+        corps['locationBias'] = {'circle': {'center': {'latitude': lat, 'longitude': lng}, 'radius': 30000.0}}
+    try:
+        r = requests.post('https://places.googleapis.com/v1/places:searchText', json=corps, timeout=8, headers={
+            'X-Goog-Api-Key': cle,
+            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location'})
+        r.raise_for_status()
+        out = []
+        for p in r.json().get('places', []):
+            loc = p.get('location') or {}
+            nom = (p.get('displayName') or {}).get('text', '')
+            adresse = p.get('formattedAddress', '')
+            if loc.get('latitude') is None:
+                continue
+            libelle = nom if not adresse or adresse.startswith(nom) else f"{nom}, {adresse}"
+            out.append({'nom': (libelle or adresse)[:160], 'lat': round(loc['latitude'], 6), 'lng': round(loc['longitude'], 6)})
+        cache.set(k, out, CACHE)
+        return out
+    except Exception:  # pragma: no cover - réseau
+        logger.warning("Google Places indisponible : OpenStreetMap utilisé")
+        return None
+
+
+def _float(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def lieux(request):
@@ -77,7 +118,13 @@ def lieux(request):
     if _trop(request):
         return error("Trop de recherches. Réessayez dans un instant.", 429, code='trop')
     try:
-        res = _photon('/api/', {'q': q, 'lang': 'fr', 'limit': 6, 'bbox': BBOX_TOGO})
+        g = _google(q, _float(request.GET.get('lat')), _float(request.GET.get('lng')))
+        if g is not None:
+            return Response({'resultats': g})
+        params = {'q': q, 'lang': 'fr', 'limit': 6, 'bbox': BBOX_TOGO}
+        if _float(request.GET.get('lat')) is not None and _float(request.GET.get('lng')) is not None:
+            params.update({'lat': request.GET['lat'], 'lon': request.GET['lng']})
+        res = _photon('/api/', params)
         if not res:  # rien au Togo : recherche plus large, autour de Lomé
             res = _photon('/api/', {'q': q, 'lang': 'fr', 'limit': 6, 'lat': 6.17, 'lon': 1.23})
     except (requests.RequestException, ValueError):

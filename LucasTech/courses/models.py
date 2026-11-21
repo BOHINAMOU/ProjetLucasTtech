@@ -47,6 +47,9 @@ class Categorie(models.Model):
     minimum = models.PositiveIntegerField("Prix minimum (FCFA)", default=0)
     commission_pct = models.DecimalField("Commission (%)", max_digits=5, decimal_places=2, default=15,
                                          validators=[MinValueValidator(0), MaxValueValidator(100)])
+    code_depart_obligatoire = models.BooleanField("Code de départ obligatoire", default=False,
+                                                  help_text="Exige le code pour cette catégorie, même si le réglage "
+                                                            "général est désactivé.")
 
     class Meta:
         ordering = ['service__ordre', 'ordre', 'id']
@@ -79,8 +82,11 @@ class PlageHoraire(models.Model):
 
 MESSAGE_ACCEPTATION = ("Bonjour {prenom_client}, votre demande de course a été acceptée. Le coursier {prenom_coursier} "
                        "({vehicule}, {plaque}) est en route et sera bientôt là, environ {eta} min. Merci d'être prêt.")
-MESSAGE_ARRIVEE = ("Votre coursier {prenom_coursier} est arrivé ({vehicule}, {plaque}). "
-                   "Donnez-lui le code de départ {code}.")
+MENTION_PRIX = ("Ce prix peut augmenter si le trajet change (autre destination, arrêt), en cas d'attente "
+                "au-delà de {attente} min, ou si le trajet réel est nettement plus long que prévu.")
+MESSAGE_ARRIVEE = "Votre coursier {prenom_coursier} est arrivé ({vehicule}, {plaque})."
+MESSAGE_AUCUN = ("Aucun coursier disponible dans votre zone pour le moment. "
+                 "Merci de réessayer dans quelques instants.")
 
 
 class Parametres(models.Model):
@@ -110,6 +116,20 @@ class Parametres(models.Model):
     arrondi = models.PositiveIntegerField("Arrondi (FCFA)", default=50)
     vitesse_moyenne_kmh = models.PositiveSmallIntegerField("Vitesse moyenne estimée (km/h)", default=25)
     coef_route = models.DecimalField("Coefficient route / vol d'oiseau", max_digits=4, decimal_places=2, default=1.3)
+    seuil_augmentation_pct = models.PositiveSmallIntegerField(
+        "Seuil d'augmentation (%)", default=15,
+        help_text="Si la distance réelle dépasse la distance prévue de plus de ce pourcentage, le prix est recalculé "
+                  "sur la distance réelle (jamais en dessous du prix annoncé).")
+    message_zone = models.CharField("Message hors zone", max_length=200, default="Zone non couverte")
+    message_aucun_partenaire = models.CharField("Message « aucun coursier »", max_length=255, default=MESSAGE_AUCUN)
+    code_depart_obligatoire = models.BooleanField(
+        "Code de départ obligatoire", default=False,
+        help_text="Désactivé : le coursier démarre avec un simple bouton et le client ne voit pas de code. "
+                  "Peut aussi être exigé pour une seule catégorie (fiche de la catégorie).")
+    rayon_proches_km = models.DecimalField("Coursiers affichés sur la carte : rayon (km)", max_digits=5,
+                                           decimal_places=2, default=5)
+    mention_prix = models.TextField("Mention sous le prix", default=MENTION_PRIX,
+                                    help_text="Variable : {attente} = minutes d'attente gratuite.")
     # Dette des partenaires
     dette_max_especes = models.PositiveIntegerField("Dette max avant blocage des courses en espèces (FCFA)", default=10000)
     dette_max_totale = models.PositiveIntegerField("Dette max avant blocage total (FCFA)", default=15000)
@@ -274,6 +294,10 @@ class Course(models.Model):
     partenaire = models.ForeignKey(Partenaire, on_delete=models.PROTECT, null=True, blank=True, related_name='courses',
                                    verbose_name="Partenaire")
     rayon_km = models.DecimalField("Rayon de recherche (km)", max_digits=5, decimal_places=2, default=0)
+    distance_reelle_km = models.DecimalField("Distance réelle (km)", max_digits=7, decimal_places=2, default=0,
+                                             help_text="Cumul des positions GPS du partenaire pendant la course.")
+    derniere_lat = models.FloatField(null=True, blank=True, editable=False)
+    derniere_lng = models.FloatField(null=True, blank=True, editable=False)
     recherche_debut = models.DateTimeField("Recherche commencée le", null=True, blank=True)
     acceptee_le = models.DateTimeField("Acceptée le", null=True, blank=True)
     arrivee_prevue_le = models.DateTimeField("Arrivée prévue du partenaire", null=True, blank=True)
@@ -302,6 +326,10 @@ class Course(models.Model):
     @property
     def active(self):
         return self.statut in self.ACTIFS
+
+    @property
+    def code_requis(self):
+        return self.categorie.code_depart_obligatoire or Parametres.get().code_depart_obligatoire
 
 
 class OffreCourse(models.Model):
@@ -497,3 +525,20 @@ class DemandeVersement(models.Model):
 
     def __str__(self):
         return f"{self.montant} FCFA — {self.partenaire}"
+
+
+class Zone(models.Model):
+    """Zone couverte (centre + rayon). Sans zone active : partout. Départ ET arrivée doivent être dans une zone."""
+    nom = models.CharField("Nom", max_length=80)
+    centre_lat = models.FloatField("Centre : latitude")
+    centre_lng = models.FloatField("Centre : longitude")
+    rayon_km = models.DecimalField("Rayon (km)", max_digits=6, decimal_places=2, default=25)
+    active = models.BooleanField("Active", default=True)
+
+    class Meta:
+        ordering = ['nom']
+        verbose_name = "Zone couverte"
+        verbose_name_plural = "Zones couvertes"
+
+    def __str__(self):
+        return f"{self.nom} ({self.rayon_km} km)"

@@ -213,9 +213,21 @@ class PortefeuilleTests(TestCase):
         self.assertEqual(portefeuille(self.client_user).solde, 4250)
 
     def test_code_de_depart(self):
+        Parametres.objects.filter(pk=1).update(code_depart_obligatoire=True)
         c, p = self._acceptee()
         with self.assertRaises(S.ErreurCourse):
             S.demarrer(p, c.pk, '99999')
+
+    def test_sans_code_de_depart_par_defaut(self):
+        c, p = self._acceptee()
+        S.demarrer(p, c.pk, '')
+        self.assertEqual(Course.objects.get(pk=c.pk).statut, 'en_cours')
+
+    def test_code_exige_pour_une_categorie(self):
+        Categorie.objects.filter(pk=self.moto.pk).update(code_depart_obligatoire=True)
+        c, p = self._acceptee()
+        with self.assertRaises(S.ErreurCourse):
+            S.demarrer(p, c.pk, '')
 
     def test_annulation_en_recherche_libere_tout(self):
         with mock.patch('django.utils.timezone.now', return_value=JOUR):
@@ -297,6 +309,7 @@ class PortefeuilleTests(TestCase):
 @override_settings(STORAGES=STORAGES)
 class ApiTests(APITestCase):
     def setUp(self):
+        Parametres.objects.filter(pk=1).update(code_depart_obligatoire=True)
         self.moto = Categorie.objects.get(code='moto')
         self.user = compte()
         self.client.force_authenticate(self.user)
@@ -373,7 +386,7 @@ class DiscussionTests(APITestCase):
         from django.core.files.storage import FileSystemStorage
         from .models import MessageCourse
         champ = MessageCourse._meta.get_field('fichier')
-        self._dossier = tempfile.TemporaryDirectory()
+        self._dossier = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         ancien, champ.storage = champ.storage, FileSystemStorage(location=self._dossier.name)
         self.addCleanup(setattr, champ, 'storage', ancien)
         self.addCleanup(self._dossier.cleanup)
@@ -450,7 +463,8 @@ class DiscussionTests(APITestCase):
         S.signaler_arrivee(self.p, self.c.pk)
         dernier = self.c.messages.last()
         self.assertEqual(dernier.par, 'systeme')
-        self.assertIn(self.c.code_depart, dernier.texte)
+        self.assertIn('TG 1234 AB', dernier.texte)
+        self.assertNotIn('{', dernier.texte)
 
 
 @override_settings(STORAGES=STORAGES)
@@ -480,3 +494,86 @@ class VersementTests(APITestCase):
         p = partenaire(moto, quand=timezone.now())
         S.commander(compte(), moto, DEP, ARR)
         self.assertTrue(Notification.objects.filter(utilisateur=p.user, titre='Nouvelle course').exists())
+
+
+@override_settings(STORAGES=STORAGES)
+class PrixReelZonesTests(APITestCase):
+    def setUp(self):
+        self.moto = Categorie.objects.get(code='moto')
+        self.user = compte()
+
+    def _en_cours(self):
+        p = partenaire(self.moto, 0.5, quand=timezone.now())
+        c = S.commander(self.user, self.moto, DEP, ARR)
+        o = S.offre_en_cours(p)
+        S.accepter(p, o.pk)
+        S.demarrer(p, c.pk, Course.objects.get(pk=c.pk).code_depart)
+        return Course.objects.get(pk=c.pk), p
+
+    def test_distance_reelle_plus_longue(self):
+        c, p = self._en_cours()
+        lat = DEP['lat']
+        for _ in range(60):  # 60 pas de 0,002 degré (~220 m) : ~13 km parcourus pour 4,3 km prévus
+            lat += 0.002
+            S.suivre_position(p, lat, DEP['lng'])
+        c = S.terminer(p, c.pk)
+        self.assertGreater(c.prix_final, c.prix_estime)
+        sup = c.detail_prix['supplements']
+        self.assertTrue(sup and sup[0]['motif'].startswith('Trajet plus long'))
+        rc = self.client.force_authenticate(self.user) or self.client.get(f'{API}{c.pk}/recu/').json()
+        self.assertEqual(rc['prix_annonce'], c.prix_estime)
+        self.assertEqual(len(rc['supplements']), 1)
+
+    def test_petit_detour_sans_augmentation(self):
+        c, p = self._en_cours()
+        lat = DEP['lat']
+        for _ in range(15):  # 15 × 220 m ≈ 3,3 km : sous la distance prévue + 15 %
+            lat += 0.002
+            S.suivre_position(p, lat, DEP['lng'])
+        c = S.terminer(p, c.pk)
+        self.assertEqual(c.prix_final, c.prix_estime)
+        self.assertEqual(c.detail_prix['supplements'], [])
+
+    def test_mention_dans_estimation(self):
+        pts = {'depart_lat': DEP['lat'], 'depart_lng': DEP['lng'], 'arrivee_lat': ARR['lat'], 'arrivee_lng': ARR['lng']}
+        e = self.client.post(API + 'estimation/', pts, format='json').json()['estimations'][0]
+        self.assertIn('3 min', e['mention_prix'])
+        self.assertEqual(e['trace'], [])  # sans clé Google
+
+    def test_zone_non_couverte(self):
+        loin = {'lat': 9.55, 'lng': 1.19, 'adresse': 'Kara'}  # hors Grand Lomé
+        with self.assertRaises(S.ErreurCourse) as e:
+            S.commander(self.user, self.moto, DEP, loin)
+        self.assertEqual(e.exception.message, 'Zone non couverte')
+        self.assertTrue(self.client.get(API + 'zone/', {'lat': DEP['lat'], 'lng': DEP['lng']}).json()['couverte'])
+        self.assertFalse(self.client.get(API + 'zone/', {'lat': 9.55, 'lng': 1.19}).json()['couverte'])
+
+    def test_coursiers_proches_sans_identite(self):
+        partenaire(self.moto, 1, quand=timezone.now())
+        partenaire(self.moto, 2, quand=timezone.now())
+        partenaire(self.moto, 9, quand=timezone.now())  # hors rayon de 5 km
+        self.client.force_authenticate(self.user)
+        d = self.client.get(API + 'proches/', {'lat': DEP['lat'], 'lng': DEP['lng'], 'categorie': self.moto.pk}).json()
+        self.assertEqual(d['nombre'], 2)
+        self.assertEqual(set(d['coursiers'][0]), {'type', 'lat', 'lng'})
+        self.assertEqual(d['coursiers'][0]['type'], 'moto')
+        self.assertGreaterEqual(d['arrivee_min'], 1)
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get(API + 'proches/', {'lat': 6.13, 'lng': 1.22}).status_code, 401)
+
+
+@override_settings(STORAGES=STORAGES)
+class RechercheTests(APITestCase):
+    def test_aucun_coursier_message_et_compteur(self):
+        moto = Categorie.objects.get(code='moto')
+        user = compte()
+        self.client.force_authenticate(user)
+        c = S.commander(user, moto, DEP, ARR)
+        d = self.client.get(f'{API}{c.pk}/').json()
+        self.assertEqual(d['statut'], 'recherche')
+        self.assertEqual(d['recherche']['secondes_max'], 120)
+        self.assertEqual(d['code_depart'], '')  # code désactivé par défaut
+        S.avancer(c.pk, timezone.now() + timedelta(seconds=121))
+        d = self.client.get(f'{API}{c.pk}/').json()
+        self.assertEqual(d['statut'], 'aucun_partenaire')
+        self.assertIn('Aucun coursier disponible', d['message'])

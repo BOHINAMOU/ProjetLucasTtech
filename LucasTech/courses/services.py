@@ -33,13 +33,24 @@ def haversine_km(lat1, lng1, lat2, lng2):
     return 2 * r * math.asin(min(1.0, math.sqrt(a)))
 
 
-def trajet(dlat, dlng, alat, alng, params=None):
-    """Distance routière estimée (vol d'oiseau × 1,3) et durée à 25 km/h. OSRM ou Google plus tard."""
+def trajet(dlat, dlng, alat, alng, params=None, avec_trace=False):
+    """Distance et durée par la route (Google Routes si la clé est configurée), sinon estimation :
+    vol d'oiseau × 1,3 et 25 km/h. Avec [avec_trace] : renvoie aussi le tracé ([] sans Google)."""
+    from .carto import itineraire_google
+    g = itineraire_google(dlat, dlng, alat, alng)
+    if g:
+        return g if avec_trace else g[:2]
     p = params or Parametres.get()
     km = haversine_km(dlat, dlng, alat, alng) * float(p.coef_route)
     km = round(km, 2)
     minutes = max(1, math.ceil(km / max(1, p.vitesse_moyenne_kmh) * 60))
-    return km, minutes
+    return (km, minutes, []) if avec_trace else (km, minutes)
+
+
+def prix_trajet(categorie, km, minutes, coef, arrondi):
+    """(prix arrondi, brut) pour une distance et une durée données."""
+    brut = (categorie.prise_en_charge + Decimal(str(km)) * categorie.prix_km + minutes * categorie.prix_min) * Decimal(coef)
+    return arrondi_sup(max(Decimal(categorie.minimum), brut), arrondi), brut
 
 
 def arrondi_sup(montant, pas):
@@ -88,7 +99,7 @@ def estimer(categorie, dlat, dlng, alat, alng, client=None, quand=None, params=N
     """Prix = max(minimum, (prise en charge + km × prix_km + min × prix_min) × coefficient de la plage de départ),
     arrondi aux 50 FCFA supérieurs ; puis réduction fidélité (payée par Lantante, pas par le partenaire)."""
     p = params or Parametres.get()
-    km, minutes = trajet(dlat, dlng, alat, alng, p)
+    km, minutes, trace = trajet(dlat, dlng, alat, alng, p, avec_trace=True)
     coef, plage = coefficient(quand)
     pec = categorie.prise_en_charge
     part_km = Decimal(str(km)) * categorie.prix_km
@@ -102,8 +113,32 @@ def estimer(categorie, dlat, dlng, alat, alng, client=None, quand=None, params=N
         'prise_en_charge': pec, 'prix_distance': int(part_km.quantize(Decimal(1), ROUND_HALF_UP)),
         'prix_duree': part_min, 'coefficient': float(coef), 'plage': plage, 'minimum': categorie.minimum,
         'minimum_applique': brut < categorie.minimum, 'prix': prix, 'reduction': reduction,
-        'frais_reportes': reportes, 'total': prix - reduction + reportes,
+        'frais_reportes': reportes, 'total': prix - reduction + reportes, 'trace': trace,
+        'mention_prix': _mention(p),
     }
+
+
+def _mention(p):
+    try:
+        return p.mention_prix.format(attente=p.attente_gratuite_min)
+    except (KeyError, IndexError, ValueError):
+        return p.mention_prix
+
+
+def suivre_position(partenaire, lat, lng):
+    """Cumule la distance réellement parcourue pendant une course en cours (positions du partenaire).
+    Les sauts aberrants (> 2 km entre deux positions) et le bruit GPS (< 15 m) sont ignorés."""
+    course = Course.objects.filter(partenaire=partenaire, statut='en_cours').first()
+    if not course:
+        return None
+    if course.derniere_lat is not None:
+        d = haversine_km(course.derniere_lat, course.derniere_lng, lat, lng)
+        if d < 0.015:
+            return course
+        if d <= 2:
+            Course.objects.filter(pk=course.pk).update(distance_reelle_km=F('distance_reelle_km') + Decimal(str(round(d, 3))))
+    Course.objects.filter(pk=course.pk).update(derniere_lat=lat, derniere_lng=lng)
+    return course
 
 
 # ─────────────────────────────
@@ -135,9 +170,51 @@ def _liberer_reservation(course, garder=0, motif=''):
 # ─────────────────────────────
 # Commande
 # ─────────────────────────────
+def dans_zone(lat, lng):
+    """Vrai si le point est dans une zone active (ou s'il n'y a aucune zone active)."""
+    from .models import Zone
+    zones = list(Zone.objects.filter(active=True))
+    return not zones or any(haversine_km(z.centre_lat, z.centre_lng, lat, lng) <= float(z.rayon_km) for z in zones)
+
+
+def proches(lat, lng, categorie=None, maintenant=None, limite=20):
+    """Coursiers disponibles autour d'un point, SANS nom ni identifiant : type + position arrondie (~100 m)."""
+    import random
+    maintenant = maintenant or timezone.now()
+    p = Parametres.get()
+    rayon = float(p.rayon_proches_km)
+    dlat = rayon / 111.0
+    dlng = rayon / (111.0 * max(0.1, math.cos(math.radians(lat))))
+    qs = Partenaire.objects.filter(
+        statut='valide', en_ligne=True, position_le__gte=maintenant - timedelta(seconds=max(60, p.age_gps_max_s)),
+        lat__range=(lat - dlat, lat + dlat), lng__range=(lng - dlng, lng + dlng),
+    ).exclude(pk__in=Course.objects.filter(statut__in=('acceptee', 'arrive', 'en_cours')).exclude(partenaire=None)
+              .values_list('partenaire_id', flat=True))
+    if categorie is not None:
+        qs = qs.filter(categories=categorie)
+    out = []
+    for part in qs.prefetch_related('categories__service').distinct():
+        d = haversine_km(lat, lng, part.lat, part.lng)
+        if d > rayon:
+            continue
+        services = {c.service.code for c in part.categories.all()}
+        type_ = (categorie.service.code if categorie is not None else
+                 'moto' if 'moto' in services else 'voiture' if 'voiture' in services else 'cargo')
+        bruit = lambda: random.uniform(-0.0006, 0.0006)  # noqa: E731 - ~60 m, empêche de suivre quelqu'un
+        out.append((d, {'type': type_, 'lat': round(part.lat + bruit(), 3), 'lng': round(part.lng + bruit(), 3)}))
+    out.sort(key=lambda x: x[0])
+    plus_proche = None
+    if out:
+        km = out[0][0] * float(p.coef_route)
+        plus_proche = max(1, math.ceil(km / max(1, p.vitesse_moyenne_kmh) * 60))
+    return {'nombre': len(out), 'arrivee_min': plus_proche, 'coursiers': [x[1] for x in out[:limite]]}
+
+
 def commander(client, categorie, depart, arrivee, moyen='especes', repere=''):
     """depart / arrivee : dict lat, lng, adresse. Réserve le montant si paiement par le solde."""
     from Payments.solde import SoldeInsuffisant, debiter
+    if not dans_zone(depart['lat'], depart['lng']) or not dans_zone(arrivee['lat'], arrivee['lng']):
+        raise ErreurCourse(Parametres.get().message_zone, 'hors_zone')
     if not categorie.active or not categorie.service.actif:
         raise ErreurCourse("Cette catégorie n'est pas encore disponible.", 'categorie_inactive')
     if moyen not in dict(Course.MOYENS):
@@ -384,7 +461,7 @@ def demarrer(partenaire, course_id, code, maintenant=None):
     maintenant = maintenant or timezone.now()
     with transaction.atomic():
         course = _course_du_partenaire(partenaire, course_id, ('acceptee', 'arrive'))
-        if str(code or '').strip() != course.code_depart:
+        if course.code_requis and str(code or '').strip() != course.code_depart:
             raise ErreurCourse("Code de départ incorrect.", 'code')
         course.statut = 'en_cours'
         course.arrive_le = course.arrive_le or maintenant
@@ -422,9 +499,26 @@ def terminer(partenaire, course_id, maintenant=None):
     with transaction.atomic():
         course = _course_du_partenaire(partenaire, course_id, ('en_cours',))
         minutes, attente = supplement_attente(course, p)
-        course.prix_final = arrondi_sup(course.prix_estime + attente, p.arrondi) if attente else course.prix_estime
         detail = dict(course.detail_prix or {})
-        detail.update({'attente_min': minutes, 'attente': attente, 'prix_final': course.prix_final})
+        supplements = []
+        # distance réelle nettement plus longue que prévu : recalcul sur la distance réelle (jamais en baisse)
+        base = course.prix_estime
+        reel = float(course.distance_reelle_km or 0)
+        prevu = float(course.distance_km or 0)
+        if prevu > 0 and reel > prevu * (1 + p.seuil_augmentation_pct / 100):
+            duree = max(course.duree_min, int((maintenant - (course.demarree_le or maintenant)).total_seconds() // 60))
+            nouveau, _ = prix_trajet(course.categorie, reel, duree, detail.get('coefficient', 1), p.arrondi)
+            if nouveau > base:
+                supplements.append({'motif': f"Trajet plus long : {reel:.1f} km au lieu de {prevu:.1f} km",
+                                    'montant': nouveau - base})
+                base = nouveau
+        if attente:
+            supplements.append({'motif': f"Attente : {minutes} min au-delà de {p.attente_gratuite_min} min",
+                                'montant': attente})
+        course.prix_final = arrondi_sup(base + attente, p.arrondi) if supplements else course.prix_estime
+        detail.update({'attente_min': minutes, 'attente': attente, 'prix_final': course.prix_final,
+                       'prix_annonce': course.prix_estime, 'supplements': supplements,
+                       'distance_reelle_km': round(reel, 2)})
         a_payer = course.total_client
         especes = a_payer
         if course.moyen_paiement == 'portefeuille':
