@@ -114,6 +114,9 @@ class PublicationAdmin(AlerteFraisMixin, admin.ModelAdmin):
     list_display   = ['title', 'author', 'category', 'publication_type', 'is_published', 'show_on_site', 'show_in_app', 'is_featured', 'views_count', 'nb_jaime', 'registrations_link', 'created_at']
 
     def get_queryset(self, request):
+        # Tout admin ayant accès à ce module voit toutes les publications (pas seulement les siennes),
+        # avec le nombre de « J'aime » (colonne nb_jaime). Une 2e définition plus bas écrasait celle-ci :
+        # la liste plantait (erreur 500) dès qu'il y avait une publication.
         from django.db.models import Count
         return super().get_queryset(request).annotate(_jaime=Count('likes', distinct=True))
 
@@ -137,12 +140,6 @@ class PublicationAdmin(AlerteFraisMixin, admin.ModelAdmin):
                 from django.forms import Textarea
                 kwargs['widget'] = Textarea(attrs={'rows': 30, 'style': 'width:100%;font-size:14px;'})
         return super().formfield_for_dbfield(db_field, request, **kwargs)
-
-    def get_queryset(self, request):
-        # Tout admin ayant accès à ce module voit toutes les publications
-        # (et pas seulement les siennes) — Django gère déjà les permissions
-        # d'accès au module via is_staff / les permissions du modèle.
-        return super().get_queryset(request)
 
     def save_model(self, request, obj, form, change):
         # L'auteur n'est jamais choisi dans le formulaire : c'est toujours
