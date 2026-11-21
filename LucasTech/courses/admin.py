@@ -132,6 +132,13 @@ class MouvementInline(LectureSeule, admin.TabularInline):
     can_delete = False
 
 
+def _categories_par_defaut(p):
+    """Un coursier sans catégorie ne reçoit aucune course : on lui donne celles de son véhicule."""
+    from .api import categories_du_vehicule
+    if p.type_vehicule and not p.categories.exists():
+        p.categories.set(categories_du_vehicule(p.type_vehicule, p.climatise))
+
+
 @admin.register(Partenaire)
 class PartenaireAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'type_vehicule', 'statut', 'en_ligne', 'plaque', 'note', 'nb_notes', 'solde',
@@ -144,10 +151,15 @@ class PartenaireAdmin(admin.ModelAdmin):
     inlines = [DocumentInline, MouvementInline]
     actions = ['valider', 'refuser', 'suspendre', 'hors_ligne']
 
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        _categories_par_defaut(form.instance)
+
     @admin.action(description="Valider les coursiers choisis")
     def valider(self, request, qs):
         n = qs.update(statut='valide', motif_statut='')
         for p in qs:
+            _categories_par_defaut(p)
             S._notifier(p.user, "Compte coursier validé", "Vous pouvez passer en ligne.")
         self.message_user(request, f"{n} coursier(s) validé(s).")
 

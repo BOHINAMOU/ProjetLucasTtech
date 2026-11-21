@@ -774,3 +774,15 @@ class ProfilCoursierTests(APITestCase):
         # pas en ligne avant la validation
         r = self.client.post(API + 'partenaire/statut/', {'en_ligne': True, 'lat': 6.13, 'lng': 1.22}, format='json')
         self.assertEqual(r.json()['code'], 'non_valide')
+
+
+class CategoriesParDefautTests(TestCase):
+    def test_valider_donne_les_categories_du_vehicule(self):
+        from django.contrib.admin.sites import site
+        from .admin import PartenaireAdmin
+        p = Partenaire.objects.create(user=compte('Yao'), type_vehicule='moto', statut='en_attente')
+        self.assertFalse(p.categories.exists())
+        adm = PartenaireAdmin(Partenaire, site)
+        adm.message_user = lambda *a, **k: None
+        adm.valider(None, Partenaire.objects.filter(pk=p.pk))
+        self.assertEqual(list(p.categories.values_list('code', flat=True)), ['moto'])
