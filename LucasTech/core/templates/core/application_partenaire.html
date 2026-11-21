@@ -1,0 +1,72 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Lantante Partenaire — application des coursiers{% endblock %}
+{% block meta_description %}Lantante Partenaire : l'application des coursiers et livreurs Lantante Express.{% endblock %}
+{% block og_title %}Lantante Partenaire{% endblock %}
+{% block extra_head %}
+<style>
+.ax{--v:#0F7A45;--vf:#0B5531;--t:#0F1A14;--m:#66706A;font-family:Inter,system-ui,sans-serif;color:var(--t)}
+.ax-hero{background:radial-gradient(120% 90% at 85% 10%,#E6F6EC 0%,#F6FAF7 55%,#fff 100%);overflow:hidden}
+.ax-in{max-width:1080px;margin:0 auto;padding:0 16px}
+.ax-grille{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;padding:56px 0 64px}
+.ax-logo{width:92px;height:92px;border-radius:24px;box-shadow:0 14px 34px rgba(11,85,49,.22);background:#fff}
+.ax h1{font-size:clamp(2.1rem,6vw,3.3rem);font-weight:800;letter-spacing:-.035em;line-height:1.05;margin:20px 0 10px}
+.ax-phrase{font-size:1.15rem;color:var(--m);margin:0 0 26px;max-width:440px}
+.ax-dl{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:60px;padding:0 34px;border-radius:18px;background:var(--v);
+  color:#fff!important;font-weight:800;font-size:1.2rem;text-decoration:none!important;box-shadow:0 16px 34px rgba(15,122,69,.32);transition:transform .15s}
+.ax-dl:hover{background:var(--vf);transform:translateY(-1px)}
+.ax-dl svg{width:26px;height:26px}
+.ax-info{margin-top:12px;color:var(--m);font-size:.88rem}
+.ax-atouts{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.ax-atouts span{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #E3EBE6;border-radius:999px;padding:9px 14px;font-weight:600;font-size:.92rem}
+.ax-atouts i{color:var(--v)}
+.ax-tel{justify-self:center;position:relative;width:min(280px,72vw)}
+.ax-tel .cadre{border-radius:40px;padding:10px;background:#0F1A14;box-shadow:0 40px 80px rgba(11,40,26,.28)}
+.ax-tel img{display:block;width:100%;border-radius:31px;aspect-ratio:9/16;object-fit:cover;object-position:top}
+.ax-tel .encoche{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:86px;height:22px;border-radius:12px;background:#0F1A14}
+.ax-etapes{padding:44px 16px 56px;display:none}
+.ax-etapes.ouvert{display:block}
+.ax-etapes h2{font-size:1.4rem;font-weight:800;text-align:center;margin:0 0 22px}
+.ax-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ax-3 div{background:#fff;border:1px solid #E3EBE6;border-radius:20px;padding:20px 14px;text-align:center}
+.ax-3 b{display:grid;place-items:center;width:50px;height:50px;margin:0 auto 10px;border-radius:50%;background:#E6F6EC;color:var(--v);font-size:1.3rem}
+.ax-3 span{font-weight:700}
+.ax-aide{max-width:560px;margin:18px auto 0;background:#F6FAF7;border-radius:16px;padding:4px 16px}
+.ax-aide summary{cursor:pointer;font-weight:600;padding:12px 0;color:var(--vf)}
+.ax-aide p{margin:0 0 14px;color:var(--m);line-height:1.55}
+@media (max-width:820px){
+  .ax-grille{grid-template-columns:1fr;text-align:center;padding:36px 0 44px;gap:34px}
+  .ax-phrase{margin-left:auto;margin-right:auto}.ax-atouts{justify-content:center}
+  .ax-logo{margin:0 auto}.ax-tel{width:min(240px,64vw)}
+}
+@media (max-width:600px){
+  .ax-dl{width:auto;min-height:48px;padding:0 24px;font-size:16px;border-radius:12px;gap:10px;box-shadow:0 8px 18px rgba(15,122,69,.22)}
+  .ax-dl svg{width:18px;height:18px}
+}
+@media (max-width:520px){.ax-3{grid-template-columns:1fr}.ax-3 div{display:flex;align-items:center;gap:14px;text-align:left;padding:14px}.ax-3 b{margin:0;flex:0 0 auto}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ax">
+  <section class="ax-hero">
+    <div class="ax-in ax-grille">
+      <div>
+        <img class="ax-logo" src="{% static 'images/app/lantante-express-icone.png' %}" alt="Lantante Partenaire">
+        <h1>Lantante Partenaire</h1>
+        <p class="ax-phrase">L’appli des coursiers et livreurs Lantante Express.</p>
+        <a class="ax-dl" id="ax-dl" href="{% url 'core:application_partenaire_download' %}?v={{ apk_version }}">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1Zm-7 15a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"/></svg>
+          Télécharger</a>
+        <div class="ax-info">Android · version {{ apk_version|default:"—" }} · {{ apk_size }} Mo</div>
+        <div class="ax-atouts">
+          <span><i class="fas fa-motorcycle"></i> Courses</span>
+          <span><i class="fas fa-wallet"></i> Gains</span>
+          <span><i class="fas fa-user-check"></i> Même compte</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

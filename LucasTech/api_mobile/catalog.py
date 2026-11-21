@@ -618,7 +618,18 @@ VERSION_FILE = 'app/version.json'
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def version(request):
-    path = os.path.join(settings.MEDIA_ROOT, VERSION_FILE)
+    return _version(request)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def version_partenaire(request):
+    """Version publiée de Lantante Partenaire (media/app-partenaire/version.json)."""
+    return _version(request, fichier='app-partenaire/version.json', dossier='app-partenaire', nom='Lantante-Partenaire')
+
+
+def _version(request, fichier=None, dossier='app', nom='Lantante'):
+    path = os.path.join(settings.MEDIA_ROOT, fichier or VERSION_FILE)
     try:
         with open(path, 'rb') as fh:
             data = json.loads(fh.read().decode('utf-8', 'replace'))
@@ -626,7 +637,7 @@ def version(request):
         return error("Aucune version publiée.", 404, code='indisponible')
     out = {'version': str(data.get('version', '')), 'build': int(data.get('build') or 0),
            'url_apk': absolute(request, data.get('url_apk') or settings.MEDIA_URL
-                               + (f"app/Lantante-{data.get('version')}.apk" if data.get('version') else 'app/Lantante.apk')),
+                               + (f"{dossier}/{nom}-{data.get('version')}.apk" if data.get('version') else f'{dossier}/{nom}.apk')),
            'taille': int(data.get('taille') or 0), 'notes': str(data.get('notes') or ''),
            'sha256': str(data.get('sha256') or ''),
            'obligatoire': bool(data.get('obligatoire')), 'build_min': int(data.get('build_min') or 0)}

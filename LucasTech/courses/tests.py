@@ -638,3 +638,28 @@ class PinEtReferenceTests(APITestCase):
         self.assertEqual(s['reference'], c['reference'])
         d = self.client.get(f"{API}{c['id']}/").json()
         self.assertEqual(d['signalements'][0]['motif'], 'Retard important')
+
+
+class PageApplicationPartenaireTests(TestCase):
+    def test_page_et_version(self):
+        import json
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as d, override_settings(MEDIA_ROOT=d, STORAGES=STORAGES):
+            self.assertEqual(self.client.get('/api/mobile/v1/version/partenaire/').status_code, 404)
+            os.makedirs(os.path.join(d, 'app-partenaire'))
+            with open(os.path.join(d, 'app-partenaire', 'version.json'), 'w') as fh:
+                json.dump({'version': '1.0.2', 'build': 3, 'taille': 10}, fh)
+            with open(os.path.join(d, 'app-partenaire', 'Lantante-Partenaire-1.0.2.apk'), 'wb') as fh:
+                fh.write(b'0' * 2048)
+            v = self.client.get('/api/mobile/v1/version/partenaire/').json()
+            self.assertEqual((v['version'], v['build']), ('1.0.2', 3))
+            self.assertTrue(v['url_apk'].endswith('/app-partenaire/Lantante-Partenaire-1.0.2.apk'))
+            r = self.client.get('/application/partenaire/')
+            self.assertEqual(r.status_code, 200)
+            self.assertContains(r, 'Lantante Partenaire')
+            self.assertContains(r, 'version 1.0.2')
+            t = self.client.get('/application/partenaire/telecharger/')
+            self.assertEqual(t.status_code, 200)
+            self.assertIn('Lantante-Partenaire.apk', t['Content-Disposition'])
+            t.close()

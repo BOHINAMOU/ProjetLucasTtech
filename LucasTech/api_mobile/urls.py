@@ -47,6 +47,7 @@ urlpatterns = [
     path('home/', cache_liste(anonymes_seulement=True)(views.home), name='home'),
     path('carrousel/', catalog.carrousel, name='carrousel'),
     path('version/', catalog.version, name='version'),
+    path('version/partenaire/', catalog.version_partenaire, name='version_partenaire'),
     path('auth/web/', views.web_login, name='web_login'),
     path('evenements/', catalog.evenements, name='evenements'),
     path('evenements/<int:pk>/', catalog.evenement, name='evenement'),
