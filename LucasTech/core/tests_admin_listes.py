@@ -51,7 +51,10 @@ class ListesAdminTests(TestCase):
         p = Partenaire.objects.create(user=cou, plaque='TG 1')
         p.categories.add(Categorie.objects.get(code='moto'))
         self.assertIn(cli, CompteClient.objects.all())
-        self.assertIn(cou, CompteClient.objects.all())  # un coursier peut aussi être client (même compte)
+        # catégories séparées : le coursier n'est pas dans les clients, l'équipe n'est nulle part ailleurs
+        self.assertNotIn(cou, CompteClient.objects.all())
+        self.assertNotIn(self.admin, CompteClient.objects.all())
+        self.assertNotIn(self.admin, CompteCoursier.objects.all())
         self.assertEqual(list(CompteCoursier.objects.all()), [CompteCoursier.objects.get(pk=cou.pk)])
         self.assertEqual(list(CompteSysteme.objects.values_list('email', flat=True)), ['adm@example.com'])
         for nom in ('compteclient', 'comptecoursier', 'comptesysteme', 'comptevendeur'):

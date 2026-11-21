@@ -629,17 +629,23 @@ class CoursierFavori(models.Model):
 # ─────────────────────────────
 class _Comptes(models.Manager):
     filtre = {}
+    exclure = {}
 
     def get_queryset(self):
-        return super().get_queryset().filter(**self.filtre).distinct()
+        qs = super().get_queryset().filter(**self.filtre)
+        for k, v in self.exclure.items():
+            qs = qs.exclude(**{k: v})
+        return qs.distinct()
 
 
+# Catégories séparées, sans mélange : un compte n'apparaît que dans UNE liste.
+# Système d'abord (équipe), puis coursier, puis vendeur ; tous les autres sont des clients.
 class _Clients(_Comptes):
-    filtre = {'is_staff': False}
+    filtre = {'is_staff': False, 'partenaire_express__isnull': True, 'vendeur__isnull': True}
 
 
 class _Coursiers(_Comptes):
-    filtre = {'partenaire_express__isnull': False}
+    filtre = {'is_staff': False, 'partenaire_express__isnull': False}
 
 
 class _Systeme(_Comptes):
@@ -647,7 +653,8 @@ class _Systeme(_Comptes):
 
 
 class _Vendeurs(_Comptes):
-    filtre = {'vendeur__isnull': False}
+    filtre = {'is_staff': False, 'vendeur__isnull': False}
+    exclure = {'partenaire_express__isnull': False}
 
 
 class CompteClient(User):
