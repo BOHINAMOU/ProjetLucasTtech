@@ -190,7 +190,9 @@ class Parametres(models.Model):
 
 class Partenaire(models.Model):
     TYPES = [('coursier', 'Coursier'), ('livreur', 'Livreur'), ('mixte', 'Coursier et livreur')]
-    STATUTS = [('en_attente', 'En attente'), ('valide', 'Validé'), ('refuse', 'Refusé'), ('suspendu', 'Suspendu')]
+    STATUTS = [('a_completer', 'Profil à compléter'), ('en_attente', 'En attente de validation'), ('valide', 'Validé'),
+               ('refuse', 'Refusé'), ('suspendu', 'Suspendu')]
+    VEHICULES = [('moto', 'Moto'), ('tricycle', 'Tricycle'), ('voiture', 'Voiture')]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='partenaire_express',
                                 verbose_name="Compte")
     type = models.CharField("Type", max_length=10, choices=TYPES, default='coursier')
@@ -201,6 +203,17 @@ class Partenaire(models.Model):
     lng = models.FloatField("Longitude", null=True, blank=True)
     position_le = models.DateTimeField("Position reçue le", null=True, blank=True)
     categories = models.ManyToManyField(Categorie, blank=True, related_name='partenaires', verbose_name="Catégories servies")
+    type_vehicule = models.CharField("Type de véhicule", max_length=10, choices=VEHICULES, blank=True,
+                                     help_text="Un seul type par coursier. Changer = nouvelle demande validée par l'admin.")
+    climatise = models.BooleanField("Voiture climatisée", default=False)
+    marque = models.CharField("Marque", max_length=40, blank=True)
+    modele = models.CharField("Modèle", max_length=40, blank=True)
+    couleur = models.CharField("Couleur", max_length=30, blank=True)
+    annee = models.PositiveSmallIntegerField("Année", null=True, blank=True)
+    date_naissance = models.DateField("Date de naissance", null=True, blank=True)
+    quartier = models.CharField("Quartier / adresse", max_length=120, blank=True)
+    urgence_nom = models.CharField("Contact d'urgence : nom", max_length=80, blank=True)
+    urgence_tel = models.CharField("Contact d'urgence : téléphone", max_length=20, blank=True)
     vehicule = models.CharField("Véhicule", max_length=80, blank=True, help_text="Marque, modèle, couleur.")
     plaque = models.CharField("Plaque", max_length=20, blank=True)
     telephone = models.CharField("Téléphone", max_length=20, blank=True)
@@ -228,9 +241,14 @@ class Partenaire(models.Model):
 
 
 class DocumentPartenaire(models.Model):
-    TYPES = [('identite', "Carte d'identité ou passeport"), ('permis', 'Permis de conduire'),
-             ('carte_grise', 'Carte grise'), ('assurance', 'Assurance'), ('photo_vehicule', 'Photo du véhicule'),
-             ('casier', 'Casier judiciaire'), ('autre', 'Autre')]
+    TYPES = [('selfie', 'Photo de profil'), ('identite_recto', "Carte d'identité (recto)"),
+             ('identite_verso', "Carte d'identité (verso)"), ('permis_recto', 'Permis (recto)'),
+             ('permis_verso', 'Permis (verso)'), ('carte_grise', 'Carte grise'), ('assurance', 'Assurance'),
+             ('photo_avant', 'Véhicule : avant'), ('photo_arriere', 'Véhicule : arrière avec plaque'),
+             ('photo_cote', 'Véhicule : côté'), ('photo_interieur', 'Véhicule : intérieur'),
+             ('casier', 'Casier judiciaire'),
+             ('identite', "Carte d'identité ou passeport"), ('permis', 'Permis de conduire'),
+             ('photo_vehicule', 'Photo du véhicule'), ('autre', 'Autre')]
     STATUTS = [('en_attente', 'En attente'), ('valide', 'Validé'), ('refuse', 'Refusé')]
     partenaire = models.ForeignKey(Partenaire, on_delete=models.CASCADE, related_name='documents')
     type = models.CharField("Type", max_length=16, choices=TYPES)
@@ -254,6 +272,7 @@ class DemandeChangementType(models.Model):
     partenaire = models.ForeignKey(Partenaire, on_delete=models.CASCADE, related_name='demandes_type')
     type_actuel = models.CharField("Type actuel", max_length=10, choices=Partenaire.TYPES)
     type_demande = models.CharField("Type demandé", max_length=10, choices=Partenaire.TYPES)
+    vehicule_demande = models.CharField("Véhicule demandé", max_length=10, choices=Partenaire.VEHICULES, blank=True)
     motif = models.CharField("Motif", max_length=255, blank=True)
     statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente')
     traite_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,

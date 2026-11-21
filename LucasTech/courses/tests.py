@@ -344,10 +344,11 @@ class ApiTests(APITestCase):
         coursier = compte('Kodjo')
         self.client.force_authenticate(coursier)
         self.assertEqual(self.client.get(API + 'partenaire/').status_code, 404)
-        r = self.client.post(API + 'partenaire/', {'type': 'coursier', 'plaque': 'TG 1234 AB', 'vehicule': 'Haojue'},
-                             format='json')
+        r = self.client.post(API + 'partenaire/', {'type': 'coursier', 'plaque': 'TG 1234 AB', 'vehicule': 'Haojue',
+                                                   'type_vehicule': 'moto'}, format='json')
         self.assertEqual(r.status_code, 201)
-        self.assertEqual({c['service'] for c in r.json()['categories']}, {'moto', 'tricycle', 'voiture'})
+        self.assertEqual({c['service'] for c in r.json()['categories']}, {'moto'})
+        self.assertEqual(r.json()['statut'], 'a_completer')
         pos = {'en_ligne': True, 'lat': DEP['lat'] - 0.005, 'lng': DEP['lng']}
         self.assertEqual(self.client.post(API + 'partenaire/statut/', pos, format='json').json()['code'], 'non_valide')
         Partenaire.objects.filter(user=coursier).update(statut='valide')
@@ -704,3 +705,72 @@ class FavorisTests(APITestCase):
         self.assertEqual(c3.offres.get().partenaire, proche)
         self.client.force_authenticate(client)
         self.assertEqual(self.client.delete(f'{API}favoris/{favori.pk}/').json(), {'favori': False})
+
+
+
+@override_settings(STORAGES=STORAGES)
+class ProfilCoursierTests(APITestCase):
+    """Un seul véhicule par coursier ; « Compléter mon profil » puis « Envoyer pour validation »."""
+
+    def setUp(self):
+        import tempfile
+        from django.core.files.storage import FileSystemStorage
+        from .models import DocumentPartenaire
+        champ = DocumentPartenaire._meta.get_field('fichier')
+        self._dossier = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        ancien, champ.storage = champ.storage, FileSystemStorage(location=self._dossier.name)
+        self.addCleanup(setattr, champ, 'storage', ancien)
+        self.addCleanup(self._dossier.cleanup)
+        self.u = compte('Kossi')
+        self.client.force_authenticate(self.u)
+
+    def _piece(self, type_, **extra):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # JPEG minimal (en-tête suffisant pour la vérification du type)
+        jpg = SimpleUploadedFile('p.jpg', bytes([0xFF, 0xD8, 0xFF, 0xE0]) + b'0' * 200, content_type='image/jpeg')
+        return self.client.post(API + 'partenaire/documents/', {'type': type_, 'fichier': jpg, **extra},
+                                format='multipart')
+
+    def test_un_seul_vehicule(self):
+        moto, voiture = Categorie.objects.get(code='moto'), Categorie.objects.get(code='voiture-non-climatisee')
+        r = self.client.post(API + 'partenaire/', {'type': 'coursier', 'categories': [moto.pk, voiture.pk]},
+                             format='json')
+        self.assertEqual(r.json()['code'], 'un_seul_vehicule')
+        r = self.client.post(API + 'partenaire/', {'type_vehicule': 'voiture', 'climatise': True}, format='json')
+        self.assertEqual({c['code'] for c in r.json()['categories']}, {'voiture-non-climatisee', 'voiture-climatisee'})
+        self.assertEqual(self.client.post(API + 'partenaire/', {'type_vehicule': 'avion'}, format='json').json()['code'],
+                         'vehicule')
+        # validé : changer de véhicule passe par une demande
+        Partenaire.objects.filter(user=self.u).update(statut='valide')
+        r = self.client.post(API + 'partenaire/', {'type_vehicule': 'moto'}, format='json')
+        self.assertEqual(r.json()['code'], 'changement_vehicule')
+        r = self.client.post(API + 'partenaire/changement-type/', {'vehicule': 'moto'}, format='json')
+        self.assertIn(r.status_code, (200, 201))
+        from .models import DemandeChangementType
+        self.assertEqual(DemandeChangementType.objects.get().vehicule_demande, 'moto')
+
+    def test_completer_puis_envoyer(self):
+        r = self.client.post(API + 'partenaire/', {
+            'type': 'coursier', 'type_vehicule': 'moto', 'marque': 'Haojue', 'modele': 'HJ125', 'couleur': 'Rouge',
+            'annee': '2021', 'plaque': 'TG 1234 AB', 'telephone': '90000000', 'mobile_money': '90000000',
+            'quartier': 'Bè', 'urgence_nom': 'Afi', 'urgence_tel': '91000000', 'date_naissance': '1995-04-02'},
+            format='json')
+        self.assertEqual(r.json()['annee'], 2021)
+        self.assertEqual(r.json()['date_naissance'], '1995-04-02')
+        self.assertIn('selfie', r.json()['manquants'])
+        self.assertNotIn('photo_interieur', r.json()['manquants'])  # seulement pour une voiture
+        r = self.client.post(API + 'partenaire/envoyer/')
+        self.assertEqual(r.json()['code'], 'incomplet')
+        self.assertEqual(self._piece('assurance').json()['code'], 'expiration')
+        for t in ('selfie', 'identite_recto', 'identite_verso', 'permis_recto', 'permis_verso', 'carte_grise',
+                  'photo_avant', 'photo_arriere', 'photo_cote'):
+            self.assertEqual(self._piece(t).status_code, 201, t)
+        self._piece('selfie')  # remplace l'ancienne, pas de doublon
+        r = self._piece('assurance', expiration='2027-12-31')
+        self.assertEqual(r.json()['manquants'], [])
+        self.assertEqual(len([d for d in r.json()['documents'] if d['type'] == 'selfie']), 1)
+        r = self.client.post(API + 'partenaire/envoyer/')
+        self.assertEqual(r.json()['statut'], 'en_attente')
+        # pas en ligne avant la validation
+        r = self.client.post(API + 'partenaire/statut/', {'en_ligne': True, 'lat': 6.13, 'lng': 1.22}, format='json')
+        self.assertEqual(r.json()['code'], 'non_valide')

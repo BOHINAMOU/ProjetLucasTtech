@@ -134,9 +134,9 @@ class MouvementInline(LectureSeule, admin.TabularInline):
 
 @admin.register(Partenaire)
 class PartenaireAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'type', 'statut', 'en_ligne', 'plaque', 'note', 'nb_notes', 'solde', 'avertissements',
-                    'position_le')
-    list_filter = ('statut', 'type', 'en_ligne', 'categories')
+    list_display = ('__str__', 'type_vehicule', 'statut', 'en_ligne', 'plaque', 'note', 'nb_notes', 'solde',
+                    'avertissements', 'position_le')
+    list_filter = ('statut', 'type_vehicule', 'en_ligne', 'categories')
     search_fields = ('user__email', 'user__first_name', 'user__last_name', 'plaque', 'telephone')
     autocomplete_fields = ('user',)
     filter_horizontal = ('categories',)
@@ -199,12 +199,18 @@ class DemandeChangementTypeAdmin(admin.ModelAdmin):
     def valider(self, request, qs):
         from .api import SERVICES_PAR_TYPE
         n = 0
+        from .api import categories_du_vehicule
         for d in qs.filter(statut='en_attente').select_related('partenaire'):
             p = d.partenaire
-            p.type = d.type_demande
-            p.save(update_fields=['type'])
-            # historique, note, solde et dette conservés ; catégories adaptées au nouveau type
-            p.categories.set(Categorie.objects.filter(service__code__in=SERVICES_PAR_TYPE[p.type]))
+            # historique, note, solde et dette conservés ; catégories adaptées au nouveau véhicule / type
+            if d.vehicule_demande:
+                p.type_vehicule = d.vehicule_demande
+                p.save(update_fields=['type_vehicule'])
+                p.categories.set(categories_du_vehicule(p.type_vehicule, p.climatise))
+            else:
+                p.type = d.type_demande
+                p.save(update_fields=['type'])
+                p.categories.set(Categorie.objects.filter(service__code__in=SERVICES_PAR_TYPE[p.type]))
             d.statut, d.traite_par, d.traite_le = 'valide', request.user, timezone.now()
             d.save(update_fields=['statut', 'traite_par', 'traite_le'])
             S._notifier(p.user, "Changement de type validé", f"Vous êtes maintenant : {p.get_type_display()}.")

@@ -33,6 +33,7 @@ urlpatterns = [
     # Partenaire (application des coursiers, à venir)
     path('partenaire/', api.partenaire, name='partenaire_express'),
     path('partenaire/documents/', api.documents, name='partenaire_documents'),
+    path('partenaire/envoyer/', api.envoyer_profil, name='partenaire_envoyer'),
     path('partenaire/changement-type/', api.changement_type, name='partenaire_changement_type'),
     path('partenaire/statut/', api.statut, name='partenaire_statut'),
     path('partenaire/position/', api.position, name='partenaire_position'),

@@ -281,6 +281,11 @@ def partenaire_payload(request, part):
     p = Parametres.get()
     return {
         'id': part.pk, 'type': part.type, 'type_libelle': part.get_type_display(), 'statut': part.statut,
+        'type_vehicule': part.type_vehicule, 'climatise': part.climatise, 'marque': part.marque, 'modele': part.modele,
+        'couleur': part.couleur, 'annee': part.annee, 'quartier': part.quartier, 'urgence_nom': part.urgence_nom,
+        'urgence_tel': part.urgence_tel,
+        'date_naissance': part.date_naissance.isoformat() if part.date_naissance else None,
+        'manquants': manquants(part),
         'statut_libelle': part.get_statut_display(), 'motif_statut': part.motif_statut, 'en_ligne': part.en_ligne,
         'vehicule': part.vehicule, 'plaque': part.plaque, 'telephone': part.telephone, 'mobile_money': part.mobile_money,
         'categories': [categorie_payload(c) for c in part.categories.select_related('service')],
@@ -291,9 +296,35 @@ def partenaire_payload(request, part):
         'documents': [{'id': d.pk, 'type': d.type, 'libelle': d.get_type_display(), 'statut': d.statut,
                        'motif': d.motif, 'expiration': d.expiration.isoformat() if d.expiration else None}
                       for d in part.documents.all()],
-        'demandes_type': [{'id': x.pk, 'type_demande': x.type_demande, 'statut': x.statut, 'date': dt(x.created_at)}
+        'demandes_type': [{'id': x.pk, 'type_demande': x.type_demande, 'vehicule_demande': x.vehicule_demande,
+                           'statut': x.statut, 'date': dt(x.created_at)}
                           for x in part.demandes_type.all()[:5]],
     }
+
+
+# pièces obligatoires du profil (« Compléter mon profil »), selon le véhicule
+PIECES = ['selfie', 'identite_recto', 'identite_verso', 'permis_recto', 'permis_verso', 'carte_grise', 'assurance',
+          'photo_avant', 'photo_arriere', 'photo_cote']
+CHAMPS_PROFIL = ['type_vehicule', 'marque', 'modele', 'couleur', 'plaque', 'telephone', 'mobile_money', 'quartier',
+                 'urgence_nom', 'urgence_tel']
+
+
+def manquants(part):
+    """Champs et pièces obligatoires encore manquants (refusées = à refaire)."""
+    champs = [c for c in CHAMPS_PROFIL if not getattr(part, c)]
+    if not part.date_naissance:
+        champs.append('date_naissance')
+    pieces = list(PIECES) + (['photo_interieur'] if part.type_vehicule == 'voiture' else [])
+    ok = set(part.documents.exclude(statut='refuse').values_list('type', flat=True))
+    return champs + [p for p in pieces if p not in ok]
+
+
+def categories_du_vehicule(type_vehicule, climatise=False):
+    """Un véhicule = un seul service. Voiture : non climatisée (+ climatisée si équipée) ; Prestige seulement par l'admin."""
+    if type_vehicule == 'voiture':
+        codes = ['voiture-non-climatisee'] + (['voiture-climatisee'] if climatise else [])
+        return Categorie.objects.filter(code__in=codes)
+    return Categorie.objects.filter(service__code=type_vehicule)
 
 
 def _categories_pour(type_, ids):
@@ -314,17 +345,57 @@ def partenaire(request):
     d = request.data
     ids = d.getlist('categories') if hasattr(d, 'getlist') else (d.get('categories') or [])
     if not part:
-        type_ = str(d.get('type') or '')
+        type_ = str(d.get('type') or 'coursier')
         if type_ not in SERVICES_PAR_TYPE:
             return error("Choisissez coursier, livreur ou les deux.", code='type')
-        part = Partenaire.objects.create(user=request.user, type=type_)
-    for champ in ('vehicule', 'plaque', 'telephone', 'mobile_money'):
+        part = Partenaire.objects.create(user=request.user, type=type_, statut='a_completer')
+    for champ in ('vehicule', 'plaque', 'telephone', 'mobile_money', 'marque', 'modele', 'couleur', 'quartier',
+                  'urgence_nom', 'urgence_tel'):
         if champ in d:
-            setattr(part, champ, str(d.get(champ) or '')[:Partenaire._meta.get_field(champ).max_length])
+            setattr(part, champ, str(d.get(champ) or '').strip()[:Partenaire._meta.get_field(champ).max_length])
+    if 'annee' in d:
+        a = str(d.get('annee') or '')
+        part.annee = int(a) if a.isdigit() and 1950 <= int(a) <= 2100 else None
+    if 'date_naissance' in d:
+        try:
+            part.date_naissance = datetime.strptime(str(d.get('date_naissance'))[:10], '%Y-%m-%d').date()
+        except ValueError:
+            part.date_naissance = None
+    # UN SEUL type de véhicule ; après validation, le changer passe par une demande (nouvelles pièces)
+    tv = str(d.get('type_vehicule') or '')
+    if tv:
+        if tv not in dict(Partenaire.VEHICULES):
+            return error("Type de véhicule inconnu.", code='vehicule')
+        if part.statut == 'valide' and tv != part.type_vehicule:
+            return error("Pour changer de véhicule, faites une demande de changement.", code='changement_vehicule')
+        part.type_vehicule = tv
+        if 'climatise' in d:
+            part.climatise = str(d.get('climatise')).lower() in ('1', 'true', 'oui')
+        part.categories.set(categories_du_vehicule(tv, part.climatise))
+    elif ids:
+        cats = list(_categories_pour(part.type, ids).select_related('service'))
+        if len({c.service.code for c in cats}) > 1:
+            return error("Un seul type de véhicule par coursier.", code='un_seul_vehicule')
+        part.categories.set(cats)
+        if cats and cats[0].service.code in dict(Partenaire.VEHICULES):
+            part.type_vehicule = cats[0].service.code
     part.save()
-    if ids or not part.categories.exists():
-        part.categories.set(_categories_pour(part.type, ids))
     return Response(partenaire_payload(request, part), status=201)
+
+
+@api_view(['POST'])
+def envoyer_profil(request):
+    """« Envoyer pour validation » : refusé tant qu'il manque un champ ou une pièce obligatoire."""
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    m = manquants(part)
+    if m:
+        return error("Profil incomplet.", code='incomplet', errors={'manquants': m})
+    if part.statut in ('a_completer', 'refuse'):
+        part.statut, part.motif_statut = 'en_attente', ''
+        part.save(update_fields=['statut', 'motif_statut'])
+    return Response(partenaire_payload(request, part))
 
 
 @api_view(['POST'])
@@ -346,6 +417,10 @@ def documents(request):
             exp = datetime.strptime(str(request.data['expiration'])[:10], '%Y-%m-%d').date()
         except ValueError:
             return error("Date d'expiration invalide (AAAA-MM-JJ).", code='expiration')
+    if type_ == 'assurance' and not exp:
+        return error("Indiquez la date d'expiration de l'assurance.", code='expiration')
+    # une nouvelle photo remplace l'ancienne pièce non validée du même type
+    part.documents.filter(type=type_).exclude(statut='valide').delete()
     DocumentPartenaire.objects.create(partenaire=part, type=type_, fichier=f, expiration=exp)
     return Response(partenaire_payload(request, part), status=201)
 
@@ -355,13 +430,17 @@ def changement_type(request):
     part = _partenaire(request)
     if not part:
         return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
-    type_ = str(request.data.get('type') or '')
-    if type_ not in SERVICES_PAR_TYPE or type_ == part.type:
+    vehicule = str(request.data.get('vehicule') or '')
+    type_ = str(request.data.get('type') or part.type)
+    if vehicule:
+        if vehicule not in dict(Partenaire.VEHICULES) or vehicule == part.type_vehicule:
+            return error("Choisissez un autre véhicule.", code='vehicule')
+    elif type_ not in SERVICES_PAR_TYPE or type_ == part.type:
         return error("Choisissez un autre type.", code='type')
     if part.demandes_type.filter(statut='en_attente').exists():
         return error("Une demande est déjà en cours.", code='deja')
     DemandeChangementType.objects.create(partenaire=part, type_actuel=part.type, type_demande=type_,
-                                         motif=str(request.data.get('motif') or '')[:255])
+                                         vehicule_demande=vehicule, motif=str(request.data.get('motif') or '')[:255])
     return Response(partenaire_payload(request, part), status=201)
 
 
