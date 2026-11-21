@@ -51,3 +51,21 @@ class TuilesAccueilTests(TestCase):
         ios = self.client.get('/api/mobile/v1/tuiles-accueil/', {'plateforme': 'ios'}).json()['tuiles']
         self.assertEqual(len(android), 7)
         self.assertNotIn('solde', [t['destination'] for t in ios])
+
+
+
+class LieuxConnusTests(TestCase):
+    def test_lieux_connus_en_tete(self):
+        from unittest import mock
+        from .models import LieuConnu
+        LieuConnu.objects.create(nom='Grand Marché', quartier='Lomé', alias='Assigamé', lat=6.125, lng=1.227)
+        LieuConnu.objects.create(nom='Pharmacie du Boulevard', quartier='Tokoin', lat=6.14, lng=1.22, active=False)
+        autres = [{'nom': 'Marché de Bè, Lomé', 'lat': 6.13, 'lng': 1.24}]
+        with mock.patch('api_mobile.lieux._photon', return_value=autres):
+            d = self.client.get('/api/mobile/v1/lieux/', {'q': 'grand marche'}).json()['resultats']
+            self.assertEqual(d[0]['nom'], 'Grand Marché, Lomé')
+            self.assertTrue(d[0]['connu'])
+            d = self.client.get('/api/mobile/v1/lieux/', {'q': 'assigame'}).json()['resultats']
+            self.assertEqual(d[0]['nom'], 'Grand Marché, Lomé')
+            d = self.client.get('/api/mobile/v1/lieux/', {'q': 'pharmacie'}).json()['resultats']
+            self.assertNotIn('Pharmacie du Boulevard, Tokoin', [x['nom'] for x in d])

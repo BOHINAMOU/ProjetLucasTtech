@@ -145,3 +145,22 @@ class TuileAccueil(models.Model):
 
     def __str__(self):
         return self.libelle
+
+
+class LieuConnu(models.Model):
+    """Lieux connus (Lomé et ailleurs) proposés EN PREMIER dans la recherche de lieux de l'appli :
+    marchés, pharmacies, écoles, hôtels, églises, carrefours… (OpenStreetMap les connaît mal au Togo)."""
+    nom = models.CharField("Nom", max_length=120)
+    quartier = models.CharField("Quartier / ville", max_length=120, blank=True)
+    alias = models.CharField("Autres noms", max_length=200, blank=True, help_text="Ex. « Grand marché, Assigamé ».")
+    lat = models.FloatField("Latitude")
+    lng = models.FloatField("Longitude")
+    active = models.BooleanField("Actif", default=True)
+
+    class Meta:
+        ordering = ['nom']
+        verbose_name = "Lieu connu"
+        verbose_name_plural = "Lieux connus (recherche de l'appli)"
+
+    def __str__(self):
+        return f"{self.nom}, {self.quartier}" if self.quartier else self.nom

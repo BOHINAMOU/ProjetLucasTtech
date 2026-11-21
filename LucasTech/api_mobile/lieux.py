@@ -101,6 +101,19 @@ def _google(q, lat=None, lng=None):
         return None
 
 
+def _connus(q, limite=4):
+    """Lieux connus saisis dans l'admin (accents, fautes et sigles tolérés), en tête des suggestions."""
+    from .models import LieuConnu
+    from .recherche import filtrer
+    qs = filtrer(LieuConnu.objects.filter(active=True), q, 'nom', 'quartier', alias='alias')[:limite]
+    return [{'nom': str(l), 'lat': round(l.lat, 6), 'lng': round(l.lng, 6), 'connu': True} for l in qs]
+
+
+def _fusion(connus, autres, limite=8):
+    vus = {c['nom'].lower() for c in connus}
+    return (connus + [a for a in autres if a['nom'].lower() not in vus])[:limite]
+
+
 def _float(v):
     try:
         return float(v)
@@ -118,9 +131,10 @@ def lieux(request):
     if _trop(request):
         return error("Trop de recherches. Réessayez dans un instant.", 429, code='trop')
     try:
+        connus = _connus(q)
         g = _google(q, _float(request.GET.get('lat')), _float(request.GET.get('lng')))
         if g is not None:
-            return Response({'resultats': g})
+            return Response({'resultats': _fusion(connus, g)})
         params = {'q': q, 'lang': 'fr', 'limit': 6, 'bbox': BBOX_TOGO}
         if _float(request.GET.get('lat')) is not None and _float(request.GET.get('lng')) is not None:
             params.update({'lat': request.GET['lat'], 'lon': request.GET['lng']})
@@ -129,8 +143,10 @@ def lieux(request):
             res = _photon('/api/', {'q': q, 'lang': 'fr', 'limit': 6, 'lat': 6.17, 'lon': 1.23})
     except (requests.RequestException, ValueError):
         logger.warning("Recherche de lieux indisponible")
+        if connus:
+            return Response({'resultats': connus})
         return error("Recherche indisponible pour le moment.", 503, code='indisponible')
-    return Response({'resultats': res})
+    return Response({'resultats': _fusion(connus, res)})
 
 
 @api_view(['GET'])

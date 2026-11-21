@@ -58,3 +58,14 @@ class TuileAccueilAdmin(admin.ModelAdmin):
     list_display = ('libelle', 'destination', 'icone', 'couleur', 'ordre', 'active', 'android', 'ios')
     list_editable = ('ordre', 'active')
     list_filter = ('active',)
+
+
+
+from .models import LieuConnu  # noqa: E402
+
+
+@admin.register(LieuConnu)
+class LieuConnuAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'quartier', 'lat', 'lng', 'active')
+    list_editable = ('active',)
+    search_fields = ('nom', 'quartier', 'alias')
