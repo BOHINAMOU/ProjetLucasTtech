@@ -207,7 +207,7 @@ class PortefeuilleTests(TestCase):
 
     def test_attente_payante(self):
         c, p = self._acceptee()
-        S.signaler_arrivee(p, c.pk, JOUR + timedelta(minutes=5))
+        S.signaler_arrivee(p, c.pk, JOUR + timedelta(minutes=5), verifier_distance=False)
         S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=10))  # 5 min, dont 3 gratuites
         c = S.terminer(p, c.pk, JOUR + timedelta(minutes=25))
         self.assertEqual(c.prix_final, 750)  # 700 + 2 × 25
@@ -365,7 +365,11 @@ class ApiTests(APITestCase):
         r = self.client.post(f"{API}partenaire/offres/{o['offre']['id']}/accepter/", format='json')
         self.assertEqual(r.json()['statut'], 'acceptee')
         base = f"{API}partenaire/courses/{c['id']}/"
-        self.assertEqual(self.client.post(base + 'arrive/').json()['statut'], 'arrive')
+        # trop loin : « Je suis arrivé » refusé ; au départ : arrivée automatique + message au client
+        self.assertEqual(self.client.post(base + 'arrive/').json()['code'], 'trop_loin')
+        o = self.client.post(API + 'partenaire/offre/', {'lat': DEP['lat'], 'lng': DEP['lng']}, format='json').json()
+        self.assertEqual(o['course']['statut'], 'arrive')
+        self.assertTrue(Course.objects.get(pk=c['id']).messages.filter(par='systeme').exists())
         self.assertEqual(self.client.post(base + 'demarrer/', {'code': '----'}, format='json').json()['code'], 'code')
         self.assertEqual(self.client.post(base + 'demarrer/', {'code': c['code_depart']}, format='json').status_code, 200)
         self.assertEqual(self.client.post(base + 'terminer/').json()['statut'], 'terminee')
@@ -466,6 +470,8 @@ class DiscussionTests(APITestCase):
 
     def test_message_a_l_arrivee(self):
         self._accepter()
+        Partenaire.objects.filter(pk=self.p.pk).update(lat=DEP['lat'], lng=DEP['lng'])
+        self.p.refresh_from_db()
         S.signaler_arrivee(self.p, self.c.pk)
         dernier = self.c.messages.last()
         self.assertEqual(dernier.par, 'systeme')
@@ -786,3 +792,85 @@ class CategoriesParDefautTests(TestCase):
         adm.message_user = lambda *a, **k: None
         adm.valider(None, Partenaire.objects.filter(pk=p.pk))
         self.assertEqual(list(p.categories.values_list('code', flat=True)), ['moto'])
+
+
+
+@override_settings(STORAGES=STORAGES)
+class CourseEnDirectTests(APITestCase):
+    """Arrivée automatique, itinéraire, changement de paiement, pourboire, commission notifiée, gains."""
+
+    def setUp(self):
+        from Payments.solde import ajuster
+        self.moto = Categorie.objects.get(code='moto')
+        self.u = compte('Ama')
+        ajuster(self.u, 5000, 'Test', None)
+        self.p = partenaire(self.moto, 0.5, quand=timezone.now())
+        self.c = S.commander(self.u, self.moto, {**DEP, 'adresse': 'Bè'}, {**ARR, 'adresse': 'Tokoin'})
+        o = OffreCourse.objects.get(course=self.c)
+        S.accepter(self.p, o.pk)
+
+    def _position(self, lat, lng):
+        Partenaire.objects.filter(pk=self.p.pk).update(lat=lat, lng=lng, position_le=timezone.now())
+        self.p.refresh_from_db()
+
+    def test_arrivee_auto_et_bouton_selon_distance(self):
+        self.assertEqual(S.arrivee_automatique(self.p), None)  # 500 m : rien
+        with self.assertRaises(S.ErreurCourse) as e:
+            S.signaler_arrivee(self.p, self.c.pk)
+        self.assertEqual(e.exception.code, 'trop_loin')
+        self._position(DEP['lat'] - 0.001, DEP['lng'])  # ~110 m : bouton permis
+        self.assertEqual(S.signaler_arrivee(self.p, self.c.pk).statut, 'arrive')
+
+    def test_arrivee_automatique_a_quelques_metres(self):
+        self._position(DEP['lat'] - 0.0002, DEP['lng'])  # ~22 m
+        c = S.arrivee_automatique(self.p)
+        self.assertEqual(c.statut, 'arrive')
+        self.assertIn('arrivé', c.messages.filter(par='systeme').last().texte.lower())
+
+    def test_itineraire_client_et_coursier(self):
+        trace = {'km': 0.6, 'minutes': 2, 'trace': [[6.1, 1.2], [6.11, 1.21]]}
+        with mock.patch('courses.carto.trace_route', return_value=trace):
+            self.client.force_authenticate(self.u)
+            r = self.client.get(f'{API}{self.c.pk}/itineraire/').json()
+            self.assertEqual(r['cible'], 'depart')
+            self.assertEqual(len(r['trace']), 2)
+            self.assertGreater(r['distance_depart_m'], 400)
+            self.client.force_authenticate(self.p.user)
+            self.assertEqual(self.client.get(f'{API}{self.c.pk}/itineraire/').status_code, 200)
+            self.client.force_authenticate(compte('Autre'))
+            self.assertEqual(self.client.get(f'{API}{self.c.pk}/itineraire/').status_code, 404)
+
+    def test_changer_paiement_puis_pourboire_et_commission(self):
+        self.client.force_authenticate(self.u)
+        total = Course.objects.get(pk=self.c.pk).total_client
+        r = self.client.post(f'{API}{self.c.pk}/paiement/', {'moyen': 'portefeuille'}, format='json').json()
+        self.assertEqual(r['moyen_paiement'], 'portefeuille')
+        self.assertEqual(portefeuille(self.u).solde, 5000 - total)
+        r = self.client.post(f'{API}{self.c.pk}/paiement/', {'moyen': 'especes'}, format='json').json()
+        self.assertEqual(r['moyen_paiement'], 'especes')
+        self.assertEqual(portefeuille(self.u).solde, 5000)
+        S.signaler_arrivee(self.p, self.c.pk, verifier_distance=False)
+        S.demarrer(self.p, self.c.pk, '')
+        S.terminer(self.p, self.c.pk)
+        from api_mobile.models import Notification
+        n = Notification.objects.filter(utilisateur=self.p.user, titre='Commission Lantante').first()
+        self.assertIsNotNone(n)
+        self.assertIn('Commission 15 %', n.message)
+        self.assertEqual(self.client.post(f'{API}{self.c.pk}/paiement/', {'moyen': 'portefeuille'},
+                                          format='json').json()['code'], 'etape')
+        r = self.client.post(f'{API}{self.c.pk}/noter/', {'note': 5, 'pourboire': 600}, format='json').json()
+        self.assertEqual(r['code'], 'pourboire')  # 500 maximum
+        solde_avant = Partenaire.objects.get(pk=self.p.pk).solde
+        self.assertEqual(self.client.post(f'{API}{self.c.pk}/noter/', {'note': 5, 'pourboire': 300},
+                                          format='json').json(), {'ok': True})
+        self.assertEqual(Partenaire.objects.get(pk=self.p.pk).solde, solde_avant + 300)
+        self.assertEqual(portefeuille(self.u).solde, 4700)
+        # gains du coursier : aujourd'hui, avec le pourboire
+        self.client.force_authenticate(self.p.user)
+        with mock.patch('courses.pin.exige_pin', return_value=None):
+            g = self.client.get(API + 'partenaire/solde/').json()['gains']
+        c = Course.objects.get(pk=self.c.pk)
+        self.assertEqual(g['jour']['courses'], 1)
+        self.assertEqual(g['jour']['gain'], c.prix_final - c.detail_prix['commission'] + 300)
+        r = self.client.get(API + 'partenaire/courses/?jour=aujourdhui').json()
+        self.assertEqual(len(r['resultats']), 1)

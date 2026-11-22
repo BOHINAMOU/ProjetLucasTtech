@@ -464,8 +464,36 @@ def _course_du_partenaire(partenaire, course_id, statuts):
     return course
 
 
-def signaler_arrivee(partenaire, course_id, maintenant=None):
+def distance_depart_m(partenaire, course):
+    if partenaire.lat is None:
+        return None
+    return int(haversine_km(partenaire.lat, partenaire.lng, course.depart_lat, course.depart_lng) * 1000)
+
+
+def arrivee_automatique(partenaire, maintenant=None):
+    """Appelé à chaque position du coursier : à quelques mètres du départ, « Coursier arrivé » tout seul."""
+    course = Course.objects.filter(partenaire=partenaire, statut='acceptee').first()
+    if not course:
+        return None
+    d = distance_depart_m(partenaire, course)
+    if d is not None and d <= Parametres.get().rayon_arrivee_auto_m:
+        try:
+            return signaler_arrivee(partenaire, course.pk, maintenant, verifier_distance=False)
+        except ErreurCourse:
+            return None
+    return None
+
+
+def signaler_arrivee(partenaire, course_id, maintenant=None, verifier_distance=True):
     maintenant = maintenant or timezone.now()
+    if verifier_distance:
+        c = Course.objects.filter(pk=course_id, partenaire=partenaire).first()
+        p = Parametres.get()
+        d = distance_depart_m(partenaire, c) if c else None
+        if c and c.statut == 'acceptee' and (d is None or d > p.rayon_arrivee_manuelle_m):
+            loin = f"à {d} m" if d is not None else "trop loin"
+            raise ErreurCourse(f"Vous êtes {loin} du client. Approchez-vous à moins de {p.rayon_arrivee_manuelle_m} m.",
+                               'trop_loin')
     with transaction.atomic():
         course = _course_du_partenaire(partenaire, course_id, ('acceptee',))
         course.statut = 'arrive'
@@ -566,13 +594,78 @@ def terminer(partenaire, course_id, maintenant=None):
         # Partenaire : il a gagné prix_final − commission et a reçu [especes] en main
         # (dont la réduction payée par Lantante et les frais reportés qu'il encaisse pour Lantante).
         mouvement_partenaire(partenaire.pk, -commission, 'commission', course,
-                             f"Commission {course.categorie.commission_pct} % — course n° {course.pk}")
+                             f"Commission {course.categorie.commission_pct} % — course {course.reference}")
         gain = course.prix_final - especes
         mouvement_partenaire(partenaire.pk, gain, 'gain', course,
                              f"Course n° {course.pk} payée par le solde" if course.moyen_paiement == 'portefeuille'
                              else f"Course n° {course.pk} : réduction et frais pris en charge par Lantante")
     _notifier(course.client, "Course terminée", f"Reçu {course.numero_recu} : {course.total_client} FCFA.")
+    partenaire.refresh_from_db(fields=['solde'])
+    pct = f"{Decimal(course.categorie.commission_pct).normalize():f}"
+    _notifier(partenaire.user, "Commission Lantante",
+              f"Course {course.reference} : {course.prix_final} FCFA. Commission {pct} % : {commission} FCFA. "
+              f"Votre gain : {course.prix_final - commission} FCFA. Solde : {partenaire.solde} FCFA.")
     return course
+
+
+def changer_paiement(course, moyen):
+    """Le client passe d'espèces au portefeuille (montant réservé) ou l'inverse (réservation rendue),
+    tant que la course n'est pas terminée."""
+    from Payments.solde import SoldeInsuffisant, debiter, rembourser
+    if moyen not in dict(Course.MOYENS):
+        raise ErreurCourse("Moyen de paiement inconnu.", 'moyen')
+    with transaction.atomic():
+        c = Course.objects.select_for_update().get(pk=course.pk)
+        if c.statut not in ('recherche', 'acceptee', 'arrive', 'en_cours'):
+            raise ErreurCourse("La course est terminée : le paiement ne peut plus changer.", 'etape')
+        if c.moyen_paiement == moyen:
+            return c
+        if moyen == 'portefeuille':
+            try:
+                debiter(c.client, c.total_client, f"Course {c.reference} : montant réservé")
+            except SoldeInsuffisant:
+                raise ErreurCourse("Solde insuffisant. Rechargez votre portefeuille.", 'solde_insuffisant')
+            c.montant_reserve = c.total_client
+        else:
+            if c.montant_reserve:
+                rembourser(c.client, c.montant_reserve, f"Course {c.reference} : paiement en espèces")
+            c.montant_reserve = 0
+        c.moyen_paiement = moyen
+        c.save(update_fields=['moyen_paiement', 'montant_reserve'])
+    if c.partenaire_id:
+        from .discussion import message_systeme
+        message_systeme(c, "Le client paiera " + ("avec son portefeuille Lantante." if moyen == 'portefeuille'
+                                                  else "en espèces."))
+    return c
+
+
+def donner_pourboire(course, montant):
+    """Pourboire payé avec le portefeuille du client, versé entièrement au coursier (pas de commission)."""
+    from Payments.solde import SoldeInsuffisant, debiter
+    p = Parametres.get()
+    try:
+        montant = int(montant or 0)
+    except (TypeError, ValueError):
+        montant = 0
+    if montant <= 0:
+        return 0
+    if montant > p.pourboire_max:
+        raise ErreurCourse(f"Pourboire : {p.pourboire_max} FCFA maximum.", 'pourboire')
+    if course.statut != 'terminee' or not course.partenaire_id:
+        raise ErreurCourse("La course n'est pas terminée.", 'etape')
+    if (course.detail_prix or {}).get('pourboire'):
+        raise ErreurCourse("Pourboire déjà donné.", 'deja')
+    with transaction.atomic():
+        try:
+            debiter(course.client, montant, f"Pourboire — course {course.reference}")
+        except SoldeInsuffisant:
+            raise ErreurCourse("Solde insuffisant pour le pourboire.", 'solde_insuffisant')
+        d = dict(course.detail_prix or {})
+        d['pourboire'] = montant
+        Course.objects.filter(pk=course.pk).update(detail_prix=d)
+        mouvement_partenaire(course.partenaire_id, montant, 'pourboire', course, f"Pourboire — course {course.reference}")
+    _notifier(course.partenaire.user, "Pourboire reçu", f"{montant} FCFA de votre client (course {course.reference}). Merci !")
+    return montant
 
 
 # ─────────────────────────────

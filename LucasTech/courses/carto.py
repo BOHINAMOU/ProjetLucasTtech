@@ -70,3 +70,33 @@ def itineraire_google(dlat, dlng, alat, alng):
     except Exception:  # pragma: no cover - réseau
         logger.warning("Google Routes indisponible : estimation utilisée")
         return None
+
+
+
+OSRM = 'https://router.project-osrm.org/route/v1/driving/{dlng},{dlat};{alng},{alat}?overview=full&geometries=polyline'
+
+
+def trace_route(dlat, dlng, alat, alng):
+    """Tracé (liste [lat, lng]) + km + minutes pour afficher le chemin sur la carte pendant une course.
+    Google Routes si la clé existe, sinon OSRM (gratuit, sans clé), sinon None. Mis en cache 2 min."""
+    g = itineraire_google(dlat, dlng, alat, alng)
+    if g and g[2]:
+        return {'km': g[0], 'minutes': g[1], 'trace': g[2]}
+    k = 'osrm:' + hashlib.sha1(f'{dlat:.4f},{dlng:.4f},{alat:.4f},{alng:.4f}'.encode()).hexdigest()
+    deja = cache.get(k)
+    if deja:
+        return deja
+    try:
+        r = requests.get(OSRM.format(dlat=dlat, dlng=dlng, alat=alat, alng=alng), timeout=5,
+                         headers={'User-Agent': 'LantanteExpress/1.0'})
+        r.raise_for_status()
+        route = (r.json().get('routes') or [None])[0]
+        if not route:
+            return None
+        res = {'km': round(route.get('distance', 0) / 1000, 2), 'minutes': max(1, round(route.get('duration', 60) / 60)),
+               'trace': decoder_polyline(route.get('geometry', ''))}
+        cache.set(k, res, 120)
+        return res
+    except Exception:  # pragma: no cover - réseau
+        logger.warning("Tracé de route indisponible")
+        return None

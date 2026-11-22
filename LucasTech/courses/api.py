@@ -80,6 +80,9 @@ def course_payload(request, c, pour='client', p=None):
         'annulations': [{'par': a.par, 'par_libelle': a.get_par_display(), 'motif': a.motif, 'frais': a.frais,
                          'date': dt(a.created_at)} for a in c.annulations.all() if a.par != 'systeme'],
         'discussion': {'ouverte': D.ouverte(c, p=p), 'non_lus': D.non_lus(c, 'client' if pour == 'client' else 'partenaire')},
+        'distance_parcourue_km': float(c.distance_reelle_km or 0),
+        'pourboire': (c.detail_prix or {}).get('pourboire', 0),
+        'pourboire_max': p.pourboire_max,
     }
     if pour == 'client':
         d['code_depart'] = c.code_depart if c.code_requis and c.statut in ('recherche', 'acceptee', 'arrive') else ''
@@ -93,7 +96,8 @@ def course_payload(request, c, pour='client', p=None):
         d['partenaire'] = None if not part else {
             'favori': part.favori_de.filter(client_id=c.client_id).exists(),
             'prenom': part.user.first_name, 'photo': media(request, part.user.avatar), 'note': _note_publique(part, p),
-            'vehicule': part.vehicule, 'plaque': part.plaque,
+            'vehicule': part.vehicule, 'plaque': part.plaque, 'type_vehicule': part.type_vehicule,
+            'marque': part.marque, 'modele': part.modele, 'couleur': part.couleur, 'nb_courses': part.nb_notes,
             'telephone': (part.telephone or part.user.phone or '') if c.active else '',
             'lat': part.lat if c.active else None, 'lng': part.lng if c.active else None,
         }
@@ -104,6 +108,10 @@ def course_payload(request, c, pour='client', p=None):
         d['peut_noter'] = c.statut == 'terminee' and d['note_donnee'] is None
     else:
         d['code_requis'] = c.code_requis
+        part = c.partenaire
+        if part and c.statut == 'acceptee':
+            d['distance_depart_m'] = S.distance_depart_m(part, c)
+            d['rayon_arrivee_m'] = p.rayon_arrivee_manuelle_m
         from .models import CoursierFavori
         # « Client qui vous a mis en favori » : vu par le partenaire qui interroge (offre ou course)
         d['favori'] = CoursierFavori.objects.filter(client_id=c.client_id, partenaire__user=request.user).exists()
@@ -213,13 +221,55 @@ def annuler(request, pk):
 
 @api_view(['POST'])
 def noter(request, pk):
+    """Note de 1 à 5 et, si le client le veut, pourboire (portefeuille, 500 FCFA maximum)."""
     c = _course_client(request, pk)
     try:
+        if request.data.get('pourboire'):
+            if Course.objects.filter(pk=c.pk, notes__auteur='client').exists():
+                raise S.ErreurCourse("Course déjà notée.", 'deja_notee')
+            S.donner_pourboire(c, request.data.get('pourboire'))
         S.noter(c, 'client', request.data.get('note'), request.data.get('motifs') or [],
                 str(request.data.get('commentaire') or ''))
     except S.ErreurCourse as e:
         return _err(e)
     return Response({'ok': True})
+
+
+@api_view(['POST'])
+def paiement(request, pk):
+    """Changer le moyen de paiement pendant la course : especes ↔ portefeuille."""
+    c = _course_client(request, pk)
+    try:
+        c = S.changer_paiement(c, str(request.data.get('moyen') or ''))
+    except S.ErreurCourse as e:
+        return _err(e)
+    return Response(course_payload(request, c))
+
+
+@api_view(['GET'])
+def itineraire(request, pk):
+    """Chemin à suivre sur la carte (client ou coursier de la course) : du coursier vers le départ (en route)
+    ou vers l'arrivée (en course), avec km restants et km parcourus."""
+    from .carto import trace_route
+    c = get_object_or_404(Course.objects.select_related('partenaire__user'), pk=pk)
+    part = c.partenaire
+    if request.user.pk != c.client_id and not (part and part.user_id == request.user.pk):
+        return error("Course introuvable.", status=404, code='introuvable')
+    if not part or c.statut not in ('acceptee', 'arrive', 'en_cours') or part.lat is None:
+        return Response({'trace': [], 'cible': None})
+    vers_arrivee = c.statut == 'en_cours'
+    cible = (c.arrivee_lat, c.arrivee_lng) if vers_arrivee else (c.depart_lat, c.depart_lng)
+    r = trace_route(part.lat, part.lng, *cible) or {}
+    km = r.get('km') if r else None
+    if km is None:
+        km = round(S.haversine_km(part.lat, part.lng, *cible) * float(Parametres.get().coef_route), 2)
+    return Response({
+        'cible': 'arrivee' if vers_arrivee else 'depart', 'trace': r.get('trace') or [],
+        'coursier': {'lat': part.lat, 'lng': part.lng, 'position_le': dt(part.position_le)},
+        'distance_restante_km': km, 'duree_restante_min': r.get('minutes'),
+        'distance_parcourue_km': float(c.distance_reelle_km or 0),
+        'distance_depart_m': S.distance_depart_m(part, c) if not vers_arrivee else None,
+    })
 
 
 def _piece(request):
@@ -281,6 +331,7 @@ def partenaire_payload(request, part):
     p = Parametres.get()
     return {
         'id': part.pk, 'type': part.type, 'type_libelle': part.get_type_display(), 'statut': part.statut,
+        'photo': media(request, part.user.avatar),
         'type_vehicule': part.type_vehicule, 'climatise': part.climatise, 'marque': part.marque, 'modele': part.modele,
         'couleur': part.couleur, 'annee': part.annee, 'quartier': part.quartier, 'urgence_nom': part.urgence_nom,
         'urgence_tel': part.urgence_tel,
@@ -421,7 +472,16 @@ def documents(request):
         return error("Indiquez la date d'expiration de l'assurance.", code='expiration')
     # une nouvelle photo remplace l'ancienne pièce non validée du même type
     part.documents.filter(type=type_).exclude(statut='valide').delete()
-    DocumentPartenaire.objects.create(partenaire=part, type=type_, fichier=f, expiration=exp)
+    doc = DocumentPartenaire.objects.create(partenaire=part, type=type_, fichier=f, expiration=exp)
+    if type_ == 'selfie':
+        # la photo du coursier devient sa photo de profil (vue par le client)
+        from django.core.files.base import ContentFile
+        try:
+            doc.fichier.open('rb')
+            part.user.avatar.save(f'coursier-{part.pk}.jpg', ContentFile(doc.fichier.read()), save=True)
+            doc.fichier.close()
+        except Exception:  # pragma: no cover - stockage
+            pass
     return Response(partenaire_payload(request, part), status=201)
 
 
@@ -494,6 +554,7 @@ def offre(request):
     if request.method == 'POST' and _maj_position(part, request.data):
         part.save(update_fields=['lat', 'lng', 'position_le'])
         S.suivre_position(part, part.lat, part.lng)
+        S.arrivee_automatique(part)
     S.avancer_recherches()
     o = S.offre_en_cours(part)
     part.refresh_from_db(fields=['en_ligne', 'offres_ignorees', 'avertissements'])
@@ -563,8 +624,34 @@ def partenaire_courses(request):
     if not part:
         return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
     p = Parametres.get()
-    qs = part.courses.select_related('categorie__service', 'client')[:50]
-    return Response({'resultats': [course_payload(request, c, pour='partenaire', p=p) for c in qs]})
+    qs = part.courses.select_related('categorie__service', 'client').order_by('-created_at')
+    if request.GET.get('jour') == 'aujourdhui':
+        qs = qs.filter(created_at__gte=timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0))
+    return Response({'resultats': [course_payload(request, c, pour='partenaire', p=p) for c in qs[:100]]})
+
+
+def _gains(part):
+    """Gains du coursier (prix − commission + pourboires) : aujourd'hui, 7 jours, ce mois, et par jour du mois."""
+    from datetime import timedelta
+    d0 = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+    debut_mois = d0.replace(day=1)
+    periodes = {'jour': d0, 'semaine': d0 - timedelta(days=6), 'mois': debut_mois}
+    term = part.courses.filter(statut='terminee', terminee_le__gte=min(periodes.values()))
+    par_jour, res = {}, {k: {'gain': 0, 'courses': 0, 'commission': 0} for k in periodes}
+    for c in term.only('prix_final', 'prix_estime', 'detail_prix', 'terminee_le'):
+        prix = c.prix_final or c.prix_estime
+        com = int((c.detail_prix or {}).get('commission') or 0)
+        gain = prix - com + int((c.detail_prix or {}).get('pourboire') or 0)
+        for k, debut in periodes.items():
+            if c.terminee_le >= debut:
+                res[k]['gain'] += gain
+                res[k]['courses'] += 1
+                res[k]['commission'] += com
+        if c.terminee_le >= debut_mois:
+            j = timezone.localtime(c.terminee_le).date().isoformat()
+            par_jour[j] = par_jour.get(j, 0) + gain
+    res['par_jour'] = [{'date': j, 'gain': g} for j, g in sorted(par_jour.items(), reverse=True)]
+    return res
 
 
 @api_view(['GET'])
@@ -578,6 +665,7 @@ def partenaire_solde(request):
         return refus
     p = Parametres.get()
     return Response({
+        'gains': _gains(part),
         'solde': part.solde, 'dette': part.dette, 'dette_max_especes': p.dette_max_especes,
         'dette_max_totale': p.dette_max_totale, 'versement_min': p.versement_min, 'mobile_money': part.mobile_money,
         'versements': [{'id': v.pk, 'montant': v.montant, 'numero': v.numero, 'statut': v.statut,

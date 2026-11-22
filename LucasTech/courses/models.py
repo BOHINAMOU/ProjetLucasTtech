@@ -116,6 +116,13 @@ class Parametres(models.Model):
     frais_absent_voiture = models.PositiveIntegerField("Frais client absent voiture (FCFA)", default=700)
     retard_exonerant_min = models.PositiveSmallIntegerField("Retard du partenaire qui exonère le client (min)", default=5)
     attente_gratuite_min = models.PositiveSmallIntegerField("Attente gratuite (min)", default=3)
+    rayon_arrivee_auto_m = models.PositiveSmallIntegerField(
+        "Arrivée automatique (m)", default=40,
+        help_text="Le système marque « Coursier arrivé » tout seul quand il est à moins de cette distance du départ.")
+    rayon_arrivee_manuelle_m = models.PositiveSmallIntegerField(
+        "Bouton « Je suis arrivé » (m)", default=150,
+        help_text="Le coursier ne peut dire « Je suis arrivé » que s'il est à moins de cette distance du départ.")
+    pourboire_max = models.PositiveIntegerField("Pourboire maximum (FCFA)", default=500)
     prix_attente_moto = models.PositiveIntegerField("Prix de l'attente moto (FCFA/min)", default=25)
     prix_attente_voiture = models.PositiveIntegerField("Prix de l'attente voiture (FCFA/min)", default=50)
     # Prix
@@ -460,7 +467,7 @@ class Signalement(models.Model):
 class MouvementSoldePartenaire(models.Model):
     TYPES = [('commission', 'Commission'), ('gain', 'Gain'), ('frais_annulation', "Frais d'annulation reçus"),
              ('remboursement', 'Remboursement retenu'), ('versement', 'Versement'), ('reglement', 'Règlement de dette'),
-             ('ajustement', 'Ajustement')]
+             ('ajustement', 'Ajustement'), ('pourboire', 'Pourboire')]
     partenaire = models.ForeignKey(Partenaire, on_delete=models.PROTECT, related_name='mouvements')
     type = models.CharField("Type", max_length=16, choices=TYPES)
     montant = models.IntegerField("Montant (FCFA)", help_text="Positif : en faveur du partenaire.")
