@@ -107,9 +107,10 @@ def _demandes():
         blocs.append({'titre': titre, 'icone': icone, 'n': qs.count(), 'lien': lien, 'lignes': [ligne(x) for x in qs[:8]]})
 
     bloc("Plaintes à traiter", 'report', Signalement.objects.filter(statut__in=('nouveau', 'en_cours'))
-         .select_related('course', 'auteur').order_by('-created_at'), _u('signalement_changelist'),
+         .select_related('course__partenaire__user', 'auteur').order_by('-created_at'), _u('signalement_changelist'),
          lambda s: (f"{s.get_motif_display()} · "
-                    f"{'client' if s.par == 'client' else 'coursier'}", f"{s.auteur.get_full_name() or s.auteur.email} · {s.auteur.phone or ''} · {s.commentaire[:60]}", reverse('admin_plainte', args=[s.pk])))
+                    f"{'client' if s.par == 'client' else 'coursier'}", f"{s.auteur.get_full_name() or s.auteur.email} · {s.auteur.phone or ''} · Coursier : "
+                    f"{(s.course.partenaire.user.get_full_name() or s.course.partenaire.user.email) if s.course.partenaire_id else '—'}", reverse('admin_plainte', args=[s.pk])))
     bloc("Papiers à vérifier", 'badge', DocumentPartenaire.objects.filter(statut='en_attente')
          .select_related('partenaire__user').order_by('created_at'), _u('documentpartenaire_changelist') + '?statut__exact=en_attente',
          lambda d: (d.get_type_display(), _nom(d.partenaire), reverse('admin_coursier', args=[d.partenaire_id])))

@@ -377,11 +377,12 @@ class RemboursementAdmin(admin.ModelAdmin):
 @admin.register(Signalement)
 class SignalementAdmin(FichierPriveMixin, admin.ModelAdmin):
     nom_vue = 'courses_signalement_fichier'
-    list_display = ('created_at', 'course', 'personne', 'telephone', 'par', 'motif', 'statut', 'piece', 'repondre')
+    list_display = ('created_at', 'course', 'personne', 'telephone', 'coursier', 'par', 'motif', 'statut', 'piece', 'repondre')
     list_filter = ('statut', 'motif', 'par')
-    list_select_related = ('course', 'auteur')
+    list_select_related = ('course__partenaire__user', 'auteur')
     search_fields = ('course__reference', 'commentaire', 'auteur__email', 'auteur__first_name', 'auteur__last_name',
-                     'auteur__phone')
+                     'auteur__phone', 'course__partenaire__user__first_name',
+                     'course__partenaire__user__last_name', 'course__partenaire__plaque', 'course__partenaire__telephone')
     readonly_fields = ('course', 'auteur', 'par', 'motif', 'commentaire', 'piece', 'created_at')
     fields = ('course', 'auteur', 'par', 'motif', 'commentaire', 'piece', 'statut', 'reponse', 'created_at')
 
@@ -399,6 +400,14 @@ class SignalementAdmin(FichierPriveMixin, admin.ModelAdmin):
     @admin.display(description="Téléphone")
     def telephone(self, obj):
         return obj.auteur.phone or '—'
+
+    @admin.display(description="Coursier")
+    def coursier(self, obj):
+        p = obj.course.partenaire
+        if not p:
+            return '—'
+        return format_html('<a href="{}">{}</a><br><small>{}</small>', reverse('admin_coursier', args=[p.pk]),
+                           p.user.get_full_name() or p.user.email, p.telephone or p.user.phone or '')
 
     @admin.display(description="Répondre")
     def repondre(self, obj):

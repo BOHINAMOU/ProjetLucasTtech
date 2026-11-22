@@ -88,16 +88,35 @@ def plainte(request, pk):
     p = c.partenaire
     infos_course = [("Course", c.reference), ("Date", _date(c.created_at)), ("Véhicule", c.categorie.nom),
                     ("Départ", c.depart_adresse), ("Arrivée", c.arrivee_adresse),
-                    ("Prix", _f(c.total_client)), ("Coursier", (p.user.get_full_name() or p.user.email) if p else '—'),
-                    ("Téléphone du coursier", (p.telephone or p.user.phone) if p else '—'),
-                    ("Plaque", p.plaque if p else '—')]
-    fiche = reverse('admin_coursier', args=[p.pk]) if s.par == 'partenaire' and p else reverse('admin_client', args=[a.pk])
+                    ("Prix", _f(c.total_client)), ("Paiement", c.get_moyen_paiement_display()),
+                    ("Statut", c.get_statut_display())]
+    actions = [("Fiche du client", reverse('admin_client', args=[c.client_id]), True)]
+    if p:
+        actions.append(("Fiche du coursier", reverse('admin_coursier', args=[p.pk]), True))
+    actions.append(("Voir la course", reverse('admin:courses_course_change', args=[c.pk]), False))
+    blocs = [{'titre': "Client" + (" (a signalé)" if s.par == 'client' else ""), 'lignes': _identite(c.client)}]
+    if p:
+        u = p.user
+        lignes = [("Nom", u.last_name), ("Prénom", u.first_name), ("Téléphone", p.telephone or u.phone), ("E-mail", u.email),
+                  ("Mobile Money", p.mobile_money), ("Quartier", p.quartier),
+                  ("Contact d'urgence", " · ".join(x for x in (p.urgence_nom, p.urgence_tel) if x)),
+                  ("Véhicule", p.get_type_vehicule_display()),
+                  ("Marque et modèle", " ".join(x for x in (p.marque, p.modele, p.couleur) if x) or p.vehicule),
+                  ("Plaque", p.plaque), ("Compte", p.get_statut_display()), ("En ligne", "Oui" if p.en_ligne else "Non"),
+                  ("Note", f"{p.note} ({p.nb_notes} avis)" if p.nb_notes else "—"),
+                  ("Courses terminées", str(p.courses.filter(statut='terminee').count())),
+                  ("Plaintes sur ses courses", str(Signalement.objects.filter(course__partenaire=p, par='client').count())),
+                  ("Avertissements", str(p.avertissements))]
+        if request.user.is_superuser:
+            lignes.append(("Solde", _f(p.solde)))
+        blocs.append({'titre': "Coursier" + (" (a signalé)" if s.par == 'partenaire' else ""), 'lignes': lignes})
+    blocs.append({'titre': "Course concernée", 'lignes': infos_course})
     return _page(
         request, title=f"Plainte · {c.reference}", retour=(reverse('admin_section', args=['courses']) + '?vue=demandes', "Plaintes et demandes"),
         entete={'titre': s.get_motif_display(), 'sous': f"Par {a.get_full_name() or a.email} ({'client' if s.par == 'client' else 'coursier'}) · {_date(s.created_at)}",
                 'icone': 'report', 'pastilles': [(s.get_statut_display(), STATUTS_PLAINTE.get(s.statut, ''))],
-                'actions': [("Voir sa fiche", fiche, True), ("Voir la course", reverse('admin:courses_course_change', args=[c.pk]), False)]},
-        blocs=[{'titre': "Personne qui signale", 'lignes': _identite(a)}, {'titre': "Course concernée", 'lignes': infos_course}],
+                'actions': actions},
+        blocs=blocs,
         message={'titre': "Son message", 'texte': s.commentaire or "Aucun commentaire.",
                  'piece': reverse('admin:courses_signalement_change', args=[s.pk]) if s.piece_jointe else ''},
         reponse={'texte': s.reponse, 'statut': s.statut, 'statuts': Signalement._meta.get_field('statut').choices} if peut else None)

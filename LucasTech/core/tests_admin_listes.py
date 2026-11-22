@@ -164,3 +164,23 @@ class ListesAdminTests(TestCase):
         r = self.client.get('/lantanteAdminTech/section/vendeurs/')
         self.assertContains(r, f'/section/vendeurs/{v.pk}/stats/')
         self.assertContains(r, 'Suspendues ou expirées')
+
+
+    def test_plainte_montre_le_coursier(self):
+        from courses.models import Categorie, Course, Partenaire, Signalement
+        U = get_user_model()
+        cli = U.objects.create_user(email='afi@example.com', password='x-Pass-12345', first_name='Afi', last_name='Doe')
+        cou = U.objects.create_user(email='yao@example.com', password='x-Pass-12345', first_name='Yao', last_name='Mensah')
+        p = Partenaire.objects.create(user=cou, plaque='TG 7788 AB', telephone='+22890112233', type_vehicule='moto',
+                                      marque='Haojue', modele='HJ125', couleur='Rouge', statut='valide')
+        c = Course.objects.create(client=cli, partenaire=p, categorie=Categorie.objects.get(code='moto'), depart_lat=6.13,
+                                  depart_lng=1.22, arrivee_lat=6.16, arrivee_lng=1.22, distance_km=4, duree_min=10,
+                                  prix_estime=600, statut='terminee')
+        s = Signalement.objects.create(course=c, auteur=cli, par='client', motif='conduite', commentaire='Trop vite')
+        r = self.client.get(f'/lantanteAdminTech/section/courses/plainte/{s.pk}/')
+        for t in ('Client (a signalé)', 'Mensah', 'Yao', '+22890112233', 'yao@example.com', 'Haojue HJ125 Rouge', 'TG 7788 AB',
+                  'Fiche du coursier'):
+            self.assertContains(r, t)
+        r = self.client.get(reverse('admin:courses_signalement_changelist'))
+        self.assertContains(r, 'Yao Mensah')
+        self.assertContains(self.client.get('/lantanteAdminTech/section/courses/?vue=demandes'), 'Coursier : Yao Mensah')
