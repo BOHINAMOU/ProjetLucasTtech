@@ -705,6 +705,7 @@ def partenaire_solde(request):
         'gains': _gains(part),
         'solde': part.solde, 'dette': part.dette, 'dette_max_especes': p.dette_max_especes,
         'dette_max_totale': p.dette_max_totale, 'versement_min': p.versement_min, 'mobile_money': part.mobile_money,
+        'alerte_solde': p.alerte_solde,
         'versements': [{'id': v.pk, 'montant': v.montant, 'numero': v.numero, 'statut': v.statut,
                         'statut_libelle': v.get_statut_display(), 'date': dt(v.created_at)}
                        for v in part.versements.all()[:20]],
