@@ -24,6 +24,7 @@ urlpatterns = [
     path('<int:pk>/signaler/', api.signaler, name='course_signaler'),
     path('<int:pk>/recu/', api.recu, name='course_recu'),
     path('<int:pk>/paiement/', api.paiement, name='course_paiement'),
+    path('<int:pk>/facture.pdf', api.facture, name='course_facture'),
     path('<int:pk>/itineraire/', api.itineraire, name='course_itineraire'),
     path('<int:pk>/favori/', api.favori, name='course_favori'),
     path('favoris/', api.favoris, name='courses_favoris'),

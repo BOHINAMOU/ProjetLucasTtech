@@ -51,11 +51,12 @@ class PrixTests(TestCase):
         km, mn = e['distance_km'], e['duree_min']
         self.assertAlmostEqual(km, 3.336 * 1.3, delta=0.02)          # haversine × 1,3
         self.assertEqual(mn, -(-km * 60 // 25))                         # 25 km/h, minute entamée
-        brut = 150 + km * 100 + mn * 10
-        self.assertEqual(e['prix'], 700)                                # 150 + 433,7 + 110 = 693,7 → 700
+        brut = 150 + km * 100                                           # plus de prix à la minute
+        self.assertEqual(e['prix'], 600)                                # 150 + 433,7 = 583,7 → 600
         self.assertEqual(e['prix'] % 50, 0)
         self.assertGreaterEqual(e['prix'], brut)
-        self.assertEqual(e['total'], 700)
+        self.assertEqual(e['prix_duree'], 0)
+        self.assertEqual(e['total'], 600)
 
     def test_minimum(self):
         e = S.estimer(self.clim, DEP['lat'], DEP['lng'], DEP['lat'] + 0.001, DEP['lng'], quand=JOUR)
@@ -66,7 +67,7 @@ class PrixTests(TestCase):
         jour = S.estimer(self.moto, DEP['lat'], DEP['lng'], ARR['lat'], ARR['lng'], quand=JOUR)['prix']
         nuit = S.estimer(self.moto, DEP['lat'], DEP['lng'], ARR['lat'], ARR['lng'], quand=NUIT)
         self.assertEqual(nuit['coefficient'], 1.25)
-        self.assertEqual(nuit['prix'], S.arrondi_sup(693.7 * 1.25, 50))  # 867 → 900
+        self.assertEqual(nuit['prix'], S.arrondi_sup(563.7 * 1.25, 50))  # 705 → 750 (sans prix à la minute)
         self.assertGreater(nuit['prix'], jour)
 
     def test_reduction_fidelite(self):
@@ -200,8 +201,8 @@ class PortefeuilleTests(TestCase):
     def test_reservation_puis_debit_reel(self):
         """Le prix réservé n'est qu'une estimation : le client paie le prix du compteur (km et minutes réels)."""
         c, p = self._acceptee()
-        self.assertEqual(portefeuille(self.client_user).solde, 5000 - 700)
-        self.assertEqual(c.montant_reserve, 700)
+        self.assertEqual(portefeuille(self.client_user).solde, 5000 - 600)
+        self.assertEqual(c.montant_reserve, 600)
         S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=5))
         Course.objects.filter(pk=c.pk).update(distance_reelle_km=3)
         c = S.terminer(p, c.pk, JOUR + timedelta(minutes=20))
@@ -252,7 +253,7 @@ class PortefeuilleTests(TestCase):
     def test_annulation_en_recherche_libere_tout(self):
         with mock.patch('django.utils.timezone.now', return_value=JOUR):
             c = S.commander(self.client_user, self.moto, DEP, ARR, moyen='portefeuille')
-        self.assertEqual(portefeuille(self.client_user).solde, 4300)
+        self.assertEqual(portefeuille(self.client_user).solde, 4400)
         S.annuler_par_client(c.pk, self.client_user, motif='Test', frais_acceptes=0, maintenant=JOUR + timedelta(seconds=5))
         self.assertEqual(portefeuille(self.client_user).solde, 5000)
 
@@ -283,7 +284,7 @@ class PortefeuilleTests(TestCase):
         p2 = partenaire(self.moto, 0.3, quand=t)
         with mock.patch('django.utils.timezone.now', return_value=t):
             c2 = S.commander(self.client_user, self.moto, DEP, ARR)
-        self.assertEqual(c2.total_client, 900)
+        self.assertEqual(c2.total_client, 800)
         o = S.offre_en_cours(p2, t + timedelta(seconds=1))
         S.accepter(p2, o.pk, t + timedelta(seconds=2))
         S.demarrer(p2, c2.pk, Course.objects.get(pk=c2.pk).code_depart, t + timedelta(minutes=4))
@@ -301,7 +302,7 @@ class PortefeuilleTests(TestCase):
         c.refresh_from_db()
         self.assertEqual(c.statut, 'recherche')
         self.assertEqual(c.offres.filter(reponse='en_attente').get().partenaire, autre)
-        self.assertEqual(c.montant_reserve, 700)  # toujours réservé, même prix
+        self.assertEqual(c.montant_reserve, 600)  # toujours réservé, même prix
 
     def test_remboursement_retenu_sur_partenaire(self):
         c, p = self._acceptee()
@@ -974,3 +975,21 @@ class RenvoiOffreTests(TestCase):
         Partenaire.objects.filter(pk=p.pk).update(position_le=JOUR + timedelta(seconds=3))
         S.avancer(c.pk, JOUR + timedelta(seconds=3))
         self.assertEqual(OffreCourse.objects.filter(course=c).count(), 1)
+
+
+@override_settings(STORAGES=STORAGES)
+class FactureTests(CourseEnDirectTests):
+    def test_facture_pdf_et_prix_sans_minutes(self):
+        self.assertEqual(self.moto.prix_min, 0)
+        S.signaler_arrivee(self.p, self.c.pk, verifier_distance=False)
+        S.demarrer(self.p, self.c.pk, '')
+        Course.objects.filter(pk=self.c.pk).update(distance_reelle_km=3, demarree_le=timezone.now() - timedelta(minutes=40))
+        c = S.terminer(self.p, self.c.pk)
+        m = Categorie.objects.get(code='moto')
+        attendu = S.arrondi_sup(max(m.minimum, m.prise_en_charge + 3 * m.prix_km), Parametres.get().arrondi)
+        self.assertEqual(c.prix_final, attendu)  # 40 minutes ne coûtent rien de plus
+        self.client.force_authenticate(self.u)
+        r = self.client.get(f'{API}{c.pk}/facture.pdf')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))

@@ -250,6 +250,19 @@ def paiement(request, pk):
 
 
 @api_view(['GET'])
+def facture(request, pk):
+    """Facture PDF de la course (terminée) à télécharger."""
+    from django.http import HttpResponse
+    from .facture import build_facture
+    c = _course_client(request, pk)
+    if c.statut not in ('terminee', 'litige') or not c.numero_recu:
+        return error("Facture disponible à la fin de la course.", status=404, code='pas_de_recu')
+    r = HttpResponse(build_facture(c), content_type='application/pdf')
+    r['Content-Disposition'] = f'attachment; filename="Facture-{c.numero_recu}.pdf"'
+    return r
+
+
+@api_view(['GET'])
 def itineraire(request, pk):
     """Chemin à suivre sur la carte (client ou coursier de la course) : du coursier vers le départ (en route)
     ou vers l'arrivée (en course), avec km restants et km parcourus."""
