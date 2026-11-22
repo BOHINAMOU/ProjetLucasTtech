@@ -109,3 +109,20 @@ class ListesAdminTests(TestCase):
         r = self.client.get(url)
         self.assertContains(r, 'Le client était absent.')
         self.assertEqual(MessageSupport.objects.filter(par='coursier', lu_le__isnull=True).count(), 0)
+
+    def test_fiche_coursier_contacts_client_et_filtres(self):
+        from courses.models import Categorie, Course, Partenaire
+        U = get_user_model()
+        cou = U.objects.create_user(email='kofi@example.com', password='x-Pass-12345', first_name='Kofi')
+        cli = U.objects.create_user(email='afi@example.com', password='x-Pass-12345', first_name='Afi', last_name='Mensah',
+                                    phone='+22891112233')
+        p = Partenaire.objects.create(user=cou, plaque='TG 3', type_vehicule='moto', statut='valide')
+        Course.objects.create(client=cli, partenaire=p, categorie=Categorie.objects.get(code='moto'), depart_lat=6.13,
+                              depart_lng=1.22, arrivee_lat=6.16, arrivee_lng=1.22, distance_km=4, duree_min=10,
+                              prix_estime=600, statut='terminee', detail_prix={'compteur_km': 3.2})
+        r = self.client.get(f'/lantanteAdminTech/section/courses/coursier/{p.pk}/?periode=jour')
+        for t in ('Afi Mensah', '+22891112233', 'afi@example.com', '3,2 km', "Aujourd&#x27;hui"):
+            self.assertContains(r, t)
+        for f in ('actifs', 'non_actifs', 'en_ligne', 'solde_negatif'):
+            self.assertEqual(self.client.get(f'/lantanteAdminTech/section/courses/?vue=coursiers&filtre={f}').status_code, 200)
+        self.assertContains(self.client.get('/lantanteAdminTech/section/courses/?vue=reglages'), 'Promotions')

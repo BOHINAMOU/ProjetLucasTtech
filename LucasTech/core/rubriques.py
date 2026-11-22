@@ -14,7 +14,7 @@ RUBRIQUES = {
         ('courses.DemandeVersement', "Retraits des coursiers"), ('courses.Remboursement', "Remboursements"),
         ('courses.Annulation', "Annulations"), ('courses.Note', "Notes des clients"),
         ('courses.MouvementSoldePartenaire', "Soldes des coursiers"),
-        ('courses.Categorie', "Prix des courses"), ('courses.Service', "Véhicules"),
+        ('courses.PromoCourse', "Promotions"), ('courses.Categorie', "Prix des courses"), ('courses.Service', "Véhicules"),
         ('courses.PlageHoraire', "Heures et majorations"), ('courses.Zone', "Zones couvertes"),
         ('api_mobile.LieuConnu', "Lieux connus"), ('courses.Parametres', "Paramètres"),
         ('api_mobile.TuileAccueil', "Accueil de l'appli"), ('courses.PinSolde', "Codes PIN du solde"),

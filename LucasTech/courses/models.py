@@ -198,6 +198,10 @@ class Parametres(models.Model):
     # Dette des partenaires
     dette_max_especes = models.PositiveIntegerField("Dette max avant blocage des courses en espèces (FCFA)", default=10000)
     dette_max_totale = models.PositiveIntegerField("Dette max avant blocage total (FCFA)", default=15000)
+    alerte_solde = models.PositiveIntegerField(
+        "Alerte solde négatif (FCFA)", default=5000,
+        help_text="Quand le solde d'un coursier descend sous −ce montant : message « Rechargez votre compte » "
+                  "au coursier et alerte à l'équipe.")
     # Remboursement
     plafond_remboursement = models.PositiveIntegerField("Remboursement max sans second admin (FCFA)", default=5000)
     versement_min = models.PositiveIntegerField("Versement : montant minimum (FCFA)", default=2000)
@@ -381,6 +385,8 @@ class Course(models.Model):
     duree_min = models.PositiveIntegerField("Durée estimée (min)")
     prix_estime = models.PositiveIntegerField("Prix estimé (FCFA)", help_text="Avant réduction.")
     prix_final = models.PositiveIntegerField("Prix final (FCFA)", null=True, blank=True, help_text="Avant réduction.")
+    promo = models.ForeignKey('PromoCourse', on_delete=models.SET_NULL, null=True, blank=True, related_name='courses',
+                              verbose_name="Promotion")
     reduction = models.PositiveIntegerField("Réduction (FCFA)", default=0)
     frais_impayes = models.PositiveIntegerField("Frais d'annulation reportés (FCFA)", default=0)
     detail_prix = models.JSONField("Détail du prix", default=dict, blank=True)
@@ -776,3 +782,38 @@ class MessageSupport(models.Model):
 
     def __str__(self):
         return f"{self.get_par_display()} · {self.texte[:40]}"
+
+
+
+class PromoCourse(models.Model):
+    """Promotion sur les courses, PAYÉE PAR LANTANTE : le client paie moins, le coursier touche le prix entier
+    (la remise lui est créditée sur son solde). Avec un code (le client le saisit) ou automatique (sans code)."""
+    TYPES = [('montant', 'Montant fixe (FCFA)'), ('pct', 'Pourcentage')]
+    nom = models.CharField("Nom", max_length=80, help_text="Ex. « Lancement Lantante Express ».")
+    code = models.CharField("Code", max_length=30, blank=True,
+                            help_text="Vide = promotion automatique (appliquée sans code aux clients concernés).")
+    type = models.CharField("Type", max_length=8, choices=TYPES, default='montant')
+    valeur = models.PositiveIntegerField("Valeur", help_text="FCFA ou % selon le type.")
+    plafond = models.PositiveIntegerField("Remise maximum (FCFA)", null=True, blank=True)
+    clients = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='promos_courses',
+                                     verbose_name="Clients concernés", help_text="Vide = tous les clients.")
+    categories = models.ManyToManyField(Categorie, blank=True, verbose_name="Véhicules concernés",
+                                        help_text="Vide = tous.")
+    debut = models.DateTimeField("Début", null=True, blank=True)
+    fin = models.DateTimeField("Fin", null=True, blank=True)
+    max_utilisations = models.PositiveIntegerField("Utilisations max. (total)", null=True, blank=True)
+    max_par_client = models.PositiveIntegerField("Utilisations max. par client", null=True, blank=True, default=1)
+    actif = models.BooleanField("Active", default=True)
+    created_at = models.DateTimeField("Créée le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Promotion (courses)"
+        verbose_name_plural = "Promotions (courses)"
+
+    def __str__(self):
+        return f"{self.nom} ({self.code or 'automatique'})"
+
+    def save(self, *a, **kw):
+        self.code = ''.join((self.code or '').split()).upper()
+        super().save(*a, **kw)

@@ -85,6 +85,7 @@ def course_payload(request, c, pour='client', p=None):
         'attente': {'gratuite_min': p.attente_gratuite_min,
                     'prix_min': p.prix_attente_moto if c.categorie.vehicule == 'moto' else p.prix_attente_voiture},
         'pourboire': (c.detail_prix or {}).get('pourboire', 0),
+        'promo': c.promo.nom if c.promo_id else '',
         'pourboire_max': p.pourboire_max,
     }
     if pour == 'client':
@@ -154,8 +155,13 @@ def estimation(request):
     user = _user(request)
     if not S.dans_zone(dep['lat'], dep['lng']) or not S.dans_zone(arr['lat'], arr['lng']):
         return error(p.message_zone, code='hors_zone')
+    try:
+        S.promo_pour(user, qs.first() or Categorie.objects.first(), 10**6, d.get('code_promo') or '')
+    except S.ErreurCourse as e:
+        return _err(e)
     return Response({'estimations': [
-        {**S.estimer(c, dep['lat'], dep['lng'], arr['lat'], arr['lng'], client=user, params=p),
+        {**S.estimer(c, dep['lat'], dep['lng'], arr['lat'], arr['lng'], client=user, params=p,
+                     code_promo=str(d.get('code_promo') or '')),
          'nom': c.nom, 'code': c.code, 'service': c.service.code, 'icone': c.icone} for c in qs]})
 
 
@@ -174,6 +180,7 @@ def courses(request):
         return error("Choisissez une catégorie.", code='categorie')
     try:
         c = S.commander(request.user, cat, dep, arr, moyen=str(d.get('moyen_paiement') or 'especes'),
+                        code_promo=str(d.get('code_promo') or ''),
                         repere=str(d.get('repere') or ''))
     except S.ErreurCourse as e:
         return _err(e)
@@ -633,6 +640,9 @@ def course_action(request, pk, action):
         elif action == 'annuler':
             c = S.annuler_par_partenaire(part, pk, motif=str(d.get('motif') or ''))
             return Response({'ok': True, 'course_id': c.pk})
+        elif action == 'paiement':
+            # le coursier change le paiement du client (espèces ↔ portefeuille), jusqu'à la fin de la course
+            c = S.changer_paiement(get_object_or_404(Course, pk=pk, partenaire=part), str(d.get('moyen') or ''))
         elif action == 'noter':
             c = get_object_or_404(Course, pk=pk, partenaire=part)
             S.noter(c, 'partenaire', d.get('note'), d.get('motifs') or [], str(d.get('commentaire') or ''))

@@ -41,6 +41,9 @@
   {% elif vue == 'coursiers' %}
   <div class="cx-c">
     <div class="h"><b>Coursiers · {{ coursiers|length }}</b><span class="m">Cliquez sur un coursier pour voir ses courses</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--lt-bord)">
+      {% for code, titre, n in filtres %}<a href="?vue=coursiers&filtre={{ code }}" class="pil {% if filtre == code %}ok{% endif %}" style="padding:6px 12px;font-size:.82rem;text-decoration:none">{{ titre }} · {{ n }}</a>{% endfor %}
+    </div>
     {% if coursiers %}
     <div class="cx-t"><table>
       <thead><tr><th>Coursier</th><th>Véhicule</th><th>Plaque</th><th>Compte</th><th>En ligne</th><th>Aujourd'hui</th><th>Terminées</th><th>Note</th><th>Dette</th></tr></thead>

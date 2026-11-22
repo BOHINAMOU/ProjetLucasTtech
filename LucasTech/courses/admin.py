@@ -92,7 +92,7 @@ class ParametresAdmin(admin.ModelAdmin):
         ("Annulation", {'fields': ('delai_grace_min', 'frais_annulation_moto', 'frais_annulation_voiture',
                                    'attente_absent_min', 'frais_absent_moto', 'frais_absent_voiture',
                                    'retard_exonerant_min')}),
-        ("Dette, remboursement, versement", {'fields': ('dette_max_especes', 'dette_max_totale',
+        ("Dette, remboursement, versement", {'fields': ('alerte_solde', 'dette_max_especes', 'dette_max_totale',
                                                        'plafond_remboursement', 'versement_min')}),
         ("Fidélité", {'fields': ('fidelite_courses', 'fidelite_pct', 'fidelite_plafond', 'fidelite_validite_jours')}),
         ("Notes", {'fields': ('note_avertissement', 'note_suspension', 'notes_min_affichage')}),
@@ -324,7 +324,10 @@ class CourseAdmin(admin.ModelAdmin):
     @admin.action(description="Rembourser le client…")
     def rembourser(self, request, qs):
         c = qs.first()
-        url = reverse('admin:courses_remboursement_add') + f'?course={c.pk}&montant={c.total_client}'
+        # course annulée : on rend les frais retenus ; sinon le montant payé
+        frais = sum(a.frais for a in c.annulations.filter(par='client')) if c.statut == 'annulee' else 0
+        montant = frais or c.total_client
+        url = reverse('admin:courses_remboursement_add') + f'?course={c.pk}&montant={montant}'
         return HttpResponseRedirect(url)
 
     @admin.action(description="Passer en litige")
@@ -631,3 +634,21 @@ class MessageSupportAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if not change:
             S._notifier(obj.partenaire.user, "Message du support Lantante", obj.texte[:200])
+
+
+
+from .models import PromoCourse  # noqa: E402
+
+
+@admin.register(PromoCourse)
+class PromoCourseAdmin(admin.ModelAdmin):
+    """Promotions payées par Lantante : le client paie moins, le coursier touche tout (remise créditée)."""
+    list_display = ('nom', 'code', 'type', 'valeur', 'plafond', 'debut', 'fin', 'utilisations', 'actif')
+    list_filter = ('actif', 'type')
+    search_fields = ('nom', 'code')
+    filter_horizontal = ('categories',)
+    autocomplete_fields = ('clients',)
+
+    @admin.display(description="Utilisée")
+    def utilisations(self, obj):
+        return obj.courses.exclude(statut__in=('annulee', 'aucun_partenaire')).count()

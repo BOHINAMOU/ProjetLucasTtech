@@ -8,7 +8,7 @@ from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 
 from .models import (Annulation, Categorie, CompteurRecu, Course, MouvementSoldePartenaire, Note, OffreCourse,
@@ -95,7 +95,41 @@ def frais_reportes(client):
                .values_list('frais', flat=True))
 
 
-def estimer(categorie, dlat, dlng, alat, alng, client=None, quand=None, params=None):
+def promo_pour(client, categorie, prix, code='', quand=None):
+    """(remise, promo) : la meilleure promotion valable (code saisi, ou automatique pour ce client).
+    Lève ErreurCourse si un code saisi n'est pas valable."""
+    from .models import PromoCourse
+    quand = quand or timezone.now()
+    code = ''.join(str(code or '').split()).upper()
+    qs = PromoCourse.objects.filter(actif=True).filter(Q(debut__isnull=True) | Q(debut__lte=quand)).filter(
+        Q(fin__isnull=True) | Q(fin__gte=quand))
+    if code:
+        qs = qs.filter(code=code)
+    else:
+        qs = qs.filter(code='')
+    meilleure, remise = None, 0
+    for promo in qs:
+        if promo.clients.exists() and not (client and promo.clients.filter(pk=client.pk).exists()):
+            continue
+        if promo.categories.exists() and not promo.categories.filter(pk=categorie.pk).exists():
+            continue
+        utilisees = promo.courses.exclude(statut__in=('annulee', 'aucun_partenaire'))
+        if promo.max_utilisations is not None and utilisees.count() >= promo.max_utilisations:
+            continue
+        if client and promo.max_par_client is not None and utilisees.filter(client=client).count() >= promo.max_par_client:
+            continue
+        r = prix * promo.valeur // 100 if promo.type == 'pct' else promo.valeur
+        if promo.plafond:
+            r = min(r, promo.plafond)
+        r = min(r, prix)
+        if r > remise:
+            meilleure, remise = promo, int(r)
+    if code and not meilleure:
+        raise ErreurCourse("Code promo non valable.", 'code_promo')
+    return remise, meilleure
+
+
+def estimer(categorie, dlat, dlng, alat, alng, client=None, quand=None, params=None, code_promo=''):
     """Prix = max(minimum, (prise en charge + km × prix_km + min × prix_min) × coefficient de la plage de départ),
     arrondi aux 50 FCFA supérieurs ; puis réduction fidélité (payée par Lantante, pas par le partenaire)."""
     p = params or Parametres.get()
@@ -107,6 +141,8 @@ def estimer(categorie, dlat, dlng, alat, alng, client=None, quand=None, params=N
     brut = (pec + part_km + part_min) * Decimal(coef)
     prix = arrondi_sup(max(Decimal(categorie.minimum), brut), p.arrondi)
     reduction = reduction_fidelite(client, prix, p, quand)
+    remise, promo = promo_pour(client if client and client.is_authenticated else None, categorie, prix, code_promo, quand)
+    reduction = min(prix, reduction + remise)
     reportes = frais_reportes(client)
     return {
         'categorie': categorie.pk, 'distance_km': km, 'duree_min': minutes,
@@ -114,7 +150,8 @@ def estimer(categorie, dlat, dlng, alat, alng, client=None, quand=None, params=N
         'prix_duree': part_min, 'coefficient': float(coef), 'plage': plage, 'minimum': categorie.minimum,
         'minimum_applique': brut < categorie.minimum, 'prix': prix, 'reduction': reduction,
         'frais_reportes': reportes, 'total': prix - reduction + reportes, 'trace': trace,
-        'mention_prix': _mention(p),
+        'mention_prix': _mention(p), 'promo': promo.nom if promo else '', 'promo_id': promo.pk if promo else None,
+        'remise_promo': remise,
     }
 
 
@@ -151,10 +188,29 @@ def mouvement_partenaire(partenaire_id, montant, type, course=None, motif='', pa
         return None
     with transaction.atomic():
         p = Partenaire.objects.select_for_update().get(pk=partenaire_id)
+        avant = p.solde
         p.solde += montant
         p.save(update_fields=['solde'])
-        return MouvementSoldePartenaire.objects.create(partenaire=p, type=type, montant=montant, solde_apres=p.solde,
-                                                       course=course, motif=motif[:255], par=par)
+        m = MouvementSoldePartenaire.objects.create(partenaire=p, type=type, montant=montant, solde_apres=p.solde,
+                                                    course=course, motif=motif[:255], par=par)
+    seuil = -int(Parametres.get().alerte_solde)
+    if avant > seuil >= p.solde:
+        alerte_solde(p)
+    return m
+
+
+def alerte_solde(p):
+    """Le solde du coursier passe sous le seuil : message au coursier, alerte à l'équipe (super-admins)."""
+    from django.contrib.auth import get_user_model
+    _notifier(p.user, "Rechargez votre compte",
+              f"Votre solde est de {p.solde} FCFA. Rechargez votre compte pour continuer à recevoir des courses.")
+    from .models import MessageSupport
+    MessageSupport.objects.create(partenaire=p, par='support', texte=(
+        f"Bonjour {p.user.first_name}, votre solde est de {p.solde} FCFA. "
+        "Merci de recharger votre compte pour continuer à recevoir des courses."))
+    for admin_ in get_user_model().objects.filter(is_superuser=True, is_active=True):
+        _notifier(admin_, "Coursier à contacter : solde négatif",
+                  f"{p.user.get_full_name() or p.user.email} : {p.solde} FCFA ({p.telephone or p.user.phone or ''}).")
 
 
 def _liberer_reservation(course, garder=0, motif=''):
@@ -217,7 +273,7 @@ def proches(lat, lng, categorie=None, maintenant=None, limite=20, client=None):
             'coursiers': [x[1] for x in out[:limite]]}
 
 
-def commander(client, categorie, depart, arrivee, moyen='especes', repere=''):
+def commander(client, categorie, depart, arrivee, moyen='especes', repere='', code_promo=''):
     """depart / arrivee : dict lat, lng, adresse. Réserve le montant si paiement par le solde."""
     from Payments.solde import SoldeInsuffisant, debiter
     if not dans_zone(depart['lat'], depart['lng']) or not dans_zone(arrivee['lat'], arrivee['lng']):
@@ -229,7 +285,8 @@ def commander(client, categorie, depart, arrivee, moyen='especes', repere=''):
     if Course.objects.filter(client=client, statut__in=Course.ACTIFS).exists():
         raise ErreurCourse("Vous avez déjà une course en cours.", 'course_en_cours')
     p = Parametres.get()
-    est = estimer(categorie, depart['lat'], depart['lng'], arrivee['lat'], arrivee['lng'], client=client, params=p)
+    est = estimer(categorie, depart['lat'], depart['lng'], arrivee['lat'], arrivee['lng'], client=client, params=p,
+                  code_promo=code_promo)
     with transaction.atomic():
         course = Course.objects.create(
             client=client, categorie=categorie, moyen_paiement=moyen, repere=(repere or '')[:255],
@@ -237,6 +294,7 @@ def commander(client, categorie, depart, arrivee, moyen='especes', repere=''):
             arrivee_lat=arrivee['lat'], arrivee_lng=arrivee['lng'], arrivee_adresse=(arrivee.get('adresse') or '')[:255],
             distance_km=Decimal(str(est['distance_km'])), duree_min=est['duree_min'], prix_estime=est['prix'],
             reduction=est['reduction'], frais_impayes=est['frais_reportes'], detail_prix=est,
+            promo_id=est.get('promo_id'),
             rayon_km=Decimal(str(p.paliers()[0])), recherche_debut=timezone.now())
         if moyen == 'portefeuille':
             try:

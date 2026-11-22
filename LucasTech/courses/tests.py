@@ -993,3 +993,62 @@ class FactureTests(CourseEnDirectTests):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r['Content-Type'], 'application/pdf')
         self.assertTrue(r.content.startswith(b'%PDF'))
+
+
+@override_settings(STORAGES=STORAGES)
+class PromotionsEtAlertesTests(APITestCase):
+    def setUp(self):
+        self.moto = Categorie.objects.get(code='moto')
+        self.u = compte('Ama')
+
+    def test_promo_payee_par_lantante(self):
+        from .models import PromoCourse
+        PromoCourse.objects.create(nom='Lancement', code='LANCE100', type='montant', valeur=100)
+        self.client.force_authenticate(self.u)
+        pts = {'depart_lat': DEP['lat'], 'depart_lng': DEP['lng'], 'arrivee_lat': ARR['lat'], 'arrivee_lng': ARR['lng']}
+        self.assertEqual(self.client.post(API + 'estimation/', {**pts, 'code_promo': 'FAUX'}, format='json').json()['code'],
+                         'code_promo')
+        e = self.client.post(API + 'estimation/', {**pts, 'code_promo': 'lance100', 'categorie': self.moto.pk},
+                             format='json').json()['estimations'][0]
+        self.assertEqual(e['remise_promo'], 100)
+        self.assertEqual(e['total'], e['prix'] - 100)
+        p = partenaire(self.moto, 0.5, quand=timezone.now())
+        c = S.commander(self.u, self.moto, DEP, ARR, code_promo='LANCE100')
+        self.assertEqual(c.reduction, 100)
+        S.accepter(p, OffreCourse.objects.get(course=c).pk)
+        S.signaler_arrivee(p, c.pk, verifier_distance=False)
+        S.demarrer(p, c.pk, '')
+        Course.objects.filter(pk=c.pk).update(distance_reelle_km=4)
+        c = S.terminer(p, c.pk)
+        p.refresh_from_db()
+        com = c.detail_prix['commission']
+        # espèces : le client a payé prix − 100 ; Lantante crédite les 100 au coursier (il touche le prix entier)
+        self.assertEqual(c.total_client, c.prix_final - 100)
+        self.assertEqual(p.solde, -com + 100)
+        with self.assertRaises(S.ErreurCourse):  # 1 utilisation par client
+            S.commander(self.u, self.moto, DEP, ARR, code_promo='LANCE100')
+
+    def test_alerte_solde_negatif(self):
+        from api_mobile.models import Notification
+        from .models import MessageSupport
+        admin_ = get_user_model().objects.create_superuser(email='chef@example.com', password='x-Pass-12345')
+        p = partenaire(self.moto)
+        S.mouvement_partenaire(p.pk, -4000, 'commission')
+        self.assertFalse(Notification.objects.filter(titre='Rechargez votre compte').exists())
+        S.mouvement_partenaire(p.pk, -1500, 'commission')  # passe sous −5 000
+        self.assertTrue(Notification.objects.filter(utilisateur=p.user, titre='Rechargez votre compte').exists())
+        self.assertTrue(Notification.objects.filter(utilisateur=admin_, titre__startswith='Coursier à contacter').exists())
+        self.assertTrue(MessageSupport.objects.filter(partenaire=p, texte__contains='recharger').exists())
+        S.mouvement_partenaire(p.pk, -100, 'commission')  # déjà sous le seuil : pas de nouvelle alerte
+        self.assertEqual(Notification.objects.filter(utilisateur=p.user, titre='Rechargez votre compte').count(), 1)
+
+    def test_coursier_change_le_paiement(self):
+        from Payments.solde import ajuster
+        ajuster(self.u, 5000, 'Test', None)
+        p = partenaire(self.moto, 0.5, quand=timezone.now())
+        c = S.commander(self.u, self.moto, DEP, ARR)
+        S.accepter(p, OffreCourse.objects.get(course=c).pk)
+        self.client.force_authenticate(p.user)
+        r = self.client.post(f"{API}partenaire/courses/{c.pk}/paiement/", {'moyen': 'portefeuille'}, format='json').json()
+        self.assertEqual(r['moyen_paiement'], 'portefeuille')
+        self.assertLess(portefeuille(self.u).solde, 5000)

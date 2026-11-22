@@ -64,9 +64,19 @@ def _jour(C, P, M):
     return {'kpis': kpis, 'courses': lignes}
 
 
-def _coursiers(C, P):
+def _coursiers(C, P, filtre='tous'):
     d0 = _debut_jour()
-    qs = (P.objects.select_related('user')
+    base = P.objects.all()
+    if filtre == 'actifs':
+        base = base.filter(statut='valide')
+    elif filtre == 'en_ligne':
+        base = base.filter(statut='valide', en_ligne=True)
+    elif filtre == 'non_actifs':
+        base = base.exclude(statut='valide')
+    elif filtre == 'solde_negatif':
+        from courses.models import Parametres
+        base = base.filter(solde__lte=-int(Parametres.get().alerte_solde))
+    qs = (base.select_related('user')
           .annotate(n_jour=Count('courses', filter=Q(courses__created_at__gte=d0), distinct=True),
                     n_total=Count('courses', filter=Q(courses__statut='terminee'), distinct=True))
           .order_by('-en_ligne', 'statut', '-n_jour'))
@@ -79,7 +89,13 @@ def _coursiers(C, P):
     liste = [{'p': p, 'nom': _nom(p), 'url': reverse('admin_coursier', args=[p.pk]),
               'vehicule': p.get_type_vehicule_display() or '—', 'statut': p.get_statut_display(),
               'cls': {'valide': 'ok', 'en_attente': 'or', 'a_completer': 'or'}.get(p.statut, 'ko')} for p in qs[:300]]
-    return {'kpis': kpis, 'coursiers': liste}
+    from courses.models import Parametres
+    seuil = -int(Parametres.get().alerte_solde)
+    filtres = [('tous', "Tous", P.objects.count()), ('actifs', "Actifs (validés)", P.objects.filter(statut='valide').count()),
+               ('en_ligne', "En ligne", P.objects.filter(statut='valide', en_ligne=True).count()),
+               ('non_actifs', "Non actifs", P.objects.exclude(statut='valide').count()),
+               ('solde_negatif', "Solde trop bas", P.objects.filter(solde__lte=seuil).count())]
+    return {'kpis': kpis, 'coursiers': liste, 'filtres': filtres, 'filtre': filtre}
 
 
 def _demandes():
@@ -103,7 +119,12 @@ def _demandes():
     bloc("Retraits demandés par les coursiers", 'account_balance_wallet', DemandeVersement.objects.filter(statut='en_attente')
          .select_related('partenaire__user'), _u('demandeversement_changelist'),
          lambda v: (_f(v.montant), f"{_nom(v.partenaire)} · {v.numero}", _u('demandeversement_change', v.pk)))
-    from courses.models import MessageSupport
+    from courses.models import MessageSupport, Parametres, Partenaire
+    bloc("Coursiers à contacter : solde trop bas", 'warning',
+         Partenaire.objects.filter(solde__lte=-int(Parametres.get().alerte_solde)).select_related('user').order_by('solde'),
+         reverse('admin_section', args=['courses']) + '?vue=coursiers&filtre=solde_negatif',
+         lambda p: (f"{_nom(p)} : {_f(p.solde)}", p.telephone or p.user.phone or p.user.email,
+                    reverse('admin_coursier', args=[p.pk])))
     bloc("Réponses des coursiers", 'forum', MessageSupport.objects.filter(par='coursier', lu_le__isnull=True)
          .select_related('partenaire__user').order_by('-created_at'), _u('messagesupport_changelist') + '?par__exact=coursier',
          lambda m: (_nom(m.partenaire), m.texte[:80], reverse('admin_coursier', args=[m.partenaire_id]) + '#support'))
@@ -153,7 +174,8 @@ def _stats(C, jours=30):
 
 def _reglages():
     from django.apps import apps
-    liens = [("Prix des courses", 'sell', 'courses.Categorie', "Prix au km, à la minute, minimum, par véhicule"),
+    liens = [("Promotions", 'redeem', 'courses.PromoCourse', "Réductions payées par Lantante (code ou automatiques)"),
+             ("Prix des courses", 'sell', 'courses.Categorie', "Tarif de base, prise en charge, prix au km"),
              ("Véhicules", 'two_wheeler', 'courses.Service', "Moto, Tricycle, Voiture, Cargo : activer ou non"),
              ("Heures et majorations", 'schedule', 'courses.PlageHoraire', "Prix plus élevé la nuit, aux heures de pointe"),
              ("Zones couvertes", 'map', 'courses.Zone', "Où on peut commander"),
@@ -186,7 +208,7 @@ def tableau(request):
     if vue == 'jour':
         ctx.update(_jour(Course, Partenaire, MouvementSoldePartenaire))
     elif vue == 'coursiers':
-        ctx.update(_coursiers(Course, Partenaire))
+        ctx.update(_coursiers(Course, Partenaire, request.GET.get('filtre') or 'tous'))
     elif vue == 'demandes':
         ctx.update(_demandes())
     elif vue == 'stats':
@@ -208,6 +230,17 @@ def coursier(request, pk):
         raise Http404
     d0 = _debut_jour()
     courses = p.courses.select_related('client', 'partenaire__user', 'categorie').order_by('-created_at')
+    periode = request.GET.get('periode') or 'semaine'
+    debuts = {'jour': d0, 'semaine': d0 - timedelta(days=6), 'mois': d0.replace(day=1)}
+    choisies = courses.filter(created_at__gte=debuts[periode]) if periode in debuts else courses
+    lignes = []
+    for c in choisies[:200]:
+        x = _ligne_course(c)
+        cl = c.client
+        x.update({'client_nom': cl.get_full_name() or '—', 'client_email': cl.email, 'client_tel': cl.phone or '—',
+                  'km': float((c.detail_prix or {}).get('compteur_km') or c.distance_reelle_km or 0) or float(c.distance_km),
+                  'client_url': reverse('admin:Users_user_change', args=[cl.pk])})
+        lignes.append(x)
     term = courses.filter(statut='terminee')
     gains = sum((c.prix_final or c.prix_estime) for c in term)
     kpis = [("Courses aujourd'hui", courses.filter(created_at__gte=d0).count(), 'today'),
@@ -234,7 +267,9 @@ def coursier(request, pk):
     support = list(p.messages_support.select_related('auteur').order_by('-created_at')[:30])[::-1]
     p.messages_support.filter(par='coursier', lu_le__isnull=True).update(lu_le=timezone.now())
     ctx = dict(_admin.site.each_context(request), title=_nom(p), p=p, nom=_nom(p), kpis=kpis, vu=vu, support=support,
-               courses=[_ligne_course(c) for c in courses[:50]], plaintes=plaintes, docs=docs, mouvements=mouvements,
+               courses=lignes, periode=periode,
+               periodes=[('jour', "Aujourd'hui"), ('semaine', "7 jours"), ('mois', "Ce mois"), ('tout', "Tout")],
+               plaintes=plaintes, docs=docs, mouvements=mouvements,
                cls={'valide': 'ok', 'en_attente': 'or', 'a_completer': 'or'}.get(p.statut, 'ko'),
                modifier=_u('partenaire_change', p.pk))
     return render(request, 'admin/coursier.html', ctx)
