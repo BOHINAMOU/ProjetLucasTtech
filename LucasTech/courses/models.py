@@ -130,7 +130,9 @@ class Parametres(models.Model):
     frais_absent_moto = models.PositiveIntegerField("Frais client absent moto (FCFA)", default=300)
     frais_absent_voiture = models.PositiveIntegerField("Frais client absent voiture (FCFA)", default=700)
     retard_exonerant_min = models.PositiveSmallIntegerField("Retard du partenaire qui exonère le client (min)", default=5)
-    attente_gratuite_min = models.PositiveSmallIntegerField("Attente gratuite (min)", default=3)
+    attente_gratuite_min = models.PositiveSmallIntegerField(
+        "Attente gratuite (min)", default=2,
+        help_text="Après l'arrivée du coursier, le client a ces minutes gratuites ; ensuite l'attente est facturée.")
     rayon_arrivee_auto_m = models.PositiveSmallIntegerField(
         "Arrivée automatique (m)", default=40,
         help_text="Le système marque « Coursier arrivé » tout seul quand il est à moins de cette distance du départ.")
@@ -138,8 +140,8 @@ class Parametres(models.Model):
         "Bouton « Je suis arrivé » (m)", default=150,
         help_text="Le coursier ne peut dire « Je suis arrivé » que s'il est à moins de cette distance du départ.")
     pourboire_max = models.PositiveIntegerField("Pourboire maximum (FCFA)", default=500)
-    prix_attente_moto = models.PositiveIntegerField("Prix de l'attente moto (FCFA/min)", default=25)
-    prix_attente_voiture = models.PositiveIntegerField("Prix de l'attente voiture (FCFA/min)", default=50)
+    prix_attente_moto = models.PositiveIntegerField("Prix de l'attente moto (FCFA/min)", default=100)
+    prix_attente_voiture = models.PositiveIntegerField("Prix de l'attente voiture (FCFA/min)", default=200)
     # Prix
     arrondi = models.PositiveIntegerField("Arrondi (FCFA)", default=50)
     vitesse_moyenne_kmh = models.PositiveSmallIntegerField("Vitesse moyenne estimée (km/h)", default=25)

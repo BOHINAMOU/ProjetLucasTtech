@@ -208,10 +208,10 @@ class PortefeuilleTests(TestCase):
     def test_attente_payante(self):
         c, p = self._acceptee()
         S.signaler_arrivee(p, c.pk, JOUR + timedelta(minutes=5), verifier_distance=False)
-        S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=10))  # 5 min, dont 3 gratuites
+        S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=10))  # 5 min, dont 2 gratuites
         c = S.terminer(p, c.pk, JOUR + timedelta(minutes=25))
-        self.assertEqual(c.prix_final, 750)  # 700 + 2 × 25
-        self.assertEqual(portefeuille(self.client_user).solde, 4250)
+        self.assertEqual(c.prix_final, 1000)  # 700 + 3 × 100 (2 min gratuites)
+        self.assertEqual(portefeuille(self.client_user).solde, 4000)
 
     def test_code_de_depart(self):
         Parametres.objects.filter(pk=1).update(code_depart_obligatoire=True)
@@ -549,7 +549,7 @@ class PrixReelZonesTests(APITestCase):
     def test_mention_dans_estimation(self):
         pts = {'depart_lat': DEP['lat'], 'depart_lng': DEP['lng'], 'arrivee_lat': ARR['lat'], 'arrivee_lng': ARR['lng']}
         e = self.client.post(API + 'estimation/', pts, format='json').json()['estimations'][0]
-        self.assertIn('3 min', e['mention_prix'])
+        self.assertIn('2 min', e['mention_prix'])
         self.assertEqual(e['trace'], [])  # sans clé Google
 
     def test_zone_non_couverte(self):

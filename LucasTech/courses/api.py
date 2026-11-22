@@ -81,6 +81,8 @@ def course_payload(request, c, pour='client', p=None):
                          'date': dt(a.created_at)} for a in c.annulations.all() if a.par != 'systeme'],
         'discussion': {'ouverte': D.ouverte(c, p=p), 'non_lus': D.non_lus(c, 'client' if pour == 'client' else 'partenaire')},
         'distance_parcourue_km': float(c.distance_reelle_km or 0),
+        'attente': {'gratuite_min': p.attente_gratuite_min,
+                    'prix_min': p.prix_attente_moto if c.categorie.vehicule == 'moto' else p.prix_attente_voiture},
         'pourboire': (c.detail_prix or {}).get('pourboire', 0),
         'pourboire_max': p.pourboire_max,
     }
