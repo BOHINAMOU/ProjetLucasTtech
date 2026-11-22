@@ -255,10 +255,15 @@ def commander(client, categorie, depart, arrivee, moyen='especes', repere=''):
 # ─────────────────────────────
 # Affectation (polling)
 # ─────────────────────────────
-def candidats(course, p, rayon_km, maintenant):
+def candidats(course, p, rayon_km, maintenant, renvoyer=False):
     """Partenaires en ligne, validés, de la bonne catégorie, position récente, dette sous le plafond, sans autre
-    offre ni course, jamais sollicités pour cette course ; triés par distance au départ, puis meilleure note."""
-    deja = OffreCourse.objects.filter(course=course).values_list('partenaire_id', flat=True)
+    offre ni course, jamais sollicités pour cette course ; triés par distance au départ, puis meilleure note.
+    [renvoyer] : personne d'autre n'est disponible, on peut proposer À NOUVEAU la course à ceux qui l'ont laissée
+    passer (10 s écoulées) ; jamais à ceux qui l'ont refusée."""
+    deja = OffreCourse.objects.filter(course=course)
+    if renvoyer:
+        deja = deja.filter(reponse__in=('refusee', 'acceptee', 'en_attente'))
+    deja = deja.values_list('partenaire_id', flat=True)
     occupes_offre = OffreCourse.objects.filter(reponse='en_attente', expire_le__gt=maintenant).values_list(
         'partenaire_id', flat=True)
     occupes_course = Course.objects.filter(statut__in=('acceptee', 'arrive', 'en_cours')).exclude(
@@ -350,6 +355,15 @@ def avancer(course_id, maintenant=None):
                 # push (si Firebase est configuré) : réveille l'appli partenaire en arrière-plan
                 _notifier(part.user, "Nouvelle course", f"{course.categorie.nom} à {dist:.1f} km. Répondez vite.")
                 return course
+        # personne de nouveau : on repropose la course à un coursier qui l'a laissée passer (ex. il est seul)
+        liste = candidats(course, p, paliers[-1], maintenant, renvoyer=True)
+        if liste:
+            part, dist = liste[0]
+            OffreCourse.objects.create(course=course, partenaire=part, distance_km=Decimal(str(round(dist, 2))),
+                                       envoyee_le=maintenant,
+                                       expire_le=maintenant + timedelta(seconds=p.delai_reponse_s))
+            _notifier(part.user, "Nouvelle course", f"{course.categorie.nom} à {dist:.1f} km. Répondez vite.")
+            return course
         # personne pour l'instant, même au rayon maximal : on réessaiera au prochain appel (jusqu'à la durée max)
         if float(course.rayon_km) != paliers[-1]:
             course.rayon_km = Decimal(str(paliers[-1]))

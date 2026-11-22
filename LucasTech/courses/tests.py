@@ -114,7 +114,7 @@ class AffectationTests(TestCase):
         S.avancer(c.pk, JOUR + timedelta(seconds=9))
         self.assertEqual(c.offres.get().reponse, 'en_attente')
         S.avancer(c.pk, JOUR + timedelta(seconds=11.5))
-        self.assertEqual(c.offres.get().reponse, 'ignoree')
+        self.assertEqual(c.offres.order_by('envoyee_le').first().reponse, 'ignoree')
 
     def test_sans_accuse_de_reception(self):
         a, b = partenaire(self.moto, 0.5), partenaire(self.moto, 1)
@@ -144,13 +144,13 @@ class AffectationTests(TestCase):
     def test_hors_ligne_apres_trois_offres_ignorees(self):
         p = partenaire(self.moto)
         t = JOUR
-        for i in range(3):
-            with mock.patch('django.utils.timezone.now', return_value=t):
-                c = S.commander(compte(), self.moto, DEP, ARR)
+        with mock.patch('django.utils.timezone.now', return_value=t):
+            c = S.commander(compte(), self.moto, DEP, ARR)
+        for i in range(3):  # seul coursier : la course lui est renvoyée, il la laisse passer 3 fois
             S.offre_en_cours(p, t + timedelta(seconds=1))
-            S.avancer(c.pk, t + timedelta(seconds=12))
             Partenaire.objects.filter(pk=p.pk).update(position_le=t + timedelta(seconds=12))
-            t += timedelta(seconds=13)
+            S.avancer(c.pk, t + timedelta(seconds=12))
+            t += timedelta(seconds=12)
         p.refresh_from_db()
         self.assertFalse(p.en_ligne)
 
@@ -942,3 +942,35 @@ class AnnulationPortefeuilleTests(CourseEnDirectTests):
         with self.assertRaises(S.ErreurCourse) as e:
             S.annuler_par_client(self.c.pk, self.u, motif='Plus besoin')
         self.assertEqual(e.exception.code, 'etape')
+
+
+class RenvoiOffreTests(TestCase):
+    def test_coursier_seul_recoit_a_nouveau_la_course(self):
+        moto = Categorie.objects.get(code='moto')
+        u = compte('Ama')
+        p = partenaire(moto, 0.5, quand=JOUR)
+        with mock.patch('django.utils.timezone.now', return_value=JOUR):
+            c = S.commander(u, moto, DEP, ARR)
+        o1 = OffreCourse.objects.get(course=c)
+        o1.recue_le = JOUR
+        o1.save(update_fields=['recue_le'])
+        t = JOUR + timedelta(seconds=11)  # 10 s passées sans réponse
+        Partenaire.objects.filter(pk=p.pk).update(position_le=t)
+        S.avancer(c.pk, t)
+        offres = list(OffreCourse.objects.filter(course=c).order_by('envoyee_le'))
+        self.assertEqual(len(offres), 2)
+        self.assertEqual(offres[0].reponse, 'ignoree')
+        self.assertEqual(offres[1].partenaire_id, p.pk)  # la même course lui est renvoyée
+        self.assertEqual(offres[1].reponse, 'en_attente')
+
+    def test_jamais_renvoyee_apres_un_refus(self):
+        moto = Categorie.objects.get(code='moto')
+        u = compte('Ama')
+        p = partenaire(moto, 0.5, quand=JOUR)
+        with mock.patch('django.utils.timezone.now', return_value=JOUR):
+            c = S.commander(u, moto, DEP, ARR)
+        o1 = OffreCourse.objects.get(course=c)
+        S.refuser(p, o1.pk, JOUR + timedelta(seconds=2))
+        Partenaire.objects.filter(pk=p.pk).update(position_le=JOUR + timedelta(seconds=3))
+        S.avancer(c.pk, JOUR + timedelta(seconds=3))
+        self.assertEqual(OffreCourse.objects.filter(course=c).count(), 1)
