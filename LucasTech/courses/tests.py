@@ -1,6 +1,7 @@
 """Lantante Express : prix, affectation (ordre par distance, 10 s, verrou), portefeuille, annulation, API."""
 import re
 from datetime import datetime, timedelta, timezone as tz
+from decimal import Decimal
 from unittest import mock
 
 from django.contrib.auth import get_user_model
@@ -986,7 +987,8 @@ class FactureTests(CourseEnDirectTests):
         Course.objects.filter(pk=self.c.pk).update(distance_reelle_km=3, demarree_le=timezone.now() - timedelta(minutes=40))
         c = S.terminer(self.p, self.c.pk)
         m = Categorie.objects.get(code='moto')
-        attendu = S.arrondi_sup(max(m.minimum, m.prise_en_charge + 3 * m.prix_km), Parametres.get().arrondi)
+        coef = Decimal(str(c.detail_prix.get('coefficient', 1)))  # le prix dépend de l'heure du test
+        attendu = S.arrondi_sup(max(Decimal(m.minimum), (m.prise_en_charge + 3 * m.prix_km) * coef), Parametres.get().arrondi)
         self.assertEqual(c.prix_final, attendu)  # 40 minutes ne coûtent rien de plus
         self.client.force_authenticate(self.u)
         r = self.client.get(f'{API}{c.pk}/facture.pdf')
@@ -1052,3 +1054,79 @@ class PromotionsEtAlertesTests(APITestCase):
         r = self.client.post(f"{API}partenaire/courses/{c.pk}/paiement/", {'moyen': 'portefeuille'}, format='json').json()
         self.assertEqual(r['moyen_paiement'], 'portefeuille')
         self.assertLess(portefeuille(self.u).solde, 5000)
+
+
+
+@override_settings(STORAGES=STORAGES)
+class SoldePartageRetraitBoutiquesTests(APITestCase):
+    def setUp(self):
+        self.moto = Categorie.objects.get(code='moto')
+        self.u = compte('Ama')
+        self.admin = get_user_model().objects.create_superuser(email='chef@example.com', password='x-Pass-12345')
+
+    def test_solde_puis_reste_en_especes(self):
+        ajuster(self.u, 200, 'Test', self.admin)
+        p = partenaire(self.moto, 0.5, quand=timezone.now())
+        c = S.commander(self.u, self.moto, DEP, ARR, moyen='portefeuille')
+        self.assertEqual(c.montant_reserve, 200)
+        self.assertEqual(portefeuille(self.u).solde, 0)
+        S.accepter(p, OffreCourse.objects.get(course=c).pk)
+        S.signaler_arrivee(p, c.pk, verifier_distance=False)
+        S.demarrer(p, c.pk, '')
+        Course.objects.filter(pk=c.pk).update(distance_reelle_km=3)
+        c = S.terminer(p, c.pk)
+        self.assertEqual(c.detail_prix['paye_solde'], 200)
+        self.assertEqual(c.detail_prix['paye_especes'], c.total_client - 200)
+        p.refresh_from_db()
+        self.assertEqual(p.solde, 200 - c.detail_prix['commission'])  # les 200 du solde lui reviennent
+
+    def test_annulation_garde_le_solde_et_reporte_le_reste(self):
+        ajuster(self.u, 100, 'Test', self.admin)
+        p = partenaire(self.moto, 0.5, quand=timezone.now())
+        c = S.commander(self.u, self.moto, DEP, ARR, moyen='portefeuille')
+        S.accepter(p, OffreCourse.objects.get(course=c).pk)
+        S.annuler_par_client(c.pk, self.u, motif='Test', maintenant=timezone.now() + timedelta(minutes=2, seconds=30))
+        self.assertEqual(portefeuille(self.u).solde, 0)
+        self.assertEqual(S.frais_reportes(self.u), 100)  # 200 de frais − 100 déjà pris
+
+    def test_retrait_pin_payer_refuser(self):
+        from Payments.solde import payer_retrait, refuser_retrait
+        from .models import PinSolde
+        from .pin import jeton
+        from django.contrib.auth.hashers import make_password
+        ajuster(self.u, 2000, 'Test', self.admin)
+        self.client.force_authenticate(self.u)
+        url = '/api/mobile/v1/solde/retrait/'
+        corps = {'montant': 1000, 'numero': '+22890000000'}
+        self.assertEqual(self.client.post(url, corps, format='json').json()['code'], 'pin_requis')
+        PinSolde.objects.create(user=self.u, pin_hash=make_password('1234'))
+        h = {'HTTP_X_PIN': jeton(self.u)}
+        self.assertEqual(self.client.post(url, {**corps, 'montant': 100}, format='json', **h).json()['code'], 'retrait')
+        r = self.client.post(url, corps, format='json', **h)
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(portefeuille(self.u).solde, 1000)
+        self.assertEqual(self.client.post(url, corps, format='json', **h).json()['code'], 'retrait')  # un seul à la fois
+        ret = self.u.retraits_solde.get()
+        self.assertTrue(refuser_retrait(ret, self.admin))
+        self.assertFalse(refuser_retrait(ret, self.admin))  # jamais rendu deux fois
+        self.assertFalse(payer_retrait(ret, self.admin))
+        self.assertEqual(portefeuille(self.u).solde, 2000)
+        self.assertEqual(self.client.post(url, {**corps, 'montant': 5000}, format='json', **h).json()['code'],
+                         'solde_insuffisant')
+        self.assertFalse(self.u.retraits_solde.filter(statut='en_attente').exists())
+
+    def test_boutiques_et_filtre(self):
+        from Marche.models import Vendeur
+        from Shop.models import Category, Product
+        cat = Category.objects.create(name='Mode', slug='mode')
+        lucas = Vendeur.objects.create(user=compte('Lucas'), boutique='Lucas Shop', whatsapp='22890000000', ville='Lomé', statut='valide')
+        irene = Vendeur.objects.create(user=compte('Irene'), boutique='Irene Style', whatsapp='22890000001', ville='Lomé', statut='valide')
+        off = Vendeur.objects.create(user=compte('Off'), boutique='Suspendue', whatsapp='22890000002', ville='Lomé', statut='suspendu')
+        for v, nom in ((lucas, 'Chemise'), (irene, 'Robe'), (off, 'Cache')):
+            Product.objects.create(name=nom, price=1000, stock=3, category=cat, vendeur=v, is_available=True)
+        noms = [b['nom'] for b in self.client.get('/api/mobile/v1/boutique/boutiques/').json()]
+        self.assertEqual(noms, ['Irene Style', 'Lucas Shop'])
+        r = self.client.get('/api/mobile/v1/boutique/produits/', {'vendeur': lucas.pk, 'page': 1}).json()
+        self.assertEqual([x['titre'] for x in r['resultats']], ['Chemise'])
+        r = self.client.get('/api/mobile/v1/boutique/produits/', {'vendeur': lucas.pk, 'q': 'Robe', 'page': 1}).json()
+        self.assertEqual(r['resultats'], [])

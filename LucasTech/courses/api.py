@@ -86,6 +86,9 @@ def course_payload(request, c, pour='client', p=None):
                     'prix_min': p.prix_attente_moto if c.categorie.vehicule == 'moto' else p.prix_attente_voiture},
         'pourboire': (c.detail_prix or {}).get('pourboire', 0),
         'promo': c.promo.nom if c.promo_id else '',
+        'paye_solde': c.montant_reserve if c.active else (c.detail_prix or {}).get('paye_solde', 0),
+        'reste_especes': (max(0, c.total_client - c.montant_reserve) if c.active
+                          else (c.detail_prix or {}).get('paye_especes', 0)),
         'pourboire_max': p.pourboire_max,
     }
     if pour == 'client':
@@ -350,6 +353,7 @@ def recu(request, pk):
         'detail': c.detail_prix, 'prix_annonce': c.prix_estime, 'supplements': (c.detail_prix or {}).get('supplements', []),
         'prix': c.prix_final, 'reduction': c.reduction, 'frais_reportes': c.frais_impayes,
         'total': c.total_client, 'moyen_paiement': c.get_moyen_paiement_display(),
+        'paye_solde': d.get('paye_solde', 0), 'paye_especes': d.get('paye_especes', 0),
     })
 
 
@@ -800,7 +804,8 @@ def solde_suffisant(request):
         montant = int(request.GET.get('montant') or 0)
     except ValueError:
         montant = 0
-    return Response({'suffisant': portefeuille(request.user).solde >= montant > 0})
+    solde = portefeuille(request.user).solde
+    return Response({'suffisant': solde >= montant > 0, 'partiel': 0 < solde < montant})
 
 
 

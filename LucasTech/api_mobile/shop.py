@@ -440,15 +440,47 @@ def solde(request):
     refus = exige_pin(request)
     if refus:
         return refus
-    from Payments.solde import MAX_DEPOT, MIN_DEPOT, portefeuille
+    from Payments.solde import MAX_DEPOT, MIN_DEPOT, MIN_RETRAIT, portefeuille
     pf = portefeuille(request.user)
     return Response({
-        'solde': pf.solde, 'min_depot': MIN_DEPOT, 'max_depot': MAX_DEPOT,
+        'solde': pf.solde, 'min_depot': MIN_DEPOT, 'max_depot': MAX_DEPOT, 'min_retrait': MIN_RETRAIT,
+        'telephone': request.user.phone or '',
+        'retraits': [_retrait(r) for r in request.user.retraits_solde.all()[:10]],
         'mouvements': [{'id': m.pk, 'type': m.type, 'libelle': m.get_type_display(), 'montant': m.montant,
                         'solde_apres': m.solde_apres, 'motif': m.motif, 'date': dt(m.created_at),
                         'reference': m.payment.reference if m.payment_id else ''}
                        for m in pf.mouvements.select_related('payment')[:50]],
     })
+
+
+def _retrait(r):
+    return {'id': r.pk, 'montant': r.montant, 'numero': r.numero, 'statut': r.statut,
+            'statut_libelle': r.get_statut_display(), 'date': dt(r.created_at)}
+
+
+@api_view(['POST'])
+def retrait(request):
+    """« Retirer mon argent » : code PIN obligatoire ; l'équipe envoie l'argent sur Mobile Money."""
+    from courses.models import PinSolde
+    from courses.pin import exige_pin
+    from Payments.solde import SoldeInsuffisant, demander_retrait
+    pin = PinSolde.objects.filter(user=request.user).first()
+    if not pin or not pin.pin_hash:
+        return error("Créez d'abord votre code PIN.", 403, code='pin_requis')
+    refus = exige_pin(request)
+    if refus:
+        return refus
+    try:
+        r = demander_retrait(request.user, request.data.get('montant'), request.data.get('numero'))
+    except SoldeInsuffisant:
+        return error("Solde insuffisant.", code='solde_insuffisant')
+    except ValueError as e:
+        return error(str(e), code='retrait')
+    from django.contrib.auth import get_user_model
+    from .notifs import notifier
+    for admin_ in get_user_model().objects.filter(is_superuser=True, is_active=True):
+        notifier(admin_, "Retrait à payer", f"{request.user.get_full_name() or request.user.email} : {r.montant} CFA vers {r.numero}.")
+    return Response(_retrait(r), status=201)
 
 
 @api_view(['GET'])

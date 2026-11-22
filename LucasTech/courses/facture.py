@@ -106,6 +106,9 @@ def build_facture(c):
     pdf.line(15, pdf.get_y() + 1, 195, pdf.get_y() + 1)
     pdf.ln(3)
     ligne("Total payé", money(c.total_client), gras=True)
+    if d.get('paye_solde') and d.get('paye_especes'):
+        ligne("Payé avec le solde", money(d['paye_solde']))
+        ligne("Payé en espèces", money(d['paye_especes']))
     if d.get('pourboire'):
         ligne("Pourboire au coursier (en plus)", money(d['pourboire']))
     pdf.ln(8)

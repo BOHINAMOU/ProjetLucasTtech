@@ -146,8 +146,25 @@ def _products():
 @permission_classes([AllowAny])
 @public_cache()
 def produits(request):
-    qs = by_category(search(_products(), request, 'name', 'short_description', 'description'), request)
+    base = _products()
+    if str(request.GET.get('vendeur') or '').isdigit():
+        base = base.filter(vendeur_id=int(request.GET['vendeur']))
+    qs = by_category(search(base, request, 'name', 'short_description', 'description'), request)
     return paginated(request, qs, lambda p: product_item(request, p))
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@public_cache(120)
+def boutiques(request):
+    """Boutiques des vendeurs ayant au moins un produit en vente (icônes en haut de la Boutique)."""
+    from django.db.models import Count, Q
+    from Marche.models import Vendeur
+    from Shop.models import Product
+    ids = Product.en_vente().filter(vendeur__isnull=False).values('pk')
+    qs = Vendeur.objects.annotate(nb=Count('produits', filter=Q(produits__in=ids), distinct=True)).filter(nb__gt=0)
+    return Response([{'id': v.pk, 'nom': v.boutique, 'logo': vignette(request, v.logo) if v.logo else '',
+                      'ville': v.ville, 'produits': v.nb} for v in qs.order_by('boutique')])
 
 
 @api_view(['GET'])

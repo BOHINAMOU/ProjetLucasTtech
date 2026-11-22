@@ -21,7 +21,7 @@ RUBRIQUES = {
         ('courses.OffreCourse', "Offres envoyées"), ('courses.CoursierFavori', "Coursiers favoris")]),
     'paiements': ("Paiements", 'fa-credit-card', [
         ('Payments.Payment', "Paiements"), ('Payments.CodePromo', "Codes promo"),
-        ('Payments.Portefeuille', "Soldes des utilisateurs"), ('Payments.MouvementSolde', "Mouvements des soldes")]),
+        ('Payments.RetraitClient', "Retraits des clients"), ('Payments.Portefeuille', "Soldes des utilisateurs"), ('Payments.MouvementSolde', "Mouvements des soldes")]),
     'concours': ("Concours & Épreuves", 'fa-file-lines', [
         ('concours.Contest', "Concours"), ('concours.ContestSession', "Années"), ('concours.ExamPaper', "Épreuves"),
         ('concours.Correction', "Corrigés"), ('concours.ContestCategory', "Catégories"), ('concours.Specialty', "Spécialités"),

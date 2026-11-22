@@ -5,6 +5,7 @@ from django.db import IntegrityError, transaction
 MIN_DEPOT = 100
 MAX_DEPOT = 1_000_000
 MAX_SOLDE = 4_000_000  # plafond par client
+MIN_RETRAIT = 500
 
 
 class SoldeInsuffisant(Exception):
@@ -68,6 +69,69 @@ def debiter(user, montant, motif):
     if int(montant) <= 0:
         return None
     return _mouvement(user, -int(montant), 'paiement', motif=motif)
+
+
+def debiter_jusqua(user, montant, motif):
+    """Prend AU PLUS [montant] sur le solde (tout le solde s'il est plus petit). Renvoie ce qui a été pris."""
+    from .models import Portefeuille
+    montant = int(montant)
+    if montant <= 0:
+        return 0
+    with transaction.atomic():
+        Portefeuille.objects.get_or_create(user=user)
+        pf = Portefeuille.objects.select_for_update().get(user=user)
+        pris = min(pf.solde, montant)
+        if pris > 0:
+            _mouvement(user, -pris, 'paiement', motif=motif)
+        return pris
+
+
+def demander_retrait(user, montant, numero):
+    """Le montant quitte le solde tout de suite ; l'équipe l'envoie sur Mobile Money puis marque « Payé »."""
+    from .models import Portefeuille, RetraitClient
+    try:
+        montant = int(montant)
+    except (TypeError, ValueError):
+        raise ValueError("Montant invalide.")
+    numero = ''.join(str(numero or '').split())
+    if montant < MIN_RETRAIT:
+        raise ValueError(f"Retrait minimum : {MIN_RETRAIT} CFA.")
+    if not 8 <= len(numero.lstrip('+')) <= 15 or not numero.lstrip('+').isdigit():
+        raise ValueError("Numéro Mobile Money invalide.")
+    with transaction.atomic():
+        Portefeuille.objects.get_or_create(user=user)
+        Portefeuille.objects.select_for_update().get(user=user)
+        if RetraitClient.objects.filter(user=user, statut='en_attente').exists():
+            raise ValueError("Un retrait est déjà en cours.")
+        r = RetraitClient.objects.create(user=user, montant=montant, numero=numero)
+        _mouvement(user, -montant, 'retrait', motif=f"Retrait n° {r.pk} vers {numero}")
+    return r
+
+
+def payer_retrait(retrait, par):
+    from django.utils import timezone
+    from .models import RetraitClient
+    with transaction.atomic():
+        r = RetraitClient.objects.select_for_update().get(pk=retrait.pk)
+        if r.statut != 'en_attente':
+            return False
+        r.statut, r.traite_par, r.traite_le = 'paye', par, timezone.now()
+        r.save(update_fields=['statut', 'traite_par', 'traite_le'])
+    return True
+
+
+def refuser_retrait(retrait, par, motif="Retrait refusé"):
+    """Refus : l'argent revient sur le solde du client."""
+    from django.utils import timezone
+    from .models import RetraitClient
+    with transaction.atomic():
+        r = RetraitClient.objects.select_for_update().get(pk=retrait.pk)
+        if r.statut != 'en_attente':
+            return False
+        r.statut, r.motif, r.traite_par, r.traite_le = 'refuse', motif[:255], par, timezone.now()
+        r.save(update_fields=['statut', 'motif', 'traite_par', 'traite_le'])
+        _mouvement(r.user, r.montant, 'remboursement', motif=f"Retrait n° {r.pk} refusé : montant rendu", par=par)
+    return True
 
 
 def rembourser(user, montant, motif, par=None):

@@ -86,7 +86,7 @@ class SoldeTests(APITestCase):
         pf = portefeuille(self.user)
         self.assertEqual(pf.solde, sum(pf.mouvements.values_list('montant', flat=True)))
 
-    def test_ajustement_motive_et_pas_de_retrait(self):
+    def test_ajustement_motive_et_retrait_protege(self):
         admin = get_user_model().objects.create_superuser(email='adm@example.com', password='x-Pass-12345')
         with self.assertRaises(ValueError):
             ajuster(self.user, 500, '  ', admin)
@@ -94,7 +94,7 @@ class SoldeTests(APITestCase):
         self.assertEqual((m.solde_apres, m.par), (500, admin))
         with self.assertRaises(SoldeInsuffisant):
             ajuster(self.user, -600, 'Correction', admin)
-        self.assertEqual(self.client.post(API + 'solde/retrait/', {'montant': 100}, format='json').status_code, 404)
+        self.assertEqual(self.client.post(API + 'solde/retrait/', {'montant': 100}, format='json').status_code, 403)  # sans PIN
 
     def test_admin_ajustement_et_liste(self):
         admin = get_user_model().objects.create_superuser(email='adm2@example.com', password='x-Pass-12345')

@@ -145,7 +145,7 @@ class Payment(models.Model):
 
 class Portefeuille(models.Model):
     """Solde Lantante d'un utilisateur : rechargé par Mobile Money, utilisé pour payer dans Lantante.
-    Pas de retrait (non remboursable en espèces). Le solde ne bouge QUE via Payments.solde (mouvements tracés)."""
+    Retrait possible sur demande (RetraitClient, payé par l'équipe). Le solde ne bouge QUE via Payments.solde (mouvements tracés)."""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='portefeuille',
                                 verbose_name="Utilisateur")
     solde = models.PositiveIntegerField("Solde (CFA)", default=0, editable=False)
@@ -161,7 +161,7 @@ class Portefeuille(models.Model):
 
 class MouvementSolde(models.Model):
     TYPES = [('depot', 'Dépôt'), ('paiement', 'Paiement'), ('remboursement', 'Remboursement'),
-             ('ajustement', "Ajustement par l'équipe")]
+             ('ajustement', "Ajustement par l'équipe"), ('retrait', 'Retrait')]
     portefeuille = models.ForeignKey(Portefeuille, on_delete=models.PROTECT, related_name='mouvements')
     type = models.CharField("Type", max_length=14, choices=TYPES)
     montant = models.IntegerField("Montant (CFA)", help_text="Positif = crédit, négatif = débit.")
@@ -185,6 +185,29 @@ class MouvementSolde(models.Model):
     def __str__(self):
         return f"{self.get_type_display()} {self.montant:+} CFA"
 
+
+
+class RetraitClient(models.Model):
+    """Demande de retrait du solde vers Mobile Money : débitée à la demande, envoyée par l'équipe."""
+    STATUTS = [('en_attente', 'À payer'), ('paye', 'Payé'), ('refuse', 'Refusé')]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='retraits_solde',
+                             verbose_name="Client")
+    montant = models.PositiveIntegerField("Montant (CFA)")
+    numero = models.CharField("Numéro Mobile Money", max_length=20)
+    statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente')
+    motif = models.CharField("Motif du refus", max_length=255, blank=True)
+    traite_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='+', verbose_name="Traité par")
+    traite_le = models.DateTimeField("Traité le", null=True, blank=True)
+    created_at = models.DateTimeField("Demandé le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Retrait client"
+        verbose_name_plural = "Retraits des clients"
+
+    def __str__(self):
+        return f"Retrait n° {self.pk} · {self.montant} CFA"
 
 
 class CodePromo(models.Model):

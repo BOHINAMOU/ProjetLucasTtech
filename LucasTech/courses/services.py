@@ -275,7 +275,7 @@ def proches(lat, lng, categorie=None, maintenant=None, limite=20, client=None):
 
 def commander(client, categorie, depart, arrivee, moyen='especes', repere='', code_promo=''):
     """depart / arrivee : dict lat, lng, adresse. Réserve le montant si paiement par le solde."""
-    from Payments.solde import SoldeInsuffisant, debiter
+    from Payments.solde import debiter_jusqua
     if not dans_zone(depart['lat'], depart['lng']) or not dans_zone(arrivee['lat'], arrivee['lng']):
         raise ErreurCourse(Parametres.get().message_zone, 'hors_zone')
     if not categorie.active or not categorie.service.actif:
@@ -297,11 +297,11 @@ def commander(client, categorie, depart, arrivee, moyen='especes', repere='', co
             promo_id=est.get('promo_id'),
             rayon_km=Decimal(str(p.paliers()[0])), recherche_debut=timezone.now())
         if moyen == 'portefeuille':
-            try:
-                debiter(client, course.total_client, f"Course n° {course.pk} : montant réservé")
-            except SoldeInsuffisant:
-                raise ErreurCourse("Solde insuffisant. Rechargez ou payez en espèces.", 'solde_insuffisant')
-            course.montant_reserve = course.total_client
+            # le solde d'abord (même s'il ne couvre pas tout) ; le reste se paie en espèces
+            pris = debiter_jusqua(client, course.total_client, f"Course n° {course.pk} : montant réservé")
+            if pris <= 0:
+                raise ErreurCourse("Votre solde est vide. Rechargez ou payez en espèces.", 'solde_insuffisant')
+            course.montant_reserve = pris
             course.save(update_fields=['montant_reserve'])
         if course.frais_impayes:
             Annulation.objects.filter(course__client=client, frais_regles=False, frais__gt=0).update(frais_regles=True)
@@ -613,7 +613,7 @@ def supplement_attente(course, p):
 def terminer(partenaire, course_id, maintenant=None):
     """Prix final = prix garanti + attente payante. Portefeuille : débit réel, reste libéré.
     Espèces : commission en dette du partenaire. La réduction est payée par Lantante (créditée au partenaire)."""
-    from Payments.solde import SoldeInsuffisant, debiter, rembourser
+    from Payments.solde import debiter_jusqua, rembourser
     maintenant = maintenant or timezone.now()
     p = Parametres.get()
     with transaction.atomic():
@@ -645,11 +645,9 @@ def terminer(partenaire, course_id, maintenant=None):
                     rembourser(course.client, reserve - a_payer, f"Course n° {course.pk} : reste du montant réservé")
                 especes = 0
             else:
-                try:
-                    debiter(course.client, a_payer - reserve, f"Course n° {course.pk} : attente")
-                    especes = 0
-                except SoldeInsuffisant:
-                    especes = a_payer - reserve  # le client règle l'attente en espèces
+                # complément pris sur le solde s'il en reste ; le reste est payé en espèces au coursier
+                pris = debiter_jusqua(course.client, a_payer - reserve, f"Course n° {course.pk} : complément")
+                especes = a_payer - reserve - pris
             course.montant_reserve = 0
         detail['paye_solde'] = a_payer - especes
         detail['paye_especes'] = especes
@@ -683,7 +681,7 @@ def terminer(partenaire, course_id, maintenant=None):
 def changer_paiement(course, moyen):
     """Le client passe d'espèces au portefeuille (montant réservé) ou l'inverse (réservation rendue),
     tant que la course n'est pas terminée."""
-    from Payments.solde import SoldeInsuffisant, debiter, rembourser
+    from Payments.solde import debiter_jusqua, rembourser
     if moyen not in dict(Course.MOYENS):
         raise ErreurCourse("Moyen de paiement inconnu.", 'moyen')
     with transaction.atomic():
@@ -693,11 +691,10 @@ def changer_paiement(course, moyen):
         if c.moyen_paiement == moyen:
             return c
         if moyen == 'portefeuille':
-            try:
-                debiter(c.client, c.total_client, f"Course {c.reference} : montant réservé")
-            except SoldeInsuffisant:
-                raise ErreurCourse("Solde insuffisant. Rechargez votre portefeuille.", 'solde_insuffisant')
-            c.montant_reserve = c.total_client
+            pris = debiter_jusqua(c.client, c.total_client, f"Course {c.reference} : montant réservé")
+            if pris <= 0:
+                raise ErreurCourse("Le solde du client est vide.", 'solde_insuffisant')
+            c.montant_reserve = pris
         else:
             if c.montant_reserve:
                 rembourser(c.client, c.montant_reserve, f"Course {c.reference} : paiement en espèces")
@@ -782,7 +779,10 @@ def annuler_par_client(course_id, client, motif='', frais_acceptes=None, mainten
         if course.moyen_paiement == 'portefeuille':
             garde = min(frais, course.montant_reserve)
             _liberer_reservation(course, garder=garde, motif=f"Course n° {course.pk} annulée : montant libéré")
-            regles = garde >= frais
+            regles = True
+            if garde < frais:  # solde réservé trop petit : seul le reste des frais passe à la course suivante
+                Annulation.objects.create(course=course, par='systeme', frais=frais - garde, frais_regles=False,
+                                          motif="Reste des frais d'annulation")
         elif frais:
             regles = False  # espèces : frais ajoutés à la course suivante
         _rendre_frais_reportes(course)

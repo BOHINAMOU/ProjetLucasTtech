@@ -290,3 +290,44 @@ class CodePromoAdmin(admin.ModelAdmin):
     @admin.display(description="Utilisé")
     def utilises(self, c):
         return c.paiements.filter(status='approved').count()
+
+
+
+from .models import RetraitClient  # noqa: E402
+from .solde import payer_retrait, refuser_retrait  # noqa: E402
+
+
+@admin.register(RetraitClient)
+class RetraitClientAdmin(admin.ModelAdmin):
+    """Envoyer l'argent sur le numéro, puis « Marquer payé ». Refuser rend l'argent au solde du client."""
+    list_display = ['created_at', 'user', 'montant', 'numero', 'statut', 'traite_par', 'traite_le']
+    list_filter = ['statut']
+    search_fields = ['user__email', 'user__first_name', 'user__last_name', 'numero']
+    readonly_fields = ['user', 'montant', 'numero', 'statut', 'motif', 'traite_par', 'traite_le', 'created_at']
+    actions = ['marquer_paye', 'refuser']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.action(description="Marquer payé (argent envoyé)")
+    def marquer_paye(self, request, qs):
+        from api_mobile.notifs import notifier
+        n = 0
+        for r in qs:
+            if payer_retrait(r, request.user):
+                n += 1
+                notifier(r.user, "Retrait effectué", f"{r.montant} CFA envoyés sur le {r.numero}.")
+        self.message_user(request, f"{n} retrait(s) marqué(s) payé(s).")
+
+    @admin.action(description="Refuser (rendre l'argent au solde)")
+    def refuser(self, request, qs):
+        from api_mobile.notifs import notifier
+        n = 0
+        for r in qs:
+            if refuser_retrait(r, request.user):
+                n += 1
+                notifier(r.user, "Retrait refusé", f"{r.montant} CFA sont revenus sur votre solde.")
+        self.message_user(request, f"{n} retrait(s) refusé(s), argent rendu.")
