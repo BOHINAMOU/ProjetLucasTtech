@@ -96,8 +96,14 @@ MESSAGE_ACCEPTATION_V2 = ("✅ Course acceptée !\n\n"
                           "{emoji} {vehicule}\n"
                           "🔖 Plaque : {plaque}\n\n"
                           "Merci d'être prêt au point de départ. Bonne route avec Lantante Express !")
-MESSAGE_ACCEPTATION = ("Bonjour {prenom_client},\n\n"
+MESSAGE_ACCEPTATION_V3 = ("Bonjour {prenom_client},\n\n"
                        "Votre course est acceptée. {prenom_coursier} arrive dans environ {eta} min.\n\n"
+                       "Véhicule : {vehicule}\n"
+                       "Plaque : {plaque}\n\n"
+                       "Merci d'être prêt au point de départ.\n"
+                       "Lantante Express")
+MESSAGE_ACCEPTATION = ("Bonjour {prenom_client},\n\n"
+                       "Votre coursier {nom_coursier} est en route. Il arrive dans environ {eta} min.\n\n"
                        "Véhicule : {vehicule}\n"
                        "Plaque : {plaque}\n\n"
                        "Merci d'être prêt au point de départ.\n"
@@ -112,7 +118,12 @@ MESSAGE_ARRIVEE_V2 = ("📍 Votre coursier est arrivé !\n\n"
                       "{emoji} {vehicule}\n"
                       "🔖 Plaque : {plaque}\n\n"
                       "⏱️ Attente gratuite : {attente} min. À tout de suite !")
-MESSAGE_ARRIVEE = ("Votre coursier {prenom_coursier} est arrivé.\n\n"
+MESSAGE_ARRIVEE_V3 = ("Votre coursier {prenom_coursier} est arrivé.\n\n"
+                   "Véhicule : {vehicule}\n"
+                   "Plaque : {plaque}\n\n"
+                   "Attente gratuite : {attente} min. Au-delà, l'attente est facturée.\n"
+                   "Lantante Express")
+MESSAGE_ARRIVEE = ("Votre coursier {nom_coursier} est arrivé.\n\n"
                    "Véhicule : {vehicule}\n"
                    "Plaque : {plaque}\n\n"
                    "Attente gratuite : {attente} min. Au-delà, l'attente est facturée.\n"
@@ -207,7 +218,7 @@ class Parametres(models.Model):
     fichier_taille_max_ko = models.PositiveIntegerField("Message vocal ou photo : taille max (Ko)", default=5120)
     modele_message_acceptation = models.TextField(
         "Message automatique à l'acceptation", default=MESSAGE_ACCEPTATION,
-        help_text="Variables : {prenom_client}, {prenom_coursier}, {vehicule} (marque, modèle, couleur), {plaque}, "
+        help_text="Variables : {prenom_client}, {prenom_coursier}, {nom_coursier} (nom complet), {vehicule} (marque, modèle, couleur), {plaque}, "
                   "{eta} (minutes), {code}, {emoji} (🏍️ 🛺 🚗), {attente} (minutes gratuites).")
     modele_message_fin = models.TextField(
         "Message automatique à la fin (remerciement)", default=MESSAGE_FIN,

@@ -42,6 +42,7 @@ def _variables(course):
     emoji = {'moto': '🏍️', 'tricycle': '🛺', 'voiture': '🚗'}.get(type_v, '🚚')
     return _Vars(prenom_client=course.client.first_name or '', code=course.code_depart, eta=eta,
                  prenom_coursier=(part.user.first_name if part else '') or 'Votre coursier',
+                 nom_coursier=((part.user.get_full_name() or part.user.first_name) if part else '') or '',
                  vehicule=vehicule or 'véhicule', plaque=(part.plaque if part else '') or '—', emoji=emoji,
                  attente=Parametres.get().attente_gratuite_min)
 

@@ -71,7 +71,8 @@ def build_facture(c):
     titre("Trajet")
     ligne("Départ", (c.depart_adresse or "-")[:70])
     ligne("Arrivée", (c.arrivee_adresse or "-")[:70])
-    km = d.get('compteur_km') or float(c.distance_reelle_km or 0) or float(c.distance_km)
+    # distance EXACTE parcourue (compteur), jamais l'estimation faite à la commande
+    km = d['compteur_km'] if d.get('compteur_km') is not None else float(c.distance_reelle_km or 0)
     ligne("Distance parcourue", _km(km))
     if c.demarree_le and c.terminee_le:
         minutes = max(1, round((c.terminee_le - c.demarree_le).total_seconds() / 60))
