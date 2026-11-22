@@ -1130,3 +1130,30 @@ class SoldePartageRetraitBoutiquesTests(APITestCase):
         self.assertEqual([x['titre'] for x in r['resultats']], ['Chemise'])
         r = self.client.get('/api/mobile/v1/boutique/produits/', {'vendeur': lucas.pk, 'q': 'Robe', 'page': 1}).json()
         self.assertEqual(r['resultats'], [])
+
+
+
+class FraisRetraitTests(APITestCase):
+    def test_client_paie_les_frais(self):
+        from django.contrib.auth.hashers import make_password
+        from Payments.solde import refuser_retrait
+        from .models import PinSolde
+        from .pin import jeton
+        admin_ = get_user_model().objects.create_superuser(email='chef@example.com', password='x-Pass-12345')
+        u = compte('Ama')
+        ajuster(u, 5000, 'Test', admin_)
+        PinSolde.objects.create(user=u, pin_hash=make_password('1234'))
+        Parametres.objects.filter(pk=1).update(retrait_frais_pct=2, retrait_frais_min=50)
+        self.client.force_authenticate(u)
+        h = {'HTTP_X_PIN': jeton(u)}
+        url = '/api/mobile/v1/solde/retrait/'
+        corps = {'montant': 1010, 'numero': '+22890000000'}
+        self.assertEqual(self.client.post(url, corps, format='json', **h).json()['code'], 'retrait')  # frais non vus
+        self.assertEqual(portefeuille(u).solde, 5000)
+        r = self.client.post(url, {**corps, 'frais': 50}, format='json', **h).json()  # 2 % = 21 < minimum 50
+        self.assertEqual((r['frais'], r['a_envoyer']), (50, 960))
+        self.assertEqual(portefeuille(u).solde, 3990)
+        refuser_retrait(u.retraits_solde.get(), admin_)
+        self.assertEqual(portefeuille(u).solde, 5000)  # refus : tout est rendu, frais compris
+        r = self.client.post(url, {'montant': 3010, 'numero': '+22890000000', 'frais': 61}, format='json', **h).json()
+        self.assertEqual((r['frais'], r['a_envoyer']), (61, 2949))  # 60,2 arrondi au franc supérieur

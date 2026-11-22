@@ -192,7 +192,8 @@ class RetraitClient(models.Model):
     STATUTS = [('en_attente', 'À payer'), ('paye', 'Payé'), ('refuse', 'Refusé')]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='retraits_solde',
                              verbose_name="Client")
-    montant = models.PositiveIntegerField("Montant (CFA)")
+    montant = models.PositiveIntegerField("Montant retiré du solde (CFA)")
+    frais = models.PositiveIntegerField("Frais payés par le client (CFA)", default=0)
     numero = models.CharField("Numéro Mobile Money", max_length=20)
     statut = models.CharField("Statut", max_length=12, choices=STATUTS, default='en_attente')
     motif = models.CharField("Motif du refus", max_length=255, blank=True)
@@ -205,6 +206,10 @@ class RetraitClient(models.Model):
         ordering = ['-created_at']
         verbose_name = "Retrait client"
         verbose_name_plural = "Retraits des clients"
+
+    @property
+    def a_envoyer(self):
+        return self.montant - self.frais
 
     def __str__(self):
         return f"Retrait n° {self.pk} · {self.montant} CFA"

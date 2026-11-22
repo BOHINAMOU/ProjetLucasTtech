@@ -440,10 +440,12 @@ def solde(request):
     refus = exige_pin(request)
     if refus:
         return refus
+    from courses.models import Parametres
     from Payments.solde import MAX_DEPOT, MIN_DEPOT, MIN_RETRAIT, portefeuille
     pf = portefeuille(request.user)
     return Response({
         'solde': pf.solde, 'min_depot': MIN_DEPOT, 'max_depot': MAX_DEPOT, 'min_retrait': MIN_RETRAIT,
+        'retrait_frais_pct': float(Parametres.get().retrait_frais_pct), 'retrait_frais_min': Parametres.get().retrait_frais_min,
         'telephone': request.user.phone or '',
         'retraits': [_retrait(r) for r in request.user.retraits_solde.all()[:10]],
         'mouvements': [{'id': m.pk, 'type': m.type, 'libelle': m.get_type_display(), 'montant': m.montant,
@@ -454,7 +456,7 @@ def solde(request):
 
 
 def _retrait(r):
-    return {'id': r.pk, 'montant': r.montant, 'numero': r.numero, 'statut': r.statut,
+    return {'id': r.pk, 'montant': r.montant, 'frais': r.frais, 'a_envoyer': r.a_envoyer, 'numero': r.numero, 'statut': r.statut,
             'statut_libelle': r.get_statut_display(), 'date': dt(r.created_at)}
 
 
@@ -471,7 +473,8 @@ def retrait(request):
     if refus:
         return refus
     try:
-        r = demander_retrait(request.user, request.data.get('montant'), request.data.get('numero'))
+        r = demander_retrait(request.user, request.data.get('montant'), request.data.get('numero'),
+                             frais_vus=request.data.get('frais'))
     except SoldeInsuffisant:
         return error("Solde insuffisant.", code='solde_insuffisant')
     except ValueError as e:
@@ -479,7 +482,7 @@ def retrait(request):
     from django.contrib.auth import get_user_model
     from .notifs import notifier
     for admin_ in get_user_model().objects.filter(is_superuser=True, is_active=True):
-        notifier(admin_, "Retrait à payer", f"{request.user.get_full_name() or request.user.email} : {r.montant} CFA vers {r.numero}.")
+        notifier(admin_, "Retrait à payer", f"{request.user.get_full_name() or request.user.email} : {r.a_envoyer} CFA à envoyer au {r.numero}.")
     return Response(_retrait(r), status=201)
 
 

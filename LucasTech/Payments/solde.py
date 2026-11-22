@@ -1,5 +1,8 @@
 """Solde Lantante : SEULE porte d'entrée pour modifier un solde. Chaque opération verrouille le portefeuille
 (select_for_update) dans une transaction, écrit un mouvement, et refuse tout solde négatif."""
+import math
+from decimal import Decimal
+
 from django.db import IntegrityError, transaction
 
 MIN_DEPOT = 100
@@ -86,8 +89,16 @@ def debiter_jusqua(user, montant, motif):
         return pris
 
 
-def demander_retrait(user, montant, numero):
-    """Le montant quitte le solde tout de suite ; l'équipe l'envoie sur Mobile Money puis marque « Payé »."""
+def frais_retrait(montant):
+    """Frais payés par le client, retenus sur le montant retiré (arrondis au franc supérieur)."""
+    from courses.models import Parametres
+    p = Parametres.get()
+    frais = math.ceil(Decimal(int(montant)) * p.retrait_frais_pct / 100) if p.retrait_frais_pct else 0
+    return max(int(frais), int(p.retrait_frais_min))
+
+
+def demander_retrait(user, montant, numero, frais_vus=None):
+    """Le montant quitte le solde tout de suite ; l'équipe envoie montant − frais puis marque « Payé »."""
     from .models import Portefeuille, RetraitClient
     try:
         montant = int(montant)
@@ -98,13 +109,19 @@ def demander_retrait(user, montant, numero):
         raise ValueError(f"Retrait minimum : {MIN_RETRAIT} CFA.")
     if not 8 <= len(numero.lstrip('+')) <= 15 or not numero.lstrip('+').isdigit():
         raise ValueError("Numéro Mobile Money invalide.")
+    frais = frais_retrait(montant)
+    if frais >= montant:
+        raise ValueError("Montant trop faible par rapport aux frais.")
+    # le client doit avoir vu les frais exacts avant de confirmer
+    if frais and str(frais_vus) != str(frais):
+        raise ValueError(f"Frais de retrait : {frais} CFA. Mettez à jour l'appli et confirmez à nouveau.")
     with transaction.atomic():
         Portefeuille.objects.get_or_create(user=user)
         Portefeuille.objects.select_for_update().get(user=user)
         if RetraitClient.objects.filter(user=user, statut='en_attente').exists():
             raise ValueError("Un retrait est déjà en cours.")
-        r = RetraitClient.objects.create(user=user, montant=montant, numero=numero)
-        _mouvement(user, -montant, 'retrait', motif=f"Retrait n° {r.pk} vers {numero}")
+        r = RetraitClient.objects.create(user=user, montant=montant, frais=frais, numero=numero)
+        _mouvement(user, -montant, 'retrait', motif=f"Retrait n° {r.pk} vers {numero}" + (f" (frais {frais} CFA)" if frais else ""))
     return r
 
 

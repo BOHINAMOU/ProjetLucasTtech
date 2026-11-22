@@ -86,6 +86,7 @@ class ParametresAdmin(admin.ModelAdmin):
         ("Recherche et départ", {'fields': ('message_aucun_partenaire', 'code_depart_obligatoire',
                                             'rayon_arrivee_auto_m', 'rayon_arrivee_manuelle_m')}),
         ("Pourboire", {'fields': ('pourboire_max',)}),
+        ("Retrait du solde client", {'fields': ('retrait_frais_pct', 'retrait_frais_min')}),
         ("Prix et attente", {'fields': ('arrondi', 'coef_route', 'vitesse_moyenne_kmh', 'attente_gratuite_min',
                                         'prix_attente_moto', 'prix_attente_voiture', 'seuil_augmentation_pct',
                                         'mention_prix')}),

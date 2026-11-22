@@ -198,6 +198,10 @@ class Parametres(models.Model):
     # Dette des partenaires
     dette_max_especes = models.PositiveIntegerField("Dette max avant blocage des courses en espèces (FCFA)", default=10000)
     dette_max_totale = models.PositiveIntegerField("Dette max avant blocage total (FCFA)", default=15000)
+    retrait_frais_pct = models.DecimalField(
+        "Frais de retrait client (%)", max_digits=5, decimal_places=2, default=0,
+        help_text="Payés par le client : retenus sur le montant qu'il retire.")
+    retrait_frais_min = models.PositiveIntegerField("Frais de retrait minimum (FCFA)", default=0)
     alerte_solde = models.PositiveIntegerField(
         "Alerte solde négatif (FCFA)", default=5000,
         help_text="Quand le solde d'un coursier descend sous −ce montant : message « Rechargez votre compte » "
