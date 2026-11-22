@@ -180,7 +180,9 @@ class Parametres(models.Model):
     note_suspension = models.DecimalField("Note : seuil de suspension", max_digits=3, decimal_places=2, default=4.0)
     notes_min_affichage = models.PositiveSmallIntegerField("Notes minimum avant affichage", default=5)
     # Discussion client ↔ partenaire
-    chat_ouvert_apres_fin_min = models.PositiveSmallIntegerField("Discussion ouverte après la fin (min)", default=60)
+    chat_ouvert_apres_fin_min = models.PositiveSmallIntegerField(
+        "Discussion ouverte après la fin (min)", default=0,
+        help_text="0 : la discussion s'arrête dès la fin de la course (l'historique reste visible).")
     audio_duree_max_s = models.PositiveSmallIntegerField("Message vocal : durée max (s)", default=60)
     fichier_taille_max_ko = models.PositiveIntegerField("Message vocal ou photo : taille max (Ko)", default=5120)
     modele_message_acceptation = models.TextField(
