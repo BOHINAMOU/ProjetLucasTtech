@@ -97,7 +97,7 @@ class ParametresAdmin(admin.ModelAdmin):
         ("Fidélité", {'fields': ('fidelite_courses', 'fidelite_pct', 'fidelite_plafond', 'fidelite_validite_jours')}),
         ("Notes", {'fields': ('note_avertissement', 'note_suspension', 'notes_min_affichage')}),
         ("Discussion", {'fields': ('chat_ouvert_apres_fin_min', 'audio_duree_max_s', 'fichier_taille_max_ko',
-                                   'modele_message_acceptation', 'modele_message_arrivee')}),
+                                   'modele_message_acceptation', 'modele_message_arrivee', 'modele_message_fin')}),
     )
 
     def has_add_permission(self, request):

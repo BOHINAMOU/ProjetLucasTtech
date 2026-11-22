@@ -599,7 +599,10 @@ def terminer(partenaire, course_id, maintenant=None):
         mouvement_partenaire(partenaire.pk, gain, 'gain', course,
                              f"Course n° {course.pk} payée par le solde" if course.moyen_paiement == 'portefeuille'
                              else f"Course n° {course.pk} : réduction et frais pris en charge par Lantante")
-    _notifier(course.client, "Course terminée", f"Reçu {course.numero_recu} : {course.total_client} FCFA.")
+    from .discussion import message_systeme
+    message_systeme(course, p.modele_message_fin)
+    _notifier(course.client, "Merci de nous avoir choisis 💚",
+              f"Course terminée. Reçu {course.numero_recu} : {course.total_client} FCFA. À très bientôt !")
     partenaire.refresh_from_db(fields=['solde'])
     pct = f"{Decimal(course.categorie.commission_pct).normalize():f}"
     _notifier(partenaire.user, "Commission Lantante",

@@ -102,6 +102,10 @@ MESSAGE_ARRIVEE = ("📍 Votre coursier est arrivé !\n\n"
                    "{emoji} {vehicule}\n"
                    "🔖 Plaque : {plaque}\n\n"
                    "⏱️ Attente gratuite : {attente} min. À tout de suite !")
+MESSAGE_FIN = ("🎉 Course terminée !\n\n"
+               "Merci beaucoup {prenom_client} de nous avoir choisis 💚\n"
+               "Nous espérons que tout s'est bien passé avec {prenom_coursier}.\n\n"
+               "À très bientôt sur Lantante Express !")
 MESSAGE_AUCUN = ("Aucun coursier disponible dans votre zone pour le moment. "
                  "Merci de réessayer dans quelques instants.")
 
@@ -181,6 +185,9 @@ class Parametres(models.Model):
         "Message automatique à l'acceptation", default=MESSAGE_ACCEPTATION,
         help_text="Variables : {prenom_client}, {prenom_coursier}, {vehicule} (marque, modèle, couleur), {plaque}, "
                   "{eta} (minutes), {code}, {emoji} (🏍️ 🛺 🚗), {attente} (minutes gratuites).")
+    modele_message_fin = models.TextField(
+        "Message automatique à la fin (remerciement)", default=MESSAGE_FIN,
+        help_text="Mêmes variables que le message d'acceptation.")
     modele_message_arrivee = models.TextField(
         "Message automatique à l'arrivée", default=MESSAGE_ARRIVEE,
         help_text="Mêmes variables que le message d'acceptation.")

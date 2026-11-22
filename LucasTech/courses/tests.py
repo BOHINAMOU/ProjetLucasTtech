@@ -890,3 +890,13 @@ class PhotoProfilTests(APITestCase):
             self.assertIn('avatars/', r['photo'])
             r = self.client.delete('/api/mobile/v1/me/photo/').json()
             self.assertFalse(r['photo'])
+
+
+class MessageFinTests(CourseEnDirectTests):
+    def test_merci_a_la_fin(self):
+        S.signaler_arrivee(self.p, self.c.pk, verifier_distance=False)
+        S.demarrer(self.p, self.c.pk, '')
+        c = S.terminer(self.p, self.c.pk)
+        texte = c.messages.filter(par='systeme').last().texte
+        self.assertIn('Merci beaucoup Ama de nous avoir choisis', texte)
+        self.assertIn('À très bientôt', texte)
