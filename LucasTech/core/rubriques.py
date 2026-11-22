@@ -9,6 +9,7 @@ RUBRIQUES = {
     'courses': ("Gestion des courses", 'fa-motorcycle', [
         ('courses.Course', "Courses"), ('courses.Partenaire', "Coursiers"),
         ('courses.Signalement', "Plaintes"), ('courses.MessageCourse', "Messages"),
+        ('courses.MessageSupport', "Messages support ↔ coursiers"),
         ('courses.DocumentPartenaire', "Papiers des coursiers"), ('courses.DemandeChangementType', "Changements de véhicule"),
         ('courses.DemandeVersement', "Retraits des coursiers"), ('courses.Remboursement', "Remboursements"),
         ('courses.Annulation', "Annulations"), ('courses.Note', "Notes des clients"),

@@ -16,7 +16,7 @@ from api_mobile.utils import dt, error, media
 
 from . import discussion as D
 from . import services as S
-from .models import (Categorie, Course, DemandeChangementType, DocumentPartenaire, Parametres, Partenaire, Service,
+from .models import (MessageSupport, Categorie, Course, DemandeChangementType, DocumentPartenaire, Parametres, Partenaire, Service,
                      Signalement)
 
 EXTENSIONS = ('.jpg', '.jpeg', '.png', '.webp', '.pdf')
@@ -344,6 +344,7 @@ def partenaire_payload(request, part):
     return {
         'id': part.pk, 'type': part.type, 'type_libelle': part.get_type_display(), 'statut': part.statut,
         'photo': media(request, part.user.avatar),
+        'support_non_lus': part.messages_support.filter(par='support', lu_le__isnull=True).count(),
         'type_vehicule': part.type_vehicule, 'climatise': part.climatise, 'marque': part.marque, 'modele': part.modele,
         'couleur': part.couleur, 'annee': part.annee, 'quartier': part.quartier, 'urgence_nom': part.urgence_nom,
         'urgence_tel': part.urgence_tel,
@@ -775,3 +776,25 @@ def solde_suffisant(request):
     except ValueError:
         montant = 0
     return Response({'suffisant': portefeuille(request.user).solde >= montant > 0})
+
+
+
+def _msg_support(m):
+    return {'id': m.pk, 'par': m.par, 'texte': m.texte, 'date': dt(m.created_at), 'lu': m.lu_le is not None,
+            'course': m.course.reference if m.course_id else None}
+
+
+@api_view(['GET', 'POST'])
+def support(request):
+    """Messagerie du coursier avec le support Lantante. GET : messages (ceux du support deviennent lus).
+    POST {texte} : réponse du coursier."""
+    part = _partenaire(request)
+    if not part:
+        return error("Inscrivez-vous d'abord.", status=404, code='pas_partenaire')
+    if request.method == 'POST':
+        texte = str(request.data.get('texte') or '').strip()
+        if not texte:
+            return error("Écrivez votre message.", code='texte')
+        MessageSupport.objects.create(partenaire=part, par='coursier', auteur=request.user, texte=texte[:2000])
+    part.messages_support.filter(par='support', lu_le__isnull=True).update(lu_le=timezone.now())
+    return Response({'messages': [_msg_support(m) for m in part.messages_support.select_related('course')[:200]]})

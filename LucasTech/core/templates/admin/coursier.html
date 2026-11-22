@@ -56,6 +56,22 @@
     </div>
   </div>
 
+  <div class="cx-c" id="support">
+    <div class="h"><b><span class="ms">support_agent</span>Messages avec le coursier</b><span class="m">Il reçoit une notification et peut répondre dans son appli</span></div>
+    <div style="padding:12px 18px;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto">
+      {% for m in support %}
+      <div style="align-self:{% if m.par == 'support' %}flex-end{% else %}flex-start{% endif %};max-width:75%;padding:10px 14px;border-radius:14px;background:{% if m.par == 'support' %}var(--lt-vert-clair){% else %}#F3F4F2{% endif %}">
+        <div style="white-space:pre-wrap">{{ m.texte }}</div>
+        <small style="color:var(--lt-gris)">{% if m.par == 'support' %}Support{% if m.auteur %} · {{ m.auteur.first_name|default:m.auteur.email }}{% endif %}{% else %}{{ nom }}{% endif %} · {{ m.created_at|date:"d/m H:i" }}</small>
+      </div>
+      {% empty %}<div class="vide p">Aucun message. Écrivez au coursier ci-dessous (question, demande d'explication…).</div>{% endfor %}
+    </div>
+    <form method="post" style="display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--lt-bord)">{% csrf_token %}
+      <textarea name="texte" rows="2" required placeholder="Écrire au coursier…" style="flex:1;border:1px solid var(--lt-bord);border-radius:10px;padding:10px;font:inherit"></textarea>
+      <button class="cx-b" type="submit" style="align-self:flex-end;cursor:pointer"><span class="ms">send</span>Envoyer</button>
+    </form>
+  </div>
+
   <div class="cx-c">
     <div class="h"><b><span class="ms">account_balance_wallet</span>Son solde · derniers mouvements</b></div>
     {% for m in mouvements %}<div class="cx-s"><span>{{ m.created_at|date:"d/m H:i" }} · {{ m.get_type_display }}{% if m.motif %} <small>{{ m.motif }}</small>{% endif %}</span><b class="{% if m.montant < 0 %}rouge{% endif %}">{{ m.montant }} F</b></div>

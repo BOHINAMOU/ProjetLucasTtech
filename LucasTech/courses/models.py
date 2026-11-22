@@ -741,3 +741,27 @@ class CompteVendeur(User):
         proxy = True
         verbose_name = "Vendeur (compte)"
         verbose_name_plural = "Vendeurs (comptes)"
+
+
+
+class MessageSupport(models.Model):
+    """Messagerie entre l'équipe Lantante (support) et un coursier : question, demande d'explication, réponse."""
+    PAR = [('support', 'Support Lantante'), ('coursier', 'Coursier')]
+    partenaire = models.ForeignKey(Partenaire, on_delete=models.CASCADE, related_name='messages_support',
+                                   verbose_name="Coursier")
+    par = models.CharField("De", max_length=10, choices=PAR, default='support')
+    auteur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='+', verbose_name="Écrit par")
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+                               verbose_name="Course concernée")
+    texte = models.TextField("Message", max_length=2000)
+    lu_le = models.DateTimeField("Lu le", null=True, blank=True)
+    created_at = models.DateTimeField("Envoyé le", auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = "Message support ↔ coursier"
+        verbose_name_plural = "Messages support ↔ coursiers"
+
+    def __str__(self):
+        return f"{self.get_par_display()} · {self.texte[:40]}"

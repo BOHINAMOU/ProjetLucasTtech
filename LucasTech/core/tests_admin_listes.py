@@ -84,3 +84,28 @@ class ListesAdminTests(TestCase):
         self.assertEqual(r.status_code, 200)
         for texte in ('Kodjo', 'Ses courses', 'Tokoin', 'Photo de profil', 'Impoli', 'Moto'):
             self.assertContains(r, texte)
+
+    def test_messagerie_support_coursier(self):
+        from api_mobile.models import Notification
+        from courses.models import MessageSupport, Partenaire
+        U = get_user_model()
+        cou = U.objects.create_user(email='yao@example.com', password='x-Pass-12345', first_name='Yao')
+        p = Partenaire.objects.create(user=cou, plaque='TG 2', type_vehicule='moto', statut='valide')
+        url = f'/lantanteAdminTech/section/courses/coursier/{p.pk}/'
+        r = self.client.post(url, {'texte': "Pourquoi la course LX-123 n'a pas été faite ?"})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Notification.objects.filter(utilisateur=cou, titre='Message du support Lantante').exists())
+        from rest_framework.test import APIClient
+        api = APIClient()
+        api.force_authenticate(cou)
+        self.assertEqual(api.get('/api/mobile/v1/courses/partenaire/').json()['support_non_lus'], 1)
+        d = api.get('/api/mobile/v1/courses/partenaire/support/').json()
+        self.assertEqual(d['messages'][0]['par'], 'support')
+        self.assertEqual(api.get('/api/mobile/v1/courses/partenaire/').json()['support_non_lus'], 0)
+        d = api.post('/api/mobile/v1/courses/partenaire/support/', {'texte': 'Le client était absent.'}, format='json').json()
+        self.assertEqual(d['messages'][-1]['par'], 'coursier')
+        r = self.client.get('/lantanteAdminTech/section/courses/?vue=demandes')
+        self.assertContains(r, 'Le client était absent.')
+        r = self.client.get(url)
+        self.assertContains(r, 'Le client était absent.')
+        self.assertEqual(MessageSupport.objects.filter(par='coursier', lu_le__isnull=True).count(), 0)

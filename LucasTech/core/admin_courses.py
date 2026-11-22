@@ -103,6 +103,10 @@ def _demandes():
     bloc("Retraits demandés par les coursiers", 'account_balance_wallet', DemandeVersement.objects.filter(statut='en_attente')
          .select_related('partenaire__user'), _u('demandeversement_changelist'),
          lambda v: (_f(v.montant), f"{_nom(v.partenaire)} · {v.numero}", _u('demandeversement_change', v.pk)))
+    from courses.models import MessageSupport
+    bloc("Réponses des coursiers", 'forum', MessageSupport.objects.filter(par='coursier', lu_le__isnull=True)
+         .select_related('partenaire__user').order_by('-created_at'), _u('messagesupport_changelist') + '?par__exact=coursier',
+         lambda m: (_nom(m.partenaire), m.texte[:80], reverse('admin_coursier', args=[m.partenaire_id]) + '#support'))
     bloc("Remboursements à valider", 'currency_exchange', Remboursement.objects.filter(statut='en_attente')
          .select_related('course'), _u('remboursement_changelist'),
          lambda r: (_f(r.montant), f"Course {r.course.reference} · {r.motif[:60]}", _u('remboursement_change', r.pk)))
@@ -218,7 +222,18 @@ def coursier(request, pk):
     docs = [{'d': d, 'url': _u('documentpartenaire_change', d.pk)} for d in p.documents.all()]
     mouvements = p.mouvements.order_by('-created_at')[:15]
     vu = timezone.localtime(p.position_le).strftime('%d/%m à %H:%M') if p.position_le else 'jamais'
-    ctx = dict(_admin.site.each_context(request), title=_nom(p), p=p, nom=_nom(p), kpis=kpis, vu=vu,
+    from courses.models import MessageSupport
+    from courses.services import _notifier
+    if request.method == 'POST' and request.user.has_perm('courses.add_messagesupport'):
+        texte = (request.POST.get('texte') or '').strip()
+        if texte:
+            MessageSupport.objects.create(partenaire=p, par='support', auteur=request.user, texte=texte[:2000])
+            _notifier(p.user, "Message du support Lantante", texte[:200])
+        from django.shortcuts import redirect
+        return redirect(reverse('admin_coursier', args=[p.pk]) + '#support')
+    support = list(p.messages_support.select_related('auteur').order_by('-created_at')[:30])[::-1]
+    p.messages_support.filter(par='coursier', lu_le__isnull=True).update(lu_le=timezone.now())
+    ctx = dict(_admin.site.each_context(request), title=_nom(p), p=p, nom=_nom(p), kpis=kpis, vu=vu, support=support,
                courses=[_ligne_course(c) for c in courses[:50]], plaintes=plaintes, docs=docs, mouvements=mouvements,
                cls={'valide': 'ok', 'en_attente': 'or', 'a_completer': 'or'}.get(p.statut, 'ko'),
                modifier=_u('partenaire_change', p.pk))

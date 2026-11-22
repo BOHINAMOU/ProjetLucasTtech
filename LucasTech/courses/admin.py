@@ -603,3 +603,31 @@ class CompteSystemeAdmin(_CompteAdmin):
 @admin.register(CompteVendeur)
 class CompteVendeurAdmin(_CompteAdmin):
     list_display = ('email', 'nom', 'phone', 'date_joined', 'fiche')
+
+
+
+# ─────────────────────────────
+# Messagerie support ↔ coursier
+# ─────────────────────────────
+from .models import MessageSupport  # noqa: E402
+
+
+@admin.register(MessageSupport)
+class MessageSupportAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'partenaire', 'par', 'texte_court', 'course', 'lu_le')
+    list_filter = ('par', ('lu_le', admin.EmptyFieldListFilter))
+    search_fields = ('texte', 'partenaire__user__email', 'partenaire__user__first_name')
+    autocomplete_fields = ('partenaire',)
+    raw_id_fields = ('course',)
+    fields = ('partenaire', 'course', 'texte')
+
+    @admin.display(description="Message")
+    def texte_court(self, obj):
+        return obj.texte[:80]
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.par, obj.auteur = 'support', request.user
+        super().save_model(request, obj, form, change)
+        if not change:
+            S._notifier(obj.partenaire.user, "Message du support Lantante", obj.texte[:200])
