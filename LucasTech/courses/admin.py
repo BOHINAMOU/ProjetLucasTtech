@@ -377,9 +377,11 @@ class RemboursementAdmin(admin.ModelAdmin):
 @admin.register(Signalement)
 class SignalementAdmin(FichierPriveMixin, admin.ModelAdmin):
     nom_vue = 'courses_signalement_fichier'
-    list_display = ('created_at', 'course', 'par', 'motif', 'statut', 'piece')
+    list_display = ('created_at', 'course', 'personne', 'telephone', 'par', 'motif', 'statut', 'piece', 'repondre')
     list_filter = ('statut', 'motif', 'par')
-    search_fields = ('course__id', 'commentaire', 'auteur__email')
+    list_select_related = ('course', 'auteur')
+    search_fields = ('course__reference', 'commentaire', 'auteur__email', 'auteur__first_name', 'auteur__last_name',
+                     'auteur__phone')
     readonly_fields = ('course', 'auteur', 'par', 'motif', 'commentaire', 'piece', 'created_at')
     fields = ('course', 'auteur', 'par', 'motif', 'commentaire', 'piece', 'statut', 'reponse', 'created_at')
 
@@ -389,6 +391,19 @@ class SignalementAdmin(FichierPriveMixin, admin.ModelAdmin):
     @admin.display(description="Pièce jointe")
     def piece(self, obj):
         return _fichier_prive(self.nom_vue, obj.pk, 'piece_jointe') if obj.piece_jointe else '—'
+
+    @admin.display(description="Nom et prénom")
+    def personne(self, obj):
+        return obj.auteur.get_full_name() or obj.auteur.email
+
+    @admin.display(description="Téléphone")
+    def telephone(self, obj):
+        return obj.auteur.phone or '—'
+
+    @admin.display(description="Répondre")
+    def repondre(self, obj):
+        return format_html('<a class="btn btn-sm btn-success" href="{}#repondre">{}</a>',
+                           reverse('admin_plainte', args=[obj.pk]), "Répondre" if not obj.reponse else "Voir")
 
 
 @admin.register(Note)
@@ -511,7 +526,7 @@ class _CompteAdmin(admin.ModelAdmin):
 
     @admin.display(description="Fiche")
     def fiche(self, obj):
-        return format_html('<a href="{}">Ouvrir</a>', reverse('admin:Users_user_change', args=[obj.pk]))
+        return format_html('<a href="{}">Ouvrir</a>', reverse('admin_client', args=[obj.pk]))
 
 
 @admin.register(CompteClient)

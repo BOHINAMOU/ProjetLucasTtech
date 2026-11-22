@@ -27,7 +27,7 @@
       <tbody>{% for x in courses %}<tr>
         <td>{{ x.heure }}</td>
         <td><a href="{{ x.url }}"><b>{{ x.c.reference }}</b></a></td>
-        <td>{{ x.client }}</td>
+        <td><a href="{{ x.client_url }}">{{ x.client }}</a></td>
         <td>{% if x.coursier_url %}<a href="{{ x.coursier_url }}">{{ x.coursier }}</a>{% else %}—{% endif %}</td>
         <td>{{ x.c.categorie.nom }}</td>
         <td class="tr">{{ x.c.depart_adresse|truncatechars:34 }} → {{ x.c.arrivee_adresse|truncatechars:34 }}</td>

@@ -54,8 +54,8 @@
     </div>
     <div class="cx-c">
       <div class="h"><b><span class="ms">report</span>Plaintes sur ses courses</b></div>
-      {% for s in plaintes %}<div class="cx-l"><b>{{ s.get_motif_display }} <span class="pil {% if s.statut == 'resolu' %}ok{% elif s.statut == 'nouveau' %}ko{% else %}or{% endif %}">{{ s.get_statut_display }}</span></b>
-        <small>{{ s.created_at|date:"d/m/Y H:i" }} · course {{ s.course.reference }} · par le {% if s.par == 'client' %}client{% else %}coursier{% endif %}{% if s.commentaire %} : {{ s.commentaire|truncatechars:90 }}{% endif %}</small></div>
+      {% for s in plaintes %}<a class="cx-l" href="{% url 'admin_plainte' s.pk %}"><b>{{ s.get_motif_display }} <span class="pil {% if s.statut == 'resolu' %}ok{% elif s.statut == 'nouveau' %}ko{% else %}or{% endif %}">{{ s.get_statut_display }}</span></b>
+        <small>{{ s.created_at|date:"d/m/Y H:i" }} · course {{ s.course.reference }} · par le {% if s.par == 'client' %}client{% else %}coursier{% endif %}{% if s.commentaire %} : {{ s.commentaire|truncatechars:90 }}{% endif %}</small></a>
       {% empty %}<div class="vide p">Aucune plainte.</div>{% endfor %}
     </div>
   </div>

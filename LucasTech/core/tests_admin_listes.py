@@ -126,3 +126,41 @@ class ListesAdminTests(TestCase):
         for f in ('actifs', 'non_actifs', 'en_ligne', 'solde_negatif'):
             self.assertEqual(self.client.get(f'/lantanteAdminTech/section/courses/?vue=coursiers&filtre={f}').status_code, 200)
         self.assertContains(self.client.get('/lantanteAdminTech/section/courses/?vue=reglages'), 'Promotions')
+
+
+    def test_plainte_repondre_fiches_client_et_boutique(self):
+        from api_mobile.models import Notification
+        from courses.models import Categorie, Course, Signalement
+        from Marche.models import Vendeur
+        from Payments.models import Payment
+        from Shop.models import Category, Product
+        U = get_user_model()
+        cli = U.objects.create_user(email='ama@example.com', password='x-Pass-12345', first_name='Ama', last_name='Koffi',
+                                    phone='+22892223344')
+        c = Course.objects.create(client=cli, categorie=Categorie.objects.get(code='moto'), depart_lat=6.13, depart_lng=1.22,
+                                  arrivee_lat=6.16, arrivee_lng=1.22, distance_km=4, duree_min=10, prix_estime=600,
+                                  statut='terminee', depart_adresse='Bè', arrivee_adresse='Tokoin')
+        s = Signalement.objects.create(course=c, auteur=cli, par='client', motif='retard', commentaire='Trop de retard')
+        url = f'/lantanteAdminTech/section/courses/plainte/{s.pk}/'
+        r = self.client.get(url)
+        for t in ('Ama', 'Koffi', '+22892223344', 'ama@example.com', 'Trop de retard', 'Envoyer la réponse'):
+            self.assertContains(r, t)
+        self.assertContains(self.client.get(reverse('admin:courses_signalement_changelist')), 'Répondre')
+        self.client.post(url, {'reponse': 'Nous sommes désolés.', 'statut': 'resolu'})
+        s.refresh_from_db()
+        self.assertEqual((s.reponse, s.statut), ('Nous sommes désolés.', 'resolu'))
+        self.assertTrue(Notification.objects.filter(utilisateur=cli, message='Nous sommes désolés.').exists())
+        r = self.client.get(f'/lantanteAdminTech/section/utilisateurs/client/{cli.pk}/')
+        for t in ('Ama Koffi', 'Courses par jour', c.reference, 'Tokoin', 'Retard important'):
+            self.assertContains(r, t)
+        v = Vendeur.objects.create(user=U.objects.create_user(email='irene@example.com', password='x-Pass-12345'),
+                                   boutique='Irene Style', whatsapp='22890000001', ville='Lomé', statut='valide')
+        p = Product.objects.create(name='Robe', price=5000, stock=2, vendeur=v, is_available=True,
+                                   category=Category.objects.create(name='Mode', slug='mode'))
+        Payment.objects.create(user=cli, vendeur=v, product=p, kind='product', amount=5000, commission=500, status='approved')
+        r = self.client.get(f'/lantanteAdminTech/section/vendeurs/{v.pk}/stats/')
+        for t in ('Irene Style', 'Robe', 'Ventes par jour', 'Reste à reverser', 'Ama Koffi'):
+            self.assertContains(r, t)
+        r = self.client.get('/lantanteAdminTech/section/vendeurs/')
+        self.assertContains(r, f'/section/vendeurs/{v.pk}/stats/')
+        self.assertContains(r, 'Suspendues ou expirées')

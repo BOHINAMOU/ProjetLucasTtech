@@ -1,0 +1,60 @@
+{% extends "admin/base_site.html" %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}<ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Accueil</a></li><li class="breadcrumb-item"><a href="{{ retour.0 }}">{{ retour.1 }}</a></li><li class="breadcrumb-item">{{ entete.titre|truncatechars:40 }}</li></ol>{% endblock %}
+{% block extrastyle %}{{ block.super }}{% include "admin/_courses_style.html" %}
+<style>
+  .st-info { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 28px; padding:8px 18px 12px; }
+  .st-info div { display:flex; justify-content:space-between; gap:14px; padding:8px 0; border-bottom:1px solid #F0F2EF; font-size:.9rem; }
+  .st-info span { color:var(--lt-gris); white-space:nowrap; } .st-info b { text-align:right; overflow-wrap:anywhere; }
+  .st-msg { padding:16px 18px; white-space:pre-wrap; line-height:1.55; }
+  .st-rep { padding:14px 18px; display:flex; flex-direction:column; gap:10px; }
+  .st-rep textarea { width:100%; border:1px solid var(--lt-bord); border-radius:10px; padding:12px; font:inherit; }
+  .st-rep select { height:42px; border:1px solid var(--lt-bord); border-radius:10px; padding:0 10px; font:inherit; background:#fff; }
+  .st-rep .l { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+  .st-av { width:64px; height:64px; border-radius:50%; object-fit:cover; }
+  @media (max-width:700px) { .st-info { grid-template-columns:minmax(0,1fr); } }
+</style>{% endblock %}
+{% block content %}
+<div class="cx">
+  <div class="cf-tete">
+    {% if entete.photo %}<img class="st-av" src="{{ entete.photo }}" alt="">{% else %}<span class="av"><span class="ms">{{ entete.icone }}</span></span>{% endif %}
+    <div class="in"><h1>{{ entete.titre }}</h1>
+      <div class="m">{% for t, cls in entete.pastilles %}<span class="pil {{ cls }}">{{ t }}</span>{% endfor %}<span>{{ entete.sous }}</span></div>
+    </div>
+    <div class="cf-acts">{% for t, u, p in entete.actions %}<a class="cx-b {% if not p %}g{% endif %}" href="{{ u }}">{{ t }}</a>{% endfor %}</div>
+  </div>
+
+  {% if kpis %}<div class="cx-kp">{% for label, v, ic in kpis %}<div><span class="ms">{{ ic }}</span><span><small>{{ label }}</small><b>{{ v }}</b></span></div>{% endfor %}</div>{% endif %}
+
+  {% if message %}
+  <div class="cx-c"><div class="h"><b><span class="ms">chat</span>{{ message.titre }}</b>{% if message.piece %}<a href="{{ message.piece }}">Voir la pièce jointe</a>{% endif %}</div><div class="st-msg">{{ message.texte }}</div></div>
+  {% endif %}
+  {% if reponse %}
+  <div class="cx-c" id="repondre"><div class="h"><b><span class="ms">reply</span>Répondre</b><span class="m">La personne reçoit une notification</span></div>
+    <form method="post" class="st-rep">{% csrf_token %}
+      <textarea name="reponse" rows="4" required placeholder="Écrire votre réponse…">{{ reponse.texte }}</textarea>
+      <div class="l"><select name="statut" aria-label="Statut">{% for v, t in reponse.statuts %}<option value="{{ v }}" {% if v == 'resolu' and reponse.statut == 'nouveau' or v == reponse.statut and reponse.statut != 'nouveau' %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+      <button class="cx-b" type="submit" style="cursor:pointer"><span class="ms">send</span>Envoyer la réponse</button></div>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if serie %}
+  <div class="cx-c"><div class="h"><b>{{ serie.titre }}</b></div>
+    <div class="cx-bar">{% for s in serie.points %}<div title="{{ s.j }} : {{ s.n }}"><span class="v">{% if s.n %}{{ s.n }}{% endif %}</span><span class="barre" style="height:{{ s.h }}%"></span><small>{{ s.j }}</small></div>{% endfor %}</div>
+  </div>
+  {% endif %}
+
+  <div class="{% if blocs|length > 1 %}cx-g2{% endif %}">
+    {% for b in blocs %}<div class="cx-c"><div class="h"><b>{{ b.titre }}</b></div><div class="st-info" {% if blocs|length > 1 %}style="grid-template-columns:minmax(0,1fr)"{% endif %}>{% for l, v in b.lignes %}<div><span>{{ l }}</span><b>{{ v|default:"—" }}</b></div>{% endfor %}</div></div>{% endfor %}
+  </div>
+
+  {% for t in tableaux %}
+  <div class="cx-c"><div class="h"><b>{{ t.titre }} · {{ t.lignes|length }}</b></div>
+    {% if t.lignes %}<div class="cx-t"><table><thead><tr>{% for c in t.colonnes %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for l in t.lignes %}<tr>{% for c in l %}<td>{% if c.p != '' or not c.u %}{% if c.p %}<span class="pil {{ c.p }}">{{ c.t }}</span>{% else %}{{ c.t }}{% endif %}{% else %}<a href="{{ c.u }}"><b>{{ c.t }}</b></a>{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table></div>{% else %}<div class="vide p">{{ t.vide }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

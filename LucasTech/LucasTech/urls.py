@@ -4,7 +4,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.http import HttpResponse
 from core import views as core_views
 from django.urls import path, include, re_path
-from core import a_traiter, admin_connexion, admin_courses, admin_evenements, admin_fiches, admin_hotels, admin_recherche
+from core import a_traiter, admin_connexion, admin_courses, admin_stats, admin_evenements, admin_fiches, admin_hotels, admin_recherche
 from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve as serve_static
 
@@ -42,6 +42,9 @@ urlpatterns = [
     path('lantanteAdminTech/section/evenements/<int:pk>/', admin_evenements.tableau, name='admin_evenement'),
     path('lantanteAdminTech/section/hotels/<int:pk>/', admin_hotels.fiche, name='admin_hotel'),
     path('lantanteAdminTech/section/courses/coursier/<int:pk>/', admin_courses.coursier, name='admin_coursier'),
+    path('lantanteAdminTech/section/courses/plainte/<int:pk>/', admin_stats.plainte, name='admin_plainte'),
+    path('lantanteAdminTech/section/utilisateurs/client/<int:pk>/', admin_stats.client, name='admin_client'),
+    path('lantanteAdminTech/section/vendeurs/<int:pk>/stats/', admin_stats.boutique, name='admin_boutique'),
     path('lantanteAdminTech/section/vendeurs/<int:pk>/acces/', admin_fiches.vendeur_acces, name='admin_vendeur_acces'),
     path('lantanteAdminTech/section/services/<int:pk>/basculer/', admin_fiches.service_basculer, name='admin_service_basculer'),
     path('lantanteAdminTech/section/<str:code>/<int:pk>/', admin_fiches.fiche, name='admin_fiche'),

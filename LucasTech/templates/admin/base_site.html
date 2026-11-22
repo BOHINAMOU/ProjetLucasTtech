@@ -204,7 +204,13 @@
   .lt-logo img { width:100%; height:100%; object-fit:contain; }
   .lt-marque b { color:#fff !important; }
   .lt-marque small { color:rgba(255,255,255,.6) !important; }
-  .lt-nav .lt-groupe { color:rgba(233,213,138,.7) !important; }
+  .lt-nav .lt-groupe { color:rgba(233,213,138,.85) !important; padding:0 !important; margin-top:6px; }
+  .lt-plier { all:unset; box-sizing:border-box; width:100%; display:flex; align-items:center; justify-content:space-between; padding:9px 10px; border-radius:8px;
+              cursor:pointer; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:inherit; }
+  .lt-plier:hover { background:rgba(255,255,255,.07); } .lt-plier:focus-visible { outline:2px solid #E9D58A; }
+  .lt-plier .ms { font-size:18px; color:inherit !important; transition:transform .15s; }
+  .lt-plier[aria-expanded="false"] .ms { transform:rotate(-90deg); }
+  .lt-nav li[hidden] { display:none !important; }
   .lt-nav li a { color:rgba(255,255,255,.85) !important; position:relative; font-weight:500; }
   .lt-nav li a .ms { color:rgba(255,255,255,.75) !important; }
   @media (hover: hover) { .lt-nav li a:hover:not(.actif) { background:rgba(255,255,255,.08) !important; color:#fff !important; } }
@@ -270,12 +276,33 @@
         <li><a href="{% url 'admin:index' %}" class="{% if request.path == '/lantanteAdminTech/' %}actif{% endif %}"><span class="ms">space_dashboard</span><span class="t">Tableau de bord</span></a></li>
         <li><a href="{% url 'admin_a_traiter' %}" class="{% if request.path == '/lantanteAdminTech/a-traiter/' %}actif{% endif %}"><span class="ms">task_alt</span><span class="t">À traiter</span>{% if lt_a_traiter %}<span class="lt-nb">{{ lt_a_traiter }}</span>{% endif %}</a></li>
         {% for titre, rubs in lt_groupes %}
-        <li class="lt-groupe">{{ titre }}</li>
-        {% for r in rubs %}<li><a href="{{ r.url }}" class="{% if r.code == lt_actif %}actif{% endif %}"><span class="ms">{{ r.ms }}</span><span class="t">{{ r.titre }}</span>{% if r.n %}<span class="lt-nb">{{ r.n }}</span>{% endif %}</a></li>{% endfor %}
+        <li class="lt-groupe"><button type="button" class="lt-plier" data-g="{{ forloop.counter }}" aria-expanded="true"><span>{{ titre }}</span><span class="ms">expand_more</span></button></li>
+        {% for r in rubs %}<li data-gi="{{ forloop.parentloop.counter }}"><a href="{{ r.url }}" class="{% if r.code == lt_actif %}actif{% endif %}"><span class="ms">{{ r.ms }}</span><span class="t">{{ r.titre }}</span>{% if r.n %}<span class="lt-nb">{{ r.n }}</span>{% endif %}</a></li>{% endfor %}
         {% endfor %}
       </ul>
     </nav>
   </div>
+  <script>
+  (function () {
+    var nav = document.getElementById('jazzy-navigation'), cle = 'lt-groupes-ouverts', ouverts = [];
+    try { ouverts = JSON.parse(localStorage.getItem(cle) || '[]'); } catch (e) {}
+    function appliquer(b, ouvert) {
+      b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+      nav.querySelectorAll('[data-gi="' + b.dataset.g + '"]').forEach(function (li) { li.hidden = !ouvert; });
+    }
+    nav.querySelectorAll('.lt-plier').forEach(function (b) {
+      var actif = nav.querySelector('[data-gi="' + b.dataset.g + '"] a.actif');
+      appliquer(b, !!actif || ouverts.indexOf(b.dataset.g) >= 0);
+      b.addEventListener('click', function () {
+        var o = b.getAttribute('aria-expanded') !== 'true';
+        appliquer(b, o);
+        ouverts = ouverts.filter(function (x) { return x !== b.dataset.g; });
+        if (o) ouverts.push(b.dataset.g);
+        try { localStorage.setItem(cle, JSON.stringify(ouverts)); } catch (e) {}
+      });
+    });
+  })();
+  </script>
   <div class="lt-moi">
     <span class="lt-av">{{ lt_moi.initiales }}</span>
     <span class="q" title="{{ lt_moi.complet }}"><b>{{ lt_moi.nom }}</b><small>{{ lt_moi.role }}</small></span>

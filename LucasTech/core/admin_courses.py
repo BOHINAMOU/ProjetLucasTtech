@@ -39,6 +39,7 @@ def _ligne_course(c):
             'prix': _f(c.prix_final or c.prix_estime), 'client': c.client.get_full_name() or c.client.email,
             'coursier': (p.user.get_full_name() or p.user.email) if p else '—',
             'coursier_url': reverse('admin_coursier', args=[p.pk]) if p else '',
+            'client_url': reverse('admin_client', args=[c.client_id]),
             'url': _u('course_change', c.pk)}
 
 
@@ -108,7 +109,7 @@ def _demandes():
     bloc("Plaintes à traiter", 'report', Signalement.objects.filter(statut__in=('nouveau', 'en_cours'))
          .select_related('course', 'auteur').order_by('-created_at'), _u('signalement_changelist'),
          lambda s: (f"{s.get_motif_display()} · "
-                    f"{'client' if s.par == 'client' else 'coursier'}", s.commentaire[:80], _u('signalement_change', s.pk)))
+                    f"{'client' if s.par == 'client' else 'coursier'}", f"{s.auteur.get_full_name() or s.auteur.email} · {s.auteur.phone or ''} · {s.commentaire[:60]}", reverse('admin_plainte', args=[s.pk])))
     bloc("Papiers à vérifier", 'badge', DocumentPartenaire.objects.filter(statut='en_attente')
          .select_related('partenaire__user').order_by('created_at'), _u('documentpartenaire_changelist') + '?statut__exact=en_attente',
          lambda d: (d.get_type_display(), _nom(d.partenaire), reverse('admin_coursier', args=[d.partenaire_id])))
@@ -239,7 +240,7 @@ def coursier(request, pk):
         cl = c.client
         x.update({'client_nom': cl.get_full_name() or '—', 'client_email': cl.email, 'client_tel': cl.phone or '—',
                   'km': float((c.detail_prix or {}).get('compteur_km') or c.distance_reelle_km or 0) or float(c.distance_km),
-                  'client_url': reverse('admin:Users_user_change', args=[cl.pk])})
+                  'client_url': reverse('admin_client', args=[cl.pk])})
         lignes.append(x)
     term = courses.filter(statut='terminee')
     gains = sum((c.prix_final or c.prix_estime) for c in term)

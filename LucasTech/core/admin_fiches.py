@@ -68,7 +68,7 @@ def cartes(request, code):
         if not ma or not ma.has_view_or_change_permission(request):
             return None
         qs = ma.get_queryset(request).prefetch_related('produits').order_by('boutique')
-        return "Vendeurs", [{'url': reverse('admin_fiche', args=['vendeurs', v.pk]), 'photo': _url(v, 'logo'),
+        return "Boutiques", [{'url': reverse('admin_boutique', args=[v.pk]), 'photo': _url(v, 'logo'),
                              'titre': v.boutique,
                              'ligne': f"{v.ville} · {len(v.produits.all())} produit{'s' if len(v.produits.all()) > 1 else ''}",
                              'badge': '' if v.actif else v.get_statut_display()} for v in qs]

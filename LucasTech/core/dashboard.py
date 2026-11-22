@@ -373,8 +373,8 @@ def _chiffres(code):
             return [('Dossiers à vérifier', _count('Repetiteurs.Candidature', statut='a_verifier')),
                     ('Répétiteurs en ligne', _count('Repetiteurs.Repetiteur', actif=True))]
         if code == 'vendeurs':
-            return [('Vendeurs validés', _count('Marche.Vendeur', statut='valide')),
-                    ('Produits des vendeurs', _count('Shop.Product', vendeur__isnull=False))]
+            from .admin_stats import chiffres_vendeurs
+            return chiffres_vendeurs()
         if code == 'logements':
             L = _model('Logements.Logement')
             a = L.objects.aggregate(v=Sum('vues'), c=Sum('contacts'))

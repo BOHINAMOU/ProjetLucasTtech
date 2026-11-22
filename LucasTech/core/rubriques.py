@@ -103,10 +103,11 @@ def modeles(code):
 
 GROUPES = [
     ("Lantante Express", ['courses']),
-    ("Ventes", ['paiements', 'boutique', 'vendeurs', 'formations', 'concours']),
+    ("Clients et comptes", ['utilisateurs', 'notifications']),
+    ("Boutiques et ventes", ['vendeurs', 'boutique', 'paiements', 'formations', 'concours']),
     ("Contenus", ['publications', 'commentaires', 'evenements', 'emplois']),
     ("Services", ['services', 'hotels', 'restaurants', 'logements', 'ecoles', 'repetiteurs']),
-    ("Gestion", ['utilisateurs', 'notifications', 'reglages']),
+    ("Gestion", ['reglages']),
 ]
 
 # Icônes Material Symbols de la barre latérale
