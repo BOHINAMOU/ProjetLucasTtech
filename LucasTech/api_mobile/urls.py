@@ -24,6 +24,7 @@ urlpatterns = [
     path('auth/password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
     path('me/', views.me, name='me'),
     path('me/profil/', shop.profil, name='profil'),
+    path('me/photo/', shop.photo, name='photo_profil'),
     path('me/supprimer/', conformite_api.supprimer_compte, name='supprimer_compte'),
     path('signaler/', conformite_api.signaler, name='signaler'),
     path('guide/', conformite_api.guide, name='guide'),

@@ -874,3 +874,19 @@ class CourseEnDirectTests(APITestCase):
         self.assertEqual(g['jour']['gain'], c.prix_final - c.detail_prix['commission'] + 300)
         r = self.client.get(API + 'partenaire/courses/?jour=aujourdhui').json()
         self.assertEqual(len(r['resultats']), 1)
+
+
+class PhotoProfilTests(APITestCase):
+    def test_photo_facultative_du_client(self):
+        import tempfile
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as d, \
+                override_settings(MEDIA_ROOT=d, STORAGES=STORAGES):
+            u = compte('Ama')
+            self.client.force_authenticate(u)
+            self.assertEqual(self.client.post('/api/mobile/v1/me/photo/', {}, format='multipart').json()['code'], 'photo')
+            img = SimpleUploadedFile('moi.jpg', bytes([0xFF, 0xD8, 0xFF, 0xE0]) + b'0' * 100, content_type='image/jpeg')
+            r = self.client.post('/api/mobile/v1/me/photo/', {'photo': img}, format='multipart').json()
+            self.assertIn('avatars/', r['photo'])
+            r = self.client.delete('/api/mobile/v1/me/photo/').json()
+            self.assertFalse(r['photo'])

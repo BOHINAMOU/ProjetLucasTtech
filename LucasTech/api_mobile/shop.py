@@ -5,6 +5,7 @@ lance la demande Mobile Money FedaPay. Soit la demande arrive directement sur le
 validation), soit FedaPay renvoie SA page de paiement (opérateurs sans paiement direct) que l'appli affiche.
 L'appli interroge ensuite paiements/<référence>/ jusqu'au résultat. La livraison (accès, tickets, commande,
 abonnement) suit exactement le même chemin que sur le site (Payments.services)."""
+import os
 import logging
 import re
 
@@ -522,6 +523,27 @@ def profil(request):
         if field in d:
             setattr(u, attr, str(d.get(field) or '').strip()[:n] or (None if attr in ('phone', 'country', 'city') else ''))
     u.save()
+    return Response(user_payload(request, u))
+
+
+@api_view(['POST', 'DELETE'])
+def photo(request):
+    """Photo de profil (facultative pour un client ; celle du coursier vient de son dossier). Image de 5 Mo max."""
+    u = request.user
+    if request.method == 'DELETE':
+        if u.avatar:
+            u.avatar.delete(save=False)
+        u.avatar = None
+        u.save(update_fields=['avatar'])
+        return Response(user_payload(request, u))
+    f = request.FILES.get('photo')
+    if not f:
+        return error("Choisissez une photo.", code='photo')
+    if f.size > 5 * 1024 * 1024 or os.path.splitext(f.name)[1].lower() not in ('.jpg', '.jpeg', '.png', '.webp'):
+        return error("Photo refusée : JPG, PNG ou WEBP de 5 Mo maximum.", code='photo')
+    if u.avatar:
+        u.avatar.delete(save=False)
+    u.avatar.save(f"u{u.pk}-{f.name[-40:]}", f, save=True)
     return Response(user_payload(request, u))
 
 
