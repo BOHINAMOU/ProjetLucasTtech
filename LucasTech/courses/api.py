@@ -310,9 +310,18 @@ def recu(request, pk):
     if c.statut not in ('terminee', 'litige') or not c.numero_recu:
         return error("Reçu disponible à la fin de la course.", status=404, code='pas_de_recu')
     part = c.partenaire
+    d = c.detail_prix or {}
+    duree_reelle = None
+    if c.demarree_le and c.terminee_le:
+        duree_reelle = max(1, round((c.terminee_le - c.demarree_le).total_seconds() / 60))
     return Response({
         'numero': c.numero_recu, 'reference': c.reference, 'date': dt(c.terminee_le), 'categorie': c.categorie.nom,
+        'service': c.categorie.service.code, 'depart_le': dt(c.demarree_le),
         'depart': c.depart_adresse, 'arrivee': c.arrivee_adresse, 'distance_km': float(c.distance_km),
+        'distance_reelle_km': float(c.distance_reelle_km or 0) or None, 'duree_reelle_min': duree_reelle,
+        'prix_km': int(c.categorie.prix_km), 'prix_min': int(c.categorie.prix_min),
+        'pourboire': d.get('pourboire', 0),
+        'vehicule': ' '.join(x for x in (part.marque, part.modele, part.couleur) if x) if part else '',
         'duree_min': c.duree_min, 'partenaire': part.user.first_name if part else '', 'plaque': part.plaque if part else '',
         'detail': c.detail_prix, 'prix_annonce': c.prix_estime, 'supplements': (c.detail_prix or {}).get('supplements', []),
         'prix': c.prix_final, 'reduction': c.reduction, 'frais_reportes': c.frais_impayes,

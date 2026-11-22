@@ -34,9 +34,16 @@ def _variables(course):
     eta = 0
     if course.arrivee_prevue_le:
         eta = max(1, int((course.arrivee_prevue_le - timezone.now()).total_seconds() // 60) + 1)
+    vehicule = ''
+    if part:
+        vehicule = ' '.join(x for x in (part.marque, part.modele, part.couleur.lower() if part.couleur else '') if x)
+        vehicule = vehicule or part.vehicule
+    type_v = (part.type_vehicule if part else '') or course.categorie.service.code
+    emoji = {'moto': '🏍️', 'tricycle': '🛺', 'voiture': '🚗'}.get(type_v, '🚚')
     return _Vars(prenom_client=course.client.first_name or '', code=course.code_depart, eta=eta,
-                 prenom_coursier=(part.user.first_name if part else '') or 'votre coursier',
-                 vehicule=(part.vehicule if part else '') or 'véhicule', plaque=(part.plaque if part else '') or '—')
+                 prenom_coursier=(part.user.first_name if part else '') or 'Votre coursier',
+                 vehicule=vehicule or 'véhicule', plaque=(part.plaque if part else '') or '—', emoji=emoji,
+                 attente=Parametres.get().attente_gratuite_min)
 
 
 def message_systeme(course, modele):

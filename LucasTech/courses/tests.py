@@ -422,7 +422,7 @@ class DiscussionTests(APITestCase):
         auto = d['messages'][0]
         self.assertEqual(auto['par'], 'systeme')
         self.assertIn('Bonjour Ama', auto['texte'])
-        self.assertIn('Haojue rouge, TG 1234 AB', auto['texte'])
+        self.assertIn('Plaque : TG 1234 AB', auto['texte'])
         self.assertNotIn('{', auto['texte'])
         m = self.client.post(f'{API}{self.c.pk}/messages/', {'texte': "Où êtes-vous ?"}, format='json').json()
         self.client.post(f'{API}{self.c.pk}/messages/', {'type': 'position', 'lat': 6.13, 'lng': 1.22}, format='json')
