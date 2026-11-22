@@ -194,24 +194,43 @@ class PortefeuilleTests(TestCase):
         S.accepter(p, o.pk, JOUR + timedelta(seconds=2))
         return Course.objects.get(pk=c.pk), p
 
+    def _compteur(self, km, minutes):
+        return S.prix_trajet(self.moto, km, minutes, 1, Parametres.get().arrondi)[0]
+
     def test_reservation_puis_debit_reel(self):
+        """Le prix réservé n'est qu'une estimation : le client paie le prix du compteur (km et minutes réels)."""
         c, p = self._acceptee()
         self.assertEqual(portefeuille(self.client_user).solde, 5000 - 700)
         self.assertEqual(c.montant_reserve, 700)
         S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=5))
+        Course.objects.filter(pk=c.pk).update(distance_reelle_km=3)
         c = S.terminer(p, c.pk, JOUR + timedelta(minutes=20))
-        self.assertEqual(portefeuille(self.client_user).solde, 4300)
+        attendu = self._compteur(3, 15)
+        self.assertEqual(c.prix_final, attendu)
+        self.assertEqual(portefeuille(self.client_user).solde, 5000 - attendu)
         self.assertRegex(c.numero_recu, r'^LE-2026-\d{6}$')
         p.refresh_from_db()
-        self.assertEqual(p.solde, 700 - 105)  # gain net (commission 15 %)
+        self.assertEqual(p.solde, attendu - int(attendu * 15 / 100))  # gain net (commission 15 %)
+
+    def test_quelques_metres_tarif_de_base(self):
+        """Quelques mètres seulement : le client paie le tarif de base (200 FCFA pour la moto)."""
+        c, p = self._acceptee()
+        S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=5))
+        Course.objects.filter(pk=c.pk).update(distance_reelle_km=0.002)
+        c = S.terminer(p, c.pk, JOUR + timedelta(minutes=5, seconds=30))
+        self.assertEqual(self.moto.minimum, 200)
+        self.assertEqual(c.prix_final, 200)
+        self.assertEqual(portefeuille(self.client_user).solde, 4800)
 
     def test_attente_payante(self):
         c, p = self._acceptee()
         S.signaler_arrivee(p, c.pk, JOUR + timedelta(minutes=5), verifier_distance=False)
         S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=10))  # 5 min, dont 2 gratuites
+        Course.objects.filter(pk=c.pk).update(distance_reelle_km=3)
         c = S.terminer(p, c.pk, JOUR + timedelta(minutes=25))
-        self.assertEqual(c.prix_final, 1000)  # 700 + 3 × 100 (2 min gratuites)
-        self.assertEqual(portefeuille(self.client_user).solde, 4000)
+        attendu = self._compteur(3, 15) + 3 * 100  # compteur + 3 min d'attente payante × 100
+        self.assertEqual(c.prix_final, attendu)
+        self.assertEqual(portefeuille(self.client_user).solde, 5000 - attendu)
 
     def test_code_de_depart(self):
         Parametres.objects.filter(pk=1).update(code_depart_obligatoire=True)
@@ -268,9 +287,10 @@ class PortefeuilleTests(TestCase):
         o = S.offre_en_cours(p2, t + timedelta(seconds=1))
         S.accepter(p2, o.pk, t + timedelta(seconds=2))
         S.demarrer(p2, c2.pk, Course.objects.get(pk=c2.pk).code_depart, t + timedelta(minutes=4))
-        S.terminer(p2, c2.pk, t + timedelta(minutes=20))
+        c2 = S.terminer(p2, c2.pk, t + timedelta(minutes=20))
         p2.refresh_from_db()
-        self.assertEqual(p2.solde, -105 - 200)  # commission + frais encaissés pour Lantante
+        # commission + frais encaissés pour Lantante
+        self.assertEqual(p2.solde, -int(c2.prix_final * 15 / 100) - 200)
         self.assertEqual(S.frais_reportes(self.client_user), 0)
 
     def test_annulation_par_partenaire_relance(self):
@@ -286,18 +306,20 @@ class PortefeuilleTests(TestCase):
     def test_remboursement_retenu_sur_partenaire(self):
         c, p = self._acceptee()
         S.demarrer(p, c.pk, c.code_depart, JOUR + timedelta(minutes=5))
+        Course.objects.filter(pk=c.pk).update(distance_reelle_km=4)
         c = S.terminer(p, c.pk, JOUR + timedelta(minutes=20))
+        apres = portefeuille(self.client_user).solde
         r = S.demander_remboursement(c, 300, 300, "Mauvais trajet", self.admin)
         self.assertEqual(r.statut, 'valide')
-        self.assertEqual(portefeuille(self.client_user).solde, 4600)
+        self.assertEqual(portefeuille(self.client_user).solde, apres + 300)
         p.refresh_from_db()
-        self.assertEqual(p.solde, 595 - 300)
+        self.assertEqual(p.solde, c.prix_final - int(c.prix_final * 15 / 100) - 300)
         gros = S.demander_remboursement(c, 6000, 0, "Geste", self.admin)
         self.assertEqual(gros.statut, 'en_attente')  # au-delà de 5 000 : second admin
         with self.assertRaises(S.ErreurCourse):
             S.valider_remboursement(gros, self.admin)
         S.valider_remboursement(gros, compte('Second'))
-        self.assertEqual(portefeuille(self.client_user).solde, 10600)
+        self.assertEqual(portefeuille(self.client_user).solde, apres + 300 + 6000)
 
     def test_solde_insuffisant(self):
         pauvre = compte()
@@ -374,7 +396,8 @@ class ApiTests(APITestCase):
         self.assertEqual(self.client.post(base + 'demarrer/', {'code': c['code_depart']}, format='json').status_code, 200)
         self.assertEqual(self.client.post(base + 'terminer/').json()['statut'], 'terminee')
         s = self.client.get(API + 'partenaire/solde/').json()
-        self.assertEqual(s['solde'], -int(c['prix_estime'] * 15 / 100))  # commission 15 % (prix selon l'heure)
+        fin = Course.objects.get(pk=c['id'])
+        self.assertEqual(s['solde'], -int(fin.prix_final * 15 / 100))  # commission 15 % du prix au compteur
         # le client voit le reçu et note
         self.client.force_authenticate(self.user)
         rc = self.client.get(f"{API}{c['id']}/recu/").json()
@@ -529,12 +552,11 @@ class PrixReelZonesTests(APITestCase):
             lat += 0.002
             S.suivre_position(p, lat, DEP['lng'])
         c = S.terminer(p, c.pk)
-        self.assertGreater(c.prix_final, c.prix_estime)
-        sup = c.detail_prix['supplements']
-        self.assertTrue(sup and sup[0]['motif'].startswith('Trajet plus long'))
+        self.assertGreater(c.prix_final, c.prix_estime)  # compteur : ~13 km au lieu de 4,3
+        self.assertGreater(c.detail_prix['compteur_km'], 12)
         rc = self.client.force_authenticate(self.user) or self.client.get(f'{API}{c.pk}/recu/').json()
         self.assertEqual(rc['prix_annonce'], c.prix_estime)
-        self.assertEqual(len(rc['supplements']), 1)
+        self.assertEqual(rc['prix'], c.prix_final)
 
     def test_petit_detour_sans_augmentation(self):
         c, p = self._en_cours()
@@ -543,13 +565,13 @@ class PrixReelZonesTests(APITestCase):
             lat += 0.002
             S.suivre_position(p, lat, DEP['lng'])
         c = S.terminer(p, c.pk)
-        self.assertEqual(c.prix_final, c.prix_estime)
+        self.assertLess(c.prix_final, c.prix_estime)  # trajet plus court que prévu : prix plus bas
         self.assertEqual(c.detail_prix['supplements'], [])
 
     def test_mention_dans_estimation(self):
         pts = {'depart_lat': DEP['lat'], 'depart_lng': DEP['lng'], 'arrivee_lat': ARR['lat'], 'arrivee_lng': ARR['lng']}
         e = self.client.post(API + 'estimation/', pts, format='json').json()['estimations'][0]
-        self.assertIn('2 min', e['mention_prix'])
+        self.assertIn('compteur', e['mention_prix'])
         self.assertEqual(e['trace'], [])  # sans clé Google
 
     def test_zone_non_couverte(self):
@@ -898,8 +920,9 @@ class MessageFinTests(CourseEnDirectTests):
         S.demarrer(self.p, self.c.pk, '')
         c = S.terminer(self.p, self.c.pk)
         texte = c.messages.filter(par='systeme').last().texte
-        self.assertIn('Merci beaucoup Ama de nous avoir choisis', texte)
+        self.assertIn('Merci Ama de nous avoir choisis', texte)
         self.assertIn('À très bientôt', texte)
+        self.assertFalse(any(ord(ch) > 0x2000 for ch in texte))  # sans émojis
 
 
 class AnnulationPortefeuilleTests(CourseEnDirectTests):

@@ -50,7 +50,9 @@ class Categorie(models.Model):
     prise_en_charge = models.PositiveIntegerField("Prise en charge (FCFA)", default=0)
     prix_km = models.PositiveIntegerField("Prix par km (FCFA)", default=0)
     prix_min = models.PositiveIntegerField("Prix par minute (FCFA)", default=0)
-    minimum = models.PositiveIntegerField("Prix minimum (FCFA)", default=0)
+    minimum = models.PositiveIntegerField(
+        "Tarif de base (FCFA)", default=0,
+        help_text="Prix minimum d'une course : même pour quelques mètres, le client paie au moins ce montant.")
     commission_pct = models.DecimalField("Commission (%)", max_digits=5, decimal_places=2, default=15,
                                          validators=[MinValueValidator(0), MaxValueValidator(100)])
     code_depart_obligatoire = models.BooleanField("Code de départ obligatoire", default=False,
@@ -88,24 +90,42 @@ class PlageHoraire(models.Model):
 
 MESSAGE_ACCEPTATION_ANCIEN = ("Bonjour {prenom_client}, votre demande de course a été acceptée. Le coursier {prenom_coursier} "
                               "({vehicule}, {plaque}) est en route et sera bientôt là, environ {eta} min. Merci d'être prêt.")
-MESSAGE_ACCEPTATION = ("✅ Course acceptée !\n\n"
-                       "Bonjour {prenom_client} 👋\n"
-                       "{prenom_coursier} arrive dans environ {eta} min.\n\n"
-                       "{emoji} {vehicule}\n"
-                       "🔖 Plaque : {plaque}\n\n"
-                       "Merci d'être prêt au point de départ. Bonne route avec Lantante Express !")
-MENTION_PRIX = ("Ce prix peut augmenter si le trajet change (autre destination, arrêt), en cas d'attente "
-                "au-delà de {attente} min, ou si le trajet réel est nettement plus long que prévu.")
+MESSAGE_ACCEPTATION_V2 = ("✅ Course acceptée !\n\n"
+                          "Bonjour {prenom_client} 👋\n"
+                          "{prenom_coursier} arrive dans environ {eta} min.\n\n"
+                          "{emoji} {vehicule}\n"
+                          "🔖 Plaque : {plaque}\n\n"
+                          "Merci d'être prêt au point de départ. Bonne route avec Lantante Express !")
+MESSAGE_ACCEPTATION = ("Bonjour {prenom_client},\n\n"
+                       "Votre course est acceptée. {prenom_coursier} arrive dans environ {eta} min.\n\n"
+                       "Véhicule : {vehicule}\n"
+                       "Plaque : {plaque}\n\n"
+                       "Merci d'être prêt au point de départ.\n"
+                       "Lantante Express")
+MENTION_PRIX_V1 = ("Ce prix peut augmenter si le trajet change (autre destination, arrêt), en cas d'attente "
+                   "au-delà de {attente} min, ou si le trajet réel est nettement plus long que prévu.")
+MENTION_PRIX = ("Prix estimé. Le prix exact est compté au compteur, du départ à l'arrivée "
+                "(km et minutes réels), avec le tarif de base au minimum.")
 MESSAGE_ARRIVEE_ANCIEN = "Votre coursier {prenom_coursier} est arrivé ({vehicule}, {plaque})."
-MESSAGE_ARRIVEE = ("📍 Votre coursier est arrivé !\n\n"
-                   "{prenom_coursier} vous attend.\n"
-                   "{emoji} {vehicule}\n"
-                   "🔖 Plaque : {plaque}\n\n"
-                   "⏱️ Attente gratuite : {attente} min. À tout de suite !")
-MESSAGE_FIN = ("🎉 Course terminée !\n\n"
-               "Merci beaucoup {prenom_client} de nous avoir choisis 💚\n"
-               "Nous espérons que tout s'est bien passé avec {prenom_coursier}.\n\n"
-               "À très bientôt sur Lantante Express !")
+MESSAGE_ARRIVEE_V2 = ("📍 Votre coursier est arrivé !\n\n"
+                      "{prenom_coursier} vous attend.\n"
+                      "{emoji} {vehicule}\n"
+                      "🔖 Plaque : {plaque}\n\n"
+                      "⏱️ Attente gratuite : {attente} min. À tout de suite !")
+MESSAGE_ARRIVEE = ("Votre coursier {prenom_coursier} est arrivé.\n\n"
+                   "Véhicule : {vehicule}\n"
+                   "Plaque : {plaque}\n\n"
+                   "Attente gratuite : {attente} min. Au-delà, l'attente est facturée.\n"
+                   "Lantante Express")
+MESSAGE_FIN_V1 = ("🎉 Course terminée !\n\n"
+                  "Merci beaucoup {prenom_client} de nous avoir choisis 💚\n"
+                  "Nous espérons que tout s'est bien passé avec {prenom_coursier}.\n\n"
+                  "À très bientôt sur Lantante Express !")
+MESSAGE_FIN = ("Course terminée.\n\n"
+               "Merci {prenom_client} de nous avoir choisis. "
+               "Votre reçu est disponible dans l'application.\n\n"
+               "À très bientôt,\n"
+               "Lantante Express")
 MESSAGE_AUCUN = ("Aucun coursier disponible dans votre zone pour le moment. "
                  "Merci de réessayer dans quelques instants.")
 

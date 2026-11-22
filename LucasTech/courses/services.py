@@ -549,21 +549,18 @@ def terminer(partenaire, course_id, maintenant=None):
         minutes, attente = supplement_attente(course, p)
         detail = dict(course.detail_prix or {})
         supplements = []
-        # distance réelle nettement plus longue que prévu : recalcul sur la distance réelle (jamais en baisse)
-        base = course.prix_estime
+        # PRIX AU COMPTEUR : compté du départ (« Démarrer ») à l'arrivée, sur les km et minutes réels.
+        # Le prix affiché à la commande n'est qu'une estimation ; le tarif de base (minimum) s'applique toujours.
         reel = float(course.distance_reelle_km or 0)
-        prevu = float(course.distance_km or 0)
-        if prevu > 0 and reel > prevu * (1 + p.seuil_augmentation_pct / 100):
-            duree = max(course.duree_min, int((maintenant - (course.demarree_le or maintenant)).total_seconds() // 60))
-            nouveau, _ = prix_trajet(course.categorie, reel, duree, detail.get('coefficient', 1), p.arrondi)
-            if nouveau > base:
-                supplements.append({'motif': f"Trajet plus long : {reel:.1f} km au lieu de {prevu:.1f} km",
-                                    'montant': nouveau - base})
-                base = nouveau
+        duree = max(1, int(((maintenant - course.demarree_le).total_seconds() + 59) // 60)) if course.demarree_le else course.duree_min
+        compte, _ = prix_trajet(course.categorie, reel, duree, detail.get('coefficient', 1), p.arrondi)
+        base = compte
+        detail.update({'compteur_km': round(reel, 2), 'compteur_min': duree, 'compteur_prix': compte,
+                       'tarif_base': course.categorie.minimum})
         if attente:
             supplements.append({'motif': f"Attente : {minutes} min au-delà de {p.attente_gratuite_min} min",
                                 'montant': attente})
-        course.prix_final = arrondi_sup(base + attente, p.arrondi) if supplements else course.prix_estime
+        course.prix_final = arrondi_sup(base + attente, p.arrondi)
         detail.update({'attente_min': minutes, 'attente': attente, 'prix_final': course.prix_final,
                        'prix_annonce': course.prix_estime, 'supplements': supplements,
                        'distance_reelle_km': round(reel, 2)})

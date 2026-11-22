@@ -54,7 +54,8 @@ def _user(request):
 def categorie_payload(c):
     return {'id': c.pk, 'code': c.code, 'nom': c.nom, 'service': c.service.code, 'vehicule': c.vehicule, 'icone': c.icone,
             'active': c.active and c.service.actif, 'capacite': c.capacite, 'poids_max': c.poids_max,
-            'minimum': c.minimum}
+            'minimum': c.minimum, 'tarif_base': c.minimum, 'prise_en_charge': c.prise_en_charge,
+            'prix_km': c.prix_km, 'prix_min': c.prix_min}
 
 
 def _note_publique(part, p):
