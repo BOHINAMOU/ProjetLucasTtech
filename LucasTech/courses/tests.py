@@ -900,3 +900,22 @@ class MessageFinTests(CourseEnDirectTests):
         texte = c.messages.filter(par='systeme').last().texte
         self.assertIn('Merci beaucoup Ama de nous avoir choisis', texte)
         self.assertIn('À très bientôt', texte)
+
+
+class AnnulationPortefeuilleTests(CourseEnDirectTests):
+    def test_annuler_ne_garde_que_200(self):
+        """Payée par le portefeuille, annulée après le délai de grâce : seuls 200 FCFA sont gardés, le reste est rendu."""
+        self.client.force_authenticate(self.u)
+        self.client.post(f'{API}{self.c.pk}/paiement/', {'moyen': 'portefeuille'}, format='json')
+        plus_tard = timezone.now() + timedelta(minutes=2, seconds=30)  # après la grâce, coursier pas en retard
+        c, frais = S.annuler_par_client(self.c.pk, self.u, motif='Plus besoin', maintenant=plus_tard)
+        self.assertEqual(frais, 200)
+        self.assertEqual(portefeuille(self.u).solde, 5000 - 200)
+        # course démarrée : plus d'annulation possible
+
+    def test_pas_d_annulation_apres_le_depart(self):
+        S.signaler_arrivee(self.p, self.c.pk, verifier_distance=False)
+        S.demarrer(self.p, self.c.pk, '')
+        with self.assertRaises(S.ErreurCourse) as e:
+            S.annuler_par_client(self.c.pk, self.u, motif='Plus besoin')
+        self.assertEqual(e.exception.code, 'etape')

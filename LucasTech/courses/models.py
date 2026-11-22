@@ -125,10 +125,10 @@ class Parametres(models.Model):
     # Annulation et attente
     delai_grace_min = models.PositiveSmallIntegerField("Délai de grâce annulation (min)", default=2)
     frais_annulation_moto = models.PositiveIntegerField("Frais d'annulation moto (FCFA)", default=200)
-    frais_annulation_voiture = models.PositiveIntegerField("Frais d'annulation voiture (FCFA)", default=500)
+    frais_annulation_voiture = models.PositiveIntegerField("Frais d'annulation voiture (FCFA)", default=200)
     attente_absent_min = models.PositiveSmallIntegerField("Attente avant « client absent » (min)", default=5)
-    frais_absent_moto = models.PositiveIntegerField("Frais client absent moto (FCFA)", default=300)
-    frais_absent_voiture = models.PositiveIntegerField("Frais client absent voiture (FCFA)", default=700)
+    frais_absent_moto = models.PositiveIntegerField("Frais client absent moto (FCFA)", default=200)
+    frais_absent_voiture = models.PositiveIntegerField("Frais client absent voiture (FCFA)", default=200)
     retard_exonerant_min = models.PositiveSmallIntegerField("Retard du partenaire qui exonère le client (min)", default=5)
     attente_gratuite_min = models.PositiveSmallIntegerField(
         "Attente gratuite (min)", default=2,
