@@ -163,7 +163,7 @@ def boutiques(request):
     from Shop.models import Product
     ids = Product.en_vente().filter(vendeur__isnull=False).values('pk')
     qs = Vendeur.objects.annotate(nb=Count('produits', filter=Q(produits__in=ids), distinct=True)).filter(nb__gt=0)
-    return Response([{'id': v.pk, 'nom': v.boutique, 'logo': vignette(request, v.logo) if v.logo else '',
+    return Response([{'id': v.pk, 'nom': v.boutique, 'logo': (vignette(request, v.logo) or media(request, v.logo)) if v.logo else '',
                       'ville': v.ville, 'produits': v.nb} for v in qs.order_by('boutique')])
 
 
